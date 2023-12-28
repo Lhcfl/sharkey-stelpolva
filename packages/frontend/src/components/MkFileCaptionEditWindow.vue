@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkTextarea v-model="caption" autofocus :placeholder="i18n.ts.inputNewDescription">
 			<template #label>{{ i18n.ts.caption }}</template>
 		</MkTextarea>
-		<div v-if="file.type.startsWith('image/')" :class="$style.ocr">
+		<div v-if="canOcr" :class="$style.ocr">
 			<span :class="$style.ocrHeader">{{ i18n.ts._ocr.header }}</span>
 			<div :class="$style.ocrForm">
 				<MkSelect v-model="ocrLanguage">
@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { shallowRef, ref } from 'vue';
+import { shallowRef, ref, computed } from 'vue';
 import * as Misskey from 'misskey-js';
 import * as ocrLanguages from 'tesseract.js/src/constants/languages.js';
 import MkModalWindow from '@/components/MkModalWindow.vue';
@@ -59,6 +59,11 @@ const emit = defineEmits<{
 const dialog = shallowRef<InstanceType<typeof MkModalWindow>>();
 
 const caption = ref(props.default);
+
+// https://github.com/naptha/tesseract.js/blob/master/docs/image-format.md
+const OCR_SUPPORTED_FILETYPES = ['image/bmp', 'image/jpeg', 'image/png', 'image/webp'];
+
+const canOcr = computed(() => OCR_SUPPORTED_FILETYPES.includes(props.file.type));
 const ocrLanguage = ref('eng');
 
 async function ok() {
