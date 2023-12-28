@@ -20,12 +20,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkTextarea v-model="caption" autofocus :placeholder="i18n.ts.inputNewDescription">
 			<template #label>{{ i18n.ts.caption }}</template>
 		</MkTextarea>
-		<span :class="$style.ocrHeader">{{ i18n.ts._ocr.button }}</span>
 		<div v-if="file.type.startsWith('image/')" :class="$style.ocr">
-			<MkSelect v-model="ocrLanguage">
-				<option v-for="language in ocrLanguages" :key="language" :value="language">{{ i18n.ts._ocr.languages[language] ?? language }}</option>
-			</MkSelect>
-			<MkButton small @click="onOCR">{{ i18n.ts._ocr.button }}</MkButton>
+			<span :class="$style.ocrHeader">{{ i18n.ts._ocr.header }}</span>
+			<div :class="$style.ocrForm">
+				<MkSelect v-model="ocrLanguage">
+					<option v-for="language in ocrLanguages" :key="language" :value="language">{{ i18n.ts._ocr.languages[language] ?? language }}</option>
+				</MkSelect>
+				<MkButton @click="onOCR">{{ i18n.ts._ocr.button }}</MkButton>
+			</div>
 		</div>
 	</MkSpacer>
 </MkModalWindow>
@@ -85,6 +87,7 @@ async function onOCR() {
 	await os.promiseDialog((async () => {
 		const tesseract = await import('tesseract.js');
 		const worker = await tesseract.createWorker(ocrLanguage.value, undefined, {
+			// future improvement: it should be possible to use this logger function to provide a progress bar (via the m.progress property)
 			logger(m) { console.log('[OCR]', m); },
 			workerPath: '/assets/tesseract/worker.min.js',
 			corePath: '/assets/tesseract/core',
@@ -101,15 +104,18 @@ async function onOCR() {
 </script>
 
 <style lang="scss" module>
+.ocr {
+	margin-top: 8px;
+}
+
 .ocrHeader {
 	display: block;
-	margin-top: 8px;
 	margin-bottom: 2px;
 	font-size: 0.85em;
 	user-select: none;
 }
 
-.ocr {
+.ocrForm {
 	display: flex;
 	gap: 8px;
 

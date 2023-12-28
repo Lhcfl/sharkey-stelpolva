@@ -2649,6 +2649,7 @@ export interface Locale {
         };
     };
     "_ocr": {
+        "header": string;
         "button": string;
         "existingWarning": string;
         "dataWarning": string;

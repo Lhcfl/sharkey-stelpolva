@@ -2474,6 +2474,7 @@ _dataSaver:
     description: "If code highlighting notations are used in MFM, etc., they will not load until tapped. Syntax highlighting requires downloading the highlight definition files for each programming language. Therefore, disabling the automatic loading of these files is expected to reduce the amount of communication data."
 
 _ocr:
+  header: OCR
   button: OCR
   existingWarning: Existing caption will be overwritten
   dataWarning: OCR may require additional downloads
