@@ -42,6 +42,15 @@ async function copyFrontendShikiAssets() {
   await fs.cp('./packages/frontend/node_modules/shiki/themes', './built/_frontend_dist_/shiki/themes', { dereference: true, recursive: true });
 }
 
+async function copyFrontendTesseractAssets() {
+	// https://github.com/naptha/tesseract.js/blob/master/docs/local-installation.md
+  await fs.cp('./packages/frontend/node_modules/tesseract.js/dist/worker.min.js', './built/_frontend_dist_/tesseract/worker.min.js', { dereference: true, recursive: true });
+  await fs.cp('./packages/frontend/node_modules/tesseract.js-core/tesseract-core.wasm.js', './built/_frontend_dist_/tesseract/core/tesseract-core.wasm.js', { dereference: true, recursive: true });
+  await fs.cp('./packages/frontend/node_modules/tesseract.js-core/tesseract-core-simd.wasm.js', './built/_frontend_dist_/tesseract/core/tesseract-core-simd.wasm.js', { dereference: true, recursive: true });
+  await fs.cp('./packages/frontend/node_modules/tesseract.js-core/tesseract-core-lstm.wasm.js', './built/_frontend_dist_/tesseract/core/tesseract-core-lstm.wasm.js', { dereference: true, recursive: true });
+  await fs.cp('./packages/frontend/node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm.js', './built/_frontend_dist_/tesseract/core/tesseract-core-simd-lstm.wasm.js', { dereference: true, recursive: true });
+}
+
 async function copyBackendViews() {
   await fs.cp('./packages/backend/src/server/web/views', './packages/backend/built/server/web/views', { recursive: true });
 }
@@ -82,6 +91,7 @@ async function build() {
     copyFrontendTablerIcons(),
     copyFrontendLocales(),
     copyFrontendShikiAssets(),
+    copyFrontendTesseractAssets(),
     copyBackendViews(),
     buildBackendScript(),
     buildBackendStyle(),
