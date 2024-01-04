@@ -20,6 +20,7 @@ services:
       - shonk
     volumes:
       - ./files:/sharkey/files
+      - ./cache:/sharkey/cache
       - ./.config:/sharkey/.config:ro
 
   redis:

@@ -16,6 +16,7 @@ const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
 
 const path = Path.resolve(_dirname, '../../../../files');
+const cachePath = Path.resolve(_dirname, '../../../../cache');
 
 @Injectable()
 export class InternalStorageService {
@@ -31,8 +32,23 @@ export class InternalStorageService {
 	}
 
 	@bindThis
+	public resolveCachePath(key: string) {
+		return Path.resolve(cachePath, key);
+	}
+
+	@bindThis
+	public existsCache(key: string) {
+		return fs.existsSync(this.resolveCachePath(key));
+	}
+
+	@bindThis
 	public read(key: string) {
 		return fs.createReadStream(this.resolvePath(key));
+	}
+
+	@bindThis
+	public readCache(key: string) {
+		return fs.createReadStream(this.resolveCachePath(key));
 	}
 
 	@bindThis
@@ -50,7 +66,18 @@ export class InternalStorageService {
 	}
 
 	@bindThis
+	public saveCacheFromBuffer(key: string, data: Buffer) {
+		fs.mkdirSync(cachePath, { recursive: true });
+		fs.writeFileSync(this.resolveCachePath(key), data);
+	}
+
+	@bindThis
 	public del(key: string) {
 		fs.unlink(this.resolvePath(key), () => {});
+	}
+
+	@bindThis
+	public delCache(key: string) {
+		fs.unlink(this.resolveCachePath(key), () => {});
 	}
 }

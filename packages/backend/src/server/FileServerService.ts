@@ -4,6 +4,7 @@
  */
 
 import * as fs from 'node:fs';
+import * as crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { Inject, Injectable } from '@nestjs/common';
@@ -33,6 +34,7 @@ const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
 
 const assets = `${_dirname}/../../server/file/assets/`;
+const cacheDir = `${_dirname}/../../../../cache/`;
 
 @Injectable()
 export class FileServerService {
@@ -380,6 +382,14 @@ export class FileServerService {
 
 	@bindThis
 	private async videoThumbnailHandler(request: FastifyRequest<{ Querystring: { url: string; }; }>, reply: FastifyReply) {
+		const cacheKey = crypto.createHash('md5').update(request.query.url).digest('base64url');
+		const cacheFile = `videoThumbnail-${cacheKey}.webp`;
+		if (this.internalStorageService.existsCache(cacheFile)) {
+			reply.header('Content-Type', 'image/webp');
+			reply.header('Cache-Control', 'max-age=31536000, immutable');
+			return reply.sendFile(cacheFile, cacheDir);
+		}
+
 		const file = await this.getStreamAndTypeFromUrl(request.query.url);
 
 		if (file === '404') {
@@ -413,6 +423,8 @@ export class FileServerService {
 			if ('cleanup' in file) {
 				file.cleanup();
 			}
+
+			this.internalStorageService.saveCacheFromBuffer(cacheFile, image.data);
 
 			reply.header('Content-Type', image.type);
 			reply.header('Cache-Control', 'max-age=31536000, immutable');
