@@ -82,6 +82,13 @@ export class FileServerService {
 		});
 
 		fastify.get<{
+			Querystring: { url: string; };
+		}>('/proxy/thumbnail.webp', async (request, reply) => {
+			return await this.videoThumbnailHandler(request, reply)
+				.catch(err => this.errorHandler(request, reply, err));
+		});
+
+		fastify.get<{
 			Params: { url: string; };
 			Querystring: { url?: string; };
 		}>('/proxy/:url*', async (request, reply) => {
@@ -364,6 +371,51 @@ export class FileServerService {
 					correctFilename(file.filename, image.ext),
 				),
 			);
+			return image.data;
+		} catch (e) {
+			if ('cleanup' in file) file.cleanup();
+			throw e;
+		}
+	}
+
+	@bindThis
+	private async videoThumbnailHandler(request: FastifyRequest<{ Querystring: { url: string; }; }>, reply: FastifyReply) {
+		const file = await this.getStreamAndTypeFromUrl(request.query.url);
+
+		if (file === '404') {
+			reply.code(404);
+			reply.header('Cache-Control', 'max-age=86400');
+			return reply.sendFile('/dummy.png', assets); // TODO: return webp
+		}
+
+		if (file === '204') {
+			reply.code(204);
+			reply.header('Cache-Control', 'max-age=86400');
+			return;
+		}
+
+		if (file.file?.thumbnailUrl) {
+			return await reply.redirect(301, file.file.thumbnailUrl);
+		}
+
+		if (!file.mime.startsWith('video/')) {
+			if ('cleanup' in file) {
+				file.cleanup();
+			}
+
+			reply.code(400);
+			return;
+		}
+
+		try {
+			const image = await this.videoProcessingService.generateVideoThumbnail(file.path);
+
+			if ('cleanup' in file) {
+				file.cleanup();
+			}
+
+			reply.header('Content-Type', image.type);
+			reply.header('Cache-Control', 'max-age=31536000, immutable');
 			return image.data;
 		} catch (e) {
 			if ('cleanup' in file) file.cleanup();
