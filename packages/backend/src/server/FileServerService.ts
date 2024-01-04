@@ -83,12 +83,14 @@ export class FileServerService {
 				.catch(err => this.errorHandler(request, reply, err));
 		});
 
-		fastify.get<{
-			Querystring: { url: string; };
-		}>('/proxy/thumbnail.webp', async (request, reply) => {
-			return await this.videoThumbnailHandler(request, reply)
-				.catch(err => this.errorHandler(request, reply, err));
-		});
+		if (this.config.enableBuiltinVideoThumbnailGenerator) {
+			fastify.get<{
+				Querystring: { url: string; };
+			}>('/proxy/thumbnail.webp', async (request, reply) => {
+				return await this.videoThumbnailHandler(request, reply)
+					.catch(err => this.errorHandler(request, reply, err));
+			});
+		}
 
 		fastify.get<{
 			Params: { url: string; };
@@ -395,7 +397,7 @@ export class FileServerService {
 		if (file === '404') {
 			reply.code(404);
 			reply.header('Cache-Control', 'max-age=86400');
-			return reply.sendFile('/dummy.png', assets); // TODO: return webp
+			return reply.sendFile('/dummy.png', assets);
 		}
 
 		if (file === '204') {

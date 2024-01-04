@@ -118,7 +118,7 @@ redis:
 #   ┌───────────────────────────┐
 #───┘ MeiliSearch configuration └─────────────────────────────
 
-# You can set scope to local (default value) or global 
+# You can set scope to local (default value) or global
 # (include notes from remote).
 
 #meilisearch:
@@ -213,13 +213,18 @@ proxyRemoteFiles: true
 #   https://example.com/thumbnail.webp?thumbnail=1&url=https%3A%2F%2Fstorage.example.com%2Fpath%2Fto%2Fvideo.mp4
 #videoThumbnailGenerator: https://example.com
 
+# Enables the built-in thumbnail generator for remote videos. (default: false)
+# Only useful if "Cache remote files" is disabled, and "videoThumbnailGenerator" is unset.
+# Without it, remote video files that are not cached will not have any thumbnails.
+#enableBuiltinVideoThumbnailGenerator: false
+
 # Sign to ActivityPub GET request (default: true)
 signToActivityPubGet: true
 # check that inbound ActivityPub GET requests are signed ("authorized fetch")
 checkActivityPubGetSignature: false
 
 # For security reasons, uploading attachments from the intranet is prohibited,
-# but exceptions can be made from the following settings. Default value is "undefined". 
+# but exceptions can be made from the following settings. Default value is "undefined".
 # Read changelog to learn more (Improvements of 12.90.0 (2021/09/04)).
 #allowedPrivateNetworks: [
 #  '127.0.0.1/32'

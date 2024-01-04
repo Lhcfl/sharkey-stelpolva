@@ -86,6 +86,7 @@ type Source = {
 	mediaProxy?: string;
 	proxyRemoteFiles?: boolean;
 	videoThumbnailGenerator?: string;
+	enableBuiltinVideoThumbnailGenerator?: boolean;
 
 	customMOTD?: string[];
 
@@ -167,6 +168,7 @@ export type Config = {
 	mediaProxy: string;
 	externalMediaProxyEnabled: boolean;
 	videoThumbnailGenerator: string | null;
+	enableBuiltinVideoThumbnailGenerator: boolean;
 	redis: RedisOptions & RedisOptionsSource;
 	redisForPubsub: RedisOptions & RedisOptionsSource;
 	redisForJobQueue: RedisOptions & RedisOptionsSource;
@@ -272,6 +274,7 @@ export function loadConfig(): Config {
 		videoThumbnailGenerator: config.videoThumbnailGenerator ?
 			config.videoThumbnailGenerator.endsWith('/') ? config.videoThumbnailGenerator.substring(0, config.videoThumbnailGenerator.length - 1) : config.videoThumbnailGenerator
 			: null,
+		enableBuiltinVideoThumbnailGenerator: config.enableBuiltinVideoThumbnailGenerator ?? false,
 		userAgent: `Misskey/${version} (${config.url})`,
 		clientEntry: clientManifest['src/_boot_.ts'],
 		clientManifestExists: clientManifestExists,
