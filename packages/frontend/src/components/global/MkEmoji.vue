@@ -5,8 +5,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <img v-if="!useOsNativeEmojis" :class="$style.root" :src="url" :alt="props.emoji" decoding="async" @pointerenter="computeTitle" @click="onClick" v-on:click.stop/>
-<span v-else-if="useOsNativeEmojis" :alt="props.emoji" @pointerenter="computeTitle" @click="onClick" v-on:click.stop>{{ props.emoji }}</span>
-<span v-else>{{ emoji }}</span>
+<span v-else-if="useOsNativeEmojis" :alt="props.emoji" @pointerenter="computeTitle" @click="onClick" v-on:click.stop>{{ props.emoji }}&#xFE0F;</span>
+<span v-else>{{ emoji }}&#xFE0F;</span>
 </template>
 
 <script lang="ts" setup>

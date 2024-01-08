@@ -26,6 +26,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				[$style.t_quote]: notification.type === 'quote',
 				[$style.t_pollEnded]: notification.type === 'pollEnded',
 				[$style.t_achievementEarned]: notification.type === 'achievementEarned',
+				[$style.t_reaction]: notification.type === 'reaction',
 			}]"
 		>
 			<i v-if="notification.type === 'follow'" class="ph-plus ph-bold ph-lg"></i>
@@ -268,6 +269,12 @@ const rejectFollowRequest = () => {
 .t_mention {
 	padding: 3px;
 	background: #88a6b7;
+	pointer-events: none;
+}
+
+.t_reaction {
+	padding: 3px;
+	color: var(--fg);
 	pointer-events: none;
 }
 
