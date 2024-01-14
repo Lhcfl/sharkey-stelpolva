@@ -5,6 +5,7 @@
 
 const twemojiSvgBase = '/twemoji';
 const fluentEmojiPngBase = '/fluent-emoji';
+const tossfaceSvgBase = '/tossface';
 
 export function char2twemojiFilePath(char: string): string {
 	let codes = Array.from(char, x => x.codePointAt(0)?.toString(16));
@@ -22,4 +23,15 @@ export function char2fluentEmojiFilePath(char: string): string {
 	codes = codes.filter(x => x && x.length);
 	const fileName = codes.map(x => x!.padStart(4, '0')).join('-');
 	return `${fluentEmojiPngBase}/${fileName}.png`;
+}
+
+export function char2tossfaceFilePath(char: string): string {
+	let codes = Array.from(char, x => x.codePointAt(0)?.toString(16));
+	// Twemoji is the only emoji font which still supports the shibuya 50 emoji to this day
+	if (codes[0]?.startsWith('e50a')) return char2twemojiFilePath(char);
+	// Tossface does not use the fe0f modifier
+	codes = codes.filter(x => x !== 'fe0f');
+	codes = codes.filter(x => x && x.length);
+	const fileName = codes.join('-');
+	return `${tossfaceSvgBase}/${fileName}.svg`;
 }

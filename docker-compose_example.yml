@@ -2,13 +2,13 @@ version: "3"
 
 services:
   web:
-#   replace image below with git.joinsharkey.org/sharkey/sharkey:stable on next release
-#   image: ghcr.io/transfem-org/sharkey:stable
+#   image: git.joinsharkey.org/sharkey/sharkey:latest
     build: .
     restart: always
     links:
       - db
       - redis
+#     - mcaptcha
 #     - meilisearch
     depends_on:
       db:
@@ -49,12 +49,43 @@ services:
       interval: 5s
       retries: 20
 
+#  mcaptcha:
+#    restart: always
+#    image: mcaptcha/mcaptcha:latest
+#    networks:
+#      internal_network:
+#      external_network:
+#        aliases:
+#          - localhost
+#    ports:
+#      - 7493:7493
+#    env_file:
+#      - .config/docker.env
+#    environment:
+#      PORT: 7493
+#      MCAPTCHA_redis_URL: "redis://mcaptcha_redis/"
+#    depends_on:
+#      db:
+#        condition: service_healthy
+#      mcaptcha_redis:
+#        condition: service_healthy
+#
+#  mcaptcha_redis:
+#    image: mcaptcha/cache:latest
+#    networks:
+#      - internal_network
+#    healthcheck:
+#      test: "redis-cli ping"
+#      interval: 5s
+#      retries: 20
+
 #  meilisearch:
 #    restart: always
 #    image: getmeili/meilisearch:v1.3.4
 #    environment:
 #      - MEILI_NO_ANALYTICS=true
 #      - MEILI_ENV=production
+#      - MEILI_MASTER_KEY=ChangeThis
 #    networks:
 #      - shonk
 #    volumes:

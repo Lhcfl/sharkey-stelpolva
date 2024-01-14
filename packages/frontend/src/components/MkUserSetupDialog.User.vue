@@ -29,7 +29,7 @@ import * as Misskey from 'misskey-js';
 import { ref } from 'vue';
 import MkButton from '@/components/MkButton.vue';
 import { i18n } from '@/i18n.js';
-import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 
 const props = defineProps<{
 	user: Misskey.entities.UserDetailed;
@@ -39,7 +39,7 @@ const isFollowing = ref(false);
 
 async function follow() {
 	isFollowing.value = true;
-	os.api('following/create', {
+	misskeyApi('following/create', {
 		userId: props.user.id,
 	});
 }
@@ -59,8 +59,8 @@ async function follow() {
 	top: 30px;
 	left: 13px;
 	z-index: 2;
-	width: 58px;
-	height: 58px;
+	width: var(--avatar);
+	height: var(--avatar);
 	border: solid 4px var(--panel);
 }
 

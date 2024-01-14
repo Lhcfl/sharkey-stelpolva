@@ -131,7 +131,7 @@ export class OAuth2ProviderService {
 
 		fastify.register(multer.contentParser);
 
-		fastify.get('/oauth/authorize', async (request, reply) => {
+		fastify.get('/authorize', async (request, reply) => {
 			const query: any = request.query;
 			let param = "mastodon=true";
 			if (query.state) param += `&state=${query.state}`;
@@ -142,7 +142,7 @@ export class OAuth2ProviderService {
 			);
 		});
 
-		fastify.get('/oauth/authorize/', async (request, reply) => {
+		fastify.get('/authorize/', async (request, reply) => {
 			const query: any = request.query;
 			let param = "mastodon=true";
 			if (query.state) param += `&state=${query.state}`;
@@ -153,7 +153,7 @@ export class OAuth2ProviderService {
 			);
 		});
 
-		fastify.post('/oauth/token', { preHandler: upload.none() }, async (request, reply) => {
+		fastify.post('/token', { preHandler: upload.none() }, async (request, reply) => {
 			const body: any = request.body || request.query;
 			if (body.grant_type === "client_credentials") {
 				const ret = {

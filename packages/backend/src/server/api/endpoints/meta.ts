@@ -7,7 +7,6 @@ import { IsNull, LessThanOrEqual, MoreThan, Brackets } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import JSON5 from 'json5';
 import type { AdsRepository, UsersRepository } from '@/models/_.js';
-import { MAX_NOTE_TEXT_LENGTH } from '@/const.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { MetaService } from '@/core/MetaService.js';
@@ -113,6 +112,18 @@ export const meta = {
 				optional: false, nullable: false,
 			},
 			hcaptchaSiteKey: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			enableMcaptcha: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			mcaptchaSiteKey: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			mcaptchaInstanceUrl: {
 				type: 'string',
 				optional: false, nullable: true,
 			},
@@ -280,6 +291,10 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			donationUrl: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			logoImageUrl: {
 				type: 'string',
 				optional: false, nullable: true,
@@ -354,12 +369,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				repositoryUrl: instance.repositoryUrl,
 				feedbackUrl: instance.feedbackUrl,
 				impressumUrl: instance.impressumUrl,
+				donationUrl: instance.donationUrl,
 				privacyPolicyUrl: instance.privacyPolicyUrl,
 				disableRegistration: instance.disableRegistration,
 				emailRequiredForSignup: instance.emailRequiredForSignup,
 				approvalRequiredForSignup: instance.approvalRequiredForSignup,
 				enableHcaptcha: instance.enableHcaptcha,
 				hcaptchaSiteKey: instance.hcaptchaSiteKey,
+				enableMcaptcha: instance.enableMcaptcha,
+				mcaptchaSiteKey: instance.mcaptchaSitekey,
+				mcaptchaInstanceUrl: instance.mcaptchaInstanceUrl,
 				enableRecaptcha: instance.enableRecaptcha,
 				enableAchievements: instance.enableAchievements,
 				recaptchaSiteKey: instance.recaptchaSiteKey,
@@ -375,7 +394,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				iconUrl: instance.iconUrl,
 				backgroundImageUrl: instance.backgroundImageUrl,
 				logoImageUrl: instance.logoImageUrl,
-				maxNoteTextLength: MAX_NOTE_TEXT_LENGTH,
+				maxNoteTextLength: this.config.maxNoteLength,
 				// クライアントの手間を減らすためあらかじめJSONに変換しておく
 				defaultLightTheme: instance.defaultLightTheme ? JSON.stringify(JSON5.parse(instance.defaultLightTheme)) : null,
 				defaultDarkTheme: instance.defaultDarkTheme ? JSON.stringify(JSON5.parse(instance.defaultDarkTheme)) : null,

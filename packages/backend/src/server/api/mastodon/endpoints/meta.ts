@@ -1,5 +1,5 @@
 import { Entity } from 'megalodon';
-import { MAX_NOTE_TEXT_LENGTH, FILE_TYPE_BROWSERSAFE } from '@/const.js';
+import { FILE_TYPE_BROWSERSAFE } from '@/const.js';
 import type { Config } from '@/config.js';
 import type { MiMeta } from '@/models/Meta.js';
 
@@ -35,7 +35,7 @@ export async function getInstance(
 				max_featured_tags: 20,
 			},
 			statuses: {
-				max_characters: MAX_NOTE_TEXT_LENGTH,
+				max_characters: config.maxNoteLength,
 				max_media_attachments: 16,
 				characters_reserved_per_url: response.uri.length,
 			},

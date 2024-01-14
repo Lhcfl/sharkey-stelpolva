@@ -177,8 +177,8 @@ const showTicker = (defaultStore.state.instanceTicker === 'always') || (defaultS
 .noteHeaderAvatar {
 	display: block;
 	flex-shrink: 0;
-	width: 58px;
-	height: 58px;
+	width: var(--avatar);
+	height: var(--avatar);
 }
 
 .noteHeaderBody {

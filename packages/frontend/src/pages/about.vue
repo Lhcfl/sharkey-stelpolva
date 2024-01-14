@@ -57,6 +57,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkFolder>
 						<FormLink v-if="instance.tosUrl" :to="instance.tosUrl" external>{{ i18n.ts.termsOfService }}</FormLink>
 						<FormLink v-if="instance.privacyPolicyUrl" :to="instance.privacyPolicyUrl" external>{{ i18n.ts.privacyPolicy }}</FormLink>
+						<FormLink v-if="instance.donationUrl" :to="instance.donationUrl" external>{{ i18n.ts.donation }}</FormLink>
 					</div>
 				</div>
 			</FormSection>
@@ -114,7 +115,7 @@ import FormSplit from '@/components/form/split.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import MkInstanceStats from '@/components/MkInstanceStats.vue';
-import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import number from '@/filters/number.js';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
@@ -136,7 +137,7 @@ watch(tab, () => {
 	}
 });
 
-const initStats = () => os.api('stats', {
+const initStats = () => misskeyApi('stats', {
 }).then((res) => {
 	stats.value = res;
 });

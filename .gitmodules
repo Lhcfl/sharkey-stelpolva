@@ -4,3 +4,6 @@
 [submodule "fluent-emojis"]
 	path = fluent-emojis
 	url = https://github.com/misskey-dev/emojis.git
+[submodule "tossface-emojis"]
+	path = tossface-emojis
+	url = https://git.joinsharkey.org/Sharkey/tossface-emojis.git

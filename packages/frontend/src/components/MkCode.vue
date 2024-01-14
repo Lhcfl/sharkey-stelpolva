@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<pre v-else-if="show" :class="$style.codeBlockFallbackRoot"><code :class="$style.codeBlockFallbackCode">{{ code }}</code></pre>
 	<button v-else :class="$style.codePlaceholderRoot" @click="show = true">
 		<div :class="$style.codePlaceholderContainer">
-			<div><i class="ti ti-code"></i> {{ i18n.ts.code }}</div>
+			<div><i class="ph-code ph-bold ph-lg"></i> {{ i18n.ts.code }}</div>
 			<div>{{ i18n.ts.clickToShow }}</div>
 		</div>
 	</button>

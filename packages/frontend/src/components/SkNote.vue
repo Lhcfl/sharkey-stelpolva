@@ -190,6 +190,7 @@ import { focusPrev, focusNext } from '@/scripts/focus.js';
 import { checkWordMute } from '@/scripts/check-word-mute.js';
 import { userPage } from '@/filters/user.js';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import * as sound from '@/scripts/sound.js';
 import { defaultStore, noteViewInterruptors } from '@/store.js';
 import { reactionPicker } from '@/scripts/reaction-picker.js';
@@ -208,7 +209,7 @@ import { MenuItem } from '@/types/menu.js';
 import MkRippleEffect from '@/components/MkRippleEffect.vue';
 import { showMovedDialog } from '@/scripts/show-moved-dialog.js';
 import { shouldCollapsed } from '@/scripts/collapsed.js';
-import { useRouter } from '@/router.js';
+import { useRouter } from '@/global/router/supplier.js';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note;
@@ -282,8 +283,8 @@ const renoteUri = appearNote.value.renote ? appearNote.value.renote.uri : null;
 
 const isMyRenote = $i && ($i.id === note.value.userId);
 const showContent = ref(defaultStore.state.uncollapseCW);
-const parsed = computed(() => appearNote.value.text ? mfm.parse(appearNote.value.text).filter(u => u !== renoteUrl && u !== renoteUri) : null);
-const urls = computed(() => parsed.value ? extractUrlFromMfm(parsed.value) : null);
+const parsed = computed(() => appearNote.value.text ? mfm.parse(appearNote.value.text) : null);
+const urls = computed(() => parsed.value ? extractUrlFromMfm(parsed.value).filter(u => u !== renoteUrl && u !== renoteUri) : null);
 const isLong = shouldCollapsed(appearNote.value, urls.value ?? []);
 const collapsed = defaultStore.state.expandLongNote && appearNote.value.cw == null ? false : ref(appearNote.value.cw == null && isLong);
 const isDeleted = ref(false);
@@ -320,7 +321,7 @@ const keymap = {
 };
 
 provide('react', (reaction: string) => {
-	os.api('notes/reactions/create', {
+	misskeyApi('notes/reactions/create', {
 		noteId: appearNote.value.id,
 		reaction: reaction,
 	});
@@ -341,7 +342,7 @@ if (props.mock) {
 
 if (!props.mock) {
 	useTooltip(renoteButton, async (showing) => {
-		const renotes = await os.api('notes/renotes', {
+		const renotes = await misskeyApi('notes/renotes', {
 			noteId: appearNote.value.id,
 			limit: 11,
 		});
@@ -359,7 +360,7 @@ if (!props.mock) {
 	});
 
 	useTooltip(quoteButton, async (showing) => {
-		const renotes = await os.api('notes/renotes', {
+		const renotes = await misskeyApi('notes/renotes', {
 			noteId: appearNote.value.id,
 			limit: 11,
 			quote: true,
@@ -378,7 +379,7 @@ if (!props.mock) {
 	});
 
 	if ($i) {
-		os.api('notes/renotes', {
+		misskeyApi('notes/renotes', {
 			noteId: appearNote.value.id,
 			userId: $i.id,
 			limit: 1,
@@ -400,39 +401,43 @@ function smallerVisibility(a: Visibility | string, b: Visibility | string): Visi
 }
 
 function boostVisibility() {
-	os.popupMenu([
-		{
-			type: 'button',
-			icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
-			text: i18n.ts._visibility['public'],
-			action: () => {
-				renote('public');
+	if (!defaultStore.state.showVisibilitySelectorOnBoost) {
+		renote(defaultStore.state.visibilityOnBoost);
+	} else {
+		os.popupMenu([
+			{
+				type: 'button',
+				icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+				text: i18n.ts._visibility['public'],
+				action: () => {
+					renote('public');
+				},
 			},
-		},
-		{
-			type: 'button',
-			icon: 'ph-house ph-bold ph-lg',
-			text: i18n.ts._visibility['home'],
-			action: () => {
-				renote('home');
+			{
+				type: 'button',
+				icon: 'ph-house ph-bold ph-lg',
+				text: i18n.ts._visibility['home'],
+				action: () => {
+					renote('home');
+				},
 			},
-		},
-		{
-			type: 'button',
-			icon: 'ph-lock ph-bold ph-lg',
-			text: i18n.ts._visibility['followers'],
-			action: () => {
-				renote('followers');
+			{
+				type: 'button',
+				icon: 'ph-lock ph-bold ph-lg',
+				text: i18n.ts._visibility['followers'],
+				action: () => {
+					renote('followers');
+				},
 			},
-		},
-		{
-			type: 'button',
-			icon: 'ph-planet ph-bold ph-lg',
-			text: i18n.ts._timelines.local,
-			action: () => {
-				renote('local');
-			},
-		}], renoteButton.value);
+			{
+				type: 'button',
+				icon: 'ph-planet ph-bold ph-lg',
+				text: i18n.ts._timelines.local,
+				action: () => {
+					renote('local');
+				},
+			}], renoteButton.value);
+	}
 }
 
 function renote(visibility: Visibility | 'local') {
@@ -449,7 +454,7 @@ function renote(visibility: Visibility | 'local') {
 		}
 
 		if (!props.mock) {
-			os.api('notes/create', {
+			misskeyApi('notes/create', {
 				renoteId: appearNote.value.id,
 				channelId: appearNote.value.channelId,
 			}).then(() => {
@@ -475,7 +480,7 @@ function renote(visibility: Visibility | 'local') {
 		}
 
 		if (!props.mock) {
-			os.api('notes/create', {
+			misskeyApi('notes/create', {
 				localOnly: visibility === 'local' ? true : localOnlySetting,
 				visibility: noteVisibility,
 				renoteId: appearNote.value.id,
@@ -499,7 +504,7 @@ function quote() {
 			renote: appearNote.value,
 			channel: appearNote.value.channel,
 		}).then(() => {
-			os.api('notes/renotes', {
+			misskeyApi('notes/renotes', {
 				noteId: appearNote.value.id,
 				userId: $i.id,
 				limit: 1,
@@ -521,7 +526,7 @@ function quote() {
 		os.post({
 			renote: appearNote.value,
 		}).then(() => {
-			os.api('notes/renotes', {
+			misskeyApi('notes/renotes', {
 				noteId: appearNote.value.id,
 				userId: $i.id,
 				limit: 1,
@@ -559,10 +564,11 @@ function reply(viaKeyboard = false): void {
 function like(): void {
 	pleaseLogin();
 	showMovedDialog();
+	sound.playMisskeySfx('reaction');
 	if (props.mock) {
 		return;
 	}
-	os.api('notes/like', {
+	misskeyApi('notes/like', {
 		noteId: appearNote.value.id,
 		override: defaultLike.value,
 	});
@@ -579,13 +585,13 @@ function react(viaKeyboard = false): void {
 	pleaseLogin();
 	showMovedDialog();
 	if (appearNote.value.reactionAcceptance === 'likeOnly') {
-		sound.play('reaction');
+		sound.playMisskeySfx('reaction');
 
 		if (props.mock) {
 			return;
 		}
 
-		os.api('notes/like', {
+		misskeyApi('notes/like', {
 			noteId: appearNote.value.id,
 			override: defaultLike.value,
 		});
@@ -599,14 +605,14 @@ function react(viaKeyboard = false): void {
 	} else {
 		blur();
 		reactionPicker.show(reactButton.value, reaction => {
-			sound.play('reaction');
+			sound.playMisskeySfx('reaction');
 
 			if (props.mock) {
 				emit('reaction', reaction);
 				return;
 			}
 
-			os.api('notes/reactions/create', {
+			misskeyApi('notes/reactions/create', {
 				noteId: appearNote.value.id,
 				reaction: reaction,
 			});
@@ -628,7 +634,7 @@ function undoReact(note): void {
 		return;
 	}
 
-	os.api('notes/reactions/delete', {
+	misskeyApi('notes/reactions/delete', {
 		noteId: note.id,
 	});
 }
@@ -637,7 +643,7 @@ function undoRenote(note) : void {
 	if (props.mock) {
 		return;
 	}
-	os.api('notes/unrenote', {
+	misskeyApi('notes/unrenote', {
 		noteId: note.id,
 	});
 	os.toast(i18n.ts.rmboost);
@@ -714,7 +720,7 @@ function showRenoteMenu(viaKeyboard = false): void {
 			icon: 'ph-trash ph-bold ph-lg',
 			danger: true,
 			action: () => {
-				os.api('notes/delete', {
+				misskeyApi('notes/delete', {
 					noteId: note.value.id,
 				});
 				isDeleted.value = true;
@@ -771,8 +777,12 @@ function focusAfter() {
 	focusNext(el.value);
 }
 
+function scrollIntoView() {
+	el.value.scrollIntoView();
+}
+
 function readPromo() {
-	os.api('promo/read', {
+	misskeyApi('promo/read', {
 		noteId: appearNote.value.id,
 	});
 	isDeleted.value = true;
@@ -785,6 +795,12 @@ function emitUpdReaction(emoji: string, delta: number) {
 		emit('reaction', emoji);
 	}
 }
+
+defineExpose({
+	focus,
+	blur,
+	scrollIntoView,
+});
 </script>
 
 <style lang="scss" module>
@@ -819,7 +835,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 			margin: auto;
 			width: calc(100% - 8px);
 			height: calc(100% - 8px);
-			border: dashed 1px var(--focus);
+			border: solid 1px var(--focus);
 			border-radius: var(--radius);
 			box-sizing: border-box;
 		}
@@ -882,7 +898,6 @@ function emitUpdReaction(emoji: string, delta: number) {
 }
 
 .replyTo {
-	opacity: 0.7;
 	padding-bottom: 0;
 }
 
@@ -890,10 +905,27 @@ function emitUpdReaction(emoji: string, delta: number) {
 	position: relative;
 	display: flex;
 	align-items: center;
-	padding: 24px 38px 16px;
+	padding: 24px 32px 0 calc(32px + var(--avatar) + 14px);
 	line-height: 28px;
 	white-space: pre;
 	color: var(--renote);
+
+	&::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: calc(32px + .5 * var(--avatar));
+		bottom: -8px;
+		border-left: var(--thread-width) solid var(--thread);
+	}
+
+	&:first-child {
+		padding-left: 32px;
+
+		&::before {
+			display: none;
+		}
+	}
 
 	& + .article {
 		padding-top: 8px;
@@ -906,7 +938,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 
 .renoteAvatar {
 	flex-shrink: 0;
-	display: inline-block;
+	display: none; /* same as Firefish, but keeping the element around in case someone wants to add it back via CSS override */
 	width: 28px;
 	height: 28px;
 	margin: 0 8px 0 0;
@@ -987,8 +1019,8 @@ function emitUpdReaction(emoji: string, delta: number) {
 	display: block !important;
 	position: sticky !important;
 	margin: 0 14px 0 0;
-	width: 58px;
-	height: 58px;
+	width: var(--avatar);
+	height: var(--avatar);
 	position: sticky !important;
 	top: calc(22px + var(--stickyTop, 0px));
 	left: 0;
@@ -1130,23 +1162,23 @@ function emitUpdReaction(emoji: string, delta: number) {
 @container (max-width: 580px) {
 	.root {
 		font-size: 0.95em;
+		--avatar: 46px;
 	}
 
 	.renote {
-		padding: 24px 28px 16px;
+		padding: 24px 26px 0 calc(26px + var(--avatar) + 14px);
+
+		&::before {
+			left: calc(26px + .5 * var(--avatar));
+		}
 	}
 
 	.collapsedRenoteTarget {
-		padding: 8px 28px 24px;
+		padding: 8px 26px 24px;
 	}
 
 	.article {
 		padding: 24px 26px;
-	}
-
-	.avatar {
-		width: 50px;
-		height: 50px;
 	}
 }
 
@@ -1164,9 +1196,23 @@ function emitUpdReaction(emoji: string, delta: number) {
 	}
 }
 
+@container (max-width: 500px) {
+	.renote {
+		padding: 23px 25px 0 calc(25px + var(--avatar) + 14px);
+
+		&::before {
+			left: calc(25px + .5 * var(--avatar));
+		}
+	}
+}
+
 @container (max-width: 480px) {
 	.renote {
-		padding: 20px 24px 8px;
+		padding: 22px 24px 0 calc(24px + var(--avatar) + 14px);
+
+		&::before {
+			left: calc(24px + .5 * var(--avatar));
+		}
 	}
 
 	.tip {
@@ -1184,10 +1230,12 @@ function emitUpdReaction(emoji: string, delta: number) {
 }
 
 @container (max-width: 450px) {
+	.root {
+		--avatar: 44px;
+	}
+
 	.avatar {
 		margin: 0 10px 0 0;
-		width: 46px;
-		height: 46px;
 		top: calc(14px + var(--stickyTop, 0px));
 	}
 }
@@ -1220,11 +1268,6 @@ function emitUpdReaction(emoji: string, delta: number) {
 }
 
 @container (max-width: 300px) {
-	.avatar {
-		width: 44px;
-		height: 44px;
-	}
-
 	.root:not(.showActionsOnlyHover) {
 		.footerButton {
 			&:not(:last-child) {

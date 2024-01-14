@@ -129,6 +129,13 @@ export class ActivityPubServerService {
 			 this is also inspired by FireFish's `checkFetch`
 		*/
 
+		/* tell any caching proxy that they should not cache these
+		   responses: we wouldn't want the proxy to return a 403 to
+		   someone presenting a valid signature, or return a cached
+		   response body to someone we've blocked!
+		 */
+		reply.header('Cache-Control', 'private, max-age=0, must-revalidate');
+
 		/* we always allow requests about our instance actor, because when
 			 a remote instance needs to check our signature on a request we
 			 sent, it will need to fetch information about the user that
@@ -155,23 +162,25 @@ export class ActivityPubServerService {
 			return true;
 		}
 
+		const keyId = new URL(signature.keyId);
+		const keyHost = this.utilityService.toPuny(keyId.hostname);
+
+		const logPrefix = `${request.id} ${request.url} (by ${request.headers['user-agent']}) apparently from ${keyHost}:`;
+
 		if (signature.params.headers.indexOf('host') === -1
 			|| request.headers.host !== this.config.host) {
 			// no destination host, or not us: refuse
-			this.authlogger.warn(`${request.id} ${request.url} no destination host, or not us: refuse`);
+			this.authlogger.warn(`${logPrefix} no destination host, or not us: refuse`);
 			reply.code(401);
 			return true;
 		}
-
-		const keyId = new URL(signature.keyId);
-		const keyHost = this.utilityService.toPuny(keyId.hostname);
 
 		const meta = await this.metaService.fetch();
 		if (this.utilityService.isBlockedHost(meta.blockedHosts, keyHost)) {
 			/* blocked instance: refuse (we don't care if the signature is
 				 good, if they even pretend to be from a blocked instance,
 				 they're out) */
-			this.authlogger.warn(`${request.id} ${request.url} instance ${keyHost} is blocked: refuse`);
+			this.authlogger.warn(`${logPrefix} instance is blocked: refuse`);
 			reply.code(401);
 			return true;
 		}
@@ -186,13 +195,13 @@ export class ActivityPubServerService {
 			/* keyId is often in the shape `${user.uri}#${keyname}`, try
 				 fetching information about the remote user */
 			const candidate = formatURL(keyId, { fragment: false });
-			this.authlogger.info(`${request.id} ${request.url} we don't know the user for keyId ${keyId}, trying to fetch via ${candidate}`);
+			this.authlogger.info(`${logPrefix} we don't know the user for keyId ${keyId}, trying to fetch via ${candidate}`);
 			authUser = await this.apDbResolverService.getAuthUserFromApId(candidate);
 		}
 
 		if (authUser?.key == null) {
 			// we can't figure out who the signer is, or we can't get their key: refuse
-			this.authlogger.warn(`${request.id} ${request.url} we can't figure out who the signer is, or we can't get their key: refuse`);
+			this.authlogger.warn(`${logPrefix} we can't figure out who the signer is, or we can't get their key: refuse`);
 			reply.code(401);
 			return true;
 		}
@@ -200,20 +209,20 @@ export class ActivityPubServerService {
 		let httpSignatureValidated = httpSignature.verifySignature(signature, authUser.key.keyPem);
 
 		if (!httpSignatureValidated) {
-			this.authlogger.info(`${request.id} ${request.url} failed to validate signature, re-fetching the key for ${authUser.user.uri}`);
+			this.authlogger.info(`${logPrefix} failed to validate signature, re-fetching the key for ${authUser.user.uri}`);
 			// maybe they changed their key? refetch it
 			authUser.key = await this.apDbResolverService.refetchPublicKeyForApId(authUser.user);
 
 			if (authUser.key != null) {
 				httpSignatureValidated = httpSignature.verifySignature(signature, authUser.key.keyPem);
 			} else {
-				this.authlogger.warn(`${request.id} ${request.url} failed to re-fetch key for ${authUser.user}`);
+				this.authlogger.warn(`${logPrefix} failed to re-fetch key for ${authUser.user}`);
 			}
 		}
 
 		if (!httpSignatureValidated) {
 			// bad signature: refuse
-			this.authlogger.info(`${request.id} ${request.url} failed to validate signature: refuse`);
+			this.authlogger.info(`${logPrefix} failed to validate signature: refuse`);
 			reply.code(401);
 			return true;
 		}
@@ -322,11 +331,11 @@ export class ActivityPubServerService {
 
 		if (profile.followersVisibility === 'private') {
 			reply.code(403);
-			reply.header('Cache-Control', 'public, max-age=30');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=30');
 			return;
 		} else if (profile.followersVisibility === 'followers') {
 			reply.code(403);
-			reply.header('Cache-Control', 'public, max-age=30');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=30');
 			return;
 		}
 		//#endregion
@@ -378,7 +387,7 @@ export class ActivityPubServerService {
 				user.followersCount,
 				`${partOf}?page=true`,
 			);
-			reply.header('Cache-Control', 'public, max-age=180');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
 			return (this.apRendererService.addContext(rendered));
 		}
@@ -416,11 +425,11 @@ export class ActivityPubServerService {
 
 		if (profile.followingVisibility === 'private') {
 			reply.code(403);
-			reply.header('Cache-Control', 'public, max-age=30');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=30');
 			return;
 		} else if (profile.followingVisibility === 'followers') {
 			reply.code(403);
-			reply.header('Cache-Control', 'public, max-age=30');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=30');
 			return;
 		}
 		//#endregion
@@ -472,7 +481,7 @@ export class ActivityPubServerService {
 				user.followingCount,
 				`${partOf}?page=true`,
 			);
-			reply.header('Cache-Control', 'public, max-age=180');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
 			return (this.apRendererService.addContext(rendered));
 		}
@@ -513,7 +522,7 @@ export class ActivityPubServerService {
 			renderedNotes,
 		);
 
-		reply.header('Cache-Control', 'public, max-age=180');
+		if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 		this.setResponseType(request, reply);
 		return (this.apRendererService.addContext(rendered));
 	}
@@ -604,7 +613,7 @@ export class ActivityPubServerService {
 				`${partOf}?page=true`,
 				`${partOf}?page=true&since_id=000000000000000000000000`,
 			);
-			reply.header('Cache-Control', 'public, max-age=180');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
 			return (this.apRendererService.addContext(rendered));
 		}
@@ -617,7 +626,7 @@ export class ActivityPubServerService {
 			return;
 		}
 
-		reply.header('Cache-Control', 'public, max-age=180');
+		if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 		this.setResponseType(request, reply);
 		return (this.apRendererService.addContext(await this.apRendererService.renderPerson(user as MiLocalUser)));
 	}
@@ -707,7 +716,7 @@ export class ActivityPubServerService {
 				return;
 			}
 
-			reply.header('Cache-Control', 'public, max-age=180');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
 			return this.apRendererService.addContext(await this.apRendererService.renderNote(note, false));
 		});
@@ -730,7 +739,7 @@ export class ActivityPubServerService {
 				return;
 			}
 
-			reply.header('Cache-Control', 'public, max-age=180');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
 			return (this.apRendererService.addContext(await this.packActivity(note)));
 		});
@@ -775,7 +784,7 @@ export class ActivityPubServerService {
 			const keypair = await this.userKeypairService.getUserKeypair(user.id);
 
 			if (this.userEntityService.isLocalUser(user)) {
-				reply.header('Cache-Control', 'public, max-age=180');
+				if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 				this.setResponseType(request, reply);
 				return (this.apRendererService.addContext(this.apRendererService.renderKey(user, keypair)));
 			} else {
@@ -825,7 +834,7 @@ export class ActivityPubServerService {
 				return;
 			}
 
-			reply.header('Cache-Control', 'public, max-age=180');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
 			return (this.apRendererService.addContext(await this.apRendererService.renderEmoji(emoji)));
 		});
@@ -848,7 +857,7 @@ export class ActivityPubServerService {
 				return;
 			}
 
-			reply.header('Cache-Control', 'public, max-age=180');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
 			return (this.apRendererService.addContext(await this.apRendererService.renderLike(reaction, note)));
 		});
@@ -876,7 +885,7 @@ export class ActivityPubServerService {
 				return;
 			}
 
-			reply.header('Cache-Control', 'public, max-age=180');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
 			return (this.apRendererService.addContext(this.apRendererService.renderFollow(follower, followee)));
 		});
@@ -913,7 +922,7 @@ export class ActivityPubServerService {
 				return;
 			}
 
-			reply.header('Cache-Control', 'public, max-age=180');
+			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
 			return (this.apRendererService.addContext(this.apRendererService.renderFollow(follower, followee)));
 		});

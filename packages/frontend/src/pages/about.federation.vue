@@ -17,6 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<option value="federating">{{ i18n.ts.federating }}</option>
 				<option value="subscribing">{{ i18n.ts.subscribing }}</option>
 				<option value="publishing">{{ i18n.ts.publishing }}</option>
+				<option value="bubble">Bubble</option>
 				<option value="nsfw">NSFW</option>
 				<option value="suspended">{{ i18n.ts.suspended }}</option>
 				<option value="silenced">{{ i18n.ts.silence }}</option>
@@ -80,6 +81,7 @@ const pagination = {
 			state.value === 'silenced' ? { silenced: true } :
 			state.value === 'notResponding' ? { notResponding: true } :
 			state.value === 'nsfw' ? { nsfw: true } :
+			state.value === 'bubble' ? { bubble: true } :
 			{}),
 	})),
 } as Paging;

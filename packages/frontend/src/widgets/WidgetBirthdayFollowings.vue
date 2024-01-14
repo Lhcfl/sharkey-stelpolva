@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <MkContainer :showHeader="widgetProps.showHeader" class="mkw-bdayfollowings">
-	<template #icon><i class="ti ti-cake"></i></template>
+	<template #icon><i class="ph-cake ph-bold ph-lg"></i></template>
 	<template #header>{{ i18n.ts._widgets.birthdayFollowings }}</template>
 
 	<div :class="$style.bdayFRoot">
@@ -27,7 +27,7 @@ import * as Misskey from 'misskey-js';
 import { useWidgetPropsManager, WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
 import { GetFormResultType } from '@/scripts/form.js';
 import MkContainer from '@/components/MkContainer.vue';
-import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { useInterval } from '@/scripts/use-interval.js';
 import { i18n } from '@/i18n.js';
 import { infoImageUrl } from '@/instance.js';
@@ -70,7 +70,7 @@ const fetch = () => {
 	now.setHours(0, 0, 0, 0);
 
 	if (now > lfAtD) {
-		os.api('users/following', {
+		misskeyApi('users/following', {
 			limit: 18,
 			birthday: now.toISOString(),
 			userId: $i.id,

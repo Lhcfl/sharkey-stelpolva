@@ -6,7 +6,7 @@ import type { UsersRepository, NotesRepository, BlockingsRepository, DriveFilesR
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiChannel } from '@/models/Channel.js';
-import { MAX_NOTE_TEXT_LENGTH } from '@/const.js';
+import type { Config } from '@/config.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteEditService } from '@/core/NoteEditService.js';
@@ -135,6 +135,12 @@ export const meta = {
 			code: 'CANNOT_QUOTE_THE_CURRENT_NOTE',
 			id: '33510210-8452-094c-6227-4a6c05d99f02',
 		},
+
+		maxLength: {
+			message: 'You tried posting a note which is too long.',
+			code: 'MAX_LENGTH',
+			id: '3ac74a84-8fd5-4bb0-870f-01804f82ce16',
+		},
 	},
 } as const;
 
@@ -163,7 +169,6 @@ export const paramDef = {
 		text: {
 			type: 'string',
 			minLength: 1,
-			maxLength: MAX_NOTE_TEXT_LENGTH,
 			nullable: true,
 		},
 		fileIds: {
@@ -205,7 +210,6 @@ export const paramDef = {
 				text: {
 					type: 'string',
 					minLength: 1,
-					maxLength: MAX_NOTE_TEXT_LENGTH,
 					nullable: false,
 				},
 			},
@@ -236,6 +240,9 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
+		@Inject(DI.config)
+		private config: Config,
+
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
@@ -255,6 +262,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteEditService: NoteEditService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			if (ps.text && (ps.text.length > this.config.maxNoteLength)) {
+				throw new ApiError(meta.errors.maxLength);
+			}
 			let visibleUsers: MiUser[] = [];
 			if (ps.visibleUserIds) {
 				visibleUsers = await this.usersRepository.findBy({

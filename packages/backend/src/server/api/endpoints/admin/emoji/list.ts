@@ -91,7 +91,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				//q.andWhere('emoji.name ILIKE :q', { q: `%${ sqlLikeEscape(ps.query) }%` });
 				//const emojis = await q.limit(ps.limit).getMany();
 
-				emojis = await q.getMany();
+				emojis = await q.orderBy('length(emoji.name)', 'ASC').getMany();
 				const queryarry = ps.query.match(/\:([a-z0-9_]*)\:/g);
 
 				if (queryarry) {

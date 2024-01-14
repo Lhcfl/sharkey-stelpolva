@@ -65,8 +65,8 @@ defineProps<{
 	top: 62px;
 	left: 13px;
 	z-index: 2;
-	width: 58px;
-	height: 58px;
+	width: var(--avatar);
+	height: var(--avatar);
 	border: solid 4px var(--panel);
 }
 

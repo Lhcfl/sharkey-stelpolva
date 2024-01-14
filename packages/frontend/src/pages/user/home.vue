@@ -185,14 +185,14 @@ import { getUserMenu } from '@/scripts/get-user-menu.js';
 import number from '@/filters/number.js';
 import { userPage } from '@/filters/user.js';
 import * as os from '@/os.js';
-import { useRouter } from '@/router.js';
 import { i18n } from '@/i18n.js';
 import { $i, iAmModerator } from '@/account.js';
 import { dateString } from '@/filters/date.js';
 import { confetti } from '@/scripts/confetti.js';
-import { api } from '@/os.js';
 import { defaultStore } from '@/store.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/scripts/isFfVisibleForMe.js';
+import { useRouter } from '@/global/router/supplier.js';
 
 function calcAge(birthdate: string): number {
 	const date = new Date(birthdate);
@@ -262,7 +262,7 @@ const background = computed(() => {
 });
 
 watch(moderationNote, async () => {
-	await os.api('admin/update-user-note', { userId: props.user.id, text: moderationNote.value });
+	await misskeyApi('admin/update-user-note', { userId: props.user.id, text: moderationNote.value });
 });
 
 const pagination = {
@@ -279,7 +279,7 @@ const AllPagination = {
 	params: computed(() => ({
 		userId: props.user.id,
 		withRenotes: noteview.value === 'all',
-		withReplies: noteview.value === 'all' || noteview.value === 'files',
+		withReplies: noteview.value === 'all',
 		withChannelNotes: noteview.value === 'all',
 		withFiles: noteview.value === 'files',
 	})),
@@ -333,7 +333,7 @@ function adjustMemoTextarea() {
 }
 
 async function updateMemo() {
-	await api('users/update-memo', {
+	await misskeyApi('users/update-memo', {
 		memo: memoDraft.value,
 		userId: props.user.id,
 	});

@@ -17,6 +17,7 @@ import { DeleteDriveFilesProcessorService } from './processors/DeleteDriveFilesP
 import { ExportAccountDataProcessorService } from './processors/ExportAccountDataProcessorService.js';
 import { ExportCustomEmojisProcessorService } from './processors/ExportCustomEmojisProcessorService.js';
 import { ExportNotesProcessorService } from './processors/ExportNotesProcessorService.js';
+import { ExportClipsProcessorService } from './processors/ExportClipsProcessorService.js';
 import { ExportFollowingProcessorService } from './processors/ExportFollowingProcessorService.js';
 import { ExportMutingProcessorService } from './processors/ExportMutingProcessorService.js';
 import { ExportBlockingProcessorService } from './processors/ExportBlockingProcessorService.js';
@@ -94,6 +95,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 		private exportAccountDataProcessorService: ExportAccountDataProcessorService,
 		private exportCustomEmojisProcessorService: ExportCustomEmojisProcessorService,
 		private exportNotesProcessorService: ExportNotesProcessorService,
+		private exportClipsProcessorService: ExportClipsProcessorService,
 		private exportFavoritesProcessorService: ExportFavoritesProcessorService,
 		private exportFollowingProcessorService: ExportFollowingProcessorService,
 		private exportMutingProcessorService: ExportMutingProcessorService,
@@ -169,6 +171,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				case 'exportAccountData': return this.exportAccountDataProcessorService.process(job);
 				case 'exportCustomEmojis': return this.exportCustomEmojisProcessorService.process(job);
 				case 'exportNotes': return this.exportNotesProcessorService.process(job);
+				case 'exportClips': return this.exportClipsProcessorService.process(job);
 				case 'exportFavorites': return this.exportFavoritesProcessorService.process(job);
 				case 'exportFollowing': return this.exportFollowingProcessorService.process(job);
 				case 'exportMuting': return this.exportMutingProcessorService.process(job);

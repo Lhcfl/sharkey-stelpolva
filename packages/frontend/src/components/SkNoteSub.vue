@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<!-- new avatar container with line (post section) -->
 		<div :class="$style.avatarContainer">
 			<MkAvatar :class="$style.avatar" :user="note.user" link preview/>
-			<template v-if="note.repliesCount > 0">
+			<template v-if="note.repliesCount > 0 && replies.length > 0">
 				<div v-if="hideLine" :class="$style.threadLine"></div>
 			</template>
 		</div>
@@ -99,6 +99,8 @@ import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
 import { notePage } from '@/filters/note.js';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
+import * as sound from '@/scripts/sound.js';
 import { i18n } from '@/i18n.js';
 import { $i } from '@/account.js';
 import { userPage } from '@/filters/user.js';
@@ -174,7 +176,7 @@ useNoteCapture({
 });
 
 if ($i) {
-	os.api('notes/renotes', {
+	misskeyApi('notes/renotes', {
 		noteId: appearNote.value.id,
 		userId: $i.id,
 		limit: 1,
@@ -202,8 +204,9 @@ function reply(viaKeyboard = false): void {
 function react(viaKeyboard = false): void {
 	pleaseLogin();
 	showMovedDialog();
+	sound.playMisskeySfx('reaction');
 	if (props.note.reactionAcceptance === 'likeOnly') {
-		os.api('notes/like', {
+		misskeyApi('notes/like', {
 			noteId: props.note.id,
 			override: defaultLike.value,
 		});
@@ -217,7 +220,7 @@ function react(viaKeyboard = false): void {
 	} else {
 		blur();
 		reactionPicker.show(reactButton.value, reaction => {
-			os.api('notes/reactions/create', {
+			misskeyApi('notes/reactions/create', {
 				noteId: props.note.id,
 				reaction: reaction,
 			});
@@ -233,7 +236,8 @@ function react(viaKeyboard = false): void {
 function like(): void {
 	pleaseLogin();
 	showMovedDialog();
-	os.api('notes/like', {
+	sound.playMisskeySfx('reaction');
+	misskeyApi('notes/like', {
 		noteId: props.note.id,
 		override: defaultLike.value,
 	});
@@ -249,14 +253,14 @@ function like(): void {
 function undoReact(note): void {
 	const oldReaction = note.myReaction;
 	if (!oldReaction) return;
-	os.api('notes/reactions/delete', {
+	misskeyApi('notes/reactions/delete', {
 		noteId: note.id,
 	});
 }
 
 function undoRenote() : void {
 	if (!renoted.value) return;
-	os.api('notes/unrenote', {
+	misskeyApi('notes/unrenote', {
 		noteId: appearNote.value.id,
 	});
 	os.toast(i18n.ts.rmboost);
@@ -278,39 +282,43 @@ watch(() => props.expandAllCws, (expandAllCws) => {
 });
 
 function boostVisibility() {
-	os.popupMenu([
-		{
-			type: 'button',
-			icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
-			text: i18n.ts._visibility['public'],
-			action: () => {
-				renote('public');
+	if (!defaultStore.state.showVisibilitySelectorOnBoost) {
+		renote(defaultStore.state.visibilityOnBoost);
+	} else {
+		os.popupMenu([
+			{
+				type: 'button',
+				icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+				text: i18n.ts._visibility['public'],
+				action: () => {
+					renote('public');
+				},
 			},
-		},
-		{
-			type: 'button',
-			icon: 'ph-house ph-bold ph-lg',
-			text: i18n.ts._visibility['home'],
-			action: () => {
-				renote('home');
+			{
+				type: 'button',
+				icon: 'ph-house ph-bold ph-lg',
+				text: i18n.ts._visibility['home'],
+				action: () => {
+					renote('home');
+				},
 			},
-		},
-		{
-			type: 'button',
-			icon: 'ph-lock ph-bold ph-lg',
-			text: i18n.ts._visibility['followers'],
-			action: () => {
-				renote('followers');
+			{
+				type: 'button',
+				icon: 'ph-lock ph-bold ph-lg',
+				text: i18n.ts._visibility['followers'],
+				action: () => {
+					renote('followers');
+				},
 			},
-		},
-		{
-			type: 'button',
-			icon: 'ph-planet ph-bold ph-lg',
-			text: i18n.ts._timelines.local,
-			action: () => {
-				renote('local');
-			},
-		}], renoteButton.value);
+			{
+				type: 'button',
+				icon: 'ph-planet ph-bold ph-lg',
+				text: i18n.ts._timelines.local,
+				action: () => {
+					renote('local');
+				},
+			}], renoteButton.value);
+	}
 }
 
 function renote(visibility: 'public' | 'home' | 'followers' | 'specified' | 'local') {
@@ -326,7 +334,7 @@ function renote(visibility: 'public' | 'home' | 'followers' | 'specified' | 'loc
 			os.popup(MkRippleEffect, { x, y }, {}, 'end');
 		}
 
-		os.api('notes/create', {
+		misskeyApi('notes/create', {
 			renoteId: props.note.id,
 			channelId: props.note.channelId,
 		}).then(() => {
@@ -342,7 +350,7 @@ function renote(visibility: 'public' | 'home' | 'followers' | 'specified' | 'loc
 			os.popup(MkRippleEffect, { x, y }, {}, 'end');
 		}
 
-		os.api('notes/create', {
+		misskeyApi('notes/create', {
 			renoteId: props.note.id,
 			localOnly: visibility === 'local' ? true : false,
 			visibility: visibility === 'local' || visibility === 'specified' ? props.note.visibility : visibility,
@@ -362,7 +370,7 @@ function quote() {
 			renote: appearNote.value,
 			channel: appearNote.value.channel,
 		}).then(() => {
-			os.api('notes/renotes', {
+			misskeyApi('notes/renotes', {
 				noteId: props.note.id,
 				userId: $i.id,
 				limit: 1,
@@ -384,7 +392,7 @@ function quote() {
 		os.post({
 			renote: appearNote.value,
 		}).then(() => {
-			os.api('notes/renotes', {
+			misskeyApi('notes/renotes', {
 				noteId: props.note.id,
 				userId: $i.id,
 				limit: 1,
@@ -413,7 +421,7 @@ function menu(viaKeyboard = false): void {
 }
 
 if (props.detail) {
-	os.api('notes/children', {
+	misskeyApi('notes/children', {
 		noteId: props.note.id,
 		limit: numberOfReplies.value,
 		showQuotes: false,
@@ -426,21 +434,22 @@ if (props.detail) {
 <style lang="scss" module>
 .root {
 	padding: 28px 32px;
-	font-size: 0.9em;
 	position: relative;
+
+	--reply-indent: calc(.5 * var(--avatar));
 
 	&.children {
 		padding: 10px 0 0 16px;
-		font-size: 1em;
 	}
 }
 
 .line {
 	position: absolute;
-	height: 100%;
-	left: 60px;
+	left: calc(32px + .5 * var(--avatar));
 	// using solid instead of dotted, stylelistic choice
-	border-left: 2.5px solid rgb(174, 174, 174);
+	border-left: var(--thread-width) solid var(--thread);
+	top: calc(28px + var(--avatar)); // 28px of .root padding, plus 58px of avatar height (see SkNote)
+	bottom: -28px;
 }
 
 .footer {
@@ -453,7 +462,27 @@ if (props.detail) {
 }
 
 .main {
-	display: flex;
+	position: relative;
+	display:  flex;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: -12px;
+		right: -12px;
+		left: -12px;
+		bottom: -12px;
+		background: var(--panelHighlight);
+		border-radius: var(--radius);
+		opacity: 0;
+		transition: opacity .2s, background .2s;
+		z-index: -1;
+	}
+	
+	&:hover::after,
+	&:focus-within::after {
+		opacity: 1;
+	}
 }
 
 .colorBar {
@@ -470,8 +499,8 @@ if (props.detail) {
 	flex-shrink: 0;
 	display: block;
 	margin: 0 14px 0 0;
-	width: 58px;
-	height: 58px;
+	width: var(--avatar);
+	height: var(--avatar);
 	border-radius: var(--radius-sm);
 }
 
@@ -520,21 +549,22 @@ if (props.detail) {
 @container (max-width: 580px) {
 	.root {
 		padding: 28px 26px 0;
+		--avatar: 46px;
 	}
 
 	.line {
-		left: 50.5px;
-	}
-
-	.avatar {
-		width: 50px;
-		height: 50px;
+		left: calc(26px + .5 * var(--avatar));
 	}
 }
 
 @container (max-width: 500px) {
 	.root {
 		padding: 23px 25px;
+	}
+
+	.line {
+		top: calc(23px + var(--avatar));
+		left: calc(25px + .5 * var(--avatar));
 	}
 }
 
@@ -585,16 +615,16 @@ if (props.detail) {
 			padding: 10px 0 0 8px;
 		}
 	}
+
+	.line {
+		top: calc(22px + var(--avatar));
+		left: calc(24px + .5 * var(--avatar));
+	}
 }
 
 @container (max-width: 450px) {
-	.line {
-		left: 46px;
-	}
-
-	.avatar {
-		width: 46px;
-		height: 46px;
+	.root {
+		--avatar: 44px;
 	}
 }
 
@@ -615,19 +645,19 @@ if (props.detail) {
 .threadLine {
 	width: 0;
 	flex-grow: 1;
-	border-left: 2.5px solid rgb(174, 174, 174);
-	margin-left: 29px;
+	border-left: var(--thread-width) solid var(--thread);
+	margin-left: var(--reply-indent);
 }
 
 .reply {
-	margin-left: 29px;
+	margin-left: var(--reply-indent);
 }
 
 .reply:not(:last-child) {
-	border-left: 2.5px solid rgb(174, 174, 174);
+	border-left: var(--thread-width) solid var(--thread);
 
 	&::before {
-		left: -2px;
+		left: calc(-1 * var(--thread-width));
 	}
 }
 
@@ -636,10 +666,10 @@ if (props.detail) {
 	content: '';
 	left: 0px;
 	top: -10px;
-	height: 49px;
+	height: calc(10px + 10px + .5 * var(--avatar));
 	width: 15px;
-	border-left: 2.5px solid rgb(174, 174, 174);
-	border-bottom: 2.5px solid rgb(174, 174, 174);
+	border-left: var(--thread-width) solid var(--thread);
+	border-bottom: var(--thread-width) solid var(--thread);
 	border-bottom-left-radius: 15px;
 }
 
@@ -648,7 +678,7 @@ if (props.detail) {
 	padding-left: 0 !important;
 
 	&::before {
-		left: 29px;
+		left: var(--reply-indent);
 		width: 0;
 		border-bottom: unset;
 	}

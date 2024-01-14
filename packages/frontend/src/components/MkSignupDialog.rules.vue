@@ -45,7 +45,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #label>{{ i18n.ts.basicNotesBeforeCreateAccount }}</template>
 				<template #suffix><i v-if="agreeNote" class="ph-check ph-bold ph-lg" style="color: var(--success)"></i></template>
 
-				<a href="https://git.joinsharkey.org/Sharkey/JoinSharkey/src/branch/main/IMPORTANT_NOTES.md" class="_link" target="_blank">{{ i18n.ts.basicNotesBeforeCreateAccount }} <i class="ph-arrow-square-out ph-bold ph-lg"></i></a>
+				<a href="https://git.joinsharkey.org/Sharkey/Sharkey/src/branch/stable/IMPORTANT_NOTES.md" class="_link" target="_blank">{{ i18n.ts.basicNotesBeforeCreateAccount }} <i class="ph-arrow-square-out ph-bold ph-lg"></i></a>
 
 				<MkSwitch :modelValue="agreeNote" style="margin-top: 16px;" data-cy-signup-rules-notes-agree @update:modelValue="updateAgreeNote">{{ i18n.ts.agree }}</MkSwitch>
 			</MkFolder>

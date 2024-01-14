@@ -91,7 +91,7 @@ function onClick(ev: MouseEvent) {
 			icon: 'ph-smiley ph-bold ph-lg',
 			action: () => {
 				react(`:${props.name}:`);
-				sound.play('reaction');
+				sound.playMisskeySfx('reaction');
 			},
 		}] : [])], ev.currentTarget ?? ev.target);
 	}

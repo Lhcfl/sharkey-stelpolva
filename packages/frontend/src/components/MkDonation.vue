@@ -26,6 +26,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkLink target="_blank" url="https://ko-fi.com/transfem">{{ i18n.ts.learnMore }}</MkLink>
 			</div>
 		</div>
+		<div v-if="instance.donationUrl" :class="$style.text">
+			<I18n :src="i18n.ts.pleaseDonateInstance" tag="span">
+				<template #host>
+					{{ instance.name ?? host }}
+				</template>
+			</I18n>
+			<div style="margin-top: 0.2em;">
+				<MkLink target="_blank" :url="instance.donationUrl">{{ i18n.ts.learnMore }}</MkLink>
+			</div>
+		</div>
 		<div class="_buttons">
 			<MkButton @click="close">{{ i18n.ts.remindMeLater }}</MkButton>
 			<MkButton @click="neverShow">{{ i18n.ts.neverShow }}</MkButton>

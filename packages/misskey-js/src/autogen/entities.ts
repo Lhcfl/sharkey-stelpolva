@@ -1,6 +1,6 @@
 /*
- * version: 2023.12.0
- * generatedAt: 2023-12-26T23:35:09.489Z
+ * version: 2023.12.2
+ * generatedAt: 2024-01-07T15:22:15.624Z
  */
 
 import { operations } from './types.js';
@@ -88,7 +88,12 @@ export type AdminShowUserRequest = operations['admin/show-user']['requestBody'][
 export type AdminShowUserResponse = operations['admin/show-user']['responses']['200']['content']['application/json'];
 export type AdminShowUsersRequest = operations['admin/show-users']['requestBody']['content']['application/json'];
 export type AdminShowUsersResponse = operations['admin/show-users']['responses']['200']['content']['application/json'];
+export type AdminNsfwUserRequest = operations['admin/nsfw-user']['requestBody']['content']['application/json'];
+export type AdminUnnsfwUserRequest = operations['admin/unnsfw-user']['requestBody']['content']['application/json'];
+export type AdminSilenceUserRequest = operations['admin/silence-user']['requestBody']['content']['application/json'];
+export type AdminUnsilenceUserRequest = operations['admin/unsilence-user']['requestBody']['content']['application/json'];
 export type AdminSuspendUserRequest = operations['admin/suspend-user']['requestBody']['content']['application/json'];
+export type AdminApproveUserRequest = operations['admin/approve-user']['requestBody']['content']['application/json'];
 export type AdminUnsuspendUserRequest = operations['admin/unsuspend-user']['requestBody']['content']['application/json'];
 export type AdminUpdateMetaRequest = operations['admin/update-meta']['requestBody']['content']['application/json'];
 export type AdminDeleteAccountRequest = operations['admin/delete-account']['requestBody']['content']['application/json'];
@@ -316,6 +321,7 @@ export type IGalleryPostsRequest = operations['i/gallery/posts']['requestBody'][
 export type IGalleryPostsResponse = operations['i/gallery/posts']['responses']['200']['content']['application/json'];
 export type IImportBlockingRequest = operations['i/import-blocking']['requestBody']['content']['application/json'];
 export type IImportFollowingRequest = operations['i/import-following']['requestBody']['content']['application/json'];
+export type IImportNotesRequest = operations['i/import-notes']['requestBody']['content']['application/json'];
 export type IImportMutingRequest = operations['i/import-muting']['requestBody']['content']['application/json'];
 export type IImportUserListsRequest = operations['i/import-user-lists']['requestBody']['content']['application/json'];
 export type IImportAntennasRequest = operations['i/import-antennas']['requestBody']['content']['application/json'];
@@ -333,6 +339,7 @@ export type IReadAnnouncementRequest = operations['i/read-announcement']['reques
 export type IRegenerateTokenRequest = operations['i/regenerate-token']['requestBody']['content']['application/json'];
 export type IRegistryGetAllRequest = operations['i/registry/get-all']['requestBody']['content']['application/json'];
 export type IRegistryGetAllResponse = operations['i/registry/get-all']['responses']['200']['content']['application/json'];
+export type IRegistryGetUnsecureRequest = operations['i/registry/get-unsecure']['requestBody']['content']['application/json'];
 export type IRegistryGetDetailRequest = operations['i/registry/get-detail']['requestBody']['content']['application/json'];
 export type IRegistryGetDetailResponse = operations['i/registry/get-detail']['responses']['200']['content']['application/json'];
 export type IRegistryGetRequest = operations['i/registry/get']['requestBody']['content']['application/json'];
@@ -400,6 +407,8 @@ export type NotesFeaturedRequest = operations['notes/featured']['requestBody']['
 export type NotesFeaturedResponse = operations['notes/featured']['responses']['200']['content']['application/json'];
 export type NotesGlobalTimelineRequest = operations['notes/global-timeline']['requestBody']['content']['application/json'];
 export type NotesGlobalTimelineResponse = operations['notes/global-timeline']['responses']['200']['content']['application/json'];
+export type NotesBubbleTimelineRequest = operations['notes/bubble-timeline']['requestBody']['content']['application/json'];
+export type NotesBubbleTimelineResponse = operations['notes/bubble-timeline']['responses']['200']['content']['application/json'];
 export type NotesHybridTimelineRequest = operations['notes/hybrid-timeline']['requestBody']['content']['application/json'];
 export type NotesHybridTimelineResponse = operations['notes/hybrid-timeline']['responses']['200']['content']['application/json'];
 export type NotesLocalTimelineRequest = operations['notes/local-timeline']['requestBody']['content']['application/json'];
@@ -413,6 +422,7 @@ export type NotesReactionsRequest = operations['notes/reactions']['requestBody']
 export type NotesReactionsResponse = operations['notes/reactions']['responses']['200']['content']['application/json'];
 export type NotesReactionsCreateRequest = operations['notes/reactions/create']['requestBody']['content']['application/json'];
 export type NotesReactionsDeleteRequest = operations['notes/reactions/delete']['requestBody']['content']['application/json'];
+export type NotesLikeRequest = operations['notes/like']['requestBody']['content']['application/json'];
 export type NotesRenotesRequest = operations['notes/renotes']['requestBody']['content']['application/json'];
 export type NotesRenotesResponse = operations['notes/renotes']['responses']['200']['content']['application/json'];
 export type NotesRepliesRequest = operations['notes/replies']['requestBody']['content']['application/json'];
@@ -434,6 +444,10 @@ export type NotesTranslateResponse = operations['notes/translate']['responses'][
 export type NotesUnrenoteRequest = operations['notes/unrenote']['requestBody']['content']['application/json'];
 export type NotesUserListTimelineRequest = operations['notes/user-list-timeline']['requestBody']['content']['application/json'];
 export type NotesUserListTimelineResponse = operations['notes/user-list-timeline']['responses']['200']['content']['application/json'];
+export type NotesEditRequest = operations['notes/edit']['requestBody']['content']['application/json'];
+export type NotesEditResponse = operations['notes/edit']['responses']['200']['content']['application/json'];
+export type NotesVersionsRequest = operations['notes/versions']['requestBody']['content']['application/json'];
+export type NotesVersionsResponse = operations['notes/versions']['responses']['200']['content']['application/json'];
 export type NotificationsCreateRequest = operations['notifications/create']['requestBody']['content']['application/json'];
 export type PagePushRequest = operations['page-push']['requestBody']['content']['application/json'];
 export type PagesCreateRequest = operations['pages/create']['requestBody']['content']['application/json'];
@@ -542,3 +556,4 @@ export type FetchRssResponse = operations['fetch-rss']['responses']['200']['cont
 export type FetchExternalResourcesRequest = operations['fetch-external-resources']['requestBody']['content']['application/json'];
 export type FetchExternalResourcesResponse = operations['fetch-external-resources']['responses']['200']['content']['application/json'];
 export type RetentionResponse = operations['retention']['responses']['200']['content']['application/json'];
+export type SponsorsRequest = operations['sponsors']['requestBody']['content']['application/json'];

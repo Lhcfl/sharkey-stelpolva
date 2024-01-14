@@ -151,6 +151,14 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'account',
 		default: true,
 	},
+	showVisibilitySelectorOnBoost: {
+		where: 'account',
+		default: true,
+	},
+	visibilityOnBoost: {
+		where: 'account',
+		default: 'public' as 'public' | 'home' | 'followers' | 'local',
+	},
 
 	menu: {
 		where: 'deviceAccount',
@@ -459,6 +467,13 @@ export const defaultStore = markRaw(new Storage('base', {
 	enableSeasonalScreenEffect: {
 		where: 'device',
 		default: false,
+	},
+	dropAndFusion: {
+		where: 'device',
+		default: {
+			bgmVolume: 0.25,
+			sfxVolume: 1,
+		},
 	},
 
 	sound_masterVolume: {

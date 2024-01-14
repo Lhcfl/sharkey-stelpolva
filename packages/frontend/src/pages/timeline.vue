@@ -41,6 +41,7 @@ import MkInfo from '@/components/MkInfo.vue';
 import MkPostForm from '@/components/MkPostForm.vue';
 import { scroll } from '@/scripts/scroll.js';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { defaultStore } from '@/store.js';
 import { i18n } from '@/i18n.js';
 import { instance } from '@/instance.js';
@@ -96,7 +97,7 @@ async function chooseList(ev: MouseEvent): Promise<void> {
 		(lists.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link' as const,
-			icon: 'ti ti-plus',
+			icon: 'ph-plus ph-bold ph-lg',
 			text: i18n.ts.createNew,
 			to: '/my/lists',
 		},
@@ -116,7 +117,7 @@ async function chooseAntenna(ev: MouseEvent): Promise<void> {
 		(antennas.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link' as const,
-			icon: 'ti ti-plus',
+			icon: 'ph-plus ph-bold ph-lg',
 			text: i18n.ts.createNew,
 			to: '/my/antennas',
 		},
@@ -125,7 +126,7 @@ async function chooseAntenna(ev: MouseEvent): Promise<void> {
 }
 
 async function chooseChannel(ev: MouseEvent): Promise<void> {
-	const channels = await os.api('channels/my-favorites', {
+	const channels = await misskeyApi('channels/my-favorites', {
 		limit: 100,
 	});
 	const items: MenuItem[] = [
@@ -143,7 +144,7 @@ async function chooseChannel(ev: MouseEvent): Promise<void> {
 		(channels.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link' as const,
-			icon: 'ti ti-plus',
+			icon: 'ph-plus ph-bold ph-lg',
 			text: i18n.ts.createNew,
 			to: '/channels',
 		},

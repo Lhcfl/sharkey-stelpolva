@@ -63,6 +63,7 @@ import MkTimeline from '@/components/MkTimeline.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import { instanceName } from '@/config.js';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { i18n } from '@/i18n.js';
 import { instance } from '@/instance.js';
 import MkNumber from '@/components/MkNumber.vue';
@@ -71,11 +72,11 @@ import XActiveUsersChart from '@/components/MkVisitorDashboard.ActiveUsersChart.
 const meta = ref<Misskey.entities.MetaResponse | null>(null);
 const stats = ref<Misskey.entities.StatsResponse | null>(null);
 
-os.api('meta', { detail: true }).then(_meta => {
+misskeyApi('meta', { detail: true }).then(_meta => {
 	meta.value = _meta;
 });
 
-os.api('stats', {}).then((res) => {
+misskeyApi('stats', {}).then((res) => {
 	stats.value = res;
 });
 
@@ -122,7 +123,13 @@ function showMenu(ev) {
 		action: () => {
 			window.open(instance.privacyPolicyUrl, '_blank', 'noopener');
 		},
-	} : undefined, (!instance.impressumUrl && !instance.tosUrl && !instance.privacyPolicyUrl) ? undefined : { type: 'divider' }, {
+	} : undefined, (instance.donationUrl) ? {
+		text: i18n.ts.donation,
+		icon: 'ph-hand-coins ph-bold ph-lg',
+		action: () => {
+			window.open(instance.donationUrl, '_blank', 'noopener');
+		},
+	} : undefined, (!instance.impressumUrl && !instance.tosUrl && !instance.privacyPolicyUrl && !instance.donationUrl) ? undefined : { type: 'divider' }, {
 		text: i18n.ts.help,
 		icon: 'ph-question ph-bold ph-lg',
 		action: () => {

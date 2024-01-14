@@ -120,6 +120,7 @@ import { physics } from '@/scripts/physics.js';
 import { i18n } from '@/i18n.js';
 import { defaultStore } from '@/store.js';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { claimAchievement, claimedAchievements } from '@/scripts/achievements.js';
 import { $i } from '@/account.js';
@@ -132,7 +133,7 @@ const easterEggEngine = ref(null);
 const sponsors = ref([]);
 const containerEl = shallowRef<HTMLElement>();
 
-await os.api('sponsors', { forceUpdate: true }).then((res) => sponsors.value.push(res.sponsor_data));
+await misskeyApi('sponsors', { forceUpdate: true }).then((res) => sponsors.value.push(res.sponsor_data));
 
 function iconLoaded() {
 	const emojis = defaultStore.state.reactions;

@@ -8,6 +8,12 @@ on:
     paths:
       - packages/**
   pull_request:
+    paths:
+      - packages/backend/**
+      - packages/frontend/**
+      - packages/sw/**
+      - packages/misskey-js/**
+      - packages/shared/.eslintrc.js
 
 jobs:
   pnpm_install:

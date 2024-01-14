@@ -179,6 +179,9 @@ id: 'aidx'
 # IP address family used for outgoing request (ipv4, ipv6 or dual)
 #outgoingAddressFamily: ipv4
 
+# Amount of characters that can be used when writing notes (maximum: 8192, minimum: 1)
+maxNoteLength: 3000
+
 # Proxy for HTTP/HTTPS
 #proxy: http://127.0.0.1:3128
 

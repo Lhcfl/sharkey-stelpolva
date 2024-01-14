@@ -79,5 +79,6 @@ export const DI = {
 	flashLikesRepository: Symbol('flashLikesRepository'),
 	userMemosRepository: Symbol('userMemosRepository'),
 	noteEditRepository: Symbol('noteEditRepository'),
+	bubbleGameRecordsRepository: Symbol('bubbleGameRecordsRepository'),
 	//#endregion
 };

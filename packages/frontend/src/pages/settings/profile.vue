@@ -127,13 +127,15 @@ import FormSlot from '@/components/form/slot.vue';
 import { selectFile } from '@/scripts/select-file.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
-import { $i } from '@/account.js';
+import { signinRequired } from '@/account.js';
 import { langmap } from '@/scripts/langmap.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { claimAchievement } from '@/scripts/achievements.js';
 import { defaultStore } from '@/store.js';
 import MkInfo from '@/components/MkInfo.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
+
+const $i = signinRequired();
 
 const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
 
@@ -152,10 +154,10 @@ const profile = reactive({
 	description: $i.description,
 	location: $i.location,
 	birthday: $i.birthday,
-	listenbrainz: $i?.listenbrainz,
+	listenbrainz: $i.listenbrainz,
 	lang: $i.lang,
-	isBot: $i.isBot,
-	isCat: $i.isCat,
+	isBot: $i.isBot ?? false,
+	isCat: $i.isCat ?? false,
 	speakAsCat: $i.speakAsCat,
 });
 
@@ -165,7 +167,7 @@ watch(() => profile, () => {
 	deep: true,
 });
 
-const fields = ref($i?.fields.map(field => ({ id: Math.random().toString(), name: field.name, value: field.value })) ?? []);
+const fields = ref($i.fields.map(field => ({ id: Math.random().toString(), name: field.name, value: field.value })) ?? []);
 const fieldEditMode = ref(false);
 
 function addField() {
@@ -251,53 +253,131 @@ function changeAvatar(ev) {
 }
 
 function changeBanner(ev) {
-	selectFile(ev.currentTarget ?? ev.target, i18n.ts.banner).then(async (file) => {
-		let originalOrCropped = file;
+	if ($i.bannerId) {
+		os.popupMenu([{
+			text: i18n.ts._profile.updateBanner,
+			action: async () => {
+				selectFile(ev.currentTarget ?? ev.target, i18n.ts.banner).then(async (file) => {
+					let originalOrCropped = file;
 
-		const { canceled } = await os.confirm({
-			type: 'question',
-			text: i18n.t('cropImageAsk'),
-			okText: i18n.ts.cropYes,
-			cancelText: i18n.ts.cropNo,
-		});
+					const { canceled } = await os.confirm({
+						type: 'question',
+						text: i18n.t('cropImageAsk'),
+						okText: i18n.ts.cropYes,
+						cancelText: i18n.ts.cropNo,
+					});
 
-		if (!canceled) {
-			originalOrCropped = await os.cropImage(file, {
-				aspectRatio: 2,
+					if (!canceled) {
+						originalOrCropped = await os.cropImage(file, {
+							aspectRatio: 2,
+						});
+					}
+
+					const i = await os.apiWithDialog('i/update', {
+						bannerId: originalOrCropped.id,
+					});
+					$i.bannerId = i.bannerId;
+					$i.bannerUrl = i.bannerUrl;
+				});
+			},
+		}, {
+			text: i18n.ts._profile.removeBanner,
+			action: async () => {
+				const i = await os.apiWithDialog('i/update', {
+					bannerId: null,
+				});
+				$i.bannerId = i.bannerId;
+				$i.bannerUrl = i.bannerUrl;
+			},
+		}], ev.currentTarget ?? ev.target);
+	} else {
+		selectFile(ev.currentTarget ?? ev.target, i18n.ts.banner).then(async (file) => {
+			let originalOrCropped = file;
+
+			const { canceled } = await os.confirm({
+				type: 'question',
+				text: i18n.t('cropImageAsk'),
+				okText: i18n.ts.cropYes,
+				cancelText: i18n.ts.cropNo,
 			});
-		}
 
-		const i = await os.apiWithDialog('i/update', {
-			bannerId: originalOrCropped.id,
+			if (!canceled) {
+				originalOrCropped = await os.cropImage(file, {
+					aspectRatio: 2,
+				});
+			}
+
+			const i = await os.apiWithDialog('i/update', {
+				bannerId: originalOrCropped.id,
+			});
+			$i.bannerId = i.bannerId;
+			$i.bannerUrl = i.bannerUrl;
 		});
-		$i.bannerId = i.bannerId;
-		$i.bannerUrl = i.bannerUrl;
-	});
+	}
 }
 
 function changeBackground(ev) {
-	selectFile(ev.currentTarget ?? ev.target, i18n.ts.background).then(async (file) => {
-		let originalOrCropped = file;
+	if ($i.backgroundId) {
+		os.popupMenu([{
+			text: i18n.ts._profile.updateBackground,
+			action: async () => {
+				selectFile(ev.currentTarget ?? ev.target, i18n.ts.background).then(async (file) => {
+					let originalOrCropped = file;
 
-		const { canceled } = await os.confirm({
-			type: 'question',
-			text: i18n.t('cropImageAsk'),
-			okText: i18n.ts.cropYes,
-			cancelText: i18n.ts.cropNo,
-		});
+					const { canceled } = await os.confirm({
+						type: 'question',
+						text: i18n.t('cropImageAsk'),
+						okText: i18n.ts.cropYes,
+						cancelText: i18n.ts.cropNo,
+					});
 
-		if (!canceled) {
-			originalOrCropped = await os.cropImage(file, {
-				aspectRatio: 1,
+					if (!canceled) {
+						originalOrCropped = await os.cropImage(file, {
+							aspectRatio: 1,
+						});
+					}
+
+					const i = await os.apiWithDialog('i/update', {
+						backgroundId: originalOrCropped.id,
+					});
+					$i.backgroundId = i.backgroundId;
+					$i.backgroundUrl = i.backgroundUrl;
+				});
+			},
+		}, {
+			text: i18n.ts._profile.removeBackground,
+			action: async () => {
+				const i = await os.apiWithDialog('i/update', {
+					backgroundId: null,
+				});
+				$i.backgroundId = i.backgroundId;
+				$i.backgroundUrl = i.backgroundUrl;
+			},
+		}], ev.currentTarget ?? ev.target);
+	} else {
+		selectFile(ev.currentTarget ?? ev.target, i18n.ts.background).then(async (file) => {
+			let originalOrCropped = file;
+
+			const { canceled } = await os.confirm({
+				type: 'question',
+				text: i18n.t('cropImageAsk'),
+				okText: i18n.ts.cropYes,
+				cancelText: i18n.ts.cropNo,
 			});
-		}
 
-		const i = await os.apiWithDialog('i/update', {
-			backgroundId: originalOrCropped.id,
+			if (!canceled) {
+				originalOrCropped = await os.cropImage(file, {
+					aspectRatio: 1,
+				});
+			}
+
+			const i = await os.apiWithDialog('i/update', {
+				backgroundId: originalOrCropped.id,
+			});
+			$i.backgroundId = i.backgroundId;
+			$i.backgroundUrl = i.backgroundUrl;
 		});
-		$i.backgroundId = i.backgroundId;
-		$i.backgroundUrl = i.backgroundUrl;
-	});
+	}
 }
 
 const headerActions = computed(() => []);

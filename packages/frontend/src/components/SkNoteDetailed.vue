@@ -43,7 +43,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<SkNoteSub v-for="note in conversation" :key="note.id" :class="$style.replyToMore" :note="note" :expandAllCws="props.expandAllCws"/>
 	</template>
 	<SkNoteSub v-if="appearNote.reply" :note="appearNote.reply" :class="$style.replyTo" :expandAllCws="props.expandAllCws"/>
-	<article :class="$style.note" @contextmenu.stop="onContextmenu">
+	<article :id="appearNote.id" ref="noteEl" :class="$style.note" tabindex="-1" @contextmenu.stop="onContextmenu">
 		<header :class="$style.noteHeader">
 			<MkAvatar :class="$style.noteHeaderAvatar" :user="appearNote.user" indicator link preview/>
 			<div style="display: flex; align-items: center; white-space: nowrap; overflow: hidden;">
@@ -178,7 +178,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-if="!repliesLoaded" style="padding: 16px">
 				<MkButton style="margin: 0 auto;" primary rounded @click="loadReplies">{{ i18n.ts.loadReplies }}</MkButton>
 			</div>
-			<SkNoteSub v-for="note in replies" :key="note.id" :note="note" :class="$style.reply" :detail="true" :expandAllCws="props.expandAllCws" :onDeleteCallback="removeReply" />
+			<SkNoteSub v-for="note in replies" :key="note.id" :note="note" :class="$style.reply" :detail="true" :expandAllCws="props.expandAllCws" :onDeleteCallback="removeReply"/>
 		</div>
 		<div v-else-if="tab === 'renotes'" :class="$style.tab_renotes">
 			<MkPagination :pagination="renotesPagination" :disableAutoLoad="true">
@@ -228,7 +228,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, onMounted, provide, ref, shallowRef, watch } from 'vue';
+import { computed, inject, onMounted, onUnmounted, onUpdated, provide, ref, shallowRef, watch } from 'vue';
 import * as mfm from '@sharkey/sfm-js';
 import * as Misskey from 'misskey-js';
 import SkNoteSub from '@/components/SkNoteSub.vue';
@@ -245,6 +245,7 @@ import { checkWordMute } from '@/scripts/check-word-mute.js';
 import { userPage } from '@/filters/user.js';
 import { notePage } from '@/filters/note.js';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import * as sound from '@/scripts/sound.js';
 import { defaultStore, noteViewInterruptors } from '@/store.js';
 import { reactionPicker } from '@/scripts/reaction-picker.js';
@@ -301,6 +302,7 @@ const isRenote = (
 );
 
 const el = shallowRef<HTMLElement>();
+const noteEl = shallowRef<HTMLElement>();
 const menuButton = shallowRef<HTMLElement>();
 const menuVersionsButton = shallowRef<HTMLElement>();
 const renoteButton = shallowRef<HTMLElement>();
@@ -335,7 +337,7 @@ watch(() => props.expandAllCws, (expandAllCws) => {
 });
 
 if ($i) {
-	os.api('notes/renotes', {
+	misskeyApi('notes/renotes', {
 		noteId: appearNote.value.id,
 		userId: $i.id,
 		limit: 1,
@@ -354,7 +356,7 @@ const keymap = {
 };
 
 provide('react', (reaction: string) => {
-	os.api('notes/reactions/create', {
+	misskeyApi('notes/reactions/create', {
 		noteId: appearNote.value.id,
 		reaction: reaction,
 	});
@@ -381,16 +383,16 @@ const reactionsPagination = computed(() => ({
 }));
 
 async function addReplyTo(replyNote: Misskey.entities.Note) {
-		replies.value.unshift(replyNote);
-		appearNote.value.repliesCount += 1;
+	replies.value.unshift(replyNote);
+	appearNote.value.repliesCount += 1;
 }
 
 async function removeReply(id: Misskey.entities.Note['id']) {
-		const replyIdx = replies.value.findIndex(note => note.id === id);
-		if (replyIdx >= 0) {
-			replies.value.splice(replyIdx, 1);
-			appearNote.value.repliesCount -= 1;
-		}
+	const replyIdx = replies.value.findIndex(note => note.id === id);
+	if (replyIdx >= 0) {
+		replies.value.splice(replyIdx, 1);
+		appearNote.value.repliesCount -= 1;
+	}
 }
 
 useNoteCapture({
@@ -402,7 +404,7 @@ useNoteCapture({
 });
 
 useTooltip(renoteButton, async (showing) => {
-	const renotes = await os.api('notes/renotes', {
+	const renotes = await misskeyApi('notes/renotes', {
 		noteId: appearNote.value.id,
 		limit: 11,
 	});
@@ -420,7 +422,7 @@ useTooltip(renoteButton, async (showing) => {
 });
 
 useTooltip(quoteButton, async (showing) => {
-	const renotes = await os.api('notes/renotes', {
+	const renotes = await misskeyApi('notes/renotes', {
 		noteId: appearNote.value.id,
 		limit: 11,
 		quote: true,
@@ -449,39 +451,43 @@ function smallerVisibility(a: Visibility | string, b: Visibility | string): Visi
 }
 
 function boostVisibility() {
-	os.popupMenu([
-		{
-			type: 'button',
-			icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
-			text: i18n.ts._visibility['public'],
-			action: () => {
-				renote('public');
+	if (!defaultStore.state.showVisibilitySelectorOnBoost) {
+		renote(defaultStore.state.visibilityOnBoost);
+	} else {
+		os.popupMenu([
+			{
+				type: 'button',
+				icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+				text: i18n.ts._visibility['public'],
+				action: () => {
+					renote('public');
+				},
 			},
-		},
-		{
-			type: 'button',
-			icon: 'ph-house ph-bold ph-lg',
-			text: i18n.ts._visibility['home'],
-			action: () => {
-				renote('home');
+			{
+				type: 'button',
+				icon: 'ph-house ph-bold ph-lg',
+				text: i18n.ts._visibility['home'],
+				action: () => {
+					renote('home');
+				},
 			},
-		},
-		{
-			type: 'button',
-			icon: 'ph-lock ph-bold ph-lg',
-			text: i18n.ts._visibility['followers'],
-			action: () => {
-				renote('followers');
+			{
+				type: 'button',
+				icon: 'ph-lock ph-bold ph-lg',
+				text: i18n.ts._visibility['followers'],
+				action: () => {
+					renote('followers');
+				},
 			},
-		},
-		{
-			type: 'button',
-			icon: 'ph-planet ph-bold ph-lg',
-			text: i18n.ts._timelines.local,
-			action: () => {
-				renote('local');
-			},
-		}], renoteButton.value);
+			{
+				type: 'button',
+				icon: 'ph-planet ph-bold ph-lg',
+				text: i18n.ts._timelines.local,
+				action: () => {
+					renote('local');
+				},
+			}], renoteButton.value);
+	}
 }
 
 function renote(visibility: Visibility | 'local') {
@@ -497,7 +503,7 @@ function renote(visibility: Visibility | 'local') {
 			os.popup(MkRippleEffect, { x, y }, {}, 'end');
 		}
 
-		os.api('notes/create', {
+		misskeyApi('notes/create', {
 			renoteId: appearNote.value.id,
 			channelId: appearNote.value.channelId,
 		}).then(() => {
@@ -521,7 +527,7 @@ function renote(visibility: Visibility | 'local') {
 			noteVisibility = smallerVisibility(visibility === 'local' || visibility === 'specified' ? appearNote.value.visibility : visibility, 'home');
 		}
 
-		os.api('notes/create', {
+		misskeyApi('notes/create', {
 			localOnly: visibility === 'local' ? true : localOnlySetting,
 			visibility: noteVisibility,
 			renoteId: appearNote.value.id,
@@ -541,7 +547,7 @@ function quote() {
 			renote: appearNote.value,
 			channel: appearNote.value.channel,
 		}).then(() => {
-			os.api('notes/renotes', {
+			misskeyApi('notes/renotes', {
 				noteId: appearNote.value.id,
 				userId: $i.id,
 				limit: 1,
@@ -563,7 +569,7 @@ function quote() {
 		os.post({
 			renote: appearNote.value,
 		}).then(() => {
-			os.api('notes/renotes', {
+			misskeyApi('notes/renotes', {
 				noteId: appearNote.value.id,
 				userId: $i.id,
 				limit: 1,
@@ -600,7 +606,7 @@ function react(viaKeyboard = false): void {
 	pleaseLogin();
 	showMovedDialog();
 	if (appearNote.value.reactionAcceptance === 'likeOnly') {
-		os.api('notes/like', {
+		misskeyApi('notes/like', {
 			noteId: appearNote.value.id,
 			override: defaultLike.value,
 		});
@@ -614,9 +620,9 @@ function react(viaKeyboard = false): void {
 	} else {
 		blur();
 		reactionPicker.show(reactButton.value, reaction => {
-			sound.play('reaction');
+			sound.playMisskeySfx('reaction');
 
-			os.api('notes/reactions/create', {
+			misskeyApi('notes/reactions/create', {
 				noteId: appearNote.value.id,
 				reaction: reaction,
 			});
@@ -632,7 +638,8 @@ function react(viaKeyboard = false): void {
 function like(): void {
 	pleaseLogin();
 	showMovedDialog();
-	os.api('notes/like', {
+	sound.playMisskeySfx('reaction');
+	misskeyApi('notes/like', {
 		noteId: appearNote.value.id,
 		override: defaultLike.value,
 	});
@@ -648,14 +655,14 @@ function like(): void {
 function undoReact(note): void {
 	const oldReaction = note.myReaction;
 	if (!oldReaction) return;
-	os.api('notes/reactions/delete', {
+	misskeyApi('notes/reactions/delete', {
 		noteId: note.id,
 	});
 }
 
 function undoRenote() : void {
 	if (!renoted.value) return;
-	os.api('notes/unrenote', {
+	misskeyApi('notes/unrenote', {
 		noteId: appearNote.value.id,
 	});
 	os.toast(i18n.ts.rmboost);
@@ -715,7 +722,7 @@ function showRenoteMenu(viaKeyboard = false): void {
 		icon: 'ph-trash ph-bold ph-lg',
 		danger: true,
 		action: () => {
-			os.api('notes/delete', {
+			misskeyApi('notes/delete', {
 				noteId: note.value.id,
 			});
 			isDeleted.value = true;
@@ -726,18 +733,18 @@ function showRenoteMenu(viaKeyboard = false): void {
 }
 
 function focus() {
-	el.value.focus();
+	noteEl.value?.focus();
 }
 
 function blur() {
-	el.value.blur();
+	noteEl.value?.blur();
 }
 
 const repliesLoaded = ref(false);
 
 function loadReplies() {
 	repliesLoaded.value = true;
-	os.api('notes/children', {
+	misskeyApi('notes/children', {
 		noteId: appearNote.value.id,
 		limit: 30,
 		showQuotes: false,
@@ -752,7 +759,7 @@ const quotesLoaded = ref(false);
 
 function loadQuotes() {
 	quotesLoaded.value = true;
-	os.api('notes/renotes', {
+	misskeyApi('notes/renotes', {
 		noteId: appearNote.value.id,
 		limit: 30,
 		quote: true,
@@ -767,10 +774,11 @@ const conversationLoaded = ref(false);
 
 function loadConversation() {
 	conversationLoaded.value = true;
-	os.api('notes/conversation', {
+	misskeyApi('notes/conversation', {
 		noteId: appearNote.value.replyId,
 	}).then(res => {
 		conversation.value = res.reverse();
+		focus();
 	});
 }
 
@@ -787,6 +795,31 @@ function animatedMFM() {
 		}).then((res) => { if (!res.canceled) allowAnim.value = true; });
 	}
 }
+
+let isScrolling = false;
+
+function setScrolling() {
+	isScrolling = true;
+}
+
+onMounted(() => {
+	document.addEventListener('wheel', setScrolling);
+	isScrolling = false;
+	noteEl.value?.scrollIntoView({ block: 'center' });
+});
+
+onUpdated(() => {
+	if (!isScrolling) {
+		noteEl.value?.scrollIntoView({ block: 'center' });
+		if (location.hash) {
+			location.replace(location.hash); // Jump to highlighted reply
+		}
+	}
+});
+
+onUnmounted(() => {
+	document.removeEventListener('wheel', setScrolling);
+});
 </script>
 
 <style lang="scss" module>
@@ -807,12 +840,11 @@ function animatedMFM() {
 }
 
 .replyTo {
-	opacity: 0.7;
 	padding-bottom: 0;
 }
 
 .replyToMore {
-	opacity: 0.7;
+	
 }
 
 .renote {
@@ -859,12 +891,35 @@ function animatedMFM() {
 }
 
 .note {
+	position: relative;
 	padding: 32px;
 	font-size: 1.2em;
 	overflow: hidden;
 
 	&:hover > .main > .footer > .button {
 		opacity: 1;
+	}
+
+	&:focus-visible {
+		outline: none;
+
+		&:after {
+			content: "";
+			pointer-events: none;
+			display: block;
+			position: absolute;
+			z-index: 10;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			margin: auto;
+			width: calc(100% - 8px);
+			height: calc(100% - 8px);
+			border: solid 1px var(--focus);
+			border-radius: var(--radius);
+			box-sizing: border-box;
+		}
 	}
 }
 
@@ -879,8 +934,8 @@ function animatedMFM() {
 .noteHeaderAvatar {
 	display: block;
 	flex-shrink: 0;
-	width: 58px;
-	height: 58px;
+	width: var(--avatar);
+	height: var(--avatar);
 }
 
 .noteHeaderBody {
@@ -970,7 +1025,7 @@ function animatedMFM() {
 
 .quoteNote {
 	padding: 16px;
-	border: dashed 1px var(--renote);
+	border: solid 1px var(--renote);
 	border-radius: var(--radius-sm);
 	overflow: clip;
 }

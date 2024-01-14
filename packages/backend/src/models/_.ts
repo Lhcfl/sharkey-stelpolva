@@ -69,6 +69,7 @@ import { MiFlash } from '@/models/Flash.js';
 import { MiFlashLike } from '@/models/FlashLike.js';
 import { MiUserListFavorite } from '@/models/UserListFavorite.js';
 import { NoteEdit } from '@/models/NoteEdit.js';
+import { MiBubbleGameRecord } from '@/models/BubbleGameRecord.js';
 import type { Repository } from 'typeorm';
 
 export {
@@ -138,6 +139,7 @@ export {
 	MiFlashLike,
 	MiUserMemo,
 	NoteEdit,
+	MiBubbleGameRecord,
 };
 
 export type AbuseUserReportsRepository = Repository<MiAbuseUserReport>;
@@ -206,3 +208,4 @@ export type FlashsRepository = Repository<MiFlash>;
 export type FlashLikesRepository = Repository<MiFlashLike>;
 export type UserMemoRepository = Repository<MiUserMemo>;
 export type NoteEditRepository = Repository<NoteEdit>;
+export type BubbleGameRecordsRepository = Repository<MiBubbleGameRecord>;

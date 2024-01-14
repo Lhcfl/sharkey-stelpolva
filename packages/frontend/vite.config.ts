@@ -71,6 +71,7 @@ export function getConfig(): UserConfig {
 				'/client-assets/': __dirname + '/assets/',
 				'/static-assets/': __dirname + '/../backend/assets/',
 				'/fluent-emojis/': __dirname + '/../../fluent-emojis/dist/',
+				'/tossface/': __dirname + '/../../tossface-emojis/dist/',
 				'/fluent-emoji/': __dirname + '/../../fluent-emojis/dist/',
 			},
 		},

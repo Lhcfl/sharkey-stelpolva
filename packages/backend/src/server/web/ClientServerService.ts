@@ -327,6 +327,21 @@ export class ClientServerService {
 			});
 		});
 
+		fastify.get<{ Params: { path: string } }>('/tossface/:path(.*)', async (request, reply) => {
+			const path = request.params.path;
+
+			if (!path.match(/^[0-9a-f-]+\.svg$/)) {
+				reply.code(404);
+				return;
+			}
+
+			reply.header('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
+
+			return await reply.sendFile(path, `${_dirname}/../../../../../tossface-emojis/dist`, {
+				maxAge: ms('30 days'),
+			});
+		});
+
 		fastify.get<{ Params: { path: string } }>('/twemoji-badge/:path(.*)', async (request, reply) => {
 			const path = request.params.path;
 

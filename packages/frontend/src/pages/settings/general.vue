@@ -146,6 +146,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<option value="native">{{ i18n.ts.native }}</option>
 					<option value="fluentEmoji">Fluent Emoji</option>
 					<option value="twemoji">Twemoji</option>
+					<option value="tossface">Tossface</option>
 				</MkRadios>
 				<div style="margin: 8px 0 0 0; font-size: 1.5em;"><Mfm :key="emojiStyle" text="🍮🍦🍭🍩🍰🍫🍬🥞🍪"/></div>
 			</div>
@@ -189,6 +190,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #label>{{ i18n.ts.numberOfPageCache }}</template>
 				<template #caption>{{ i18n.ts.numberOfPageCacheDescription }}</template>
 			</MkRange>
+
+			<MkFolder>
+				<template #label>{{ i18n.ts.boostSettings }}</template>
+				<div class="_gaps_m">
+					<MkSwitch v-model="showVisibilitySelectorOnBoost">
+						{{ i18n.ts.showVisibilitySelectorOnBoost }}
+						<template #caption>{{ i18n.ts.showVisibilitySelectorOnBoostDescription }}</template>
+					</MkSwitch>
+					<MkSelect v-model="visibilityOnBoost">
+						<template #label>{{ i18n.ts.visibilityOnBoost }}</template>
+						<option value="public">{{ i18n.ts._visibility['public'] }}</option>
+						<option value="home">{{ i18n.ts._visibility['home'] }}</option>
+						<option value="followers">{{ i18n.ts._visibility['followers'] }}</option>
+						<option value="local">{{ i18n.ts._timelines.local }}</option>
+					</MkSelect>
+				</div>
+			</MkFolder>
 
 			<MkFolder>
 				<template #label>{{ i18n.ts.dataSaver }}</template>
@@ -257,6 +275,7 @@ import MkInfo from '@/components/MkInfo.vue';
 import { langs } from '@/config.js';
 import { defaultStore } from '@/store.js';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { unisonReload } from '@/scripts/unison-reload.js';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
@@ -326,6 +345,8 @@ const noteDesign = computed(defaultStore.makeGetterSetter('noteDesign'));
 const uncollapseCW = computed(defaultStore.makeGetterSetter('uncollapseCW'));
 const expandLongNote = computed(defaultStore.makeGetterSetter('expandLongNote'));
 const enableSeasonalScreenEffect = computed(defaultStore.makeGetterSetter('enableSeasonalScreenEffect'));
+const showVisibilitySelectorOnBoost = computed(defaultStore.makeGetterSetter('showVisibilitySelectorOnBoost'));
+const visibilityOnBoost = computed(defaultStore.makeGetterSetter('visibilityOnBoost'));
 
 watch(lang, () => {
 	miLocalStorage.setItem('lang', lang.value as string);
@@ -381,6 +402,8 @@ watch([
 	keepScreenOn,
 	disableStreamingTimeline,
 	enableSeasonalScreenEffect,
+	showVisibilitySelectorOnBoost,
+	visibilityOnBoost,
 ], async () => {
 	await reloadAsk();
 });
@@ -416,7 +439,7 @@ function removeEmojiIndex(lang: string) {
 }
 
 async function setPinnedList() {
-	const lists = await os.api('users/lists/list');
+	const lists = await misskeyApi('users/lists/list');
 	const { canceled, result: list } = await os.select({
 		title: i18n.ts.selectList,
 		items: lists.map(x => ({

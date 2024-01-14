@@ -25,7 +25,7 @@ function getFunctionList(textArea: HTMLInputElement | HTMLTextAreaElement, textR
 	MFM_TAGS.forEach(tag => {
 		ret.push({
 			text: tag,
-			icon: 'ti ti-icons',
+			icon: 'ph-brackets-curly ph-bold ph-lg',
 			action: () => add(textArea, textRef, tag),
 		});
 	});

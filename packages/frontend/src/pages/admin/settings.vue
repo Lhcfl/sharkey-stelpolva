@@ -40,6 +40,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #caption>{{ i18n.ts.impressumDescription }}</template>
 					</MkInput>
 
+					<MkInput v-model="donationUrl" type="url">
+						<template #label>{{ i18n.ts.donationUrl }}</template>
+						<template #prefix><i class="ph-link ph-bold ph-lg"></i></template>
+					</MkInput>
+
 					<MkTextarea v-model="pinnedUsers">
 						<template #label>{{ i18n.ts.pinnedUsers }}</template>
 						<template #caption>{{ i18n.ts.pinnedUsersDescription }}</template>
@@ -158,6 +163,7 @@ import FormSection from '@/components/form/section.vue';
 import FormSplit from '@/components/form/split.vue';
 import FormSuspense from '@/components/form/suspense.vue';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { fetchInstance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
@@ -169,6 +175,7 @@ const description = ref<string | null>(null);
 const maintainerName = ref<string | null>(null);
 const maintainerEmail = ref<string | null>(null);
 const impressumUrl = ref<string | null>(null);
+const donationUrl = ref<string | null>(null);
 const pinnedUsers = ref<string>('');
 const cacheRemoteFiles = ref<boolean>(false);
 const cacheRemoteSensitiveFiles = ref<boolean>(false);
@@ -184,13 +191,14 @@ const perUserListTimelineCacheMax = ref<number>(0);
 const notesPerOneAd = ref<number>(0);
 
 async function init(): Promise<void> {
-	const meta = await os.api('admin/meta');
+	const meta = await misskeyApi('admin/meta');
 	name.value = meta.name;
 	shortName.value = meta.shortName;
 	description.value = meta.description;
 	maintainerName.value = meta.maintainerName;
 	maintainerEmail.value = meta.maintainerEmail;
 	impressumUrl.value = meta.impressumUrl;
+	donationUrl.value = meta.donationUrl;
 	pinnedUsers.value = meta.pinnedUsers.join('\n');
 	cacheRemoteFiles.value = meta.cacheRemoteFiles;
 	cacheRemoteSensitiveFiles.value = meta.cacheRemoteSensitiveFiles;
@@ -214,6 +222,7 @@ async function save(): void {
 		maintainerName: maintainerName.value,
 		maintainerEmail: maintainerEmail.value,
 		impressumUrl: impressumUrl.value,
+		donationUrl: donationUrl.value,
 		pinnedUsers: pinnedUsers.value.split('\n'),
 		cacheRemoteFiles: cacheRemoteFiles.value,
 		cacheRemoteSensitiveFiles: cacheRemoteSensitiveFiles.value,

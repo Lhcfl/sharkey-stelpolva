@@ -27,6 +27,7 @@ const devConfig = {
 			'/files': 'http://localhost:3000/',
 			'/twemoji': 'http://localhost:3000/',
 			'/fluent-emoji': 'http://localhost:3000/',
+			'/tossface': 'http://localhost:3000/',
 			'/sw.js': 'http://localhost:3000/',
 			'/streaming': {
 				target: 'ws://localhost:3000/',

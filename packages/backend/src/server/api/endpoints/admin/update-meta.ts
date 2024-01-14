@@ -65,6 +65,10 @@ export const paramDef = {
 		enableHcaptcha: { type: 'boolean' },
 		hcaptchaSiteKey: { type: 'string', nullable: true },
 		hcaptchaSecretKey: { type: 'string', nullable: true },
+		enableMcaptcha: { type: 'boolean' },
+		mcaptchaSiteKey: { type: 'string', nullable: true },
+		mcaptchaInstanceUrl: { type: 'string', nullable: true },
+		mcaptchaSecretKey: { type: 'string', nullable: true },
 		enableRecaptcha: { type: 'boolean' },
 		recaptchaSiteKey: { type: 'string', nullable: true },
 		recaptchaSecretKey: { type: 'string', nullable: true },
@@ -101,6 +105,7 @@ export const paramDef = {
 		repositoryUrl: { type: 'string' },
 		feedbackUrl: { type: 'string' },
 		impressumUrl: { type: 'string', nullable: true },
+		donationUrl: { type: 'string', nullable: true },
 		privacyPolicyUrl: { type: 'string', nullable: true },
 		useObjectStorage: { type: 'boolean' },
 		objectStorageBaseUrl: { type: 'string', nullable: true },
@@ -119,6 +124,9 @@ export const paramDef = {
 		enableActiveEmailValidation: { type: 'boolean' },
 		enableVerifymailApi: { type: 'boolean' },
 		verifymailAuthKey: { type: 'string', nullable: true },
+		enableTruemailApi: { type: 'boolean' },
+		truemailInstance: { type: 'string', nullable: true },
+		truemailAuthKey: { type: 'string', nullable: true },
 		enableChartsForRemoteUser: { type: 'boolean' },
 		enableChartsForFederatedInstances: { type: 'boolean' },
 		enableServerMachineStats: { type: 'boolean' },
@@ -279,6 +287,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				set.hcaptchaSecretKey = ps.hcaptchaSecretKey;
 			}
 
+			if (ps.enableMcaptcha !== undefined) {
+				set.enableMcaptcha = ps.enableMcaptcha;
+			}
+
+			if (ps.mcaptchaSiteKey !== undefined) {
+				set.mcaptchaSitekey = ps.mcaptchaSiteKey;
+			}
+
+			if (ps.mcaptchaInstanceUrl !== undefined) {
+				set.mcaptchaInstanceUrl = ps.mcaptchaInstanceUrl;
+			}
+
+			if (ps.mcaptchaSecretKey !== undefined) {
+				set.mcaptchaSecretKey = ps.mcaptchaSecretKey;
+			}
+
 			if (ps.enableRecaptcha !== undefined) {
 				set.enableRecaptcha = ps.enableRecaptcha;
 			}
@@ -383,6 +407,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				set.impressumUrl = ps.impressumUrl;
 			}
 
+			if (ps.donationUrl !== undefined) {
+				set.donationUrl = ps.donationUrl;
+			}
+
 			if (ps.privacyPolicyUrl !== undefined) {
 				set.privacyPolicyUrl = ps.privacyPolicyUrl;
 			}
@@ -468,6 +496,26 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					set.verifymailAuthKey = null;
 				} else {
 					set.verifymailAuthKey = ps.verifymailAuthKey;
+				}
+			}
+
+			if (ps.enableTruemailApi !== undefined) {
+				set.enableTruemailApi = ps.enableTruemailApi;
+			}
+
+			if (ps.truemailInstance !== undefined) {
+				if (ps.truemailInstance === '') {
+					set.truemailInstance = null;
+				} else {
+					set.truemailInstance = ps.truemailInstance;
+				}
+			}
+
+			if (ps.truemailAuthKey !== undefined) {
+				if (ps.truemailAuthKey === '') {
+					set.truemailAuthKey = null;
+				} else {
+					set.truemailAuthKey = ps.truemailAuthKey;
 				}
 			}
 

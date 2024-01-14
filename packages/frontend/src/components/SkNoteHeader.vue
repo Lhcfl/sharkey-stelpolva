@@ -82,7 +82,7 @@ import { getNoteVersionsMenu } from '@/scripts/get-note-versions-menu.js';
 import SkInstanceTicker from '@/components/SkInstanceTicker.vue';
 import { popupMenu } from '@/os.js';
 import { defaultStore } from '@/store.js';
-import { useRouter } from '@/router.js';
+import { useRouter } from '@/global/router/supplier.js';
 import { deviceKind } from '@/scripts/device-kind.js';
 
 const props = defineProps<{
@@ -116,6 +116,8 @@ const mock = inject<boolean>('mock', false);
 .root {
 	display: flex;
 	cursor: auto; /* not clickToOpen-able */
+	min-height: 100%;
+	align-items: center;
 }
 
 .classicRoot {
@@ -135,6 +137,7 @@ const mock = inject<boolean>('mock', false);
 			display: flex;
 			align-items: flex-end;
 			margin-left: auto;
+			margin-bottom: auto;
 			padding-left: 10px;
 			overflow: clip;
 		}
@@ -143,10 +146,9 @@ const mock = inject<boolean>('mock', false);
 .name {
 	flex-shrink: 1;
 	display: block;
-	// note, these margin top values were done by hand may need futher checking if it actualy aligns pixel perfect
-	margin: 3px .5em 0 0;
+	margin: 0 .5em 0 0;
 	padding: 0;
-	overflow: scroll;
+	overflow: hidden;
 	overflow-wrap: anywhere;
 	font-size: 1em;
 	font-weight: bold;
@@ -192,8 +194,7 @@ const mock = inject<boolean>('mock', false);
 
 .username {
 	flex-shrink: 9999999;
-	// note these top margins were made to align with the instance ticker
-	margin: 4px .5em 0 0;
+	margin: 0 .5em 0 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	font-size: .95em;

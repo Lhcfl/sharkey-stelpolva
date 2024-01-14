@@ -37,6 +37,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</MkFolder>
 	</FormSection>
 	<FormSection>
+		<template #label><i class="ph-paperclip ph-bold ph-lg"></i> {{ i18n.ts._exportOrImport.clips }}</template>
+		<MkFolder>
+			<template #label>{{ i18n.ts.export }}</template>
+			<template #icon><i class="ph-download ph-bold ph-lg"></i></template>
+			<MkButton primary :class="$style.button" inline @click="exportClips()"><i class="ph-download ph-bold ph-lg"></i> {{ i18n.ts.export }}</MkButton>
+		</MkFolder>
+	</FormSection>
+	<FormSection>
 		<template #label><i class="ph-users ph-bold ph-lg"></i> {{ i18n.ts._exportOrImport.followingList }}</template>
 		<div class="_gaps_s">
 			<MkFolder>
@@ -133,11 +141,12 @@ import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkRadios from '@/components/MkRadios.vue';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import { selectFile } from '@/scripts/select-file.js';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { $i } from '@/account.js';
-import { defaultStore } from "@/store.js";
+import { defaultStore } from '@/store.js';
 
 const excludeMutingUsers = ref(false);
 const excludeInactiveUsers = ref(false);
@@ -166,15 +175,19 @@ const onError = (ev) => {
 };
 
 const exportNotes = () => {
-	os.api('i/export-notes', {}).then(onExportSuccess).catch(onError);
+	misskeyApi('i/export-notes', {}).then(onExportSuccess).catch(onError);
 };
 
 const exportFavorites = () => {
-	os.api('i/export-favorites', {}).then(onExportSuccess).catch(onError);
+	misskeyApi('i/export-favorites', {}).then(onExportSuccess).catch(onError);
+};
+
+const exportClips = () => {
+	misskeyApi('i/export-clips', {}).then(onExportSuccess).catch(onError);
 };
 
 const exportFollowing = () => {
-	os.api('i/export-following', {
+	misskeyApi('i/export-following', {
 		excludeMuting: excludeMutingUsers.value,
 		excludeInactive: excludeInactiveUsers.value,
 	})
@@ -182,24 +195,24 @@ const exportFollowing = () => {
 };
 
 const exportBlocking = () => {
-	os.api('i/export-blocking', {}).then(onExportSuccess).catch(onError);
+	misskeyApi('i/export-blocking', {}).then(onExportSuccess).catch(onError);
 };
 
 const exportUserLists = () => {
-	os.api('i/export-user-lists', {}).then(onExportSuccess).catch(onError);
+	misskeyApi('i/export-user-lists', {}).then(onExportSuccess).catch(onError);
 };
 
 const exportMuting = () => {
-	os.api('i/export-mute', {}).then(onExportSuccess).catch(onError);
+	misskeyApi('i/export-mute', {}).then(onExportSuccess).catch(onError);
 };
 
 const exportAntennas = () => {
-	os.api('i/export-antennas', {}).then(onExportSuccess).catch(onError);
+	misskeyApi('i/export-antennas', {}).then(onExportSuccess).catch(onError);
 };
 
 const importFollowing = async (ev) => {
 	const file = await selectFile(ev.currentTarget ?? ev.target);
-	os.api('i/import-following', {
+	misskeyApi('i/import-following', {
 		fileId: file.id,
 		withReplies: withReplies.value,
 	}).then(onImportSuccess).catch(onError);
@@ -207,7 +220,7 @@ const importFollowing = async (ev) => {
 
 const importNotes = async (ev) => {
 	const file = await selectFile(ev.currentTarget ?? ev.target);
-	os.api('i/import-notes', {
+	misskeyApi('i/import-notes', {
 		fileId: file.id,
 		type: noteType.value,
 	}).then(onImportSuccess).catch(onError);
@@ -215,22 +228,22 @@ const importNotes = async (ev) => {
 
 const importUserLists = async (ev) => {
 	const file = await selectFile(ev.currentTarget ?? ev.target);
-	os.api('i/import-user-lists', { fileId: file.id }).then(onImportSuccess).catch(onError);
+	misskeyApi('i/import-user-lists', { fileId: file.id }).then(onImportSuccess).catch(onError);
 };
 
 const importMuting = async (ev) => {
 	const file = await selectFile(ev.currentTarget ?? ev.target);
-	os.api('i/import-muting', { fileId: file.id }).then(onImportSuccess).catch(onError);
+	misskeyApi('i/import-muting', { fileId: file.id }).then(onImportSuccess).catch(onError);
 };
 
 const importBlocking = async (ev) => {
 	const file = await selectFile(ev.currentTarget ?? ev.target);
-	os.api('i/import-blocking', { fileId: file.id }).then(onImportSuccess).catch(onError);
+	misskeyApi('i/import-blocking', { fileId: file.id }).then(onImportSuccess).catch(onError);
 };
 
 const importAntennas = async (ev) => {
 	const file = await selectFile(ev.currentTarget ?? ev.target);
-	os.api('i/import-antennas', { fileId: file.id }).then(onImportSuccess).catch(onError);
+	misskeyApi('i/import-antennas', { fileId: file.id }).then(onImportSuccess).catch(onError);
 };
 
 const headerActions = computed(() => []);

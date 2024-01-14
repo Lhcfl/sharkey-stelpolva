@@ -46,11 +46,22 @@ const bg = {
 	align-items: center;
 	height: 1.5ex;
 	border-radius: var(--radius-xl);
-	margin-top: 5px;
 	padding: 4px;
 	overflow: clip;
 	color: #fff;
-	text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;
+	text-shadow: /* .866 ≈ sin(60deg) */
+		1px 0 1px #000,
+		.866px .5px 1px #000,
+		.5px .866px 1px #000,
+		0 1px 1px #000,
+		-.5px .866px 1px #000,
+		-.866px .5px 1px #000,
+		-1px 0 1px #000,
+		-.866px -.5px 1px #000,
+		-.5px -.866px 1px #000,
+		0 -1px 1px #000,
+		.5px -.866px 1px #000,
+		.866px -.5px 1px #000;
 }
 
 .icon {
@@ -59,7 +70,9 @@ const bg = {
 }
 
 .name {
-	margin-left: 4px;
+	padding: 0.5ex;
+	margin: -0.5ex;
+	margin-left: calc(4px - 0.5ex);
 	line-height: 1;
 	font-size: 0.8em;
 	font-weight: bold;
