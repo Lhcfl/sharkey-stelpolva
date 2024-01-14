@@ -12,6 +12,8 @@
 			<b><i class="ph-eye ph-bold ph-lg"></i> Pattern Hidden</b>
 			<span>{{ i18n.ts.clickToShow }}</span>
 		</div>
+		<span class="patternShadowTop"></span>
+		<span class="patternShadowBottom"></span>
 		<canvas ref="displayCanvas" class="pattern-canvas"></canvas>
 	</div>
 	<div class="controls">
@@ -39,37 +41,21 @@ import { i18n } from '@/i18n.js';
 import { defaultStore } from '@/store.js';
 import { ChiptuneJsPlayer, ChiptuneJsConfig } from '@/scripts/chiptune2.js';
 
+const colours = {
+	background: '#000000',
+	foreground: {
+		default: '#ffffff',
+		quarter: '#ffff00',
+		instr: '#80e0ff',
+		volume: '#80ff80',
+		fx: '#ff80e0',
+		operant: '#ffe080',
+	},
+};
+
 const CHAR_WIDTH = 6;
 const CHAR_HEIGHT = 12;
 const ROW_OFFSET_Y = 10;
-
-const colours = {
-	background: '#000000',
-	default: {
-		active: '#ffffff',
-		inactive: '#808080',
-	},
-	quarter: {
-		active: '#ffff00',
-		inactive: '#ffe135',
-	},
-	instr: {
-		active: '#80e0ff',
-		inactive: '#0099cc',
-	},
-	volume: {
-		active: '#80ff80',
-		inactive: '#008000',
-	},
-	fx: {
-		active: '#ff80e0',
-		inactive: '#800060',
-	},
-	operant: {
-		active: '#ffe080',
-		inactive: '#806000',
-	},
-};
 
 const props = defineProps<{
 	module: Misskey.entities.DriveFile
@@ -79,16 +65,38 @@ const isSensitive = computed(() => { return props.module.isSensitive; });
 const url = computed(() => { return props.module.url; });
 let hide = ref((defaultStore.state.nsfw === 'force') ? true : isSensitive.value && (defaultStore.state.nsfw !== 'ignore'));
 let patternHide = ref(false);
-let firstFrame = ref(true);
 let playing = ref(false);
 let displayCanvas = ref<HTMLCanvasElement>();
 let progress = ref<HTMLProgressElement>();
 let position = ref(0);
 const player = ref(new ChiptuneJsPlayer(new ChiptuneJsConfig()));
 
-const rowBuffer = 24;
+const maxRowNumbers = 0xFF;
+const rowBuffer = 26;
 let buffer = null;
 let isSeeking = false;
+let firstFrame = true;
+let lastPattern = -1;
+let lastDrawnRow = -1;
+let numberRowCanvas = new OffscreenCanvas(2 * CHAR_WIDTH + 1, maxRowNumbers * CHAR_HEIGHT + 1);
+let alreadyDrawn = [false];
+
+function bakeNumberRow() {
+	let ctx = numberRowCanvas.getContext('2d', { alpha: false }) as OffscreenCanvasRenderingContext2D;
+	ctx.font = '10px monospace';
+
+	for (let i = 0; i < maxRowNumbers; i++) {
+		let rowText = parseInt(i).toString(16);
+		if (rowText.length === 1) rowText = '0' + rowText;
+
+		ctx.fillStyle = colours.foreground.default;
+		if (i % 4 === 0) ctx.fillStyle = colours.foreground.quarter;
+
+		ctx.fillText(rowText, 0, 10 + i * 12);
+	}
+}
+
+bakeNumberRow();
 
 player.value.load(url.value).then((result) => {
 	buffer = result;
@@ -162,9 +170,9 @@ function performSeek() {
 
 function toggleVisible() {
 	hide.value = !hide.value;
-	if (!hide.value && patternHide.value) {
-		firstFrame.value = true;
-		patternHide.value = false;
+	if (!hide.value) {
+		lastPattern = -1;
+		lastDrawnRow = -1;
 	}
 	nextTick(() => { stop(hide.value); });
 }
@@ -184,6 +192,95 @@ function togglePattern() {
 	}
 }
 
+function DrawPattern() {
+	if (!displayCanvas.value) return;
+	const canvas = displayCanvas.value;
+
+	const pattern = player.value.getPattern();
+	const nbRows = player.value.getPatternNumRows(pattern);
+	const row = player.value.getRow();
+	const halfbuf = rowBuffer / 2;
+	const minRow = row - halfbuf;
+	const maxRow = row + halfbuf;
+	const spacer = 11;
+	const space = ' ';
+
+	let rowDif = 0;
+
+	let nbChannels = 0;
+	if (player.value.currentPlayingNode) {
+		nbChannels = player.value.currentPlayingNode.nbChannels;
+	}
+	if (pattern === lastPattern) {
+		rowDif = row - lastDrawnRow;
+	} else {
+		alreadyDrawn = [];
+		canvas.width = 12 + 84 * nbChannels + 2;
+		canvas.height = 12 * nbRows;
+	}
+
+	const ctx = canvas.getContext('2d', { alpha: false }) as CanvasRenderingContext2D;
+	ctx.font = '10px monospace';
+	ctx.imageSmoothingEnabled = false;
+	if (pattern !== lastPattern) {
+		ctx.fillStyle = colours.background;
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		ctx.drawImage( numberRowCanvas, 0, 0 );
+	}
+
+	ctx.fillStyle = colours.foreground.default;
+	for (let rowOffset = minRow + rowDif; rowOffset < maxRow + rowDif; rowOffset++) {
+		const rowToDraw = rowOffset - rowDif;
+
+		if (alreadyDrawn[rowToDraw] === true) continue;
+
+		if (rowToDraw >= 0 && rowToDraw < nbRows) {
+			let seperators = '';
+			let note = '';
+			let instr = '';
+			let volume = '';
+			let fx = '';
+			let op = '';
+			for (let channel = 0; channel < nbChannels; channel++) {
+				const part = player.value.getPatternRowChannel(pattern, rowToDraw, channel);
+
+				seperators += '|' + space.repeat( spacer + 2 );
+				note += part.substring(0, 3) + space.repeat( spacer );
+				instr += part.substring(4, 6) + space.repeat( spacer + 1 );
+				volume += part.substring(6, 9) + space.repeat( spacer );
+				fx += part.substring(10, 11) + space.repeat( spacer + 2 );
+				op += part.substring(11, 13) + space.repeat( spacer + 1 );
+			}
+
+			const baseOffset = 2 * CHAR_WIDTH;
+			const baseRowOffset = ROW_OFFSET_Y + rowToDraw * CHAR_HEIGHT;
+
+			ctx.fillStyle = colours.foreground.default;
+			ctx.fillText(seperators, baseOffset, baseRowOffset);
+
+			ctx.fillStyle = colours.foreground.default;
+			ctx.fillText(note, baseOffset + CHAR_WIDTH, baseRowOffset);
+
+			ctx.fillStyle = colours.foreground.instr;
+			ctx.fillText(instr, baseOffset + CHAR_WIDTH * 5, baseRowOffset);
+
+			ctx.fillStyle = colours.foreground.volume;
+			ctx.fillText(volume, baseOffset + CHAR_WIDTH * 7, baseRowOffset);
+
+			ctx.fillStyle = colours.foreground.fx;
+			ctx.fillText(fx, baseOffset + CHAR_WIDTH * 11, baseRowOffset);
+
+			ctx.fillStyle = colours.foreground.operant;
+			ctx.fillText(op, baseOffset + CHAR_WIDTH * 12, baseRowOffset);
+
+			alreadyDrawn[rowToDraw] = true;
+		}
+	}
+
+	lastDrawnRow = row;
+	lastPattern = pattern;
+}
+
 function display() {
 	if (!displayCanvas.value) {
 		stop();
@@ -192,72 +289,20 @@ function display() {
 
 	if (patternHide.value) return;
 
-	if (firstFrame.value) {
-		firstFrame.value = false;
+	if (firstFrame) {
+		firstFrame = false;
+		// Change the next line to false in order to show the pattern by default.
 		patternHide.value = true;
 	}
 
-	const canvas = displayCanvas.value;
-
-	const pattern = player.value.getPattern();
 	const row = player.value.getRow();
-	let nbChannels = 0;
-	if (player.value.currentPlayingNode) {
-		nbChannels = player.value.currentPlayingNode.nbChannels;
-	}
-	if (canvas.width !== 12 + 84 * nbChannels + 2) {
-		canvas.width = 12 + 84 * nbChannels + 2;
-		canvas.height = 12 * rowBuffer;
-	}
-	const nbRows = player.value.getPatternNumRows(pattern);
-	const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-	ctx.font = '10px monospace';
-	ctx.fillStyle = colours.background;
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	ctx.fillStyle = colours.default.inactive;
-	for (let rowOffset = 0; rowOffset < rowBuffer; rowOffset++) {
-		const rowToDraw = row - rowBuffer / 2 + rowOffset;
-		if (rowToDraw >= 0 && rowToDraw < nbRows) {
-			const active = (rowToDraw === row) ? 'active' : 'inactive';
-			let rowText = parseInt(rowToDraw).toString(16);
-			if (rowText.length === 1) {
-				rowText = '0' + rowText;
-			}
-			ctx.fillStyle = colours.default[active];
-			if (rowToDraw % 4 === 0) {
-				ctx.fillStyle = colours.quarter[active];
-			}
-			ctx.fillText(rowText, 0, 10 + rowOffset * 12);
-			for (let channel = 0; channel < nbChannels; channel++) {
-				const part = player.value.getPatternRowChannel(pattern, rowToDraw, channel);
-				const baseOffset = (2 + (part.length + 1) * channel) * CHAR_WIDTH;
-				const baseRowOffset = ROW_OFFSET_Y + rowOffset * CHAR_HEIGHT;
+	const pattern = player.value.getPattern();
 
-				ctx.fillStyle = colours.default[active];
-				ctx.fillText('|', baseOffset, baseRowOffset);
+	if ( row === lastDrawnRow && pattern === lastPattern ) return;
 
-				const note = part.substring(0, 3);
-				ctx.fillStyle = colours.default[active];
-				ctx.fillText(note, baseOffset + CHAR_WIDTH, baseRowOffset);
+	DrawPattern();
 
-				const instr = part.substring(4, 6);
-				ctx.fillStyle = colours.instr[active];
-				ctx.fillText(instr, baseOffset + CHAR_WIDTH * 5, baseRowOffset);
-
-				const volume = part.substring(6, 9);
-				ctx.fillStyle = colours.volume[active];
-				ctx.fillText(volume, baseOffset + CHAR_WIDTH * 7, baseRowOffset);
-
-				const fx = part.substring(10, 11);
-				ctx.fillStyle = colours.fx[active];
-				ctx.fillText(fx, baseOffset + CHAR_WIDTH * 11, baseRowOffset);
-
-				const op = part.substring(11, 13);
-				ctx.fillStyle = colours.operant[active];
-				ctx.fillText(op, baseOffset + CHAR_WIDTH * 12, baseRowOffset);
-			}
-		}
-	}
+	displayCanvas.value.style.top = 'calc( 50% - ' + (row * CHAR_HEIGHT) + 'px )';
 }
 
 </script>
@@ -290,6 +335,7 @@ function display() {
 		cursor: pointer;
 		top: 12px;
 		right: 12px;
+		z-index: 4;
 	}
 
 	> .pattern-display {
@@ -299,9 +345,35 @@ function display() {
 		overflow-y: hidden;
 		background-color: black;
 		text-align: center;
+		max-height: 312px; /* magic_number = CHAR_HEIGHT * rowBuffer, needs to be in px */
+
 		.pattern-canvas {
+			position: relative;
 			background-color: black;
-			height: 100%;
+			image-rendering: pixelated;
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		.patternShadowTop {
+			background: #00000080;
+			pointer-events: none;
+			width: 100%;
+			height: 50%;
+			translate: 0 -100%;
+			top: calc( 50% - 13px );
+			position: absolute;
+			z-index: 2;
+		}
+
+		.patternShadowBottom {
+			background: #00000080;
+			pointer-events: none;
+			width: 100%;
+			height: calc( 50% + 12px );
+			top: calc( 50% - 1px );
+			position: absolute;
+			z-index: 2;
 		}
 		.pattern-hide {
 			display: flex;
@@ -314,7 +386,7 @@ function display() {
 			font-size: 12px;
 
 			position: absolute;
-			z-index: 0;
+			z-index: 3;
 			width: 100%;
 			height: 100%;
 
@@ -328,7 +400,7 @@ function display() {
 		display: flex;
 		width: 100%;
 		background-color: var(--bg);
-		z-index: 1;
+		z-index: 3;
 
 		> * {
 			padding: 4px 8px;
