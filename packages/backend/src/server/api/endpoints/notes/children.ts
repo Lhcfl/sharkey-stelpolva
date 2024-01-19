@@ -70,7 +70,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('note.reply', 'reply')
 				.leftJoinAndSelect('note.renote', 'renote')
 				.leftJoinAndSelect('reply.user', 'replyUser')
-				.leftJoinAndSelect('renote.user', 'renoteUser');
+				.leftJoinAndSelect('renote.user', 'renoteUser')
+				.orderBy('reply.userId = note.userId', 'DESC')
+				.addOrderBy('note.id', 'DESC'); // sharkey: keep in sync with makePaginationQuery
 
 			this.queryService.generateVisibilityQuery(query, me);
 			if (me) {
