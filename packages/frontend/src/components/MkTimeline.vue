@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, watch, onUnmounted, provide, ref, shallowRef } from 'vue';
-import { Connection } from 'misskey-js/built/streaming.js';
+import { ChannelConnection as Connection } from 'misskey-js';
 import MkNotes from '@/components/MkNotes.vue';
 import MkPullToRefresh from '@/components/MkPullToRefresh.vue';
 import { useStream } from '@/stream.js';
@@ -51,6 +51,7 @@ const emit = defineEmits<{
 	(ev: 'queue', count: number): void;
 }>();
 
+provide('inTimeline', true);
 provide('inChannel', computed(() => props.src === 'channel'));
 
 type TimelineQueryType = {

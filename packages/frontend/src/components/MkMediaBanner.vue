@@ -10,15 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<b>{{ i18n.ts.sensitive }}</b>
 		<span>{{ i18n.ts.clickToShow }}</span>
 	</div>
-	<div v-else-if="media.type.startsWith('audio') && media.type !== 'audio/midi'" :class="$style.audio">
-		<audio
-			ref="audioEl"
-			:src="media.url"
-			:title="media.comment ?? undefined"
-			controls
-			preload="metadata"
-		/>
-	</div>
+	<MkMediaAudio v-else-if="media.type.startsWith('audio') && media.type !== 'audio/midi'" :audio="media"/>
 	<a
 		v-else :class="$style.download"
 		:href="media.url"
@@ -35,6 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { shallowRef, watch, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { i18n } from '@/i18n.js';
+import MkMediaAudio from '@/components/MkMediaAudio.vue';
 
 const props = withDefaults(defineProps<{
 	media: Misskey.entities.DriveFile;

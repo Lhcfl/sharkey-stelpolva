@@ -89,7 +89,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div v-if="translating || translation" :class="$style.translation">
 					<MkLoading v-if="translating" mini/>
 					<div v-else>
-						<b>{{ i18n.t('translatedFrom', { x: translation.sourceLang }) }}: </b>
+						<b>{{ i18n.tsx.translatedFrom({ x: translation.sourceLang }) }}: </b>
 						<Mfm :text="translation.text" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis"/>
 					</div>
 				</div>
@@ -374,16 +374,16 @@ const reactionsPagination = computed(() => ({
 }));
 
 async function addReplyTo(replyNote: Misskey.entities.Note) {
-		replies.value.unshift(replyNote);
-		appearNote.value.repliesCount += 1;
+	replies.value.unshift(replyNote);
+	appearNote.value.repliesCount += 1;
 }
 
 async function removeReply(id: Misskey.entities.Note['id']) {
-		const replyIdx = replies.value.findIndex(note => note.id === id);
-		if (replyIdx >= 0) {
-			replies.value.splice(replyIdx, 1);
-			appearNote.value.repliesCount -= 1;
-		}
+	const replyIdx = replies.value.findIndex(note => note.id === id);
+	if (replyIdx >= 0) {
+		replies.value.splice(replyIdx, 1);
+		appearNote.value.repliesCount -= 1;
+	}
 }
 
 useNoteCapture({

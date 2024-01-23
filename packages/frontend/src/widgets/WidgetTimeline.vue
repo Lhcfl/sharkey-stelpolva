@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</template>
 	<template #header>
 		<button class="_button" @click="choose">
-			<span>{{ widgetProps.src === 'list' ? widgetProps.list.name : widgetProps.src === 'antenna' ? widgetProps.antenna.name : i18n.t('_timelines.' + widgetProps.src) }}</span>
+			<span>{{ widgetProps.src === 'list' ? widgetProps.list.name : widgetProps.src === 'antenna' ? widgetProps.antenna.name : i18n.ts._timelines[widgetProps.src] }}</span>
 			<i :class="menuOpened ? 'ph-caret-up ph-bold ph-lg' : 'ph-caret-down ph-bold ph-lg'" style="margin-left: 8px;"></i>
 		</button>
 	</template>

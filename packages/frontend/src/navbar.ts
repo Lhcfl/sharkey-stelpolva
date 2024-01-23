@@ -118,6 +118,11 @@ export const navbarItemDef = reactive({
 		show: computed(() => $i != null && instance.enableAchievements),
 		to: '/my/achievements',
 	},
+	games: {
+		title: 'Games',
+		icon: 'ph-game-controller ph-bold ph-lg',
+		to: '/games',
+	},
 	ui: {
 		title: i18n.ts.switchUi,
 		icon: 'ph-devices ph-bold ph-lg',

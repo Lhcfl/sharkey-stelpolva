@@ -11,12 +11,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span :class="$style.fg">
 				<template v-if="choice.isVoted"><i class="ph-check ph-bold ph-lg" style="margin-right: 4px; color: var(--accent);"></i></template>
 				<Mfm :text="choice.text" :plain="true"/>
-				<span v-if="showResult" style="margin-left: 4px; opacity: 0.7;">({{ i18n.t('_poll.votesCount', { n: choice.votes }) }})</span>
+				<span v-if="showResult" style="margin-left: 4px; opacity: 0.7;">({{ i18n.tsx._poll.votesCount({ n: choice.votes }) }})</span>
 			</span>
 		</li>
 	</ul>
 	<p v-if="!readOnly" :class="$style.info">
-		<span>{{ i18n.t('_poll.totalVotes', { n: total }) }}</span>
+		<span>{{ i18n.tsx._poll.totalVotes({ n: total }) }}</span>
 		<span v-if="note.poll.multiple"> · </span>
 		<span v-if="note.poll.multiple" style="color: var(--accent); font-weight: bolder;">{{ i18n.ts._poll.multiple }}</span>
 		<span> · </span>
@@ -51,10 +51,11 @@ const total = computed(() => sum(props.note.poll.choices.map(x => x.votes)));
 const closed = computed(() => remaining.value === 0);
 const isLocal = computed(() => !props.note.uri);
 const isVoted = computed(() => !props.note.poll.multiple && props.note.poll.choices.some(c => c.isVoted));
-const timer = computed(() => i18n.t(
-	remaining.value >= 86400 ? '_poll.remainingDays' :
-	remaining.value >= 3600 ? '_poll.remainingHours' :
-	remaining.value >= 60 ? '_poll.remainingMinutes' : '_poll.remainingSeconds', {
+const timer = computed(() => i18n.tsx._poll[
+		remaining.value >= 86400 ? 'remainingDays' :
+		remaining.value >= 3600 ? 'remainingHours' :
+		remaining.value >= 60 ? 'remainingMinutes' : 'remainingSeconds'
+	]({
 		s: Math.floor(remaining.value % 60),
 		m: Math.floor(remaining.value / 60) % 60,
 		h: Math.floor(remaining.value / 3600) % 24,
@@ -85,13 +86,13 @@ const vote = async (id) => {
 	if (!props.note.poll.multiple) {
 		const { canceled } = await os.confirm({
 			type: 'question',
-			text: i18n.t('voteConfirm', { choice: props.note.poll.choices[id].text }),
+			text: i18n.tsx.voteConfirm({ choice: props.note.poll.choices[id].text }),
 		});
 		if (canceled) return;
 	} else {
 		const { canceled } = await os.confirm({
 			type: 'question',
-			text: i18n.t('voteConfirmMulti', { choice: props.note.poll.choices[id].text }),
+			text: i18n.tsx.voteConfirmMulti({ choice: props.note.poll.choices[id].text }),
 		});
 		if (canceled) return;
 	}

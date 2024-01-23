@@ -795,6 +795,8 @@ export class ActivityPubServerService {
 
 		fastify.get<{ Params: { user: string; } }>('/users/:user', { constraints: { apOrHtml: 'ap' } }, async (request, reply) => {
 			if (await this.shouldRefuseGetRequest(request, reply, request.params.user)) return;
+			
+			vary(reply.raw, 'Accept');
 
 			const userId = request.params.user;
 
@@ -809,6 +811,8 @@ export class ActivityPubServerService {
 
 		fastify.get<{ Params: { user: string; } }>('/@:user', { constraints: { apOrHtml: 'ap' } }, async (request, reply) => {
 			if (await this.shouldRefuseGetRequest(request, reply, request.params.user)) return;
+			
+			vary(reply.raw, 'Accept');
 
 			const user = await this.usersRepository.findOneBy({
 				usernameLower: request.params.user.toLowerCase(),

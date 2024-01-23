@@ -232,7 +232,7 @@ function changeAvatar(ev) {
 
 		const { canceled } = await os.confirm({
 			type: 'question',
-			text: i18n.t('cropImageAsk'),
+			text: i18n.ts.cropImageAsk,
 			okText: i18n.ts.cropYes,
 			cancelText: i18n.ts.cropNo,
 		});
@@ -262,7 +262,7 @@ function changeBanner(ev) {
 
 					const { canceled } = await os.confirm({
 						type: 'question',
-						text: i18n.t('cropImageAsk'),
+						text: i18n.ts.cropImageAsk,
 						okText: i18n.ts.cropYes,
 						cancelText: i18n.ts.cropNo,
 					});
@@ -296,7 +296,7 @@ function changeBanner(ev) {
 
 			const { canceled } = await os.confirm({
 				type: 'question',
-				text: i18n.t('cropImageAsk'),
+				text: i18n.ts.cropImageAsk,
 				okText: i18n.ts.cropYes,
 				cancelText: i18n.ts.cropNo,
 			});
@@ -326,7 +326,7 @@ function changeBackground(ev) {
 
 					const { canceled } = await os.confirm({
 						type: 'question',
-						text: i18n.t('cropImageAsk'),
+						text: i18n.ts.cropImageAsk,
 						okText: i18n.ts.cropYes,
 						cancelText: i18n.ts.cropNo,
 					});
@@ -360,7 +360,7 @@ function changeBackground(ev) {
 
 			const { canceled } = await os.confirm({
 				type: 'question',
-				text: i18n.t('cropImageAsk'),
+				text: i18n.ts.cropImageAsk,
 				okText: i18n.ts.cropYes,
 				cancelText: i18n.ts.cropNo,
 			});

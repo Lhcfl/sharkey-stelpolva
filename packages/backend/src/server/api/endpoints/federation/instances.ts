@@ -62,6 +62,7 @@ export const paramDef = {
 				'-firstRetrievedAt',
 				'+latestRequestReceivedAt',
 				'-latestRequestReceivedAt',
+				null,
 			],
 		},
 	},

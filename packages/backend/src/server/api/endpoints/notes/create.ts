@@ -177,13 +177,32 @@ export const paramDef = {
 		},
 	},
 	// (re)note with text, files and poll are optional
-	anyOf: [
-		{ required: ['text'] },
-		{ required: ['renoteId'] },
-		{ required: ['fileIds'] },
-		{ required: ['mediaIds'] },
-		{ required: ['poll'] },
-	],
+	if: {
+		properties: {
+			renoteId: {
+				type: 'null',
+			},
+			fileIds: {
+				type: 'null',
+			},
+			mediaIds: {
+				type: 'null',
+			},
+			poll: {
+				type: 'null',
+			},
+		},
+	},
+	then: {
+		properties: {
+			text: {
+				type: 'string',
+				minLength: 1,
+				pattern: '[^\\s]+',
+			},
+		},
+		required: ['text'],
+	},
 } as const;
 
 @Injectable()

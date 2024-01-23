@@ -5,3 +5,5 @@ packages:
  - 'packages/misskey-js'
  - 'packages/misskey-js/generator'
  - 'packages/megalodon'
+ - 'packages/misskey-reversi'
+ - 'packages/misskey-bubble-game'

@@ -15,14 +15,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-if="note.text && translating || note.text && translation" :class="$style.translation">
 			<MkLoading v-if="translating" mini/>
 			<div v-else>
-				<b>{{ i18n.t('translatedFrom', { x: translation.sourceLang }) }}: </b>
+				<b>{{ i18n.tsx.translatedFrom({ x: translation.sourceLang }) }}: </b>
 				<Mfm :text="translation.text" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
 			</div>
 		</div>
 		<MkA v-if="note.renoteId" :class="$style.rp" :to="`/notes/${note.renoteId}`" @click.stop>RN: ...</MkA>
 	</div>
 	<details v-if="note.files.length > 0" :open="!defaultStore.state.collapseFiles && !hideFiles">
-		<summary>({{ i18n.t('withNFiles', { n: note.files.length }) }})</summary>
+		<summary>({{ i18n.tsx.withNFiles({ n: note.files.length }) }})</summary>
 		<MkMediaList :mediaList="note.files"/>
 	</details>
 	<details v-if="note.poll">

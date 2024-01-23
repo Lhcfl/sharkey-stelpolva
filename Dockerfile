@@ -43,6 +43,10 @@ COPY --from=build /sharkey/packages/megalodon/lib ./packages/megalodon/lib
 COPY --from=build /sharkey/packages/megalodon/node_modules ./packages/megalodon/node_modules
 COPY --from=build /sharkey/packages/misskey-js/built ./packages/misskey-js/built
 COPY --from=build /sharkey/packages/misskey-js/node_modules ./packages/misskey-js/node_modules
+COPY --from=build /sharkey/packages/misskey-reversi/built ./packages/misskey-reversi/built
+COPY --from=build /sharkey/packages/misskey-reversi/node_modules ./packages/misskey-reversi/node_modules
+COPY --from=build /sharkey/packages/misskey-bubble-game/built ./packages/misskey-bubble-game/built
+COPY --from=build /sharkey/packages/misskey-bubble-game/node_modules ./packages/misskey-bubble-game/node_modules
 COPY --from=build /sharkey/fluent-emojis ./fluent-emojis
 COPY --from=build /sharkey/tossface-emojis/dist ./tossface-emojis/dist
 COPY --from=build /sharkey/sharkey-assets ./packages/frontend/assets
@@ -56,6 +60,8 @@ COPY packages/backend/migration ./packages/backend/migration
 COPY packages/backend/assets ./packages/backend/assets
 COPY packages/megalodon/package.json ./packages/megalodon/package.json
 COPY packages/misskey-js/package.json ./packages/misskey-js/package.json
+COPY packages/misskey-reversi/package.json ./packages/misskey-reversi/package.json
+COPY packages/misskey-bubble-game/package.json ./packages/misskey-bubble-game/package.json
 
 ENV NODE_ENV=production
 RUN corepack enable

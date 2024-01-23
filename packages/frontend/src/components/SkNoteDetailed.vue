@@ -97,7 +97,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div v-if="translating || translation" :class="$style.translation">
 					<MkLoading v-if="translating" mini/>
 					<div v-else>
-						<b>{{ i18n.t('translatedFrom', { x: translation.sourceLang }) }}: </b>
+						<b>{{ i18n.tsx.translatedFrom({ x: translation.sourceLang }) }}: </b>
 						<Mfm :text="translation.text" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis"/>
 					</div>
 				</div>
@@ -319,7 +319,7 @@ const showContent = ref(defaultStore.state.uncollapseCW);
 const isDeleted = ref(false);
 const renoted = ref(false);
 const muted = ref($i ? checkWordMute(appearNote.value, $i, $i.mutedWords) : false);
-const translation = ref(null);
+const translation = ref<Misskey.entities.NotesTranslateResponse | null>(null);
 const translating = ref(false);
 const parsed = appearNote.value.text ? mfm.parse(appearNote.value.text) : null;
 const urls = parsed ? extractUrlFromMfm(parsed).filter(u => u !== renoteUrl && u !== renoteUri) : null;
@@ -363,7 +363,7 @@ provide('react', (reaction: string) => {
 });
 
 const tab = ref('replies');
-const reactionTabType = ref(null);
+const reactionTabType = ref<string | null>(null);
 
 const renotesPagination = computed(() => ({
 	endpoint: 'notes/renotes',
@@ -606,6 +606,8 @@ function react(viaKeyboard = false): void {
 	pleaseLogin();
 	showMovedDialog();
 	if (appearNote.value.reactionAcceptance === 'likeOnly') {
+		sound.playMisskeySfx('reaction');
+
 		misskeyApi('notes/like', {
 			noteId: appearNote.value.id,
 			override: defaultLike.value,
