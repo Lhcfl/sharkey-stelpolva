@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, nextTick, computed, watch } from 'vue';
+import { ref, nextTick, computed, watch, onDeactivated } from 'vue';
 import * as Misskey from 'misskey-js';
 import { i18n } from '@/i18n.js';
 import { defaultStore } from '@/store.js';
@@ -399,6 +399,10 @@ watch(patternScrollSliderPos, () => {
 	if (!displayCanvas.value.parentElement) return;
 
 	displayCanvas.value.parentElement.scrollLeft = (displayCanvas.value.width - displayCanvas.value.parentElement.offsetWidth) * patternScrollSliderPos.value / 100;
+});
+
+onDeactivated(() => {
+	stop();
 });
 
 </script>
