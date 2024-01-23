@@ -1233,6 +1233,12 @@ bubbleGame: "Bubble Game"
 sfx: "Sound Effects"
 replay: "Replay"
 lastNDays: "Last {n} days"
+backToTitle: "Go back to title"
+hemisphere: "Where are you located"
+withSensitive: "Include notes with sensitive files"
+userSaysSomethingSensitive: "Post by {name} containing sensitive files"
+enableHorizontalSwipe: "Swipe to switch tabs"
+
 _announcement:
   forExistingUsers: "Existing users only"
   forExistingUsersDescription: "This announcement will only be shown to users existing at the point of publishment if enabled. If disabled, those newly signing up after it has been posted will also see it."
@@ -2559,6 +2565,12 @@ _dataSaver:
   _code:
     title: "Code highlighting"
     description: "If code highlighting notations are used in MFM, etc., they will not load until tapped. Syntax highlighting requires downloading the highlight definition files for each programming language. Therefore, disabling the automatic loading of these files is expected to reduce the amount of communication data."
+
+_hemisphere:
+  N: "Northern hemisphere"
+  S: "Southern hemisphere"
+  caption: "Used in some client settings to determine season."
+
 _reversi:
   total: "Total"
 
