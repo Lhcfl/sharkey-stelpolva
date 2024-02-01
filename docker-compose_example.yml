@@ -2,8 +2,7 @@ version: "3"
 
 services:
   web:
-#   replace image below with git.joinsharkey.org/sharkey/sharkey:stable on next release
-#   image: ghcr.io/transfem-org/sharkey:stable
+#   image: registry.activitypub.software/transfem-org/sharkey:latest
     build: .
     restart: always
     links:
