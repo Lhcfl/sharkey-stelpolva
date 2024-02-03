@@ -284,6 +284,10 @@ checkActivityPubGetSignature: false
 
 #customMOTD: ['Hello World', 'The sharks rule all', 'Shonks']
 
+# Prefer these languages for remote notes with language-specific content
+# Must be valid language codes according to BCP 47
+#langPref: ['en', 'ja']
+
 # Upload or download file size limits (bytes)
 #maxFileSize: 262144000
 

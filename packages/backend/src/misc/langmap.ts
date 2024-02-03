@@ -385,3 +385,4 @@ export const iso639Regional = {
 };
 
 export const langmap = Object.assign({}, langmapNoRegion, iso639Regional);
+export const langs = Object.keys(langmap);

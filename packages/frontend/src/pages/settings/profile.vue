@@ -45,7 +45,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<MkSelect v-model="profile.lang">
 		<template #label>{{ i18n.ts.language }}</template>
-		<option v-for="x in Object.keys(langmap)" :key="x" :value="x">{{ langmap[x].nativeName }}</option>
+		<option v-for="x in langs" :key="x" :value="x">{{ langmap[x].nativeName }}</option>
 	</MkSelect>
 
 	<FormSlot>
@@ -128,7 +128,7 @@ import { selectFile } from '@/scripts/select-file.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 import { signinRequired } from '@/account.js';
-import { langmap } from '@/scripts/langmap.js';
+import { langmap, langs } from '@/scripts/langmap.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { claimAchievement } from '@/scripts/achievements.js';
 import { defaultStore } from '@/store.js';

@@ -25,7 +25,7 @@ import { StatusError } from '@/misc/status-error.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 import { checkHttps } from '@/misc/check-https.js';
-import { langmap } from '@/misc/langmap.js';
+import { langs } from '@/misc/langmap.js';
 import { getOneApId, getApId, getOneApHrefNullable, validPost, isEmoji, getApType } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { ApMfmService } from '../ApMfmService.js';
@@ -241,23 +241,35 @@ export class ApNoteService {
 
 		const cw = note.summary === '' ? null : note.summary;
 
+		let lang: string | null = null;
+		if (note.contentMap != null) {
+			for (const preferredLang of this.config.langPref) {
+				if (note.contentMap[preferredLang]) {
+					lang = preferredLang;
+					break;
+				}
+			}
+
+			if (!lang) lang = Object.keys(note.contentMap)[0];
+			if (!langs.includes(lang)) lang = null;
+		}
+
 		// テキストのパース
 		let text: string | null = null;
 		if (note.source?.mediaType === 'text/x.misskeymarkdown' && typeof note.source.content === 'string') {
 			text = note.source.content;
-		} else if (note.contentMap != null) {
-			const entry = Object.entries(note.contentMap)[0];
-			text = this.apMfmService.htmlToMfm(entry[1], note.tag);
+		} else if (note.contentMap != null && Object.keys(note.contentMap).length !== 0) {
+			let content: string;
+			if (lang) {
+				content = note.contentMap[lang];
+			} else {
+				content = Object.values(note.contentMap)[0];
+			}
+			text = this.apMfmService.htmlToMfm(content, note.tag);
 		} else if (typeof note._misskey_content !== 'undefined') {
 			text = note._misskey_content;
 		} else if (typeof note.content === 'string') {
 			text = this.apMfmService.htmlToMfm(note.content, note.tag);
-		}
-
-		let lang: string | null = null;
-		if (note.contentMap != null) {
-			const key = Object.keys(note.contentMap)[0];
-			lang = Object.keys(langmap).includes(key) ? key : null;
 		}
 
 		// vote
@@ -459,23 +471,35 @@ export class ApNoteService {
 
 		const cw = note.summary === '' ? null : note.summary;
 
+		let lang: string | null = null;
+		if (note.contentMap != null) {
+			for (const preferredLang of this.config.langPref) {
+				if (note.contentMap[preferredLang]) {
+					lang = preferredLang;
+					break;
+				}
+			}
+
+			if (!lang) lang = Object.keys(note.contentMap)[0];
+			if (!langs.includes(lang)) lang = null;
+		}
+
 		// テキストのパース
 		let text: string | null = null;
 		if (note.source?.mediaType === 'text/x.misskeymarkdown' && typeof note.source.content === 'string') {
 			text = note.source.content;
-		} else if (note.contentMap != null) {
-			const entry = Object.entries(note.contentMap)[0];
-			text = this.apMfmService.htmlToMfm(entry[1], note.tag);
+		} else if (note.contentMap != null && Object.keys(note.contentMap).length !== 0) {
+			let content: string;
+			if (lang) {
+				content = note.contentMap[lang];
+			} else {
+				content = Object.values(note.contentMap)[0];
+			}
+			text = this.apMfmService.htmlToMfm(content, note.tag);
 		} else if (typeof note._misskey_content !== 'undefined') {
 			text = note._misskey_content;
 		} else if (typeof note.content === 'string') {
 			text = this.apMfmService.htmlToMfm(note.content, note.tag);
-		}
-
-		let lang: string | null = null;
-		if (note.contentMap != null) {
-			const key = Object.keys(note.contentMap)[0];
-			lang = Object.keys(langmap).includes(key) ? key : null;
 		}
 
 		// vote

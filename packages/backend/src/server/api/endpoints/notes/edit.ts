@@ -12,7 +12,7 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteEditService } from '@/core/NoteEditService.js';
 import { DI } from '@/di-symbols.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { langmap } from '@/misc/langmap.js';
+import { langs } from '@/misc/langmap.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -165,7 +165,7 @@ export const paramDef = {
 				format: 'misskey:id',
 			},
 		},
-		lang: { type: 'string', enum: Object.keys(langmap), nullable: true, maxLength: 10 },
+		lang: { type: 'string', enum: langs, nullable: true, maxLength: 10 },
 		cw: { type: 'string', nullable: true, minLength: 1, maxLength: 500 },
 		localOnly: { type: 'boolean', default: false },
 		reactionAcceptance: { type: 'string', nullable: true, enum: [null, 'likeOnly', 'likeOnlyForRemote', 'nonSensitiveOnly', 'nonSensitiveOnlyForLocalLikeOnlyForRemote'], default: null },

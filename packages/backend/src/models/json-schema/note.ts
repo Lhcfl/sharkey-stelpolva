@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { langmap } from '@/misc/langmap.js';
+import { langs } from '@/misc/langmap.js';
 
 export const packedNoteSchema = {
 	type: 'object',
@@ -29,7 +29,7 @@ export const packedNoteSchema = {
 		},
 		lang: {
 			type: 'string',
-			enum: [...Object.keys(langmap)],
+			enum: langs,
 			nullable: true,
 		},
 		cw: {

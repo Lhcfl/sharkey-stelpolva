@@ -134,7 +134,7 @@ import { miLocalStorage } from '@/local-storage.js';
 import { claimAchievement } from '@/scripts/achievements.js';
 import { emojiPicker } from '@/scripts/emoji-picker.js';
 import { mfmFunctionPicker } from '@/scripts/mfm-function-picker.js';
-import { langmap } from '@/scripts/langmap.js';
+import { langmap, langs } from '@/scripts/langmap.js';
 import { MenuItem } from '@/types/menu.js';
 
 const $i = signinRequired();
@@ -547,7 +547,6 @@ async function toggleReactionAcceptance() {
 
 function attemptNormalizeLang(lang: string | null) {
 	if (lang == null) return null;
-	const langs = Object.keys(langmap);
 	if (!langs[lang]) lang = lang.split('-')[0];
 	return lang;
 }
@@ -561,8 +560,6 @@ function setLanguage(ev: MouseEvent) {
 		active: true,
 		action: () => {},
 	});
-
-	const langs = Object.keys(langmap);
 
 	// Show recently used language first
 	let recentlyUsedLanguagesExist = false;
@@ -959,11 +956,10 @@ async function post(ev?: MouseEvent) {
 
 	// update recentlyUsedLanguages
 	if (language.value != null) {
-		const languages = Object.keys(langmap);
 		const maxLength = 6;
 
 		defaultStore.set('recentlyUsedPostLanguages', [language.value].concat(defaultStore.state.recentlyUsedPostLanguages.filter((lang) => {
-			return (lang !== language.value && languages.includes(lang));
+			return (lang !== language.value && langs.includes(lang));
 		})).slice(0, maxLength));
 	}
 }
