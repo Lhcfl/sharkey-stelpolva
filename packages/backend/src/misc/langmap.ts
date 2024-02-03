@@ -376,10 +376,10 @@ export const iso639Langs3 = {
 export const langmapNoRegion = Object.assign({}, iso639Langs1, iso639Langs3);
 
 export const iso639Regional = {
-	'zh-hans': {
+	'zh-Hans': {
 		nativeName: '中文（简体）',
 	},
-	'zh-hant': {
+	'zh-Hant': {
 		nativeName: '中文（繁體）',
 	},
 };

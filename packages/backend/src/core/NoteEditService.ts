@@ -52,7 +52,6 @@ import { isReply } from '@/misc/is-reply.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { langmap } from '@/misc/langmap.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention' | 'edited';
 
@@ -358,13 +357,6 @@ export class NoteEditService implements OnApplicationShutdown {
 			}
 		} else {
 			data.text = null;
-		}
-
-		if (data.lang) {
-			if (!Object.keys(langmap).includes(data.lang.toLowerCase())) throw new Error('invalid param');
-			data.lang = data.lang.toLowerCase();
-		} else {
-			data.lang = null;
 		}
 
 		let tags = data.apHashtags;

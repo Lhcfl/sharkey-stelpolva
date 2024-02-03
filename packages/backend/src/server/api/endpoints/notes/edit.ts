@@ -380,13 +380,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}
 			}
 
-			if (ps.lang) {
-				if (!Object.keys(langmap).includes(ps.lang.toLowerCase())) throw new Error('invalid param');
-				ps.lang = ps.lang.toLowerCase();
-			} else {
-				ps.lang = null;
-			}
-
 			let channel: MiChannel | null = null;
 			if (ps.channelId != null) {
 				channel = await this.channelsRepository.findOneBy({ id: ps.channelId, isArchived: false });
