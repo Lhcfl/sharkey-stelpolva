@@ -376,6 +376,15 @@ export const iso639Langs3 = {
 export const langmapNoRegion = Object.assign({}, iso639Langs1, iso639Langs3);
 
 export const iso639Regional = {
+	'en-GB': {
+		nativeName: 'English (UK)',
+	},
+	'fr-CA': {
+		nativeName: 'Français (Canada)',
+	},
+	'pt-BR': {
+		nativeName: 'Português (Brasil)',
+	},
 	'zh-Hans': {
 		nativeName: '中文（简体）',
 	},
