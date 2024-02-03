@@ -52,6 +52,7 @@ import { isReply } from '@/misc/is-reply.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { langmap } from '@/misc/langmap.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention' | 'edited';
 
@@ -122,6 +123,7 @@ type Option = {
 	createdAt?: Date | null;
 	name?: string | null;
 	text?: string | null;
+	lang?: string | null;
 	reply?: MiNote | null;
 	renote?: MiNote | null;
 	files?: MiDriveFile[] | null;
@@ -358,6 +360,13 @@ export class NoteEditService implements OnApplicationShutdown {
 			data.text = null;
 		}
 
+		if (data.lang) {
+			if (!Object.keys(langmap).includes(data.lang.toLowerCase())) throw new Error('invalid param');
+			data.lang = data.lang.toLowerCase();
+		} else {
+			data.lang = null;
+		}
+
 		let tags = data.apHashtags;
 		let emojis = data.apEmojis;
 		let mentionedUsers = data.apMentions;
@@ -420,6 +429,9 @@ export class NoteEditService implements OnApplicationShutdown {
 		if (oldnote.hasPoll !== !!data.poll) {
 			update.hasPoll = !!data.poll;
 		}
+		if (data.lang !== oldnote.lang) {
+			update.lang = data.lang;
+		}
 
 		const poll = await this.pollsRepository.findOneBy({ noteId: oldnote.id });
 
@@ -434,6 +446,7 @@ export class NoteEditService implements OnApplicationShutdown {
 				oldText: oldnote.text || undefined,
 				newText: update.text || undefined,
 				cw: update.cw || undefined,
+				lang: update.lang || undefined,
 				fileIds: undefined,
 				oldDate: exists ? oldnote.updatedAt as Date : this.idService.parse(oldnote.id).date,
 				updatedAt: new Date(),
@@ -453,6 +466,7 @@ export class NoteEditService implements OnApplicationShutdown {
 					: null,
 				name: data.name,
 				text: data.text,
+				lang: data.lang,
 				hasPoll: data.poll != null,
 				cw: data.cw ?? null,
 				tags: tags.map(tag => normalizeForSearch(tag)),

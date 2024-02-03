@@ -25,6 +25,7 @@ import { StatusError } from '@/misc/status-error.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 import { checkHttps } from '@/misc/check-https.js';
+import { langmap } from '@/misc/langmap.js';
 import { getOneApId, getApId, getOneApHrefNullable, validPost, isEmoji, getApType } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { ApMfmService } from '../ApMfmService.js';
@@ -244,10 +245,19 @@ export class ApNoteService {
 		let text: string | null = null;
 		if (note.source?.mediaType === 'text/x.misskeymarkdown' && typeof note.source.content === 'string') {
 			text = note.source.content;
+		} else if (note.contentMap != null) {
+			const entry = Object.entries(note.contentMap)[0];
+			text = this.apMfmService.htmlToMfm(entry[1], note.tag);
 		} else if (typeof note._misskey_content !== 'undefined') {
 			text = note._misskey_content;
 		} else if (typeof note.content === 'string') {
 			text = this.apMfmService.htmlToMfm(note.content, note.tag);
+		}
+
+		let lang: string | null = null;
+		if (note.contentMap != null) {
+			const key = Object.keys(note.contentMap)[0].toLowerCase();
+			lang = Object.keys(langmap).includes(key) ? key : null;
 		}
 
 		// vote
@@ -290,6 +300,7 @@ export class ApNoteService {
 				name: note.name,
 				cw,
 				text,
+				lang,
 				localOnly: false,
 				visibility,
 				visibleUsers,
@@ -452,10 +463,19 @@ export class ApNoteService {
 		let text: string | null = null;
 		if (note.source?.mediaType === 'text/x.misskeymarkdown' && typeof note.source.content === 'string') {
 			text = note.source.content;
+		} else if (note.contentMap != null) {
+			const entry = Object.entries(note.contentMap)[0];
+			text = this.apMfmService.htmlToMfm(entry[1], note.tag);
 		} else if (typeof note._misskey_content !== 'undefined') {
 			text = note._misskey_content;
 		} else if (typeof note.content === 'string') {
 			text = this.apMfmService.htmlToMfm(note.content, note.tag);
+		}
+
+		let lang: string | null = null;
+		if (note.contentMap != null) {
+			const key = Object.keys(note.contentMap)[0].toLowerCase();
+			lang = Object.keys(langmap).includes(key) ? key : null;
 		}
 
 		// vote
@@ -498,6 +518,7 @@ export class ApNoteService {
 				name: note.name,
 				cw,
 				text,
+				lang,
 				localOnly: false,
 				visibility,
 				visibleUsers,

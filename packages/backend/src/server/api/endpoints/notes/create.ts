@@ -20,6 +20,7 @@ import { isPureRenote } from '@/misc/is-pure-renote.js';
 import { MetaService } from '@/core/MetaService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { langmap } from '@/misc/langmap.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -136,6 +137,7 @@ export const paramDef = {
 		visibleUserIds: { type: 'array', uniqueItems: true, items: {
 			type: 'string', format: 'misskey:id',
 		} },
+		lang: { type: 'string', enum: Object.keys(langmap), nullable: true, maxLength: 10 },
 		cw: { type: 'string', nullable: true, minLength: 1, maxLength: 500 },
 		localOnly: { type: 'boolean', default: false },
 		reactionAcceptance: { type: 'string', nullable: true, enum: [null, 'likeOnly', 'likeOnlyForRemote', 'nonSensitiveOnly', 'nonSensitiveOnlyForLocalLikeOnlyForRemote'], default: null },
@@ -370,6 +372,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						expiresAt: ps.poll.expiresAt ? new Date(ps.poll.expiresAt) : null,
 					} : undefined,
 					text: ps.text ?? undefined,
+					lang: ps.lang,
 					reply,
 					renote,
 					cw: ps.cw,

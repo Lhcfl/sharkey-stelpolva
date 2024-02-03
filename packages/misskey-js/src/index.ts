@@ -19,6 +19,7 @@ export const mutedNoteReasons = consts.mutedNoteReasons;
 export const followingVisibilities = consts.followingVisibilities;
 export const followersVisibilities = consts.followersVisibilities;
 export const moderationLogTypes = consts.moderationLogTypes;
+export const languages = consts.languages;
 
 // api extractor not supported yet
 //export * as api from './api.js';

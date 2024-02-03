@@ -17,12 +17,12 @@ import { bindThis } from '@/decorators.js';
 import { isNotNull } from '@/misc/is-not-null.js';
 import { DebounceLoader } from '@/misc/loader.js';
 import { IdService } from '@/core/IdService.js';
+import type { Config } from '@/config.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { CustomEmojiService } from '../CustomEmojiService.js';
 import type { ReactionService } from '../ReactionService.js';
 import type { UserEntityService } from './UserEntityService.js';
 import type { DriveFileEntityService } from './DriveFileEntityService.js';
-import type { Config } from '@/config.js';
 
 @Injectable()
 export class NoteEntityService implements OnModuleInit {
@@ -120,7 +120,7 @@ export class NoteEntityService implements OnModuleInit {
 							followerId: meId,
 						},
 					});
-					
+
 					hide = !isFollowing;
 				} else {
 					// フォロワーかどうか
@@ -373,6 +373,7 @@ export class NoteEntityService implements OnModuleInit {
 			uri: note.uri ?? undefined,
 			url: note.url ?? undefined,
 			poll: note.hasPoll ? this.populatePoll(note, meId) : undefined,
+			lang: note.lang,
 			...(meId && Object.keys(note.reactions).length > 0 ? {
 				myReaction: this.populateMyReaction(note, meId, options?._hint_),
 			} : {}),

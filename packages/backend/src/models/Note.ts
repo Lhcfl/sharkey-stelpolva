@@ -62,6 +62,12 @@ export class MiNote {
 	public text: string | null;
 
 	@Column('varchar', {
+		length: 10,
+		nullable: true,
+	})
+	public lang: string | null;
+
+	@Column('varchar', {
 		length: 256, nullable: true,
 	})
 	public name: string | null;

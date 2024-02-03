@@ -32,6 +32,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span :class="$style.headerRightButtonText">{{ channel.name }}</span>
 				</button>
 			</template>
+			<button v-click-anime v-tooltip="i18n.ts.language" :class="['_button', $style.headerRightItem]" @click="setLanguage">
+				<span><i class="ph-translate ph-bold ph-lg"></i></span>
+				<span v-if="language !== '' && language != null" :class="$style.headerRightButtonText">{{ language.split("-")[0] }}</span>
+			</button>
 			<button v-click-anime v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="channel != null || visibility === 'specified'" @click="toggleLocalOnly">
 				<span v-if="!localOnly"><i class="ph-rocket-launch ph-bold ph-lg"></i></span>
 				<span v-else><i class="ph-rocket ph-bold ph-lg"></i></span>
@@ -130,6 +134,8 @@ import { miLocalStorage } from '@/local-storage.js';
 import { claimAchievement } from '@/scripts/achievements.js';
 import { emojiPicker } from '@/scripts/emoji-picker.js';
 import { mfmFunctionPicker } from '@/scripts/mfm-function-picker.js';
+import { langmap } from '@/scripts/langmap.js';
+import { MenuItem } from '@/types/menu.js';
 
 const $i = signinRequired();
 
@@ -144,6 +150,7 @@ const props = withDefaults(defineProps<{
 	initialText?: string;
 	initialCw?: string;
 	initialVisibility?: (typeof Misskey.noteVisibilities)[number];
+	initialLanguage?: (typeof Misskey.languages)[number];
 	initialFiles?: Misskey.entities.DriveFile[];
 	initialLocalOnly?: boolean;
 	initialVisibleUsers?: Misskey.entities.UserDetailed[];
@@ -175,6 +182,7 @@ const textareaEl = shallowRef<HTMLTextAreaElement | null>(null);
 const cwInputEl = shallowRef<HTMLInputElement | null>(null);
 const hashtagsInputEl = shallowRef<HTMLInputElement | null>(null);
 const visibilityButton = shallowRef<HTMLElement | null>(null);
+const languageButton = shallowRef<HTMLElement | null>(null);
 
 const posting = ref(false);
 const posted = ref(false);
@@ -202,6 +210,7 @@ const recentHashtags = ref(JSON.parse(miLocalStorage.getItem('hashtags') ?? '[]'
 const imeText = ref('');
 const showingOptions = ref(false);
 const textAreaReadOnly = ref(false);
+const language = ref<string | null>(props.initialLanguage ?? defaultStore.state.recentlyUsedPostLanguages[0] ?? localStorage.getItem('lang')?.split('-')[0]);
 
 const draftKey = computed((): string => {
 	let key = props.channel ? `channel:${props.channel.id}` : '';
@@ -362,6 +371,7 @@ function watchForDraft() {
 	watch(files, () => saveDraft(), { deep: true });
 	watch(visibility, () => saveDraft());
 	watch(localOnly, () => saveDraft());
+	watch(language, () => saveDraft());
 }
 
 function MFMWindow() {
@@ -535,6 +545,60 @@ async function toggleReactionAcceptance() {
 	reactionAcceptance.value = select.result;
 }
 
+function setLanguage(ev: MouseEvent) {
+	const actions: Array<MenuItem> = [];
+
+	if (language.value != null) actions.push({
+		text: langmap[language.value].nativeName,
+		danger: false,
+		active: true,
+		action: () => {},
+	});
+
+	const langs = Object.keys(langmap);
+
+	// Show recently used language first
+	let recentlyUsedLanguagesExist = false;
+	for (const lang of defaultStore.state.recentlyUsedPostLanguages) {
+		if (lang === language.value) continue;
+		if (!langs.includes(lang)) continue;
+		actions.push({
+			text: langmap[lang].nativeName,
+			danger: false,
+			active: false,
+			action: () => {
+				language.value = lang;
+			},
+		});
+		recentlyUsedLanguagesExist = true;
+	}
+	if (recentlyUsedLanguagesExist) actions.push({ type: 'divider' });
+
+	actions.push({
+		text: i18n.ts.noLanguage,
+		danger: false,
+		active: false,
+		action: () => {
+			language.value = null;
+		},
+	});
+
+	for (const lang of langs) {
+		if (lang === language.value) continue;
+		if (defaultStore.state.recentlyUsedPostLanguages.includes(lang)) continue;
+		actions.push({
+			text: langmap[lang].nativeName,
+			danger: false,
+			active: false,
+			action: () => {
+				language.value = lang;
+			},
+		});
+	}
+
+	os.popupMenu(actions, ev.currentTarget ?? ev.target);
+}
+
 function pushVisibleUser(user: Misskey.entities.UserDetailed) {
 	if (!visibleUsers.value.some(u => u.username === user.username && u.host === user.host)) {
 		visibleUsers.value.push(user);
@@ -676,6 +740,7 @@ function saveDraft() {
 			cw: cw.value,
 			visibility: visibility.value,
 			localOnly: localOnly.value,
+			lang: language.value,
 			files: files.value,
 			poll: poll.value,
 		},
@@ -776,6 +841,7 @@ async function post(ev?: MouseEvent) {
 		channelId: props.channel ? props.channel.id : undefined,
 		poll: poll.value,
 		cw: useCw.value ? cw.value ?? '' : null,
+		lang: language.value ? language.value : null,
 		localOnly: localOnly.value,
 		visibility: visibility.value,
 		visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(u => u.id) : undefined,
@@ -883,6 +949,16 @@ async function post(ev?: MouseEvent) {
 			text: err.message + '\n' + (err as any).id,
 		});
 	});
+
+	// update recentlyUsedLanguages
+	if (language.value != null) {
+		const languages = Object.keys(langmap);
+		const maxLength = 6;
+
+		defaultStore.set('recentlyUsedPostLanguages', [language.value].concat(defaultStore.state.recentlyUsedPostLanguages.filter((lang) => {
+			return (lang !== language.value && languages.includes(lang));
+		})).slice(0, maxLength));
+	}
 }
 
 function cancel() {
@@ -985,6 +1061,7 @@ onMounted(() => {
 				useCw.value = draft.data.useCw;
 				visibility.value = draft.data.visibility;
 				localOnly.value = draft.data.localOnly;
+				language.value = draft.data.lang;
 				files.value = (draft.data.files || []).filter(draftFile => draftFile);
 
 				if (draft.data.poll) {
@@ -1010,6 +1087,7 @@ onMounted(() => {
 			}
 			visibility.value = init.visibility;
 			localOnly.value = init.localOnly ?? false;
+			language.value = init.lang;
 			quoteId.value = init.renote ? init.renote.id : null;
 		}
 

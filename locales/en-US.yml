@@ -1265,6 +1265,7 @@ hemisphere: "Where are you located"
 withSensitive: "Include notes with sensitive files"
 userSaysSomethingSensitive: "Post by {name} contains sensitive content"
 enableHorizontalSwipe: "Swipe to switch tabs"
+noLanguage: "No language"
 _bubbleGame:
   howToPlay: "How to play"
   _howToPlay:

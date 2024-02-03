@@ -24,6 +24,7 @@ const props = defineProps<{
 	initialText?: string;
 	initialCw?: string;
 	initialVisibility?: (typeof Misskey.noteVisibilities)[number];
+	initialLanguage?: (typeof Misskey.languages)[number];
 	initialFiles?: Misskey.entities.DriveFile[];
 	initialLocalOnly?: boolean;
 	initialVisibleUsers?: Misskey.entities.UserDetailed[];
@@ -31,7 +32,7 @@ const props = defineProps<{
 	instant?: boolean;
 	fixed?: boolean;
 	autofocus?: boolean;
-	editId?: Misskey.entities.Note["id"];
+	editId?: Misskey.entities.Note['id'];
 }>();
 
 const emit = defineEmits<{
