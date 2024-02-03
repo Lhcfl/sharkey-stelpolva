@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 			<button v-click-anime v-tooltip="i18n.ts.language" :class="['_button', $style.headerRightItem]" @click="setLanguage">
 				<span><i class="ph-translate ph-bold ph-lg"></i></span>
-				<span v-if="language !== '' && language != null" :class="$style.headerRightButtonText">{{ language.split("-")[0] }}</span>
+				<span v-if="language !== '' && language != null" :class="$style.headerRightButtonText">{{ language }}</span>
 			</button>
 			<button v-click-anime v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="channel != null || visibility === 'specified'" @click="toggleLocalOnly">
 				<span v-if="!localOnly"><i class="ph-rocket-launch ph-bold ph-lg"></i></span>
@@ -210,7 +210,7 @@ const recentHashtags = ref(JSON.parse(miLocalStorage.getItem('hashtags') ?? '[]'
 const imeText = ref('');
 const showingOptions = ref(false);
 const textAreaReadOnly = ref(false);
-const language = ref<string | null>(props.initialLanguage ?? defaultStore.state.recentlyUsedPostLanguages[0] ?? localStorage.getItem('lang')?.split('-')[0]);
+const language = ref<string | null>(props.initialLanguage ?? defaultStore.state.recentlyUsedPostLanguages[0] ?? attemptNormalizeLang(localStorage.getItem('lang')));
 
 const draftKey = computed((): string => {
 	let key = props.channel ? `channel:${props.channel.id}` : '';
@@ -543,6 +543,13 @@ async function toggleReactionAcceptance() {
 	});
 	if (select.canceled) return;
 	reactionAcceptance.value = select.result;
+}
+
+function attemptNormalizeLang(lang: string | null) {
+	if (lang == null) return null;
+	const langs = Object.keys(langmap);
+	if (!langs[lang]) lang = lang.split('-')[0];
+	return lang;
 }
 
 function setLanguage(ev: MouseEvent) {
