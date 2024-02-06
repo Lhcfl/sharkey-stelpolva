@@ -457,7 +457,7 @@ export class ApRendererService {
 					mediaType: 'text/x.misskeymarkdown',
 				},
 			}),
-			contentMap: note.lang ? {
+			contentMap: note.lang && content ? {
 				[note.lang]: content,
 			} : undefined,
 			_misskey_quote: quote,
@@ -755,7 +755,7 @@ export class ApRendererService {
 					mediaType: 'text/x.misskeymarkdown',
 				},
 			}),
-			contentMap: note.lang ? {
+			contentMap: note.lang && content ? {
 				[note.lang]: content,
 			} : undefined,
 			_misskey_quote: quote,
