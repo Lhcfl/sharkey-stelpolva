@@ -26,6 +26,7 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 import { checkHttps } from '@/misc/check-https.js';
 import { langs } from '@/misc/langmap.js';
+import { isNotNull } from '@/misc/is-not-null.js';
 import { getOneApId, getApId, getOneApHrefNullable, validPost, isEmoji, getApType } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { ApMfmService } from '../ApMfmService.js';
@@ -38,8 +39,7 @@ import { ApMentionService } from './ApMentionService.js';
 import { ApQuestionService } from './ApQuestionService.js';
 import { ApImageService } from './ApImageService.js';
 import type { Resolver } from '../ApResolverService.js';
-import type { IObject, IPost } from '../type.js';
-import { isNotNull } from '@/misc/is-not-null.js';
+import type { IObject, IPost, Obj } from '../type.js';
 
 @Injectable()
 export class ApNoteService {
@@ -241,35 +241,19 @@ export class ApNoteService {
 
 		const cw = note.summary === '' ? null : note.summary;
 
-		let lang: string | null = null;
-		if (note.contentMap != null) {
-			for (const preferredLang of this.config.langPref) {
-				if (note.contentMap[preferredLang]) {
-					lang = preferredLang;
-					break;
-				}
-			}
-
-			if (!lang) lang = Object.keys(note.contentMap)[0];
-			if (!langs.includes(lang)) lang = null;
-		}
-
 		// テキストのパース
 		let text: string | null = null;
-		if (note.source?.mediaType === 'text/x.misskeymarkdown' && typeof note.source.content === 'string') {
-			text = note.source.content;
-		} else if (note.contentMap != null && Object.keys(note.contentMap).length !== 0) {
-			let content: string;
-			if (lang) {
-				content = note.contentMap[lang];
-			} else {
-				content = Object.values(note.contentMap)[0];
-			}
-			text = this.apMfmService.htmlToMfm(content, note.tag);
+		let lang: string | null = null;
+		if (note.source?.mediaType === 'text/x.misskeymarkdown' && (typeof note.source.content === 'string' || note.source.contentMap)) {
+			const guessed = this.guessLang(note.source);
+			text = guessed.text;
+			lang = guessed.lang;
 		} else if (typeof note._misskey_content !== 'undefined') {
 			text = note._misskey_content;
-		} else if (typeof note.content === 'string') {
-			text = this.apMfmService.htmlToMfm(note.content, note.tag);
+		} else if (typeof note.content === 'string' || note.contentMap) {
+			const guessed = this.guessLang(note);
+			lang = guessed.lang;
+			if (guessed.text) text = this.apMfmService.htmlToMfm(guessed.text, note.tag);
 		}
 
 		// vote
@@ -471,35 +455,19 @@ export class ApNoteService {
 
 		const cw = note.summary === '' ? null : note.summary;
 
-		let lang: string | null = null;
-		if (note.contentMap != null) {
-			for (const preferredLang of this.config.langPref) {
-				if (note.contentMap[preferredLang]) {
-					lang = preferredLang;
-					break;
-				}
-			}
-
-			if (!lang) lang = Object.keys(note.contentMap)[0];
-			if (!langs.includes(lang)) lang = null;
-		}
-
 		// テキストのパース
 		let text: string | null = null;
-		if (note.source?.mediaType === 'text/x.misskeymarkdown' && typeof note.source.content === 'string') {
-			text = note.source.content;
-		} else if (note.contentMap != null && Object.keys(note.contentMap).length !== 0) {
-			let content: string;
-			if (lang) {
-				content = note.contentMap[lang];
-			} else {
-				content = Object.values(note.contentMap)[0];
-			}
-			text = this.apMfmService.htmlToMfm(content, note.tag);
+		let lang: string | null = null;
+		if (note.source?.mediaType === 'text/x.misskeymarkdown' && (typeof note.source.content === 'string' || note.source.contentMap)) {
+			const guessed = this.guessLang(note.source);
+			text = guessed.text;
+			lang = guessed.lang;
 		} else if (typeof note._misskey_content !== 'undefined') {
 			text = note._misskey_content;
-		} else if (typeof note.content === 'string') {
-			text = this.apMfmService.htmlToMfm(note.content, note.tag);
+		} else if (typeof note.content === 'string' || note.contentMap) {
+			const guessed = this.guessLang(note);
+			lang = guessed.lang;
+			if (guessed.text) text = this.apMfmService.htmlToMfm(guessed.text, note.tag);
 		}
 
 		// vote
@@ -659,5 +627,41 @@ export class ApNoteService {
 				aliases: [],
 			}).then(x => this.emojisRepository.findOneByOrFail(x.identifiers[0]));
 		}));
+	}
+
+	@bindThis
+	private guessLang(source: { contentMap?: Obj | null, content?: string | null }): { lang: string | null, text: string | null } {
+		// do we have a map?
+		if (source.contentMap) {
+			const entries = Object.entries(source.contentMap);
+
+			// only one entry: take that
+			if (entries.length === 1) {
+				return { lang: entries[0][0], text: entries[0][1] };
+			}
+
+			// did the sender indicate a preferred language?
+			if (source.content) {
+				for (const e of entries) {
+					if (e[1] === source.content) {
+						return { lang: e[0], text: e[1] };
+					}
+				}
+			}
+
+			// can we find one of *our* preferred languages?
+			for (const prefLang of this.config.langPref) {
+				if (source.contentMap[prefLang]) {
+					return { lang: prefLang, text: source.contentMap[prefLang] };
+				}
+			}
+
+			// bah, just pick one
+			return { lang: entries[0][0], text: entries[0][1] };
+		}
+
+		// no map, so we don't know the language, just take whatever
+		// content we got
+		return { lang: null, text: source.content ?? null };
 	}
 }
