@@ -24,7 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #suffix><i v-if="agreeServerRules" class="ph-check ph-bold ph-lg" style="color: var(--success)"></i></template>
 
 				<ol class="_gaps_s" :class="$style.rules">
-					<li v-for="item in instance.serverRules" :class="$style.rule"><div :class="$style.ruleText" v-html="item"></div></li>
+					<li v-for="item in instance.serverRules" :class="$style.rule"><div :class="$style.ruleText" v-html="sanitizeHtml(item)"></div></li>
 				</ol>
 
 				<MkSwitch :modelValue="agreeServerRules" style="margin-top: 16px;" @update:modelValue="updateAgreeServerRules">{{ i18n.ts.agree }}</MkSwitch>
@@ -65,6 +65,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { computed, ref } from 'vue';
 import { instance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
+import sanitizeHtml from 'sanitize-html';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';

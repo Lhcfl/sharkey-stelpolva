@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<MkKeyValue>
 					<template #key>{{ i18n.ts.description }}</template>
-					<template #value><div v-html="instance.description"></div></template>
+					<template #value><div v-html="sanitizeHtml(instance.description)"></div></template>
 				</MkKeyValue>
 
 				<FormSection>
@@ -53,7 +53,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<template #label>{{ i18n.ts.serverRules }}</template>
 
 								<ol class="_gaps_s" :class="$style.rules">
-									<li v-for="item, index in instance.serverRules" :key="index" :class="$style.rule"><div :class="$style.ruleText" v-html="item"></div></li>
+									<li v-for="item, index in instance.serverRules" :key="index" :class="$style.rule"><div :class="$style.ruleText" v-html="sanitizeHtml(item)"></div></li>
 								</ol>
 							</MkFolder>
 							<FormLink v-if="instance.tosUrl" :to="instance.tosUrl" external>{{ i18n.ts.termsOfService }}</FormLink>
@@ -105,6 +105,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
+import sanitizeHtml from 'sanitize-html';
 import { computed, watch, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import XEmojis from './about.emojis.vue';
