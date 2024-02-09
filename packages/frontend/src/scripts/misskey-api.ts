@@ -31,7 +31,7 @@ export function misskeyApi<
 	const promise = new Promise<_ResT>((resolve, reject) => {
 		// Append a credential
 		if ($i) (data as any).i = $i.token;
-		if (token !== undefined) (data as any).i = token;
+		if (token !== undefined) (data as any).i = token; // eslint-disable-line detect-possible-timing-attacks
 
 		// Send request
 		window.fetch(`${apiUrl}/${endpoint}`, {

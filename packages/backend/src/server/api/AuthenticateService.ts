@@ -42,7 +42,7 @@ export class AuthenticateService implements OnApplicationShutdown {
 
 	@bindThis
 	public async authenticate(token: string | null | undefined): Promise<[MiLocalUser | null, MiAccessToken | null]> {
-		if (token == null) {
+		if (token == null) { // eslint-disable-line detect-possible-timing-attacks
 			return [null, null];
 		}
 

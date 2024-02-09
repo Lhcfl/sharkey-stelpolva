@@ -40,7 +40,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });
 
 			if (profile.twoFactorEnabled) {
-				if (token == null) {
+				if (token == null) { // eslint-disable-line detect-possible-timing-attacks
 					throw new Error('authentication failed');
 				}
 

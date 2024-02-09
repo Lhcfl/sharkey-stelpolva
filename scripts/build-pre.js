@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+// eslint-disable detect-non-literal-fs-filename
+
 const fs = require('fs');
 const packageJsonPath = __dirname + '/../package.json'
 
