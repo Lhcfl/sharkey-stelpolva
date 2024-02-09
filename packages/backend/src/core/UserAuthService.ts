@@ -11,6 +11,7 @@ import type { MiUserProfile, UserProfilesRepository, UsersRepository } from '@/m
 import { bindThis } from '@/decorators.js';
 import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
 import type { MiLocalUser } from '@/models/User.js';
+import * as crypto from 'node:crypto';
 
 @Injectable()
 export class UserAuthService {
@@ -27,7 +28,9 @@ export class UserAuthService {
 	public async twoFactorAuthenticate(profile: MiUserProfile, token: string): Promise<void> {
 		if (profile.twoFactorBackupSecret?.includes(token)) {
 			await this.userProfilesRepository.update({ userId: profile.userId }, {
-				twoFactorBackupSecret: profile.twoFactorBackupSecret.filter((secret) => secret !== token),
+				twoFactorBackupSecret: profile.twoFactorBackupSecret.filter(
+					(secret) => !crypto.timingSafeEqual(secret, token)
+				),
 			});
 		} else {
 			const delta = OTPAuth.TOTP.validate({

@@ -287,7 +287,7 @@ export class ActivityPubServerService {
 
 			const hash = crypto.createHash('sha256').update(request.rawBody).digest('base64');
 
-			if (hash !== digestValue) {
+			if (! crypto.timingSafeEqual(hash, digestValue)) {
 				// Invalid digest
 				reply.code(401);
 				return;
