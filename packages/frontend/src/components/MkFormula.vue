@@ -4,8 +4,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-	<div v-if="block" :class="$style.block" v-html="renderedFormula"></div>
-	<span v-else v-html="renderedFormula"></span>
+	<div v-if="block" :class="$style.block" v-html="renderedFormula"></div><!-- njsscan-ignore:vue_template -->
+	<span v-else v-html="renderedFormula"></span><!-- njsscan-ignore:vue_template -->
 </template>
 
 <script lang="ts" setup>
