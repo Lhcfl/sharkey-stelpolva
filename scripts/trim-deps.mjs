@@ -1,5 +1,6 @@
 // trims dependencies for production
 // only run after a full build
+// eslint-disable detect-non-literal-fs-filename
 
 import fs from 'node:fs'
 

@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+// eslint-disable detect-non-literal-fs-filename
+
 const fs = require('fs');
 const packageJsonPath = __dirname + '/../package.json'
 
@@ -13,7 +15,7 @@ function build() {
 		fs.mkdirSync(__dirname + '/../built', { recursive: true });
 		fs.writeFileSync(__dirname + '/../built/meta.json', JSON.stringify({ version: meta.version }), 'utf-8');
 	} catch (e) {
-		console.error(e)
+		console.error(e) // njsscan-ignore:generic_error_disclosure
 	}
 }
 

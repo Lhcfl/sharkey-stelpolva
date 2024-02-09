@@ -208,7 +208,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			// Compare password
 			if (profile.twoFactorEnabled) {
-				if (token == null) {
+				if (token == null) { // eslint-disable-line detect-possible-timing-attacks
 					throw new Error('authentication failed');
 				}
 

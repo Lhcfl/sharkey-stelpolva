@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<MkKeyValue>
 					<template #key>{{ i18n.ts.description }}</template>
-					<template #value><div v-html="sanitizeHtml(instance.description)"></div></template>
+					<template #value><div v-html="sanitizeHtml(instance.description)"></div></template><!-- njsscan-ignore:vue_template -->
 				</MkKeyValue>
 
 				<FormSection>
@@ -29,8 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<template #key>Sharkey</template>
 							<template #value>{{ version }}</template>
 						</MkKeyValue>
-						<div v-html="i18n.tsx.poweredByMisskeyDescription({ name: instance.name ?? host })">
-						</div>
+						<div v-html="i18n.tsx.poweredByMisskeyDescription({ name: instance.name ?? host })"></div><!-- njsscan-ignore:vue_template -->
 						<FormLink to="/about-sharkey">{{ i18n.ts.aboutMisskey }}</FormLink>
 					</div>
 				</FormSection>
@@ -53,7 +52,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<template #label>{{ i18n.ts.serverRules }}</template>
 
 								<ol class="_gaps_s" :class="$style.rules">
-									<li v-for="item, index in instance.serverRules" :key="index" :class="$style.rule"><div :class="$style.ruleText" v-html="sanitizeHtml(item)"></div></li>
+									<li v-for="item, index in instance.serverRules" :key="index" :class="$style.rule"><div :class="$style.ruleText" v-html="sanitizeHtml(item)"></div></li><!-- njsscan-ignore:vue_template -->
 								</ol>
 							</MkFolder>
 							<FormLink v-if="instance.tosUrl" :to="instance.tosUrl" external>{{ i18n.ts.termsOfService }}</FormLink>

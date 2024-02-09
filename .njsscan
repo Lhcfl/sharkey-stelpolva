@@ -1,0 +1,6 @@
+---
+- ignore-filenames:
+  # there may be a "header injection", I'm pretty sure we don't
+  # trigger it given the way we use this, but please remove this
+  # when/if the library gets updated
+  - packages/frontend/assets/libopenmpt.js

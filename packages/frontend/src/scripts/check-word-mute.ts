@@ -27,6 +27,11 @@ export function checkWordMute(note: Record<string, any>, me: Record<string, any>
 				if (!regexp) return false;
 
 				try {
+					/*
+						this could actually be a problem, but not here: here it's
+						user-supplied regexes running on the user's browser
+
+						eslint-disable-next-line detect-non-literal-regexp */
 					return new RegExp(regexp[1], regexp[2]).test(text);
 				} catch (err) {
 					// This should never happen due to input sanitisation.

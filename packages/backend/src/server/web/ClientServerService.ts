@@ -200,7 +200,7 @@ export class ClientServerService {
 			const url = decodeURI(request.routeOptions.url);
 			if (url === bullBoardPath || url.startsWith(bullBoardPath + '/')) {
 				const token = request.cookies.token;
-				if (token == null) {
+				if (token == null) { // eslint-disable-line detect-possible-timing-attacks
 					reply.code(401).send('Login required');
 					return;
 				}

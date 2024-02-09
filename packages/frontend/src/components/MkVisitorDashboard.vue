@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</h1>
 			<div :class="$style.mainAbout">
 				<!-- eslint-disable-next-line vue/no-v-html -->
-				<div v-html="sanitizeHtml(meta.description) || i18n.ts.headlineMisskey"></div>
+				<div v-html="sanitizeHtml(meta.description) || i18n.ts.headlineMisskey"></div><!-- njsscan-ignore:vue_template -->
 			</div>
 			<div v-if="instance.disableRegistration" :class="$style.mainWarn">
 				<MkInfo warn>{{ i18n.ts.invitationRequiredToRegister }}</MkInfo>

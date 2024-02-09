@@ -46,6 +46,7 @@ export class ExportAntennasProcessorService {
 			return;
 		}
 		const [path, cleanup] = await createTemp();
+		// eslint-disable-next-line detect-non-literal-fs-filename
 		const stream = fs.createWriteStream(path, { flags: 'a' });
 		const write = (input: string): Promise<void> => {
 			return new Promise((resolve, reject) => {

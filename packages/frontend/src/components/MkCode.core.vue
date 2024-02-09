@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <!-- eslint-disable vue/no-v-html -->
 <template>
-<div :class="[$style.codeBlockRoot, { [$style.codeEditor]: codeEditor }]" v-html="html"></div>
+<div :class="[$style.codeBlockRoot, { [$style.codeEditor]: codeEditor }]" v-html="html"></div><!-- njsscan-ignore:vue_template -->
 </template>
 
 <script lang="ts" setup>

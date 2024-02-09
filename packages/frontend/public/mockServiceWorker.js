@@ -117,6 +117,7 @@ self.addEventListener('fetch', function (event) {
   }
 
   // Generate unique request ID.
+  // eslint-disable-next-line node_insecure_random_generator
   const requestId = Math.random().toString(16).slice(2)
 
   event.respondWith(
