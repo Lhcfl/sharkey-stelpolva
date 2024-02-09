@@ -11,7 +11,7 @@ import type { MiUserProfile, UserProfilesRepository, UsersRepository } from '@/m
 import { bindThis } from '@/decorators.js';
 import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
 import type { MiLocalUser } from '@/models/User.js';
-import * as crypto from 'node:crypto';
+import { secureishCompare } from '@/misc/secure-ish-compare.js';
 
 @Injectable()
 export class UserAuthService {
@@ -29,7 +29,7 @@ export class UserAuthService {
 		if (profile.twoFactorBackupSecret?.includes(token)) {
 			await this.userProfilesRepository.update({ userId: profile.userId }, {
 				twoFactorBackupSecret: profile.twoFactorBackupSecret.filter(
-					(secret) => !crypto.timingSafeEqual(secret, token)
+					(secret) => !secureishCompare(secret, token)
 				),
 			});
 		} else {

@@ -38,6 +38,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginOption
 import type { FindOptionsWhere } from 'typeorm';
 import type Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { secureishCompare } from '@/misc/secure-ish-compare.js';
 
 const ACTIVITY_JSON = 'application/activity+json; charset=utf-8';
 const LD_JSON = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"; charset=utf-8';
@@ -287,7 +288,7 @@ export class ActivityPubServerService {
 
 			const hash = crypto.createHash('sha256').update(request.rawBody).digest('base64');
 
-			if (! crypto.timingSafeEqual(hash, digestValue)) {
+			if (!secureishCompare(hash, digestValue)) {
 				// Invalid digest
 				reply.code(401);
 				return;
@@ -795,7 +796,7 @@ export class ActivityPubServerService {
 
 		fastify.get<{ Params: { user: string; } }>('/users/:user', { constraints: { apOrHtml: 'ap' } }, async (request, reply) => {
 			if (await this.shouldRefuseGetRequest(request, reply, request.params.user)) return;
-			
+
 			vary(reply.raw, 'Accept');
 
 			const userId = request.params.user;
@@ -811,7 +812,7 @@ export class ActivityPubServerService {
 
 		fastify.get<{ Params: { user: string; } }>('/@:user', { constraints: { apOrHtml: 'ap' } }, async (request, reply) => {
 			if (await this.shouldRefuseGetRequest(request, reply, request.params.user)) return;
-			
+
 			vary(reply.raw, 'Accept');
 
 			const user = await this.usersRepository.findOneBy({
