@@ -15,7 +15,7 @@ function build() {
 		fs.mkdirSync(__dirname + '/../built', { recursive: true });
 		fs.writeFileSync(__dirname + '/../built/meta.json', JSON.stringify({ version: meta.version }), 'utf-8');
 	} catch (e) {
-		console.error(e)
+		console.error(e) // njsscan-ignore:generic_error_disclosure
 	}
 }
 
