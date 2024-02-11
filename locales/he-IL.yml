@@ -76,7 +76,7 @@ import: "יבוא"
 export: "יצוא"
 files: "קבצים"
 download: "הורידו"
-driveFileDeleteConfirm: "Do you want to remove the file \"{name}\"? Some content using this file will also be removed." //foramtting solution needs to ne found
+driveFileDeleteConfirm: "Do you want to remove the file \"{name}\"? Some content using this file will also be removed." #foramtting solution needs to ne found
 unfollowConfirm: " אתם בטוחים שאתם רוצים להוריד מעקב ל- {name}?"
 exportRequested: "אתם ביקשתם יצוא. זה יכול לקחת זמן. זה יעלה לכונן שלכם כאשר זה יסתיים."
 importRequested: "אתם ביקשתם יבא. זה יכול לקחת זמן."
@@ -247,7 +247,7 @@ blocked: "נחסם"
 suspended: "מושהה"
 all: "הכל"
 subscribing: "נשמים"
-publishing: "Publishing" //need more context
+publishing: "Publishing" #need more context
 notResponding: "לא מגיב"
 instanceFollowing: "עקב אחרי האינסטנס"
 instanceFollowers: "עוקבי אינסטנס"
@@ -260,7 +260,7 @@ newPassword: "סיסמא חדשה"
 newPasswordRetype: "הכניסו סיסמא חדש מחדש"
 attachFile: "הוסיפו קבצים"
 more: "!עוד"
-featured: "מוצג" //Need a better translation
+featured: "מוצג" #Need a better translation
 usernameOrUserId: "שם משתמש אם מספר משתמש"
 noSuchUser: "משתמש לא נמצא"
 lookup: "חיפוש"
