@@ -4,394 +4,755 @@
  */
 
 // TODO: sharedに置いてバックエンドのと統合したい
-export const iso639Langs1 = {
-	af: {
-		nativeName: 'Afrikaans',
-	},
-	ak: {
-		nativeName: 'Tɕɥi',
-	},
-	ar: {
-		nativeName: 'العربية',
-		rtl: true,
-	},
-	ay: {
-		nativeName: 'Aymar aru',
-	},
-	az: {
-		nativeName: 'Azərbaycan dili',
-	},
-	be: {
-		nativeName: 'Беларуская',
-	},
-	bg: {
-		nativeName: 'Български',
-	},
-	bn: {
-		nativeName: 'বাংলা',
-	},
-	br: {
-		nativeName: 'Brezhoneg',
-	},
-	bs: {
-		nativeName: 'Bosanski',
-	},
-	ca: {
-		nativeName: 'Català',
-	},
-	cs: {
-		nativeName: 'Čeština',
-	},
-	cy: {
-		nativeName: 'Cymraeg',
-	},
-	da: {
-		nativeName: 'Dansk',
-	},
-	de: {
-		nativeName: 'Deutsch',
-	},
-	el: {
-		nativeName: 'Ελληνικά',
-	},
-	en: {
-		nativeName: 'English',
-	},
-	eo: {
-		nativeName: 'Esperanto',
-	},
-	es: {
-		nativeName: 'Español',
-	},
-	et: {
-		nativeName: 'eesti keel',
-	},
-	eu: {
-		nativeName: 'Euskara',
-	},
-	fa: {
-		nativeName: 'فارسی',
-		rtl: true,
-	},
-	ff: {
-		nativeName: 'Fulah',
-	},
-	fi: {
-		nativeName: 'Suomi',
-	},
-	fo: {
-		nativeName: 'Føroyskt',
-	},
-	fr: {
-		nativeName: 'Français',
-	},
-	fy: {
-		nativeName: 'Frysk',
-	},
-	ga: {
-		nativeName: 'Gaeilge',
-	},
-	gd: {
-		nativeName: 'Gàidhlig',
-	},
-	gl: {
-		nativeName: 'Galego',
-	},
-	gn: {
-		nativeName: 'Avañe\'ẽ',
-	},
-	gu: {
-		nativeName: 'ગુજરાતી',
-	},
-	gv: {
-		nativeName: 'Gaelg',
-	},
-	he: {
-		nativeName: 'עברית‏',
-		rtl: true,
-	},
-	hi: {
-		nativeName: 'हिन्दी',
-	},
-	hr: {
-		nativeName: 'Hrvatski',
-	},
-	ht: {
-		nativeName: 'Kreyòl',
-	},
-	hu: {
-		nativeName: 'Magyar',
-	},
-	hy: {
-		nativeName: 'Հայերեն',
-	},
-	id: {
-		nativeName: 'Bahasa Indonesia',
-	},
-	is: {
-		nativeName: 'Íslenska',
-	},
-	it: {
-		nativeName: 'Italiano',
-	},
-	ja: {
-		nativeName: '日本語',
-	},
-	jv: {
-		nativeName: 'Basa Jawa',
-	},
-	ka: {
-		nativeName: 'ქართული',
-	},
-	kk: {
-		nativeName: 'Қазақша',
-	},
-	kl: {
-		nativeName: 'kalaallisut',
-	},
-	km: {
-		nativeName: 'ភាសាខ្មែរ',
-	},
-	kn: {
-		nativeName: 'ಕನ್ನಡ',
-	},
-	ko: {
-		nativeName: '한국어',
-	},
-	ku: {
-		nativeName: 'Kurdî',
-	},
-	kw: {
-		nativeName: 'Kernewek',
-	},
-	la: {
-		nativeName: 'Latin',
-	},
-	lb: {
-		nativeName: 'Lëtzebuergesch',
-	},
-	li: {
-		nativeName: 'Lèmbörgs',
-	},
-	lt: {
-		nativeName: 'Lietuvių',
-	},
-	lv: {
-		nativeName: 'Latviešu',
-	},
-	mg: {
-		nativeName: 'Malagasy',
-	},
-	mk: {
-		nativeName: 'Македонски',
-	},
-	ml: {
-		nativeName: 'മലയാളം',
-	},
-	mn: {
-		nativeName: 'Монгол',
-	},
-	mr: {
-		nativeName: 'मराठी',
-	},
-	ms: {
-		nativeName: 'Bahasa Melayu',
-	},
-	mt: {
-		nativeName: 'Malti',
-	},
-	my: {
-		nativeName: 'ဗမာစကာ',
-	},
-	no: {
-		nativeName: 'Norsk',
-	},
-	nb: {
-		nativeName: 'Norsk (bokmål)',
-	},
-	ne: {
-		nativeName: 'नेपाली',
-	},
-	nl: {
-		nativeName: 'Nederlands',
-	},
-	nn: {
-		nativeName: 'Norsk (nynorsk)',
-	},
-	oc: {
-		nativeName: 'Occitan',
-	},
-	or: {
-		nativeName: 'ଓଡ଼ିଆ',
-	},
-	pa: {
-		nativeName: 'ਪੰਜਾਬੀ',
-	},
-	pl: {
-		nativeName: 'Polski',
-	},
-	ps: {
-		nativeName: 'پښتو',
-		rtl: true,
-	},
-	pt: {
-		nativeName: 'Português',
-	},
-	qu: {
-		nativeName: 'Qhichwa',
-	},
-	rm: {
-		nativeName: 'Rumantsch',
-	},
-	ro: {
-		nativeName: 'Română',
-	},
-	ru: {
-		nativeName: 'Русский',
-	},
-	sa: {
-		nativeName: 'संस्कृतम्',
-	},
-	se: {
-		nativeName: 'Davvisámegiella',
-	},
-	sh: {
-		nativeName: 'српскохрватски',
-	},
-	si: {
-		nativeName: 'සිංහල',
-	},
-	sk: {
-		nativeName: 'Slovenčina',
-	},
-	sl: {
-		nativeName: 'Slovenščina',
-	},
-	so: {
-		nativeName: 'Soomaaliga',
-	},
-	sq: {
-		nativeName: 'Shqip',
-	},
-	sr: {
-		nativeName: 'Српски',
-	},
-	su: {
-		nativeName: 'Basa Sunda',
-	},
-	sv: {
-		nativeName: 'Svenska',
-	},
-	sw: {
-		nativeName: 'Kiswahili',
-	},
-	ta: {
-		nativeName: 'தமிழ்',
-	},
-	te: {
-		nativeName: 'తెలుగు',
-	},
-	tg: {
-		nativeName: 'забо́ни тоҷикӣ́',
-	},
-	th: {
-		nativeName: 'ภาษาไทย',
-	},
-	tr: {
-		nativeName: 'Türkçe',
-	},
-	tt: {
-		nativeName: 'татарча',
-	},
-	uk: {
-		nativeName: 'Українська',
-	},
-	ur: {
-		nativeName: 'اردو',
-		rtl: true,
-	},
-	uz: {
-		nativeName: 'O\'zbek',
-	},
-	vi: {
-		nativeName: 'Tiếng Việt',
-	},
-	xh: {
-		nativeName: 'isiXhosa',
-	},
-	yi: {
-		nativeName: 'ייִדיש',
-		rtl: true,
-	},
-	zh: {
-		nativeName: '中文',
-	},
-	zu: {
-		nativeName: 'isiZulu',
-	},
-};
-
-export const iso639Langs3 = {
-	ach: {
+export const langmap = {
+	'ach': {
 		nativeName: 'Lwo',
 	},
-	ady: {
+	'ady': {
 		nativeName: 'Адыгэбзэ',
 	},
-	cak: {
+	'af': {
+		nativeName: 'Afrikaans',
+	},
+	'af-NA': {
+		nativeName: 'Afrikaans (Namibia)',
+	},
+	'af-ZA': {
+		nativeName: 'Afrikaans (South Africa)',
+	},
+	'ak': {
+		nativeName: 'Tɕɥi',
+	},
+	'ar': {
+		nativeName: 'العربية',
+	},
+	'ar-AR': {
+		nativeName: 'العربية',
+	},
+	'ar-MA': {
+		nativeName: 'العربية',
+	},
+	'ar-SA': {
+		nativeName: 'العربية (السعودية)',
+	},
+	'ay': {
+		nativeName: 'Aymar aru',
+	},
+	'ay-BO': {
+		nativeName: 'Aymar aru',
+	},
+	'az': {
+		nativeName: 'Azərbaycan dili',
+	},
+	'az-AZ': {
+		nativeName: 'Azərbaycan dili',
+	},
+	'be': {
+		nativeName: 'Беларуская',
+	},
+	'be-BY': {
+		nativeName: 'Беларуская',
+	},
+	'bg': {
+		nativeName: 'Български',
+	},
+	'bg-BG': {
+		nativeName: 'Български',
+	},
+	'bn': {
+		nativeName: 'বাংলা',
+	},
+	'bn-IN': {
+		nativeName: 'বাংলা (ভারত)',
+	},
+	'bn-BD': {
+		nativeName: 'বাংলা(বাংলাদেশ)',
+	},
+	'br': {
+		nativeName: 'Brezhoneg',
+	},
+	'bs': {
+		nativeName: 'Bosanski',
+	},
+	'bs-BA': {
+		nativeName: 'Bosanski',
+	},
+	'ca': {
+		nativeName: 'Català',
+	},
+	'ca-ES': {
+		nativeName: 'Català',
+	},
+	'cak': {
 		nativeName: 'Maya Kaqchikel',
 	},
-	chr: {
+	'chr': {
 		nativeName: 'ᏣᎳᎩ (tsalagi)',
 	},
-	dsb: {
+	'cs': {
+		nativeName: 'Čeština',
+	},
+	'cs-CZ': {
+		nativeName: 'Čeština',
+	},
+	'cy': {
+		nativeName: 'Cymraeg',
+	},
+	'cy-GB': {
+		nativeName: 'Cymraeg',
+	},
+	'da': {
+		nativeName: 'Dansk',
+	},
+	'da-DK': {
+		nativeName: 'Dansk',
+	},
+	'de': {
+		nativeName: 'Deutsch',
+	},
+	'de-AT': {
+		nativeName: 'Deutsch (Österreich)',
+	},
+	'de-DE': {
+		nativeName: 'Deutsch (Deutschland)',
+	},
+	'de-CH': {
+		nativeName: 'Deutsch (Schweiz)',
+	},
+	'dsb': {
 		nativeName: 'Dolnoserbšćina',
 	},
-	fil: {
-		nativeName: 'Filipino',
+	'el': {
+		nativeName: 'Ελληνικά',
 	},
-	hsb: {
-		nativeName: 'Hornjoserbšćina',
+	'el-GR': {
+		nativeName: 'Ελληνικά',
 	},
-	kab: {
-		nativeName: 'Taqbaylit',
+	'en': {
+		nativeName: 'English',
 	},
-	mai: {
-		nativeName: 'मैथिली, মৈথিলী',
-	},
-	tlh: {
-		nativeName: 'tlhIngan-Hol',
-	},
-	tok: {
-		nativeName: 'Toki Pona',
-	},
-	yue: {
-		nativeName: '粵語',
-	},
-	nan: {
-		nativeName: '閩南語',
-	},
-};
-
-export const langmapNoRegion = Object.assign({}, iso639Langs1, iso639Langs3);
-
-export const iso639Regional = {
 	'en-GB': {
 		nativeName: 'English (UK)',
+	},
+	'en-AU': {
+		nativeName: 'English (Australia)',
+	},
+	'en-CA': {
+		nativeName: 'English (Canada)',
+	},
+	'en-IE': {
+		nativeName: 'English (Ireland)',
+	},
+	'en-IN': {
+		nativeName: 'English (India)',
+	},
+	'en-PI': {
+		nativeName: 'English (Pirate)',
+	},
+	'en-SG': {
+		nativeName: 'English (Singapore)',
+	},
+	'en-UD': {
+		nativeName: 'English (Upside Down)',
+	},
+	'en-US': {
+		nativeName: 'English (US)',
+	},
+	'en-ZA': {
+		nativeName: 'English (South Africa)',
+	},
+	'eo': {
+		nativeName: 'Esperanto',
+	},
+	'eo-EO': {
+		nativeName: 'Esperanto',
+	},
+	'es': {
+		nativeName: 'Español',
+	},
+	'es-AR': {
+		nativeName: 'Español (Argentine)',
+	},
+	'es-419': {
+		nativeName: 'Español (Latinoamérica)',
+	},
+	'es-CL': {
+		nativeName: 'Español (Chile)',
+	},
+	'es-CO': {
+		nativeName: 'Español (Colombia)',
+	},
+	'es-EC': {
+		nativeName: 'Español (Ecuador)',
+	},
+	'es-ES': {
+		nativeName: 'Español (España)',
+	},
+	'es-LA': {
+		nativeName: 'Español (Latinoamérica)',
+	},
+	'es-NI': {
+		nativeName: 'Español (Nicaragua)',
+	},
+	'es-MX': {
+		nativeName: 'Español (México)',
+	},
+	'es-US': {
+		nativeName: 'Español (Estados Unidos)',
+	},
+	'es-VE': {
+		nativeName: 'Español (Venezuela)',
+	},
+	'et': {
+		nativeName: 'eesti keel',
+	},
+	'et-EE': {
+		nativeName: 'Eesti (Estonia)',
+	},
+	'eu': {
+		nativeName: 'Euskara',
+	},
+	'eu-ES': {
+		nativeName: 'Euskara',
+	},
+	'fa': {
+		nativeName: 'فارسی',
+	},
+	'fa-IR': {
+		nativeName: 'فارسی',
+	},
+	'fb-LT': {
+		nativeName: 'Leet Speak',
+	},
+	'ff': {
+		nativeName: 'Fulah',
+	},
+	'fi': {
+		nativeName: 'Suomi',
+	},
+	'fi-FI': {
+		nativeName: 'Suomi',
+	},
+	'fo': {
+		nativeName: 'Føroyskt',
+	},
+	'fo-FO': {
+		nativeName: 'Føroyskt (Færeyjar)',
+	},
+	'fr': {
+		nativeName: 'Français',
 	},
 	'fr-CA': {
 		nativeName: 'Français (Canada)',
 	},
+	'fr-FR': {
+		nativeName: 'Français (France)',
+	},
+	'fr-BE': {
+		nativeName: 'Français (Belgique)',
+	},
+	'fr-CH': {
+		nativeName: 'Français (Suisse)',
+	},
+	'fy': {
+		nativeName: 'Frysk',
+	},
+	'fy-NL': {
+		nativeName: 'Frysk',
+	},
+	'ga': {
+		nativeName: 'Gaeilge',
+	},
+	'ga-IE': {
+		nativeName: 'Gaeilge',
+	},
+	'gd': {
+		nativeName: 'Gàidhlig',
+	},
+	'gl': {
+		nativeName: 'Galego',
+	},
+	'gl-ES': {
+		nativeName: 'Galego',
+	},
+	'gn': {
+		nativeName: 'Avañe\'ẽ',
+	},
+	'gn-PY': {
+		nativeName: 'Avañe\'ẽ',
+	},
+	'gu': {
+		nativeName: 'ગુજરાતી',
+	},
+	'gu-IN': {
+		nativeName: 'ગુજરાતી',
+	},
+	'gv': {
+		nativeName: 'Gaelg',
+	},
+	'grc': {
+		nativeName: 'Ἑλληνική ἀρχαία',
+	},
+	'he': {
+		nativeName: 'עברית‏',
+	},
+	'he-IL': {
+		nativeName: 'עברית‏',
+	},
+	'hi': {
+		nativeName: 'हिन्दी',
+	},
+	'hi-IN': {
+		nativeName: 'हिन्दी',
+	},
+	'hr': {
+		nativeName: 'Hrvatski',
+	},
+	'hr-HR': {
+		nativeName: 'Hrvatski',
+	},
+	'hsb': {
+		nativeName: 'Hornjoserbšćina',
+	},
+	'ht': {
+		nativeName: 'Kreyòl',
+	},
+	'hu': {
+		nativeName: 'Magyar',
+	},
+	'hu-HU': {
+		nativeName: 'Magyar',
+	},
+	'hy': {
+		nativeName: 'Հայերեն',
+	},
+	'hy-AM': {
+		nativeName: 'Հայերեն (Հայաստան)',
+	},
+	'id': {
+		nativeName: 'Bahasa Indonesia',
+	},
+	'id-ID': {
+		nativeName: 'Bahasa Indonesia',
+	},
+	'is': {
+		nativeName: 'Íslenska',
+	},
+	'is-IS': {
+		nativeName: 'Íslenska (Iceland)',
+	},
+	'it': {
+		nativeName: 'Italiano',
+	},
+	'it-IT': {
+		nativeName: 'Italiano',
+	},
+	'ja': {
+		nativeName: '日本語',
+	},
+	'ja-JP': {
+		nativeName: '日本語 (日本)',
+	},
+	'jv': {
+		nativeName: 'Basa Jawa',
+	},
+	'jv-ID': {
+		nativeName: 'Basa Jawa',
+	},
+	'ka': {
+		nativeName: 'ქართული',
+	},
+	'ka-GE': {
+		nativeName: 'ქართული',
+	},
+	'kk': {
+		nativeName: 'Қазақша',
+	},
+	'kk-KZ': {
+		nativeName: 'Қазақша',
+	},
+	'km': {
+		nativeName: 'ភាសាខ្មែរ',
+	},
+	'kl': {
+		nativeName: 'kalaallisut',
+	},
+	'km-KH': {
+		nativeName: 'ភាសាខ្មែរ',
+	},
+	'kab': {
+		nativeName: 'Taqbaylit',
+	},
+	'kn': {
+		nativeName: 'ಕನ್ನಡ',
+	},
+	'kn-IN': {
+		nativeName: 'ಕನ್ನಡ (India)',
+	},
+	'ko': {
+		nativeName: '한국어',
+	},
+	'ko-KR': {
+		nativeName: '한국어 (한국)',
+	},
+	'ku': {
+		nativeName: 'Kurdî',
+	},
+	'ku-TR': {
+		nativeName: 'Kurdî',
+	},
+	'kw': {
+		nativeName: 'Kernewek',
+	},
+	'la': {
+		nativeName: 'Latin',
+	},
+	'la-VA': {
+		nativeName: 'Latin',
+	},
+	'lb': {
+		nativeName: 'Lëtzebuergesch',
+	},
+	'li': {
+		nativeName: 'Lèmbörgs',
+	},
+	'li-NL': {
+		nativeName: 'Lèmbörgs',
+	},
+	'lt': {
+		nativeName: 'Lietuvių',
+	},
+	'lt-LT': {
+		nativeName: 'Lietuvių',
+	},
+	'lv': {
+		nativeName: 'Latviešu',
+	},
+	'lv-LV': {
+		nativeName: 'Latviešu',
+	},
+	'mai': {
+		nativeName: 'मैथिली, মৈথিলী',
+	},
+	'mg': {
+		nativeName: 'Malagasy',
+	},
+	'mg-MG': {
+		nativeName: 'Malagasy',
+	},
+	'mk': {
+		nativeName: 'Македонски',
+	},
+	'mk-MK': {
+		nativeName: 'Македонски (Македонски)',
+	},
+	'ml': {
+		nativeName: 'മലയാളം',
+	},
+	'ml-IN': {
+		nativeName: 'മലയാളം',
+	},
+	'mn': {
+		nativeName: 'Монгол',
+	},
+	'mn-MN': {
+		nativeName: 'Монгол',
+	},
+	'mr': {
+		nativeName: 'मराठी',
+	},
+	'mr-IN': {
+		nativeName: 'मराठी',
+	},
+	'ms': {
+		nativeName: 'Bahasa Melayu',
+	},
+	'ms-MY': {
+		nativeName: 'Bahasa Melayu',
+	},
+	'mt': {
+		nativeName: 'Malti',
+	},
+	'mt-MT': {
+		nativeName: 'Malti',
+	},
+	'my': {
+		nativeName: 'ဗမာစကာ',
+	},
+	'nan': {
+		nativeName: '閩南語',
+	},
+	'no': {
+		nativeName: 'Norsk',
+	},
+	'nb': {
+		nativeName: 'Norsk (bokmål)',
+	},
+	'nb-NO': {
+		nativeName: 'Norsk (bokmål)',
+	},
+	'ne': {
+		nativeName: 'नेपाली',
+	},
+	'ne-NP': {
+		nativeName: 'नेपाली',
+	},
+	'nl': {
+		nativeName: 'Nederlands',
+	},
+	'nl-BE': {
+		nativeName: 'Nederlands (België)',
+	},
+	'nl-NL': {
+		nativeName: 'Nederlands (Nederland)',
+	},
+	'nn': {
+		nativeName: 'Norsk (nynorsk)',
+	},
+	'nn-NO': {
+		nativeName: 'Norsk (nynorsk)',
+	},
+	'oc': {
+		nativeName: 'Occitan',
+	},
+	'or': {
+		nativeName: 'ଓଡ଼ିଆ',
+	},
+	'or-IN': {
+		nativeName: 'ଓଡ଼ିଆ',
+	},
+	'pa': {
+		nativeName: 'ਪੰਜਾਬੀ',
+	},
+	'pa-IN': {
+		nativeName: 'ਪੰਜਾਬੀ (ਭਾਰਤ ਨੂੰ)',
+	},
+	'pl': {
+		nativeName: 'Polski',
+	},
+	'pl-PL': {
+		nativeName: 'Polski',
+	},
+	'ps': {
+		nativeName: 'پښتو',
+	},
+	'ps-AF': {
+		nativeName: 'پښتو',
+	},
+	'pt': {
+		nativeName: 'Português',
+	},
 	'pt-BR': {
 		nativeName: 'Português (Brasil)',
 	},
+	'pt-PT': {
+		nativeName: 'Português (Portugal)',
+	},
+	'qu': {
+		nativeName: 'Qhichwa',
+	},
+	'qu-PE': {
+		nativeName: 'Qhichwa',
+	},
+	'rm': {
+		nativeName: 'Rumantsch',
+	},
+	'rm-CH': {
+		nativeName: 'Rumantsch',
+	},
+	'ro': {
+		nativeName: 'Română',
+	},
+	'ro-RO': {
+		nativeName: 'Română',
+	},
+	'ru': {
+		nativeName: 'Русский',
+	},
+	'ru-RU': {
+		nativeName: 'Русский',
+	},
+	'sa': {
+		nativeName: 'संस्कृतम्',
+	},
+	'sa-IN': {
+		nativeName: 'संस्कृतम्',
+	},
+	'se': {
+		nativeName: 'Davvisámegiella',
+	},
+	'se-NO': {
+		nativeName: 'Davvisámegiella',
+	},
+	'sh': {
+		nativeName: 'српскохрватски',
+	},
+	'si': {
+		nativeName: 'සිංහල',
+	},
+	'si-LK': {
+		nativeName: 'සිංහල',
+	},
+	'sk': {
+		nativeName: 'Slovenčina',
+	},
+	'sk-SK': {
+		nativeName: 'Slovenčina (Slovakia)',
+	},
+	'sl': {
+		nativeName: 'Slovenščina',
+	},
+	'sl-SI': {
+		nativeName: 'Slovenščina',
+	},
+	'so': {
+		nativeName: 'Soomaaliga',
+	},
+	'so-SO': {
+		nativeName: 'Soomaaliga',
+	},
+	'sq': {
+		nativeName: 'Shqip',
+	},
+	'sq-AL': {
+		nativeName: 'Shqip',
+	},
+	'sr': {
+		nativeName: 'Српски',
+	},
+	'sr-RS': {
+		nativeName: 'Српски (Serbia)',
+	},
+	'su': {
+		nativeName: 'Basa Sunda',
+	},
+	'sv': {
+		nativeName: 'Svenska',
+	},
+	'sv-SE': {
+		nativeName: 'Svenska',
+	},
+	'sw': {
+		nativeName: 'Kiswahili',
+	},
+	'sw-KE': {
+		nativeName: 'Kiswahili',
+	},
+	'ta': {
+		nativeName: 'தமிழ்',
+	},
+	'ta-IN': {
+		nativeName: 'தமிழ்',
+	},
+	'te': {
+		nativeName: 'తెలుగు',
+	},
+	'te-IN': {
+		nativeName: 'తెలుగు',
+	},
+	'tg': {
+		nativeName: 'забо́ни тоҷикӣ́',
+	},
+	'tg-TJ': {
+		nativeName: 'тоҷикӣ',
+	},
+	'th': {
+		nativeName: 'ภาษาไทย',
+	},
+	'th-TH': {
+		nativeName: 'ภาษาไทย (ประเทศไทย)',
+	},
+	'fil': {
+		nativeName: 'Filipino',
+	},
+	'tlh': {
+		nativeName: 'tlhIngan-Hol',
+	},
+	'tok': {
+		nativeName: 'Toki Pona',
+	},
+	'tr': {
+		nativeName: 'Türkçe',
+	},
+	'tr-TR': {
+		nativeName: 'Türkçe',
+	},
+	'tt': {
+		nativeName: 'татарча',
+	},
+	'tt-RU': {
+		nativeName: 'татарча',
+	},
+	'uk': {
+		nativeName: 'Українська',
+	},
+	'uk-UA': {
+		nativeName: 'Українська',
+	},
+	'ur': {
+		nativeName: 'اردو',
+	},
+	'ur-PK': {
+		nativeName: 'اردو',
+	},
+	'uz': {
+		nativeName: 'O\'zbek',
+	},
+	'uz-UZ': {
+		nativeName: 'O\'zbek',
+	},
+	'vi': {
+		nativeName: 'Tiếng Việt',
+	},
+	'vi-VN': {
+		nativeName: 'Tiếng Việt',
+	},
+	'xh': {
+		nativeName: 'isiXhosa',
+	},
+	'xh-ZA': {
+		nativeName: 'isiXhosa',
+	},
+	'yi': {
+		nativeName: 'ייִדיש',
+	},
+	'yi-DE': {
+		nativeName: 'ייִדיש (German)',
+	},
+	'yue': {
+		nativeName: '粵語',
+	},
+	'zh': {
+		nativeName: '中文',
+	},
 	'zh-Hans': {
-		nativeName: '中文（简体）',
+		nativeName: '中文简体',
 	},
 	'zh-Hant': {
-		nativeName: '中文（繁體）',
+		nativeName: '中文繁體',
+	},
+	'zh-CN': {
+		nativeName: '中文（中国大陆）',
+	},
+	'zh-HK': {
+		nativeName: '中文（香港）',
+	},
+	'zh-SG': {
+		nativeName: '中文（新加坡）',
+	},
+	'zh-TW': {
+		nativeName: '中文（台灣）',
+	},
+	'zu': {
+		nativeName: 'isiZulu',
+	},
+	'zu-ZA': {
+		nativeName: 'isiZulu',
 	},
 };
 
-export const langmap = Object.assign({}, langmapNoRegion, iso639Regional);
-export const langs = Object.keys(langmap);
+export const langs: string[] = [
+	...(Object.keys(langmap).filter(tag => tag.indexOf('-') < 0)),
+	'zh-Hans',
+	'zh-Hant',
+];
