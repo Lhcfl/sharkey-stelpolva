@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 			<button v-click-anime v-tooltip="i18n.ts.language" :class="['_button', $style.headerRightItem]" @click="setLanguage">
 				<span><i class="ph-translate ph-bold ph-lg"></i></span>
-				<span v-if="language !== '' && language != null" :class="$style.headerRightButtonText">{{ language }}</span>
+				<span v-if="language" :class="$style.headerRightButtonText">{{ language }}</span>
 			</button>
 			<button v-click-anime v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="channel != null || visibility === 'specified'" @click="toggleLocalOnly">
 				<span v-if="!localOnly"><i class="ph-rocket-launch ph-bold ph-lg"></i></span>
@@ -813,7 +813,7 @@ async function post(ev?: MouseEvent) {
 			visibility.value = 'home';
 		}
 	}
-	
+
 	if (defaultStore.state.warnMissingAltText) {
 		const filesData = toRaw(files.value);
 
@@ -833,7 +833,7 @@ async function post(ev?: MouseEvent) {
 			});
 
 			if (canceled) return;
-			if (result === 'cancel') return;	
+			if (result === 'cancel') return;
 		}
 	}
 
@@ -845,7 +845,7 @@ async function post(ev?: MouseEvent) {
 		channelId: props.channel ? props.channel.id : undefined,
 		poll: poll.value,
 		cw: useCw.value ? cw.value ?? '' : null,
-		lang: language.value ? language.value : null,
+		lang: language.value ?? null,
 		localOnly: localOnly.value,
 		visibility: visibility.value,
 		visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(u => u.id) : undefined,
@@ -957,10 +957,12 @@ async function post(ev?: MouseEvent) {
 	// update recentlyUsedLanguages
 	if (language.value != null) {
 		const maxLength = 6;
-
-		defaultStore.set('recentlyUsedPostLanguages', [language.value].concat(defaultStore.state.recentlyUsedPostLanguages.filter((lang) => {
+		const filteredRecentlyUsed = defaultStore.state.recentlyUsedPostLanguages.filter((lang) => {
 			return (lang !== language.value && langs.includes(lang));
-		})).slice(0, maxLength));
+		});
+		const recentlyUsedLangs = [language.value].concat(filteredRecentlyUsed).slice(0, maxLength);
+
+		defaultStore.set('recentlyUsedPostLanguages', recentlyUsedLangs);
 	}
 }
 
