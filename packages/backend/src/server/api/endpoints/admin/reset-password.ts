@@ -4,8 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-//import bcrypt from 'bcryptjs';
-import * as argon2 from 'argon2';
+import bcrypt from 'bcryptjs';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { UsersRepository, UserProfilesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
@@ -66,7 +65,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const passwd = secureRndstr(8);
 
 			// Generate hash of password
-			const hash = await argon2.hash(passwd);
+			const salt = await bcrypt.genSalt(8);
+			const hash = await bcrypt.hash(passwd, salt);
 
 			await this.userProfilesRepository.update({
 				userId: user.id,
