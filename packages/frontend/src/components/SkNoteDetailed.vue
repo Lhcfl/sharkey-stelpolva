@@ -77,7 +77,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</header>
 		<div :class="$style.noteContent">
 			<p v-if="appearNote.cw != null" :class="$style.cw">
-				<Mfm v-if="appearNote.cw != ''" style="margin-right: 8px;" :text="appearNote.cw" :author="appearNote.user" :nyaize="'respect'"/>
+				<Mfm v-if="appearNote.cw != ''" style="margin-right: 8px;" :text="appearNote.cw" :lang="appearNote.lang" :author="appearNote.user" :nyaize="'respect'"/>
 				<MkCwButton v-model="showContent" :text="appearNote.text" :files="appearNote.files" :poll="appearNote.poll"/>
 			</p>
 			<div v-show="appearNote.cw == null || showContent">
@@ -86,6 +86,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					v-if="appearNote.text"
 					:parsedNodes="parsed"
 					:text="appearNote.text"
+					:lang="appearNote.lang"
 					:author="appearNote.user"
 					:nyaize="'respect'"
 					:emojiUrls="appearNote.emojis"
@@ -98,7 +99,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkLoading v-if="translating" mini/>
 					<div v-else-if="translation">
 						<b>{{ i18n.tsx.translatedFrom({ x: translation.sourceLang }) }}: </b>
-						<Mfm :text="translation.text" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis"/>
+						<Mfm :text="translation.text" :lang="nativeLang" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis"/>
 					</div>
 				</div>
 				<MkButton v-if="!allowAnim && animated" :class="$style.playMFMButton" :small="true" @click="animatedMFM()" @click.stop><i class="ph-play ph-bold ph-lg "></i> {{ i18n.ts._animatedMFM.play }}</MkButton>
@@ -266,6 +267,7 @@ import MkPagination, { type Paging } from '@/components/MkPagination.vue';
 import MkReactionIcon from '@/components/MkReactionIcon.vue';
 import MkButton from '@/components/MkButton.vue';
 import { boostMenuItems, type Visibility } from '@/scripts/boost-quote.js';
+import { miLocalStorage } from '@/local-storage.js';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -330,6 +332,7 @@ const replies = ref<Misskey.entities.Note[]>([]);
 const quotes = ref<Misskey.entities.Note[]>([]);
 const canRenote = computed(() => ['public', 'home'].includes(appearNote.value.visibility) || (appearNote.value.visibility === 'followers' && appearNote.value.userId === $i?.id));
 const defaultLike = computed(() => defaultStore.state.like ? defaultStore.state.like : null);
+const nativeLang = ref(miLocalStorage.getItem('lang') ?? window.navigator.language);
 
 watch(() => props.expandAllCws, (expandAllCws) => {
 	if (expandAllCws !== showContent.value) showContent.value = expandAllCws;
@@ -447,7 +450,7 @@ function boostVisibility() {
 	}
 }
 
-function renote(visibility: Visibility, localOnly: boolean = false) {
+function renote(visibility: Visibility, localOnly = false) {
 	pleaseLogin();
 	showMovedDialog();
 

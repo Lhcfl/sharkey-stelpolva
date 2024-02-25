@@ -2273,6 +2273,9 @@ type IWebhooksShowResponse = operations['i/webhooks/show']['responses']['200']['
 type IWebhooksUpdateRequest = operations['i/webhooks/update']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+export const languages: readonly ["ach", "ady", "af", "ak", "ar", "az", "bg", "bn", "br", "ca", "cak", "cs", "cy", "da", "de", "dsb", "el", "en", "eo", "es", "et", "eu", "fa", "ff", "fi", "fo", "fr", "ga", "gd", "gl", "gv", "he", "hi", "hr", "hsb", "ht", "hu", "hy", "id", "is", "it", "ja", "km", "kl", "kab", "kn", "ko", "kw", "la", "lb", "lt", "lv", "mai", "mk", "ml", "mr", "ms", "mt", "my", "no", "nb", "ne", "nl", "oc", "pa", "pl", "pt", "ro", "ru", "sh", "sk", "sl", "sq", "sr", "su", "sv", "sw", "ta", "te", "tg", "th", "fil", "tlh", "tr", "uk", "ur", "uz", "vi", "yi", "zh"];
+
+// @public (undocumented)
 type MeDetailed = components['schemas']['MeDetailed'];
 
 // @public (undocumented)

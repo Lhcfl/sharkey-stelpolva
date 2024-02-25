@@ -9,14 +9,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-if="note.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 		<span v-if="note.deletedAt" style="opacity: 0.5">({{ i18n.ts.deletedNote }})</span>
 		<MkA v-if="note.replyId" :class="$style.reply" :to="`/notes/${note.replyId}`" @click.stop><i class="ph-arrow-bend-left-up ph-bold ph-lg"></i></MkA>
-		<Mfm v-if="note.text" :text="note.text" :author="note.user" :nyaize="'respect'" :isAnim="allowAnim" :emojiUrls="note.emojis"/>
+		<Mfm v-if="note.text" :text="note.text" :lang="note.lang" :author="note.user" :nyaize="'respect'" :isAnim="allowAnim" :emojiUrls="note.emojis"/>
 		<MkButton v-if="!allowAnim && animated && !hideFiles" :class="$style.playMFMButton" :small="true" @click="animatedMFM()" @click.stop><i class="ph-play ph-bold ph-lg "></i> {{ i18n.ts._animatedMFM.play }}</MkButton>
 		<MkButton v-else-if="!defaultStore.state.animatedMfm && allowAnim && animated && !hideFiles" :class="$style.playMFMButton" :small="true" @click="animatedMFM()" @click.stop><i class="ph-stop ph-bold ph-lg "></i> {{ i18n.ts._animatedMFM.stop }}</MkButton>
 		<div v-if="note.text && translating || note.text && translation" :class="$style.translation">
 			<MkLoading v-if="translating" mini/>
 			<div v-else>
 				<b>{{ i18n.tsx.translatedFrom({ x: translation.sourceLang }) }}: </b>
-				<Mfm :text="translation.text" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
+				<Mfm :text="translation.text" :lang="nativeLang" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
 			</div>
 		</div>
 		<MkA v-if="note.renoteId" :class="$style.rp" :to="`/notes/${note.renoteId}`" @click.stop>RN: ...</MkA>
@@ -51,6 +51,7 @@ import { defaultStore } from '@/store.js';
 import { useRouter } from '@/router/supplier.js';
 import * as os from '@/os.js';
 import { checkAnimationFromMfm } from '@/scripts/check-animated-mfm.js';
+import { miLocalStorage } from '@/local-storage.js';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -72,6 +73,7 @@ function noteclick(id: string) {
 const parsed = computed(() => props.note.text ? mfm.parse(props.note.text) : null);
 const animated = computed(() => parsed.value ? checkAnimationFromMfm(parsed.value) : null);
 let allowAnim = ref(defaultStore.state.advancedMfm && defaultStore.state.animatedMfm ? true : false);
+const nativeLang = ref(miLocalStorage.getItem('lang') ?? window.navigator.language);
 
 const isLong = defaultStore.state.expandLongNote && !props.hideFiles ? false : shouldCollapsed(props.note, []);
 
