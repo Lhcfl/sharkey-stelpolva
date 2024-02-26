@@ -17,7 +17,7 @@ import { birthdaySchema, listenbrainzSchema, descriptionSchema, locationSchema, 
 import type { MiUserProfile } from '@/models/UserProfile.js';
 import { notificationTypes } from '@/types.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
-import { langs } from '@/misc/langmap.js';
+import { langmap } from '@/misc/langmap.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -149,7 +149,7 @@ export const paramDef = {
 		location: { ...locationSchema, nullable: true },
 		birthday: { ...birthdaySchema, nullable: true },
 		listenbrainz: { ...listenbrainzSchema, nullable: true },
-		lang: { type: 'string', enum: [null, ...langs] as string[], nullable: true },
+		lang: { type: 'string', enum: [null, ...Object.keys(langmap)] as string[], nullable: true },
 		avatarId: { type: 'string', format: 'misskey:id', nullable: true },
 		avatarDecorations: { type: 'array', maxItems: 16, items: {
 			type: 'object',
