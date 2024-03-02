@@ -128,6 +128,9 @@ type AdminEmojiAddAliasesBulkRequest = operations['admin/emoji/add-aliases-bulk'
 type AdminEmojiAddRequest = operations['admin/emoji/add']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type AdminEmojiAddResponse = operations['admin/emoji/add']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminEmojiCopyRequest = operations['admin/emoji/copy']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -542,6 +545,7 @@ export type Channels = {
             unreadNotification: (payload: Notification_2) => void;
             unreadMention: (payload: Note['id']) => void;
             readAllUnreadMentions: () => void;
+            notificationFlushed: () => void;
             unreadSpecifiedNote: (payload: Note['id']) => void;
             readAllUnreadSpecifiedNotes: () => void;
             readAllAntennas: () => void;
@@ -1185,6 +1189,7 @@ declare namespace entities {
         AdminDriveShowFileResponse,
         AdminEmojiAddAliasesBulkRequest,
         AdminEmojiAddRequest,
+        AdminEmojiAddResponse,
         AdminEmojiCopyRequest,
         AdminEmojiCopyResponse,
         AdminEmojiDeleteBulkRequest,
@@ -1754,6 +1759,7 @@ declare namespace entities {
         RoleCondFormulaLogics,
         RoleCondFormulaValueNot,
         RoleCondFormulaValueIsLocalOrRemote,
+        RoleCondFormulaValueAssignedRole,
         RoleCondFormulaValueCreated,
         RoleCondFormulaFollowersOrFollowingOrNotes,
         RoleCondFormulaValue,
@@ -2805,6 +2811,9 @@ type RoleCondFormulaLogics = components['schemas']['RoleCondFormulaLogics'];
 
 // @public (undocumented)
 type RoleCondFormulaValue = components['schemas']['RoleCondFormulaValue'];
+
+// @public (undocumented)
+type RoleCondFormulaValueAssignedRole = components['schemas']['RoleCondFormulaValueAssignedRole'];
 
 // @public (undocumented)
 type RoleCondFormulaValueCreated = components['schemas']['RoleCondFormulaValueCreated'];

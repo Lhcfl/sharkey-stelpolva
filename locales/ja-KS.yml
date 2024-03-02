@@ -993,6 +993,7 @@ neverShow: "今後表示しない"
 remindMeLater: "また後で"
 didYouLikeMisskey: "Sharkey気に入ってくれた？"
 pleaseDonate: "Sharkeyは{host}が使うとる無料のソフトウェアやで。これからも開発を続けれるように、寄付したってな～。"
+correspondingSourceIsAvailable: "{anchor}"
 roles: "ロール"
 role: "ロール"
 noRole: "ロールはありまへん"
@@ -1210,6 +1211,7 @@ hemisphere: "住んでる地域"
 withSensitive: "センシティブなファイルを含むノートを表示"
 userSaysSomethingSensitive: "{name}のセンシティブなファイルを含む投稿"
 enableHorizontalSwipe: "スワイプしてタブを切り替える"
+surrender: "やめとく"
 _bubbleGame:
   howToPlay: "遊び方"
   _howToPlay:
@@ -2494,4 +2496,3 @@ _reversi:
 _offlineScreen:
   title: "オフライン - サーバーに接続できひんで"
   header: "サーバーに接続できへんわ"
-

@@ -13,7 +13,7 @@ export const notificationRecieveConfig = {
 				type: {
 					type: 'string',
 					nullable: false,
-					enum: ['all', 'following', 'follower', 'mutualFollow', 'never'],
+					enum: ['all', 'following', 'follower', 'mutualFollow', 'followingOrFollower', 'never'],
 				},
 			},
 			required: ['type'],
@@ -170,6 +170,9 @@ export const packedUserLiteSchema = {
 		emojis: {
 			type: 'object',
 			nullable: false, optional: false,
+			additionalProperties: {
+				type: 'string',
+			},
 		},
 		onlineStatus: {
 			type: 'string',

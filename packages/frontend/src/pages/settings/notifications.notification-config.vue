@@ -10,6 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<option value="following" v-if="hasSender">{{ i18n.ts.following }}</option>
 		<option value="follower" v-if="hasSender">{{ i18n.ts.followers }}</option>
 		<option value="mutualFollow" v-if="hasSender">{{ i18n.ts.mutualFollow }}</option>
+		<option value="followingOrFollower" v-if="hasSender">{{ i18n.ts.followingOrFollower }}</option>
 		<option value="list" v-if="hasSender">{{ i18n.ts.userList }}</option>
 		<option value="never">{{ i18n.ts.none }}</option>
 	</MkSelect>

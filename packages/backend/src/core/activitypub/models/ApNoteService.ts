@@ -26,6 +26,7 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 import { checkHttps } from '@/misc/check-https.js';
 import { langs } from '@/misc/langmap.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { isNotNull } from '@/misc/is-not-null.js';
 import { getOneApId, getApId, getOneApHrefNullable, validPost, isEmoji, getApType } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
@@ -158,11 +159,52 @@ export class ApNoteService {
 			throw new Error('invalid note.attributedTo: ' + note.attributedTo);
 		}
 
-		const actor = await this.apPersonService.resolvePerson(getOneApId(note.attributedTo), resolver) as MiRemoteUser;
+		const uri = getOneApId(note.attributedTo);
 
-		// 投稿者が凍結されていたらスキップ
+		// ローカルで投稿者を検索し、もし凍結されていたらスキップ
+		const cachedActor = await this.apPersonService.fetchPerson(uri) as MiRemoteUser;
+		if (cachedActor && cachedActor.isSuspended) {
+			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', 'actor has been suspended');
+		}
+
+		const apMentions = await this.apMentionService.extractApMentions(note.tag, resolver);
+		const apHashtags = extractApHashtags(note.tag);
+
+		const cw = note.summary === '' ? null : note.summary;
+
+		// テキストのパース
+		let text: string | null = null;
+		let lang: string | null = null;
+		if (note.source?.mediaType === 'text/x.misskeymarkdown' && (typeof note.source.content === 'string' || note.source.contentMap)) {
+			const guessed = this.guessLang(note.source);
+			text = guessed.text;
+			lang = guessed.lang;
+		} else if (typeof note._misskey_content !== 'undefined') {
+			text = note._misskey_content;
+		} else if (typeof note.content === 'string' || note.contentMap) {
+			const guessed = this.guessLang(note);
+			lang = guessed.lang;
+			if (guessed.text) text = this.apMfmService.htmlToMfm(guessed.text, note.tag);
+		}
+
+		const poll = await this.apQuestionService.extractPollFromQuestion(note, resolver).catch(() => undefined);
+
+		//#region Contents Check
+		// 添付ファイルとユーザーをこのサーバーで登録する前に内容をチェックする
+		/**
+		 * 禁止ワードチェック
+		 */
+		const hasProhibitedWords = await this.noteCreateService.checkProhibitedWordsContain({ cw, text, pollChoices: poll?.choices });
+		if (hasProhibitedWords) {
+			throw new IdentifiableError('689ee33f-f97c-479a-ac49-1b9f8140af99', 'Note contains prohibited words');
+		}
+		//#endregion
+
+		const actor = cachedActor ?? await this.apPersonService.resolvePerson(uri, resolver) as MiRemoteUser;
+
+		// 解決した投稿者が凍結されていたらスキップ
 		if (actor.isSuspended) {
-			throw new Error('actor has been suspended');
+			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', 'actor has been suspended');
 		}
 
 		const noteAudience = await this.apAudienceService.parseAudience(actor, note.to, note.cc, resolver);
@@ -176,9 +218,6 @@ export class ApNoteService {
 				visibility = 'public';
 			}
 		}
-
-		const apMentions = await this.apMentionService.extractApMentions(note.tag, resolver);
-		const apHashtags = extractApHashtags(note.tag);
 
 		// 添付ファイル
 		// TODO: attachmentは必ずしもImageではない
@@ -239,23 +278,6 @@ export class ApNoteService {
 			}
 		}
 
-		const cw = note.summary === '' ? null : note.summary;
-
-		// テキストのパース
-		let text: string | null = null;
-		let lang: string | null = null;
-		if (note.source?.mediaType === 'text/x.misskeymarkdown' && (typeof note.source.content === 'string' || note.source.contentMap)) {
-			const guessed = this.guessLang(note.source);
-			text = guessed.text;
-			lang = guessed.lang;
-		} else if (typeof note._misskey_content !== 'undefined') {
-			text = note._misskey_content;
-		} else if (typeof note.content === 'string' || note.contentMap) {
-			const guessed = this.guessLang(note);
-			lang = guessed.lang;
-			if (guessed.text) text = this.apMfmService.htmlToMfm(guessed.text, note.tag);
-		}
-
 		// vote
 		if (reply && reply.hasPoll) {
 			const poll = await this.pollsRepository.findOneByOrFail({ noteId: reply.id });
@@ -284,8 +306,6 @@ export class ApNoteService {
 		});
 
 		const apEmojis = emojis.map(emoji => emoji.name);
-
-		const poll = await this.apQuestionService.extractPollFromQuestion(note, resolver).catch(() => undefined);
 
 		try {
 			return await this.noteCreateService.create(actor, {
@@ -325,14 +345,14 @@ export class ApNoteService {
 	 */
 	@bindThis
 	public async updateNote(value: string | IObject, resolver?: Resolver, silent = false): Promise<MiNote | null> {
-		const uri = typeof value === 'string' ? value : value.id;
-		if (uri == null) throw new Error('uri is null');
+		const noteUri = typeof value === 'string' ? value : value.id;
+		if (noteUri == null) throw new Error('uri is null');
 
 		// URIがこのサーバーを指しているならスキップ
-		if (uri.startsWith(this.config.url + '/')) throw new Error('uri points local');
+		if (noteUri.startsWith(this.config.url + '/')) throw new Error('uri points local');
 
 		//#region このサーバーに既に登録されているか
-		const UpdatedNote = await this.notesRepository.findOneBy({ uri });
+		const UpdatedNote = await this.notesRepository.findOneBy({ uri: noteUri });
 		if (UpdatedNote == null) throw new Error('Note is not registered');
 
 		// eslint-disable-next-line no-param-reassign
@@ -372,11 +392,52 @@ export class ApNoteService {
 			throw new Error('invalid note.attributedTo: ' + note.attributedTo);
 		}
 
-		const actor = await this.apPersonService.resolvePerson(getOneApId(note.attributedTo), resolver) as MiRemoteUser;
+		const uri = getOneApId(note.attributedTo);
+
+		// ローカルで投稿者を検索し、もし凍結されていたらスキップ
+		const cachedActor = await this.apPersonService.fetchPerson(uri) as MiRemoteUser;
+		if (cachedActor && cachedActor.isSuspended) {
+			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', 'actor has been suspended');
+		}
+
+		const apMentions = await this.apMentionService.extractApMentions(note.tag, resolver);
+		const apHashtags = extractApHashtags(note.tag);
+
+		const cw = note.summary === '' ? null : note.summary;
+
+		// テキストのパース
+		let text: string | null = null;
+		let lang: string | null = null;
+		if (note.source?.mediaType === 'text/x.misskeymarkdown' && (typeof note.source.content === 'string' || note.source.contentMap)) {
+			const guessed = this.guessLang(note.source);
+			text = guessed.text;
+			lang = guessed.lang;
+		} else if (typeof note._misskey_content !== 'undefined') {
+			text = note._misskey_content;
+		} else if (typeof note.content === 'string' || note.contentMap) {
+			const guessed = this.guessLang(note);
+			lang = guessed.lang;
+			if (guessed.text) text = this.apMfmService.htmlToMfm(guessed.text, note.tag);
+		}
+
+		const poll = await this.apQuestionService.extractPollFromQuestion(note, resolver).catch(() => undefined);
+
+		//#region Contents Check
+		// 添付ファイルとユーザーをこのサーバーで登録する前に内容をチェックする
+		/**
+		 * 禁止ワードチェック
+		 */
+		const hasProhibitedWords = await this.noteCreateService.checkProhibitedWordsContain({ cw, text, pollChoices: poll?.choices });
+		if (hasProhibitedWords) {
+			throw new IdentifiableError('689ee33f-f97c-479a-ac49-1b9f8140af99', 'Note contains prohibited words');
+		}
+		//#endregion
+
+		const actor = cachedActor ?? await this.apPersonService.resolvePerson(uri, resolver) as MiRemoteUser;
 
 		// 投稿者が凍結されていたらスキップ
 		if (actor.isSuspended) {
-			throw new Error('actor has been suspended');
+			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', 'actor has been suspended');
 		}
 
 		const noteAudience = await this.apAudienceService.parseAudience(actor, note.to, note.cc, resolver);
@@ -390,9 +451,6 @@ export class ApNoteService {
 				visibility = 'public';
 			}
 		}
-
-		const apMentions = await this.apMentionService.extractApMentions(note.tag, resolver);
-		const apHashtags = extractApHashtags(note.tag);
 
 		// 添付ファイル
 		// TODO: attachmentは必ずしもImageではない
@@ -453,29 +511,12 @@ export class ApNoteService {
 			}
 		}
 
-		const cw = note.summary === '' ? null : note.summary;
-
-		// テキストのパース
-		let text: string | null = null;
-		let lang: string | null = null;
-		if (note.source?.mediaType === 'text/x.misskeymarkdown' && (typeof note.source.content === 'string' || note.source.contentMap)) {
-			const guessed = this.guessLang(note.source);
-			text = guessed.text;
-			lang = guessed.lang;
-		} else if (typeof note._misskey_content !== 'undefined') {
-			text = note._misskey_content;
-		} else if (typeof note.content === 'string' || note.contentMap) {
-			const guessed = this.guessLang(note);
-			lang = guessed.lang;
-			if (guessed.text) text = this.apMfmService.htmlToMfm(guessed.text, note.tag);
-		}
-
 		// vote
 		if (reply && reply.hasPoll) {
-			const poll = await this.pollsRepository.findOneByOrFail({ noteId: reply.id });
+			const replyPoll = await this.pollsRepository.findOneByOrFail({ noteId: reply.id });
 
 			const tryCreateVote = async (name: string, index: number): Promise<null> => {
-				if (poll.expiresAt && Date.now() > new Date(poll.expiresAt).getTime()) {
+				if (replyPoll.expiresAt && Date.now() > new Date(replyPoll.expiresAt).getTime()) {
 					this.logger.warn(`vote to expired poll from AP: actor=${actor.username}@${actor.host}, note=${note.id}, choice=${name}`);
 				} else if (index >= 0) {
 					this.logger.info(`vote from AP: actor=${actor.username}@${actor.host}, note=${note.id}, choice=${name}`);
@@ -488,7 +529,7 @@ export class ApNoteService {
 			};
 
 			if (note.name) {
-				return await tryCreateVote(note.name, poll.choices.findIndex(x => x === note.name));
+				return await tryCreateVote(note.name, replyPoll.choices.findIndex(x => x === note.name));
 			}
 		}
 
@@ -498,8 +539,6 @@ export class ApNoteService {
 		});
 
 		const apEmojis = emojis.map(emoji => emoji.name);
-
-		const poll = await this.apQuestionService.extractPollFromQuestion(note, resolver).catch(() => undefined);
 
 		try {
 			return await this.noteEditService.edit(actor, UpdatedNote.id, {

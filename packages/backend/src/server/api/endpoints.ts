@@ -305,6 +305,7 @@ import * as ep___notes_userListTimeline from './endpoints/notes/user-list-timeli
 import * as ep___notes_edit from './endpoints/notes/edit.js';
 import * as ep___notes_versions from './endpoints/notes/versions.js';
 import * as ep___notifications_create from './endpoints/notifications/create.js';
+import * as ep___notifications_flush from './endpoints/notifications/flush.js';
 import * as ep___notifications_markAllAsRead from './endpoints/notifications/mark-all-as-read.js';
 import * as ep___notifications_testNotification from './endpoints/notifications/test-notification.js';
 import * as ep___pagePush from './endpoints/page-push.js';
@@ -687,6 +688,7 @@ const eps = [
 	['notes/edit', ep___notes_edit],
 	['notes/versions', ep___notes_versions],
 	['notifications/create', ep___notifications_create],
+	['notifications/flush', ep___notifications_flush],
 	['notifications/mark-all-as-read', ep___notifications_markAllAsRead],
 	['notifications/test-notification', ep___notifications_testNotification],
 	['page-push', ep___pagePush],

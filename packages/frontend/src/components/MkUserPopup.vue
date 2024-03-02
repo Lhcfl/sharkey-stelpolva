@@ -38,7 +38,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</dt>
 					<dd :class="$style.fieldvalue">
 						<Mfm :text="field.value" :nyaize="false" :author="user" :colored="false"/>
-						<i v-if="user.verifiedLinks.includes(field.value)" v-tooltip:dialog="i18n.ts.verifiedLink" class="ph-seal-check ph-bold ph-lg" :class="$style.verifiedLink"></i>
+						<i v-if="user.verifiedLinks.includes(field.value)" v-tooltip:dialog="i18n.ts.verifiedLink" class="ph-seal-check ph-bold ph-lg"></i>
 					</dd>
 				</dl>
 			</div>

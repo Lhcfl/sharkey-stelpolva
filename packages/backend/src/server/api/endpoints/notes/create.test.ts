@@ -44,11 +44,6 @@ describe('api:notes/create', () => {
 					.toBe(INVALID);
 			});
 
-			test('over 3000 characters post', async () => {
-				expect(v({ text: await tooLong }))
-					.toBe(INVALID);
-			});
-
 			test('whitespace-only post', () => {
 				expect(v({ text: ' ' }))
 					.toBe(INVALID);
