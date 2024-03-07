@@ -69,7 +69,7 @@ import * as os from '@/os.js';
 import bytes from '@/filters/bytes.js';
 import { hms } from '@/filters/hms.js';
 import MkMediaRange from '@/components/MkMediaRange.vue';
-import { iAmModerator } from '@/account.js';
+import { $i, iAmModerator } from '@/account.js';
 
 const props = defineProps<{
 	audio: Misskey.entities.DriveFile;
@@ -99,12 +99,21 @@ function showMenu(ev: MouseEvent) {
 
 	if (iAmModerator) {
 		menu.push({
-			type: 'divider',
-		}, {
 			text: props.audio.isSensitive ? i18n.ts.unmarkAsSensitive : i18n.ts.markAsSensitive,
 			icon: props.audio.isSensitive ? 'ph-eye ph-bold ph-lg' : 'ph-eye-slash ph-bold ph-lg',
 			danger: true,
 			action: () => toggleSensitive(props.audio),
+		});
+	}
+
+	if ($i?.id === props.audio.userId) {
+		menu.push({
+			type: 'divider',
+		}, {
+			type: 'link' as const,
+			text: i18n.ts._fileViewer.title,
+			icon: 'ti ti-info-circle',
+			to: `/my/drive/file/${props.audio.id}`,
 		});
 	}
 
