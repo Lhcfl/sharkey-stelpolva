@@ -2045,6 +2045,10 @@ export interface Locale extends ILocale {
      */
     "showNoteActionsOnlyHover": string;
     /**
+     * ノートのリアクション数を表示する
+     */
+    "showReactionsCount": string;
+    /**
      * 履歴はありません
      */
     "noHistory": string;

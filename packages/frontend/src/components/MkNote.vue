@@ -140,7 +140,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<i v-else-if="appearNote.myReaction != null" class="ph-minus ph-bold ph-lg" style="color: var(--accent);"></i>
 					<i v-else-if="appearNote.reactionAcceptance === 'likeOnly'" class="ph-heart ph-bold ph-lg"></i>
 					<i v-else class="ph-smiley ph-bold ph-lg"></i>
-					<p v-if="appearNote.reactionCount > 0" :class="$style.footerButtonCount">{{ number(appearNote.reactionCount) }}</p>
+					<p v-if="(appearNote.reactionAcceptance === 'likeOnly' || defaultStore.state.showReactionsCount) && appearNote.reactionCount > 0" :class="$style.footerButtonCount">{{ number(appearNote.reactionCount) }}</p>
 				</button>
 				<button v-if="defaultStore.state.showClipButtonInNoteFooter" ref="clipButton" :class="$style.footerButton" class="_button" @mousedown="clip()">
 					<i class="ph-paperclip ph-bold ph-lg"></i>
