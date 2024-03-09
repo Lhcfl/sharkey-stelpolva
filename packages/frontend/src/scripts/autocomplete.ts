@@ -99,7 +99,7 @@ export class Autocomplete {
 		const isHashtag = hashtagIndex !== -1;
 		const isMfmParam = mfmParamIndex !== -1 && afterLastMfmParam?.includes('.') && !afterLastMfmParam?.includes(' ');
 		const isMfmTag = mfmTagIndex !== -1 && !isMfmParam;
-		const isEmoji = emojiIndex !== -1 && text.split(/:[a-z0-9_+\-]+:/).pop()!.includes(':');
+		const isEmoji = emojiIndex !== -1 && text.split(/:[\p{Letter}\p{Number}\p{Mark}_+-]+:/u).pop()!.includes(':');
 
 		let opened = false;
 
@@ -125,7 +125,7 @@ export class Autocomplete {
 		if (isEmoji && !opened && this.onlyType.includes('emoji')) {
 			const emoji = text.substring(emojiIndex + 1);
 			if (!emoji.includes(' ')) {
-				this.open('emoji', emoji);
+				this.open('emoji', emoji.normalize('NFC'));
 				opened = true;
 			}
 		}

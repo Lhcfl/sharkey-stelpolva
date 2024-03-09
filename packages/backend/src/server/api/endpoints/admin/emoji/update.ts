@@ -40,7 +40,7 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		id: { type: 'string', format: 'misskey:id' },
-		name: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' },
+		name: { type: 'string', pattern: '^[\\p{Letter}\\p{Number}\\p{Mark}_+-]+$' },
 		fileId: { type: 'string', format: 'misskey:id' },
 		category: {
 			type: 'string',
@@ -72,6 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private customEmojiService: CustomEmojiService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			const nameNfc = ps.name?.normalize('NFC');
 			let driveFile;
 			if (ps.fileId) {
 				driveFile = await this.driveFilesRepository.findOneBy({ id: ps.fileId });
@@ -83,22 +84,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				emojiId = ps.id;
 				const emoji = await this.customEmojiService.getEmojiById(ps.id);
 				if (!emoji) throw new ApiError(meta.errors.noSuchEmoji);
-				if (ps.name && (ps.name !== emoji.name)) {
-					const isDuplicate = await this.customEmojiService.checkDuplicate(ps.name);
+				if (nameNfc && (nameNfc !== emoji.name)) {
+					const isDuplicate = await this.customEmojiService.checkDuplicate(nameNfc);
 					if (isDuplicate) throw new ApiError(meta.errors.sameNameEmojiExists);
 				}
 			} else {
-				if (!ps.name) throw new Error('Invalid Params unexpectedly passed. This is a BUG. Please report it to the development team.');
-				const emoji = await this.customEmojiService.getEmojiByName(ps.name);
+				if (!nameNfc) throw new Error('Invalid Params unexpectedly passed. This is a BUG. Please report it to the development team.');
+				const emoji = await this.customEmojiService.getEmojiByName(nameNfc);
 				if (!emoji) throw new ApiError(meta.errors.noSuchEmoji);
 				emojiId = emoji.id;
 			}
 
 			await this.customEmojiService.update(emojiId, {
 				driveFile,
-				name: ps.name,
-				category: ps.category,
-				aliases: ps.aliases,
+				name: nameNfc,
+				category: ps.category?.normalize('NFC'),
+				aliases: ps.aliases?.map(a => a.normalize('NFC')),
 				license: ps.license,
 				isSensitive: ps.isSensitive,
 				localOnly: ps.localOnly,
