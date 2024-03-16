@@ -80,8 +80,6 @@ class NotificationFavIconDot {
 	constructor() {
 		this.canvas = document.createElement('canvas');
 
-		if (this.faviconEL == null) return;
-
 		this.src = this.faviconEL.getAttribute('href');
 		this.ctx = this.canvas.getContext('2d');
 
@@ -162,11 +160,11 @@ function onNotification(notification: Misskey.entities.Notification, isClient = 
 if ($i) {
 	const connection = useStream().useChannel('main', null, 'UI');
 	connection.on('notification', onNotification);
-	
-	watch(() => $i?.hasUnreadNotification, (hasAny) => notificationDot.setVisible(hasAny ?? false));
-	
-	if ($i.hasUnreadNotification) notificationDot.setVisible(true);
 
+	watch(() => $i?.hasUnreadNotification, (hasAny) => notificationDot.setVisible((defaultStore.state.enableFaviconNotificationDot ? hasAny : false) ?? false));
+
+	if ($i.hasUnreadNotification && defaultStore.state.enableFaviconNotificationDot) notificationDot.setVisible(true);
+	
 	globalEvents.on('clientNotification', notification => onNotification(notification, true));
 
 	//#region Listen message from SW
