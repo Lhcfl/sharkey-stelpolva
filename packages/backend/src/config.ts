@@ -212,6 +212,8 @@ export function loadConfig(): Config {
 			{} as Source,
 		) as Source;
 
+	applyEnvOverrides(config);
+
 	const url = tryCreateUrl(config.url);
 	const version = meta.version;
 	const host = url.host;
@@ -303,4 +305,103 @@ function convertRedisOptions(options: RedisOptionsSource, host: string): RedisOp
 		keyPrefix: `${options.prefix ?? host}:`,
 		db: options.db ?? 0,
 	};
+}
+
+/*
+	this function allows overriding any string-valued config option with
+	a sensible-named environment variable
+
+	e.g. `MK_CONFIG_MEILISEARCH_APIKEY` overrides `config.meilisearch.apikey`
+
+	the option's containing object must be present in the config *file*,
+	so in the example above, `config.meilisearch` must be set to
+	something in the file, it can't be completely commented out.
+
+	you can also override a single `dbSlave` value,
+	e.g. `MK_CONFIG_DBSLAVES_1_PASS` sets the password for the 2nd
+	database replica (the first one would be
+	`MK_CONFIG_DBSLAVES_0_PASS`); again, `config.dbSlaves` must be set
+	to an array of the right size already in the file
+
+	values can be read from files, too: setting `MK_DB_PASS_FILE` to
+	`/some/file` would set the main database password to the contents of
+	`/some/file` (trimmed of whitespaces)
+ */
+function applyEnvOverrides(config: Source) {
+	// these inner functions recurse through the config structure, using
+	// the given steps, building the env variable name
+
+	function _apply_top(steps: (string | number)[]) {
+		_apply_inner(config, '', steps);
+	}
+
+	function _apply_inner(thisConfig: any, name: string, steps: (string | number)[]) {
+		// are there more steps after this one? recurse
+		if (steps.length > 1) {
+			const thisStep = steps.shift();
+			if (thisStep === null || thisStep === undefined) return;
+
+			// if a step is not a simple value, iterate through it
+			if (typeof thisStep === 'object') {
+				for (const thisOneStep of thisStep) {
+					_descend(thisConfig, name, thisOneStep, steps);
+				}
+			} else {
+				_descend(thisConfig, name, thisStep, steps);
+			}
+
+			// the actual override has happened at the bottom of the
+			// recursion, we're done
+			return;
+		}
+
+		// this is the last step, same thing as above
+		const lastStep = steps[0];
+
+		if (typeof lastStep === 'object') {
+			for (const lastOneStep of lastStep) {
+				_lastBit(thisConfig, name, lastOneStep);
+			}
+		} else {
+			_lastBit(thisConfig, name, lastStep);
+		}
+	}
+
+	// this recurses down, bailing out if there's no config to override
+	function _descend(thisConfig: any, name: string, thisStep: string | number, steps: (string | number)[]) {
+		name = `${name}${thisStep.toString().toUpperCase()}_`;
+		thisConfig = thisConfig[thisStep];
+		if (!thisConfig) return;
+		_apply_inner(thisConfig, name, steps);
+	}
+
+	// this is the bottom of the recursion: look at the environment and
+	// set the value
+	function _lastBit(thisConfig: any, name: string, lastStep: string | number) {
+		name = `${name}${lastStep.toString().toUpperCase()}`;
+
+		const val = process.env[`MK_CONFIG_${name}`];
+		if (val != null && val != undefined) {
+			thisConfig[lastStep] = val;
+		}
+
+		const file = process.env[`MK_CONFIG_${name}_FILE`];
+		if (file) {
+			thisConfig[lastStep] = fs.readFileSync(file, 'utf-8').trim();
+		}
+	}
+
+	// these are all the settings that can be overridden
+
+	_apply_top([['url', 'port', 'socket', 'chmodSocket', 'disableHsts']]);
+	_apply_top(['db', ['host', 'port', 'db', 'user', 'pass']]);
+	_apply_top(['dbSlaves', config.dbSlaves?.keys(), ['host', 'port', 'db', 'user', 'pass']]);
+	_apply_top([
+		['redis', 'redisForPubsub', 'redisForJobQueue', 'redisForTimelines'],
+		['host','port','username','pass','db','prefix'],
+	]);
+	_apply_top(['meilisearch', ['host', 'port', 'apikey', 'ssl', 'index', 'scope']]);
+	_apply_top([['clusterLimit', 'deliverJobConcurrency', 'inboxJobConcurrency', 'relashionshipJobConcurrency', 'deliverJobPerSec', 'inboxJobPerSec', 'relashionshipJobPerSec', 'deliverJobMaxAttempts', 'inboxJobMaxAttempts']]);
+	_apply_top([['outgoingAddress', 'outgoingAddressFamily', 'proxy', 'proxySmtp', 'mediaProxy', 'videoThumbnailGenerator']]);
+	_apply_top([['maxFileSize', 'maxNoteLength', 'pidFile']]);
 }
