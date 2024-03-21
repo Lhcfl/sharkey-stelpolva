@@ -367,9 +367,13 @@ function applyEnvOverrides(config: Source) {
 		}
 	}
 
+	function _step2name(step: string|number): string {
+		return step.toString().replaceAll(/[^a-z0-9]+/gi,'').toUpperCase();
+	}
+
 	// this recurses down, bailing out if there's no config to override
 	function _descend(thisConfig: any, name: string, thisStep: string | number, steps: (string | number)[]) {
-		name = `${name}${thisStep.toString().toUpperCase()}_`;
+		name = `${name}${_step2name(thisStep)}_`;
 		thisConfig = thisConfig[thisStep];
 		if (!thisConfig) return;
 		_apply_inner(thisConfig, name, steps);
@@ -378,7 +382,7 @@ function applyEnvOverrides(config: Source) {
 	// this is the bottom of the recursion: look at the environment and
 	// set the value
 	function _lastBit(thisConfig: any, name: string, lastStep: string | number) {
-		name = `${name}${lastStep.toString().toUpperCase()}`;
+		name = `${name}${_step2name(lastStep)}`;
 
 		const val = process.env[`MK_CONFIG_${name}`];
 		if (val != null && val != undefined) {
