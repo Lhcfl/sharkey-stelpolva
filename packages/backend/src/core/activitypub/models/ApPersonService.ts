@@ -154,6 +154,19 @@ export class ApPersonService implements OnModuleInit {
 			throw new Error('invalid Actor: wrong inbox');
 		}
 
+		if (this.punyHost(x.inbox) !== expectHost) {
+			throw new Error('invalid Actor: inbox has different host');
+		}
+
+		for (const collection of ['outbox', 'followers', 'following'] as (keyof IActor)[]) {
+			const collectionUri = (x as IActor)[collection];
+			if (typeof collectionUri === 'string' && collectionUri.length > 0) {
+				if (this.punyHost(collectionUri) !== expectHost) {
+					throw new Error(`invalid Actor: ${collection} has different host`);
+				}
+			}
+		}
+
 		if (!(typeof x.preferredUsername === 'string' && x.preferredUsername.length > 0 && x.preferredUsername.length <= 128 && /^\w([\w-.]*\w)?$/.test(x.preferredUsername))) {
 			throw new Error('invalid Actor: wrong username');
 		}
