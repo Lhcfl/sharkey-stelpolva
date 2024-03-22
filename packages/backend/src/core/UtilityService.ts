@@ -99,4 +99,11 @@ export class UtilityService {
 		if (host == null) return null;
 		return toASCII(host.toLowerCase());
 	}
+
+	@bindThis
+	public punyHost(url: string): string {
+		const urlObj = new URL(url);
+		const host = `${this.toPuny(urlObj.hostname)}${urlObj.port.length > 0 ? ':' + urlObj.port : ''}`;
+		return host;
+	}
 }
