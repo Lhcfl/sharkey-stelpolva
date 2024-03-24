@@ -26,6 +26,7 @@ import {
 } from '@/models/User.js';
 import type {
 	BlockingsRepository,
+	DriveFilesRepository,
 	FollowingsRepository,
 	FollowRequestsRepository,
 	MiFollowing,
@@ -86,6 +87,7 @@ export type UserRelation = {
 export class UserEntityService implements OnModuleInit {
 	private apPersonService: ApPersonService;
 	private noteEntityService: NoteEntityService;
+	private driveFileEntityService: DriveFileEntityService;
 	private pageEntityService: PageEntityService;
 	private customEmojiService: CustomEmojiService;
 	private announcementService: AnnouncementService;
@@ -124,6 +126,9 @@ export class UserEntityService implements OnModuleInit {
 		@Inject(DI.renoteMutingsRepository)
 		private renoteMutingsRepository: RenoteMutingsRepository,
 
+		@Inject(DI.driveFilesRepository)
+		private driveFilesRepository: DriveFilesRepository,
+
 		@Inject(DI.noteUnreadsRepository)
 		private noteUnreadsRepository: NoteUnreadsRepository,
 
@@ -141,6 +146,7 @@ export class UserEntityService implements OnModuleInit {
 	onModuleInit() {
 		this.apPersonService = this.moduleRef.get('ApPersonService');
 		this.noteEntityService = this.moduleRef.get('NoteEntityService');
+		this.driveFileEntityService = this.moduleRef.get('DriveFileEntityService');
 		this.pageEntityService = this.moduleRef.get('PageEntityService');
 		this.customEmojiService = this.moduleRef.get('CustomEmojiService');
 		this.announcementService = this.moduleRef.get('AnnouncementService');
