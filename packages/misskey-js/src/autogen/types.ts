@@ -4577,6 +4577,8 @@ export type components = {
       localOnly: boolean;
       notify: boolean;
       /** @default false */
+      excludeBots: boolean;
+      /** @default false */
       withReplies: boolean;
       withFile: boolean;
       isActive: boolean;
@@ -4957,6 +4959,7 @@ export type components = {
       enableServiceWorker: boolean;
       translatorAvailable: boolean;
       mediaProxy: string;
+      enableUrlPreview: boolean;
       backgroundImageUrl: string | null;
       impressumUrl: string | null;
       logoImageUrl: string | null;
@@ -5116,11 +5119,21 @@ export type operations = {
             objectStorageS3ForcePathStyle: boolean;
             privacyPolicyUrl: string | null;
             repositoryUrl: string | null;
+            /**
+             * @deprecated
+             * @description [Deprecated] Use "urlPreviewSummaryProxyUrl" instead.
+             */
             summalyProxy: string | null;
             themeColor: string | null;
             tosUrl: string | null;
             uri: string;
             version: string;
+            urlPreviewEnabled: boolean;
+            urlPreviewTimeout: number;
+            urlPreviewMaximumContentLength: number;
+            urlPreviewRequireContentLength: boolean;
+            urlPreviewUserAgent: string | null;
+            urlPreviewSummaryProxyUrl: string | null;
           };
         };
       };
@@ -9280,7 +9293,6 @@ export type operations = {
           maintainerName?: string | null;
           maintainerEmail?: string | null;
           langs?: string[];
-          summalyProxy?: string | null;
           deeplAuthKey?: string | null;
           deeplIsPro?: boolean;
           deeplFreeMode?: boolean;
@@ -9339,6 +9351,14 @@ export type operations = {
           perUserListTimelineCacheMax?: number;
           notesPerOneAd?: number;
           silencedHosts?: string[] | null;
+          /** @description [Deprecated] Use "urlPreviewSummaryProxyUrl" instead. */
+          summalyProxy?: string | null;
+          urlPreviewEnabled?: boolean;
+          urlPreviewTimeout?: number;
+          urlPreviewMaximumContentLength?: number;
+          urlPreviewRequireContentLength?: boolean;
+          urlPreviewUserAgent?: string | null;
+          urlPreviewSummaryProxyUrl?: string | null;
         };
       };
     };
@@ -10079,6 +10099,7 @@ export type operations = {
           users: string[];
           caseSensitive: boolean;
           localOnly?: boolean;
+          excludeBots?: boolean;
           withReplies: boolean;
           withFile: boolean;
           notify: boolean;
@@ -10360,6 +10381,7 @@ export type operations = {
           users?: string[];
           caseSensitive?: boolean;
           localOnly?: boolean;
+          excludeBots?: boolean;
           withReplies?: boolean;
           withFile?: boolean;
           notify?: boolean;
@@ -23570,6 +23592,11 @@ export type operations = {
           summary: string;
           script: string;
           permissions: string[];
+          /**
+           * @default public
+           * @enum {string}
+           */
+          visibility?: 'public' | 'private';
         };
       };
     };
