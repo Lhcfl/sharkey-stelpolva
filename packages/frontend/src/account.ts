@@ -43,6 +43,7 @@ export async function signout() {
 	waiting();
 	miLocalStorage.removeItem('account');
 	await removeAccount($i.id);
+	document.cookie = `token=; path=/; max-age=0${ location.protocol === 'https:' ? '; Secure' : ''}`;
 	const accounts = await getAccounts();
 
 	//#region Remove service worker registration
@@ -200,7 +201,7 @@ export async function login(token: Account['token'], redirect?: string) {
 			throw reason;
 		});
 	miLocalStorage.setItem('account', JSON.stringify(me));
-	document.cookie = `token=${token}; path=/; max-age=31536000`; // bull dashboardの認証とかで使う
+	document.cookie = `token=${token}; path=/; max-age=31536000${ location.protocol === 'https:' ? '; Secure' : ''}`; // bull dashboardの認証とかで使う
 	await addAccount(me.id, token);
 
 	if (redirect) {

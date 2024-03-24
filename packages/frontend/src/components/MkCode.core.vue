@@ -72,12 +72,16 @@ watch(() => props.lang, (to) => {
 </script>
 
 <style module lang="scss">
+.codeBlockRoot {
+  text-align: left;
+}
+
 .codeBlockRoot :global(.shiki) > code {
   counter-reset: step;
   counter-increment: step 0;
 }
 
-.codeBlockRoot :global(.shiki) > code > .line::before {
+.codeBlockRoot :global(.shiki) > code > span::before {
   content: counter(step);
   counter-increment: step;
   width: 1rem;
