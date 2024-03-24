@@ -390,6 +390,8 @@ function applyEnvOverrides(config: Source) {
 		}
 	}
 
+	const alwaysStrings = { 'chmodSocket': 1 };
+
 	function _assign(path: (string | number)[], lastStep: string | number, value: string) {
 		let thisConfig = config;
 		for (const step of path) {
@@ -397,6 +399,14 @@ function applyEnvOverrides(config: Source) {
 				thisConfig[step] = {};
 			}
 			thisConfig = thisConfig[step];
+		}
+
+		if (!alwaysStrings[lastStep]) {
+			if (value.match(/^[0-9]+$/)) {
+				value = parseInt(value);
+			} else if (value.match(/^(true|false)$/i)) {
+				value = !!value.match(/^true$/i);
+			}
 		}
 
 		thisConfig[lastStep] = value;
