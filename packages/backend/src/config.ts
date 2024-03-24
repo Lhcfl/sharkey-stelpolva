@@ -311,17 +311,13 @@ function convertRedisOptions(options: RedisOptionsSource, host: string): RedisOp
 	this function allows overriding any string-valued config option with
 	a sensible-named environment variable
 
-	e.g. `MK_CONFIG_MEILISEARCH_APIKEY` overrides `config.meilisearch.apikey`
-
-	the option's containing object must be present in the config *file*,
-	so in the example above, `config.meilisearch` must be set to
-	something in the file, it can't be completely commented out.
+	e.g. `MK_CONFIG_MEILISEARCH_APIKEY` sets `config.meilisearch.apikey`
 
 	you can also override a single `dbSlave` value,
 	e.g. `MK_CONFIG_DBSLAVES_1_PASS` sets the password for the 2nd
 	database replica (the first one would be
-	`MK_CONFIG_DBSLAVES_0_PASS`); again, `config.dbSlaves` must be set
-	to an array of the right size already in the file
+	`MK_CONFIG_DBSLAVES_0_PASS`); in this case, `config.dbSlaves` must
+	be set to an array of the right size already in the file
 
 	values can be read from files, too: setting `MK_DB_PASS_FILE` to
 	`/some/file` would set the main database password to the contents of
@@ -332,10 +328,10 @@ function applyEnvOverrides(config: Source) {
 	// the given steps, building the env variable name
 
 	function _apply_top(steps: (string | number)[]) {
-		_apply_inner(config, '', steps);
+		_walk('', [], steps);
 	}
 
-	function _apply_inner(thisConfig: any, name: string, steps: (string | number)[]) {
+	function _walk(name: string, path: (string | number)[], steps: (string | number)[]) {
 		// are there more steps after this one? recurse
 		if (steps.length > 1) {
 			const thisStep = steps.shift();
@@ -344,10 +340,10 @@ function applyEnvOverrides(config: Source) {
 			// if a step is not a simple value, iterate through it
 			if (typeof thisStep === 'object') {
 				for (const thisOneStep of thisStep) {
-					_descend(thisConfig, name, thisOneStep, steps);
+					_descend(name, path, thisOneStep, steps);
 				}
 			} else {
-				_descend(thisConfig, name, thisStep, steps);
+				_descend(name, path, thisStep, steps);
 			}
 
 			// the actual override has happened at the bottom of the
@@ -360,10 +356,10 @@ function applyEnvOverrides(config: Source) {
 
 		if (typeof lastStep === 'object') {
 			for (const lastOneStep of lastStep) {
-				_lastBit(thisConfig, name, lastOneStep);
+				_lastBit(name, path, lastOneStep);
 			}
 		} else {
-			_lastBit(thisConfig, name, lastStep);
+			_lastBit(name, path, lastStep);
 		}
 	}
 
@@ -372,27 +368,38 @@ function applyEnvOverrides(config: Source) {
 	}
 
 	// this recurses down, bailing out if there's no config to override
-	function _descend(thisConfig: any, name: string, thisStep: string | number, steps: (string | number)[]) {
+	function _descend(name: string, path: (string | number)[], thisStep: string | number, steps: (string | number)[]) {
 		name = `${name}${_step2name(thisStep)}_`;
-		thisConfig = thisConfig[thisStep];
-		if (!thisConfig) return;
-		_apply_inner(thisConfig, name, steps);
+		path = [ ...path, thisStep ];
+		_walk(name, path, steps);
 	}
 
 	// this is the bottom of the recursion: look at the environment and
 	// set the value
-	function _lastBit(thisConfig: any, name: string, lastStep: string | number) {
-		name = `${name}${_step2name(lastStep)}`;
+	function _lastBit(name: string, path: (string | number)[], lastStep: string | number) {
+		name = `MK_CONFIG_${name}${_step2name(lastStep)}`;
 
-		const val = process.env[`MK_CONFIG_${name}`];
+		const val = process.env[name];
 		if (val != null && val != undefined) {
-			thisConfig[lastStep] = val;
+			_assign(path, lastStep, val);
 		}
 
-		const file = process.env[`MK_CONFIG_${name}_FILE`];
+		const file = process.env[`${name}_FILE`];
 		if (file) {
-			thisConfig[lastStep] = fs.readFileSync(file, 'utf-8').trim();
+			_assign(path, lastStep, fs.readFileSync(file, 'utf-8').trim());
 		}
+	}
+
+	function _assign(path: (string | number)[], lastStep: string | number, value: string) {
+		let thisConfig = config;
+		for (const step of path) {
+			if (!thisConfig[step]) {
+				thisConfig[step] = {};
+			}
+			thisConfig = thisConfig[step];
+		}
+
+		thisConfig[lastStep] = value;
 	}
 
 	// these are all the settings that can be overridden
