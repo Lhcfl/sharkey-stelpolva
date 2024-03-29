@@ -473,6 +473,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 	}).flat(Infinity) as (VNode | string)[];
 
 	return h('span', {
+		dir: 'auto',
 		// https://codeday.me/jp/qa/20190424/690106.html
 		style: props.nowrap ? 'white-space: pre; word-wrap: normal; overflow: hidden; text-overflow: ellipsis;' : 'white-space: pre-wrap;',
 	}, genEl(rootAst, props.rootScale ?? 1));
