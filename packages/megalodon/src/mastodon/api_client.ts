@@ -628,6 +628,7 @@ namespace MastodonAPI {
       content: s.content,
       plain_content: null,
       created_at: s.created_at,
+      edited_at: s.edited_at || null,
       emojis: Array.isArray(s.emojis) ? s.emojis.map(e => emoji(e)) : [],
       replies_count: s.replies_count,
       reblogs_count: s.reblogs_count,

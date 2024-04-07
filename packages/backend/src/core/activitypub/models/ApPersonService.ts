@@ -127,12 +127,6 @@ export class ApPersonService implements OnModuleInit {
 		this.logger = this.apLoggerService.logger;
 	}
 
-	private punyHost(url: string): string {
-		const urlObj = new URL(url);
-		const host = `${this.utilityService.toPuny(urlObj.hostname)}${urlObj.port.length > 0 ? ':' + urlObj.port : ''}`;
-		return host;
-	}
-
 	/**
 	 * Validate and convert to actor object
 	 * @param x Fetched object
@@ -140,7 +134,7 @@ export class ApPersonService implements OnModuleInit {
 	 */
 	@bindThis
 	private validateActor(x: IObject, uri: string): IActor {
-		const expectHost = this.punyHost(uri);
+		const expectHost = this.utilityService.punyHost(uri);
 
 		if (!isActor(x)) {
 			throw new Error(`invalid Actor type '${x.type}'`);
@@ -152,6 +146,19 @@ export class ApPersonService implements OnModuleInit {
 
 		if (!(typeof x.inbox === 'string' && x.inbox.length > 0)) {
 			throw new Error('invalid Actor: wrong inbox');
+		}
+
+		if (this.utilityService.punyHost(x.inbox) !== expectHost) {
+			throw new Error('invalid Actor: inbox has different host');
+		}
+
+		for (const collection of ['outbox', 'followers', 'following'] as (keyof IActor)[]) {
+			const collectionUri = (x as IActor)[collection];
+			if (typeof collectionUri === 'string' && collectionUri.length > 0) {
+				if (this.utilityService.punyHost(collectionUri) !== expectHost) {
+					throw new Error(`invalid Actor: ${collection} has different host`);
+				}
+			}
 		}
 
 		if (!(typeof x.preferredUsername === 'string' && x.preferredUsername.length > 0 && x.preferredUsername.length <= 128 && /^\w([\w-.]*\w)?$/.test(x.preferredUsername))) {
@@ -177,7 +184,7 @@ export class ApPersonService implements OnModuleInit {
 			x.summary = truncate(x.summary, summaryLength);
 		}
 
-		const idHost = this.punyHost(x.id);
+		const idHost = this.utilityService.punyHost(x.id);
 		if (idHost !== expectHost) {
 			throw new Error('invalid Actor: id has different host');
 		}
@@ -187,7 +194,7 @@ export class ApPersonService implements OnModuleInit {
 				throw new Error('invalid Actor: publicKey.id is not a string');
 			}
 
-			const publicKeyIdHost = this.punyHost(x.publicKey.id);
+			const publicKeyIdHost = this.utilityService.punyHost(x.publicKey.id);
 			if (publicKeyIdHost !== expectHost) {
 				throw new Error('invalid Actor: publicKey.id has different host');
 			}
@@ -286,7 +293,7 @@ export class ApPersonService implements OnModuleInit {
 
 		this.logger.info(`Creating the Person: ${person.id}`);
 
-		const host = this.punyHost(object.id);
+		const host = this.utilityService.punyHost(object.id);
 
 		const fields = this.analyzeAttachments(person.attachment ?? []);
 
