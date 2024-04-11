@@ -86,7 +86,7 @@ type AdminAnnouncementsListResponse = operations['admin___announcements___list']
 type AdminAnnouncementsUpdateRequest = operations['admin___announcements___update']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type AdminApproveUserRequest = operations['admin__approve-user']['requestBody']['content']['application/json'];
+type AdminApproveUserRequest = operations['admin___approve-user']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type AdminAvatarDecorationsCreateRequest = operations['admin___avatar-decorations___create']['requestBody']['content']['application/json'];
@@ -212,7 +212,7 @@ type AdminInviteListResponse = operations['admin___invite___list']['responses'][
 type AdminMetaResponse = operations['admin___meta']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
-type AdminNsfwUserRequest = operations['admin__nsfw-user']['requestBody']['content']['application/json'];
+type AdminNsfwUserRequest = operations['admin___nsfw-user']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type AdminPromoCreateRequest = operations['admin___promo___create']['requestBody']['content']['application/json'];
@@ -311,13 +311,13 @@ type AdminShowUsersRequest = operations['admin___show-users']['requestBody']['co
 type AdminShowUsersResponse = operations['admin___show-users']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
-type AdminSilenceUserRequest = operations['admin__silence-user']['requestBody']['content']['application/json'];
+type AdminSilenceUserRequest = operations['admin___silence-user']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type AdminSuspendUserRequest = operations['admin___suspend-user']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type AdminUnnsfwUserRequest = operations['admin__unnsfw-user']['requestBody']['content']['application/json'];
+type AdminUnnsfwUserRequest = operations['admin___unnsfw-user']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type AdminUnsetUserAvatarRequest = operations['admin___unset-user-avatar']['requestBody']['content']['application/json'];
@@ -326,7 +326,7 @@ type AdminUnsetUserAvatarRequest = operations['admin___unset-user-avatar']['requ
 type AdminUnsetUserBannerRequest = operations['admin___unset-user-banner']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type AdminUnsilenceUserRequest = operations['admin__unsilence-user']['requestBody']['content']['application/json'];
+type AdminUnsilenceUserRequest = operations['admin___unsilence-user']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type AdminUnsuspendUserRequest = operations['admin___unsuspend-user']['requestBody']['content']['application/json'];
@@ -2117,7 +2117,7 @@ type IImportFollowingRequest = operations['i___import-following']['requestBody']
 type IImportMutingRequest = operations['i___import-muting']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type IImportNotesRequest = operations['i__import-notes']['requestBody']['content']['application/json'];
+type IImportNotesRequest = operations['i___import-notes']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type IImportUserListsRequest = operations['i___import-user-lists']['requestBody']['content']['application/json'];
@@ -2201,7 +2201,7 @@ type IRegistryGetRequest = operations['i___registry___get']['requestBody']['cont
 type IRegistryGetResponse = operations['i___registry___get']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
-type IRegistryGetUnsecureRequest = operations['i__registry__get-unsecure']['requestBody']['content']['application/json'];
+type IRegistryGetUnsecureRequest = operations['i___registry___get-unsecure']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type IRegistryKeysRequest = operations['i___registry___keys']['requestBody']['content']['application/json'];
@@ -2467,10 +2467,10 @@ type NoteFavorite = components['schemas']['NoteFavorite'];
 type NoteReaction = components['schemas']['NoteReaction'];
 
 // @public (undocumented)
-type NotesBubbleTimelineRequest = operations['notes__bubble-timeline']['requestBody']['content']['application/json'];
+type NotesBubbleTimelineRequest = operations['notes___bubble-timeline']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type NotesBubbleTimelineResponse = operations['notes__bubble-timeline']['responses']['200']['content']['application/json'];
+type NotesBubbleTimelineResponse = operations['notes___bubble-timeline']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type NotesChildrenRequest = operations['notes___children']['requestBody']['content']['application/json'];
@@ -2500,10 +2500,10 @@ type NotesCreateResponse = operations['notes___create']['responses']['200']['con
 type NotesDeleteRequest = operations['notes___delete']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type NotesEditRequest = operations['notes__edit']['requestBody']['content']['application/json'];
+type NotesEditRequest = operations['notes___edit']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type NotesEditResponse = operations['notes__edit']['responses']['200']['content']['application/json'];
+type NotesEditResponse = operations['notes___edit']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type NotesFavoritesCreateRequest = operations['notes___favorites___create']['requestBody']['content']['application/json'];
@@ -2530,7 +2530,7 @@ type NotesHybridTimelineRequest = operations['notes___hybrid-timeline']['request
 type NotesHybridTimelineResponse = operations['notes___hybrid-timeline']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
-type NotesLikeRequest = operations['notes__like']['requestBody']['content']['application/json'];
+type NotesLikeRequest = operations['notes___like']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type NotesLocalTimelineRequest = operations['notes___local-timeline']['requestBody']['content']['application/json'];
@@ -2635,10 +2635,10 @@ type NotesUserListTimelineRequest = operations['notes___user-list-timeline']['re
 type NotesUserListTimelineResponse = operations['notes___user-list-timeline']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
-type NotesVersionsRequest = operations['notes/versions']['requestBody']['content']['application/json'];
+type NotesVersionsRequest = operations['notes___versions']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type NotesVersionsResponse = operations['notes/versions']['responses']['200']['content']['application/json'];
+type NotesVersionsResponse = operations['notes___versions']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 export const noteVisibilities: readonly ["public", "home", "followers", "specified"];

@@ -578,7 +578,7 @@ export type paths = {
      *
      * **Credential required**: *Yes* / **Permission**: *write:admin:nsfw-user*
      */
-    post: operations['admin/nsfw-user'];
+    post: operations['admin___nsfw-user'];
   };
   '/admin/unnsfw-user': {
     /**
@@ -587,7 +587,7 @@ export type paths = {
      *
      * **Credential required**: *Yes* / **Permission**: *write:admin:unnsfw-user*
      */
-    post: operations['admin/unnsfw-user'];
+    post: operations['admin___unnsfw-user'];
   };
   '/admin/silence-user': {
     /**
@@ -596,7 +596,7 @@ export type paths = {
      *
      * **Credential required**: *Yes* / **Permission**: *write:admin:silence-user*
      */
-    post: operations['admin/silence-user'];
+    post: operations['admin___silence-user'];
   };
   '/admin/unsilence-user': {
     /**
@@ -605,7 +605,7 @@ export type paths = {
      *
      * **Credential required**: *Yes* / **Permission**: *write:admin:unsilence-user*
      */
-    post: operations['admin/unsilence-user'];
+    post: operations['admin___unsilence-user'];
   };
   '/admin/suspend-user': {
     /**
@@ -623,7 +623,7 @@ export type paths = {
      *
      * **Credential required**: *Yes* / **Permission**: *write:admin:approve-user*
      */
-    post: operations['admin/approve-user'];
+    post: operations['admin___approve-user'];
   };
   '/admin/unsuspend-user': {
     /**
@@ -1974,7 +1974,7 @@ export type paths = {
      * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
      * **Credential required**: *Yes*
      */
-    post: operations['i/export-data'];
+    post: operations['i___export-data'];
   };
   '/i/export-blocking': {
     /**
@@ -2111,7 +2111,7 @@ export type paths = {
      * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
      * **Credential required**: *Yes*
      */
-    post: operations['i/import-notes'];
+    post: operations['i___import-notes'];
   };
   '/i/import-muting': {
     /**
@@ -2232,7 +2232,7 @@ export type paths = {
      *
      * **Credential required**: *Yes* / **Permission**: *read:account*
      */
-    post: operations['i/registry/get-unsecure'];
+    post: operations['i___registry___get-unsecure'];
   };
   '/i/registry/get-detail': {
     /**
@@ -2655,7 +2655,7 @@ export type paths = {
      *
      * **Credential required**: *No*
      */
-    post: operations['notes/bubble-timeline'];
+    post: operations['notes___bubble-timeline'];
   };
   '/notes/hybrid-timeline': {
     /**
@@ -2743,7 +2743,7 @@ export type paths = {
      *
      * **Credential required**: *Yes* / **Permission**: *write:reactions*
      */
-    post: operations['notes/like'];
+    post: operations['notes___like'];
   };
   '/notes/renotes': {
     /**
@@ -2860,7 +2860,7 @@ export type paths = {
      *
      * **Credential required**: *Yes* / **Permission**: *write:notes*
      */
-    post: operations['notes/edit'];
+    post: operations['notes___edit'];
   };
   '/notes/versions': {
     /**
@@ -2869,7 +2869,7 @@ export type paths = {
      *
      * **Credential required**: *No*
      */
-    post: operations['notes/versions'];
+    post: operations['notes___versions'];
   };
   '/notifications/create': {
     /**
@@ -8873,7 +8873,7 @@ export type operations = {
    *
    * **Credential required**: *Yes* / **Permission**: *write:admin:nsfw-user*
    */
-  'admin/nsfw-user': {
+  'admin___nsfw-user': {
     requestBody: {
       content: {
         'application/json': {
@@ -8925,7 +8925,7 @@ export type operations = {
    *
    * **Credential required**: *Yes* / **Permission**: *write:admin:unnsfw-user*
    */
-  'admin/unnsfw-user': {
+  'admin___unnsfw-user': {
     requestBody: {
       content: {
         'application/json': {
@@ -8977,7 +8977,7 @@ export type operations = {
    *
    * **Credential required**: *Yes* / **Permission**: *write:admin:silence-user*
    */
-  'admin/silence-user': {
+  'admin___silence-user': {
     requestBody: {
       content: {
         'application/json': {
@@ -9029,7 +9029,7 @@ export type operations = {
    *
    * **Credential required**: *Yes* / **Permission**: *write:admin:unsilence-user*
    */
-  'admin/unsilence-user': {
+  'admin___unsilence-user': {
     requestBody: {
       content: {
         'application/json': {
@@ -9133,7 +9133,7 @@ export type operations = {
    *
    * **Credential required**: *Yes* / **Permission**: *write:admin:approve-user*
    */
-  'admin/approve-user': {
+  'admin___approve-user': {
     requestBody: {
       content: {
         'application/json': {
@@ -17177,7 +17177,7 @@ export type operations = {
    * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
    * **Credential required**: *Yes*
    */
-  'i/export-data': {
+  'i___export-data': {
     responses: {
       /** @description OK (without any results) */
       204: {
@@ -17943,7 +17943,7 @@ export type operations = {
    * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
    * **Credential required**: *Yes*
    */
-  'i/import-notes': {
+  'i___import-notes': {
     requestBody: {
       content: {
         'application/json': {
@@ -18692,7 +18692,7 @@ export type operations = {
    *
    * **Credential required**: *Yes* / **Permission**: *read:account*
    */
-  'i/registry/get-unsecure': {
+  'i___registry___get-unsecure': {
     requestBody: {
       content: {
         'application/json': {
@@ -21402,7 +21402,7 @@ export type operations = {
    *
    * **Credential required**: *No*
    */
-  'notes/bubble-timeline': {
+  'notes___bubble-timeline': {
     requestBody: {
       content: {
         'application/json': {
@@ -21956,7 +21956,7 @@ export type operations = {
    *
    * **Credential required**: *Yes* / **Permission**: *write:reactions*
    */
-  'notes/like': {
+  notes___like: {
     requestBody: {
       content: {
         'application/json': {
@@ -22774,7 +22774,7 @@ export type operations = {
    *
    * **Credential required**: *Yes* / **Permission**: *write:notes*
    */
-  'notes/edit': {
+  notes___edit: {
     requestBody: {
       content: {
         'application/json': {
@@ -22871,7 +22871,7 @@ export type operations = {
    *
    * **Credential required**: *No*
    */
-  'notes/versions': {
+  notes___versions: {
     requestBody: {
       content: {
         'application/json': {
