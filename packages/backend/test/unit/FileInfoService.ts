@@ -322,7 +322,7 @@ describe('FileInfoService', () => {
 
 		test('MPEG-4 AUDIO (M4A)', async () => {
 			const path = `${resources}/kick_gaba7.m4a`;
-			const info = await fileInfoService.getFileInfo(path, { skipSensitiveDetection: true }) as any;
+			const info = await fileInfoService.getFileInfo(path) as any;
 			delete info.warnings;
 			delete info.blurhash;
 			delete info.sensitive;
