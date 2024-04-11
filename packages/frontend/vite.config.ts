@@ -9,7 +9,7 @@ import packageInfo from './package.json' assert { type: 'json' };
 import pluginUnwindCssModuleClassName from './lib/rollup-plugin-unwind-css-module-class-name.js';
 import pluginJson5 from './vite.json5.js';
 
-const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue'];
+const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue', '.wasm'];
 
 /**
  * Misskeyのフロントエンドにバンドルせず、CDNなどから別途読み込むリソースを記述する。

@@ -55,8 +55,6 @@ import { i18n } from '@/i18n.js';
 import { infoImageUrl } from '@/instance.js';
 import { defaultStore } from '@/store.js';
 
-console.log(defaultStore.state.noteDesign, defaultStore.state.noteDesign === 'sharkey');
-
 const props = defineProps<{
 	pagination: Paging;
 	noGap?: boolean;

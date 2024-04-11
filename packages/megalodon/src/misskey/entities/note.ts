@@ -7,6 +7,7 @@ namespace MisskeyEntity {
   export type Note = {
     id: string
     createdAt: string
+    updatedAt?: string | null
     userId: string
     user: User
     text: string | null
