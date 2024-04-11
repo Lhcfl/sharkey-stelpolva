@@ -86,7 +86,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const instance = await this.metaService.fetch();
 
-			if (instance.deeplAuthKey == null && !instance.deeplFree				throw new ApiError(meta.errors.unavailable);
+			if (instance.deeplAuthKey == null && !instance.deeplFreeMode) {
+				throw new ApiError(meta.errors.unavailable);
 			}
 
 			if (instance.deeplFreeMode && !instance.deeplFreeInstance) {
