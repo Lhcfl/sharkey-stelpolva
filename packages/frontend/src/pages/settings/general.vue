@@ -148,6 +148,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkSwitch v-model="forceShowAds">{{ i18n.ts.forceShowAds }}</MkSwitch>
 				<MkSwitch v-model="oneko">{{ i18n.ts.oneko }}</MkSwitch>
 				<MkSwitch v-model="enableSeasonalScreenEffect">{{ i18n.ts.seasonalScreenEffect }}</MkSwitch>
+				<MkSwitch v-model="useNativeUIForVideoAudioPlayer">{{ i18n.ts.useNativeUIForVideoAudioPlayer }}</MkSwitch>
 			</div>
 			<div>
 				<MkRadios v-model="emojiStyle">
@@ -364,6 +365,7 @@ const enableSeasonalScreenEffect = computed(defaultStore.makeGetterSetter('enabl
 const showVisibilitySelectorOnBoost = computed(defaultStore.makeGetterSetter('showVisibilitySelectorOnBoost'));
 const visibilityOnBoost = computed(defaultStore.makeGetterSetter('visibilityOnBoost'));
 const enableHorizontalSwipe = computed(defaultStore.makeGetterSetter('enableHorizontalSwipe'));
+const useNativeUIForVideoAudioPlayer = computed(defaultStore.makeGetterSetter('useNativeUIForVideoAudioPlayer'));
 
 watch(lang, () => {
 	miLocalStorage.setItem('lang', lang.value as string);
