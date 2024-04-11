@@ -549,7 +549,9 @@ https://github.com/misskey-dev/misskey.git`), then:
 	git checkout -m merge/$(date +%Y-%m-%d)   # or whatever
 	git merge --no-ff misskey/develop
 
-fix conflicts and *commit*!
+fix conflicts and *commit*! (conflicts in `pnpm-lock.yaml` can usually
+be fixed by running `pnpm install`, it detects conflict markers and
+seems to do a decent job)
 
 *after that commit*, do all the extra work, on the same branch:
 
@@ -560,6 +562,7 @@ fix conflicts and *commit*!
   * from `ApNoteService.createNote` to `ApNoteService.updateNote`
   * from `endoints/notes/create.ts` to `endoints/notes/edit.ts`
   * from `MkNote*` to `SkNote*` (if sensible)
+* re-generate `misskey-js`: `pnpm build-misskey-js-with-types`
 * run tests `pnpm test` and fix as much as you can
 * run lint `pnpm --filter=backend lint` + `pnpm --filter=frontend
   eslint` and fix as much as you can
