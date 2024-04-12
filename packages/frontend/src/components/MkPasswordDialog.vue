@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<MkInput v-if="$i.twoFactorEnabled" v-model="token" type="text" :pattern="isBackupCode ? '^[A-Z0-9]{32}$' :'^[0-9]{6}$'" autocomplete="one-time-code" required :spellcheck="false" :inputmode="isBackupCode ? undefined : 'numeric'">
 					<template #label>{{ i18n.ts.token }} ({{ i18n.ts['2fa'] }})</template>
-					<template #prefix><i v-if="isBackupCode" class="ph-keyhole ph-bold ph-lg"></i><i v-else class="ph-math-operations ph-bold ph-lg"></i></template>
+					<template #prefix><i v-if="isBackupCode" class="ph-keyhole ph-bold ph-lg"></i><i v-else class="ph-numpad ph-bold ph-lg"></i></template>
 					<template #caption><button class="_textButton" type="button" @click="isBackupCode = !isBackupCode">{{ isBackupCode ? i18n.ts.useTotp : i18n.ts.useBackupCode }}</button></template>
 				</MkInput>
 
