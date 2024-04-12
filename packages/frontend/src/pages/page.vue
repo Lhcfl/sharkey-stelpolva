@@ -68,8 +68,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkFollowButton v-if="!$i || $i.id != page.user.id" :user="page.user!" :inline="true" :transparent="false" :full="true" :class="$style.follow"/>
 					</div>
 					<div :class="$style.pageDate">
-						<div><i class="ti ti-clock"></i> {{ i18n.ts.createdAt }}: <MkTime :time="page.createdAt" mode="detail"/></div>
-						<div v-if="page.createdAt != page.updatedAt"><i class="ti ti-clock-edit"></i> {{ i18n.ts.updatedAt }}: <MkTime :time="page.updatedAt" mode="detail"/></div>
+						<div><i class="ph ph-clock ph-bold ph-lg"></i> {{ i18n.ts.createdAt }}: <MkTime :time="page.createdAt" mode="detail"/></div>
+						<div v-if="page.createdAt != page.updatedAt"><i class="ph-pencil-simple ph-bold ph-lg"></i> {{ i18n.ts.updatedAt }}: <MkTime :time="page.updatedAt" mode="detail"/></div>
 					</div>
 					<div :class="$style.pageLinks">
 						<MkA v-if="!$i || $i.id !== page.userId" :to="`/@${username}/pages/${pageName}/view-source`" class="link">{{ i18n.ts._pages.viewSource }}</MkA>
@@ -163,12 +163,12 @@ function share(ev: MouseEvent) {
 	os.popupMenu([
 		{
 			text: i18n.ts.shareWithNote,
-			icon: 'ti ti-pencil',
+			icon: 'ph-pencil-simple',
 			action: shareWithNote,
 		},
 		...(isSupportShare() ? [{
 			text: i18n.ts.share,
-			icon: 'ti ti-share',
+			icon: 'ph-share-network',
 			action: shareWithNavigator,
 		}] : []),
 	], ev.currentTarget ?? ev.target);

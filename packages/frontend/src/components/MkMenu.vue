@@ -53,7 +53,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i v-if="item.icon" class="ti-fw" :class="[$style.icon, item.icon]" style="pointer-events: none;"></i>
 				<div :class="$style.item_content">
 					<span :class="$style.item_content_text" style="pointer-events: none;">{{ item.text }}</span>
-					<span :class="$style.caret" style="pointer-events: none;"><i class="ti ti-chevron-right ti-fw"></i></span>
+					<span :class="$style.caret" style="pointer-events: none;"><i class="ph-caret-right ph-bold ph-lg"></i></span>
 				</div>
 			</button>
 			<button v-else-if="item.type === 'radioOption'" :tabindex="i" class="_button" role="menuitem" :class="[$style.item, { [$style.radioActive]: item.active }]" @click="clicked(item.action, $event, false)" @mouseenter.passive="onItemMouseEnter(item)" @mouseleave.passive="onItemMouseLeave(item)">

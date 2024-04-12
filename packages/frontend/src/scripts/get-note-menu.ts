@@ -347,7 +347,7 @@ export function getNoteMenu(props: {
 				action: () => toggleThreadMute(true),
 			}),
 			appearNote.userId === $i.id ? ($i.pinnedNoteIds ?? []).includes(appearNote.id) ? {
-				icon: 'ph-push-pin ph-bold ph-lgned-off',
+				icon: 'ph-push-pin-slash ph-bold ph-lg',
 				text: i18n.ts.unpin,
 				action: () => togglePin(false),
 			} : {
@@ -386,7 +386,7 @@ export function getNoteMenu(props: {
 				{ type: 'divider' },
 				{
 					type: 'parent' as const,
-					icon: 'ti ti-device-tv',
+					icon: 'ph-television ph-bold ph-lg',
 					text: i18n.ts.channel,
 					children: async () => {
 						const channelChildMenu = [] as MenuItem[];
@@ -395,7 +395,7 @@ export function getNoteMenu(props: {
 
 						if (channel.pinnedNoteIds.includes(appearNote.id)) {
 							channelChildMenu.push({
-								icon: 'ti ti-pinned-off',
+								icon: 'ph-push-pin-slash ph-bold ph-lg',
 								text: i18n.ts.unpin,
 								action: () => os.apiWithDialog('channels/update', {
 									channelId: appearNote.channel!.id,
@@ -404,7 +404,7 @@ export function getNoteMenu(props: {
 							});
 						} else {
 							channelChildMenu.push({
-								icon: 'ti ti-pin',
+								icon: 'ph-push-pin ph-bold ph-lg',
 								text: i18n.ts.pin,
 								action: () => os.apiWithDialog('channels/update', {
 									channelId: appearNote.channel!.id,
@@ -527,7 +527,7 @@ export function getRenoteMenu(props: {
 	if (appearNote.channel) {
 		channelRenoteItems.push(...[{
 			text: i18n.ts.inChannelRenote,
-			icon: 'ti ti-repeat',
+			icon: 'ph ph-repeat',
 			action: () => {
 				const el = props.renoteButton.value;
 				if (el) {
@@ -548,7 +548,7 @@ export function getRenoteMenu(props: {
 			},
 		}, {
 			text: i18n.ts.inChannelQuote,
-			icon: 'ti ti-quote',
+			icon: 'ph ph-quotes',
 			action: () => {
 				if (!props.mock) {
 					os.post({
@@ -563,7 +563,7 @@ export function getRenoteMenu(props: {
 	if (!appearNote.channel || appearNote.channel.allowRenoteToExternal) {
 		normalRenoteItems.push(...[{
 			text: i18n.ts.renote,
-			icon: 'ti ti-repeat',
+			icon: 'ph ph-repeat',
 			action: () => {
 				const el = props.renoteButton.value;
 				if (el) {
@@ -594,7 +594,7 @@ export function getRenoteMenu(props: {
 			},
 		}, (props.mock) ? undefined : {
 			text: i18n.ts.quote,
-			icon: 'ti ti-quote',
+			icon: 'ph ph-quotes',
 			action: () => {
 				os.post({
 					renote: appearNote,
