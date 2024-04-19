@@ -395,10 +395,10 @@ const prepend = (item: MisskeyEntity): void => {
  * @param newItems 新しいアイテムの配列
  */
 function unshiftItems(newItems: MisskeyEntity[]) {
-	const length = newItems.length + items.value.size;
-	items.value = new Map([...arrayToEntries(newItems), ...items.value].slice(0, props.displayLimit));
-
-	if (length >= props.displayLimit) more.value = true;
+	const prevLength = items.value.size;
+	items.value = new Map([...arrayToEntries(newItems), ...items.value].slice(0, newItems.length + props.displayLimit));
+	// if we truncated, mark that there are more values to fetch
+	if (items.value.size < prevLength) more.value = true;
 }
 
 /**
@@ -406,10 +406,10 @@ function unshiftItems(newItems: MisskeyEntity[]) {
  * @param oldItems 古いアイテムの配列
  */
 function concatItems(oldItems: MisskeyEntity[]) {
-	const length = oldItems.length + items.value.size;
-	items.value = new Map([...items.value, ...arrayToEntries(oldItems)].slice(0, props.displayLimit));
-
-	if (length >= props.displayLimit) more.value = true;
+	const prevLength = items.value.size;
+	items.value = new Map([...items.value, ...arrayToEntries(oldItems)].slice(0, oldItems.length + props.displayLimit));
+	// if we truncated, mark that there are more values to fetch
+	if (items.value.size < prevLength) more.value = true;
 }
 
 function executeQueue() {
@@ -418,7 +418,7 @@ function executeQueue() {
 }
 
 function prependQueue(newItem: MisskeyEntity) {
-	queue.value = new Map([[newItem.id, newItem], ...queue.value].slice(0, props.displayLimit) as [string, MisskeyEntity][]);
+	queue.value = new Map([[newItem.id, newItem], ...queue.value] as [string, MisskeyEntity][]);
 }
 
 /*
