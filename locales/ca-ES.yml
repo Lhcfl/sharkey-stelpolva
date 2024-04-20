@@ -1264,10 +1264,10 @@ _initialTutorial:
   _reaction:
     title: "Què són les Reaccions?"
     description: "Es poden reaccionar a les Notes amb diferents emoticones. Les reaccions et permeten expressar matisos que hi són més enllà d'un simple m'agrada."
-    letsTryReacting: "Es poden afegir reaccions fent clic al botó '+'. Prova reaccionant a aquesta nota!"
+    letsTryReacting: "Es poden afegir reaccions fent clic al botó '{reaction}'. Prova reaccionant a aquesta nota!"
     reactToContinue: "Afegeix una reacció per continuar."
     reactNotification: "Rebràs notificacions en temps real quan un usuari reaccioni a les teves notes."
-    reactDone: "Pots desfer una reacció fent clic al botó '-'."
+    reactDone: "Pots desfer una reacció fent clic al botó '{undo}'."
   _timeline:
     title: "El concepte de les línies de temps"
     description1: "Misskey mostra diferents línies de temps basades en l'ús (algunes poden no estar disponibles depenent de la política del servidor)"
@@ -2255,4 +2255,3 @@ _externalResourceInstaller:
       title: "Paràmetres no vàlids "
 _reversi:
   total: "Total"
-

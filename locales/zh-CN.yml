@@ -1284,10 +1284,10 @@ _initialTutorial:
   _reaction:
     title: "什么是回应？"
     description: "您可以在帖子中添加“回应”。 您可以使用反应轻松地表达点“赞”所无法传达的细微差别。"
-    letsTryReacting: "回应可以通过点击帖子中的「+」按钮来添加。试着给这个示例帖子添加一个回应！"
+    letsTryReacting: "回应可以通过点击帖子中的「{reaction}」按钮来添加。试着给这个示例帖子添加一个回应！"
     reactToContinue: "添加一个回应来继续"
     reactNotification: "当您的帖子被某人添加了回应时，将实时收到通知。"
-    reactDone: "通过按下「ー」按钮，可以取消已经添加的回应"
+    reactDone: "通过按下「{undo}」按钮，可以取消已经添加的回应"
   _timeline:
     title: "时间线的运作方式"
     description1: "Misskey 根据使用方式提供了多个时间线（根据服务器的设定，可能有一些被禁用）。"
@@ -2519,4 +2519,3 @@ _reversi:
 _offlineScreen:
   title: "离线——无法连接到服务器"
   header: "无法连接到服务器"
-

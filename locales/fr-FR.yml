@@ -1245,10 +1245,10 @@ _initialTutorial:
   _reaction:
     title: "Qu'est-ce que les réactions ?"
     description: "Vous pouvez ajouter des « réactions » aux notes. Les réactions vous permettent d'exprimer à l'aise des nuances qui ne peuvent pas être exprimées par des mentions j'aime."
-    letsTryReacting: "Des réactions peuvent être ajoutées en cliquant sur le bouton « + » de la note. Essayez d'ajouter une réaction à cet exemple de note !"
+    letsTryReacting: "Des réactions peuvent être ajoutées en cliquant sur le bouton « {reaction} » de la note. Essayez d'ajouter une réaction à cet exemple de note !"
     reactToContinue: "Ajoutez une réaction pour procéder."
     reactNotification: "Vous recevez des notifications en temps réel lorsque quelqu'un réagit à votre note."
-    reactDone: "Vous pouvez annuler la réaction en cliquant sur le bouton « - » ."
+    reactDone: "Vous pouvez annuler la réaction en cliquant sur le bouton « {undo} » ."
   _timeline:
     title: "Fonctionnement des fils"
     description1: "Misskey offre plusieurs fils selon l'usage (certains peuvent être désactivés par le serveur)."
@@ -2140,4 +2140,3 @@ _dataSaver:
     description: "Si la notation de mise en évidence du code est utilisée, par exemple dans la MFM, elle ne sera pas chargée tant qu'elle n'aura pas été tapée. La mise en évidence du code nécessite le chargement du fichier de définition de chaque langue à mettre en évidence, mais comme ces fichiers ne sont plus chargés automatiquement, on peut s'attendre à une réduction du trafic de données."
 _reversi:
   total: "Total"
-
