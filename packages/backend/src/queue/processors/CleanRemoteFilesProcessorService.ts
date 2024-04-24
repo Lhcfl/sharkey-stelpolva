@@ -47,7 +47,7 @@ export class CleanRemoteFilesProcessorService {
 					isLink: false,
 					...(cursor ? { id: MoreThan(cursor) } : {}),
 				},
-				take: 256, // Adjust the batch size as needed
+				take: 256,
 				order: {
 					id: 1,
 				},
@@ -72,7 +72,8 @@ export class CleanRemoteFilesProcessorService {
 				}
 			});
 
-			await job.updateProgress((deletedCount / total) * 100);
+			await job.updateProgress(100 / total * deletedCount);
+
 		}
 
 		this.logger.succ(`All cached remote files processed. Total deleted: ${deletedCount}, Failed: ${errorCount}.`);
