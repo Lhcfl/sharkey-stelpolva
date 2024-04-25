@@ -421,7 +421,7 @@ export class ImportNotesProcessorService {
 					if (file.name) {
 						this.driveService.updateFile(exists, { comment: file.name }, user);
 					}
-					
+
 					files.push(exists);
 				}
 			}
