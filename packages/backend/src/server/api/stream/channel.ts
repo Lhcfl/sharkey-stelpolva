@@ -63,7 +63,7 @@ export default abstract class Channel {
 	 */
 	protected isNoteMutedOrBlocked(note: Packed<'Note'>): boolean {
 		// 流れてきたNoteがインスタンスミュートしたインスタンスが関わる
-		if (isInstanceMuted(note, new Set<string>(this.userProfile?.mutedInstances ?? []))) return true;
+		if (isInstanceMuted(note, new Set<string>(this.userProfile?.mutedInstances ?? [])) && !this.following[note.userId]) return true;
 
 		// 流れてきたNoteがミュートしているユーザーが関わる
 		if (isUserRelated(note, this.userIdsWhoMeMuting)) return true;
