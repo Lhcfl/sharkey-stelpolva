@@ -282,7 +282,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			data.visibility = 'home';
 		}
 
-		if (data.renote) {
+		if (this.isRenote(data)) {
 			switch (data.renote.visibility) {
 				case 'public':
 					// public noteは無条件にrenote可能
@@ -309,7 +309,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		}
 
 		// Check blocking
-		if (data.renote && !this.isQuote(data)) {
+		if (this.isRenote(data) && !this.isQuote(data)) {
 			if (data.renote.userHost === null) {
 				if (data.renote.userId !== user.id) {
 					const blocked = await this.userBlockingService.checkBlocked(data.renote.userId, user.id);
