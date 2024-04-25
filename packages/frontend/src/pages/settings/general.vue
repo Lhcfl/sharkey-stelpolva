@@ -191,6 +191,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkSwitch v-model="showBots">{{ i18n.ts.showBots }}</MkSwitch>
 				<MkSwitch v-model="disableStreamingTimeline">{{ i18n.ts.disableStreamingTimeline }}</MkSwitch>
 				<MkSwitch v-model="enableHorizontalSwipe">{{ i18n.ts.enableHorizontalSwipe }}</MkSwitch>
+				<MkSwitch v-model="alwaysConfirmFollow">{{ i18n.ts.alwaysConfirmFollow }}</MkSwitch>
 			</div>
 			<MkSelect v-model="serverDisconnectedBehavior">
 				<template #label>{{ i18n.ts.whenServerDisconnected }}</template>
@@ -366,6 +367,7 @@ const showVisibilitySelectorOnBoost = computed(defaultStore.makeGetterSetter('sh
 const visibilityOnBoost = computed(defaultStore.makeGetterSetter('visibilityOnBoost'));
 const enableHorizontalSwipe = computed(defaultStore.makeGetterSetter('enableHorizontalSwipe'));
 const useNativeUIForVideoAudioPlayer = computed(defaultStore.makeGetterSetter('useNativeUIForVideoAudioPlayer'));
+const alwaysConfirmFollow = computed(defaultStore.makeGetterSetter('alwaysConfirmFollow'));
 
 watch(lang, () => {
 	miLocalStorage.setItem('lang', lang.value as string);
@@ -424,6 +426,7 @@ watch([
 	enableSeasonalScreenEffect,
 	showVisibilitySelectorOnBoost,
 	visibilityOnBoost,
+	alwaysConfirmFollow,
 ], async () => {
 	await reloadAsk();
 });
