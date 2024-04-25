@@ -564,6 +564,9 @@ seems to do a decent job)
   * from `MkNote*` to `SkNote*` (if sensible)
 * re-generate `misskey-js`: `pnpm build-misskey-js-with-types`
 * run tests `pnpm test` and fix as much as you can
+  * right now `megalodon` doesn't pass its tests, you probably need to
+    run `pnpm --filter=backend test` (requires a test database, [see
+    above](#testing)) and `pnpm --filter=frontend test`
 * run lint `pnpm --filter=backend lint` + `pnpm --filter=frontend
   eslint` and fix as much as you can
 
