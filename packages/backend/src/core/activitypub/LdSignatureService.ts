@@ -89,6 +89,16 @@ class LdSignature {
 	}
 
 	@bindThis
+	public async compact(data: any, context: any = CONTEXT): Promise<JsonLdDocument> {
+		const customLoader = this.getLoader();
+		// XXX: Importing jsonld dynamically since Jest frequently fails to import it statically
+		// https://github.com/misskey-dev/misskey/pull/9894#discussion_r1103753595
+		return (await import('jsonld')).default.compact(data, context, {
+			documentLoader: customLoader,
+		});
+	}
+
+	@bindThis
 	public async normalize(data: JsonLdDocument): Promise<string> {
 		const customLoader = this.getLoader();
 		// XXX: Importing jsonld dynamically since Jest frequently fails to import it statically
