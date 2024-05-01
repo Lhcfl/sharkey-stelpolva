@@ -283,9 +283,10 @@ export class ApRendererService {
 				if (instance && instance.softwareName === 'mastodon') isMastodon = true;
 				if (instance && instance.softwareName === 'akkoma')	isMastodon = true;
 				if (instance && instance.softwareName === 'pleroma') isMastodon = true;
+				if (instance && instance.softwareName === 'iceshrimp.net') isMastodon = true;
 			}
 		}
-		
+
 		const object: ILike = {
 			type: 'Like',
 			id: `${this.config.url}/likes/${noteReaction.id}`,
