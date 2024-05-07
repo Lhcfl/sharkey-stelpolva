@@ -562,6 +562,15 @@ seems to do a decent job)
   * from `ApNoteService.createNote` to `ApNoteService.updateNote`
   * from `endoints/notes/create.ts` to `endoints/notes/edit.ts`
   * from `MkNote*` to `SkNote*` (if sensible)
+  * from the global timeline to the bubble timeline
+    (`packages/backend/src/server/api/stream/channels/global-timeline.ts`,
+    `packages/backend/src/server/api/stream/channels/bubble-timeline.ts`,
+    `packages/frontend/src/components/MkTimeline.vue`,
+    `packages/frontend/src/pages/timeline.vue`,
+    `packages/frontend/src/ui/deck/tl-column.vue`,
+    `packages/frontend/src/widgets/WidgetTimeline.vue`)
+* make sure there aren't any new `ti-*` classes (Tabler Icons), and
+  replace them with appropriate `ph-*` ones (Phosphor Icons)
 * re-generate `misskey-js`: `pnpm build-misskey-js-with-types`
 * run tests `pnpm test` and fix as much as you can
   * right now `megalodon` doesn't pass its tests, you probably need to
