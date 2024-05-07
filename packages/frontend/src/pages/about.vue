@@ -130,7 +130,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import sanitizeHtml from 'sanitize-html';
+import sanitizeHtml from '@/scripts/sanitize-html.js';
 import { computed, watch, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import XEmojis from './about.emojis.vue';
