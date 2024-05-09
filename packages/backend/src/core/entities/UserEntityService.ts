@@ -18,8 +18,8 @@ import type { MiLocalUser, MiPartialLocalUser, MiPartialRemoteUser, MiRemoteUser
 import {
 	birthdaySchema,
 	descriptionSchema,
-  listenbrainzSchema,
-  localUsernameSchema,
+	listenbrainzSchema,
+	localUsernameSchema,
 	locationSchema,
 	nameSchema,
 	passwordSchema,
