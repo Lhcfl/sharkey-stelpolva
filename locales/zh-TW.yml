@@ -1285,10 +1285,10 @@ _initialTutorial:
   _reaction:
     title: "什麼是反應？"
     description: "您可以在貼文中添加「反應」。您可以使用反應輕鬆隨意地表達「最愛/大心」所無法傳達的細微差別。"
-    letsTryReacting: "可以透過點擊貼文上的「+」按鈕來添加反應。請嘗試在此範例貼文添加反應！"
+    letsTryReacting: "可以透過點擊貼文上的「{reaction}」按鈕來添加反應。請嘗試在此範例貼文添加反應！"
     reactToContinue: "添加反應以繼續教學課程。"
     reactNotification: "當有人對您的貼文做出反應時會即時接收到通知。"
-    reactDone: "按下「-」按鈕可以取消反應。"
+    reactDone: "按下「{undo}」按鈕可以取消反應。"
   _timeline:
     title: "時間軸如何運作"
     description1: "Misskey根據使用方式提供了多個時間軸（伺服器可能會將部份時間軸停用）。"
@@ -2524,4 +2524,3 @@ _reversi:
 _offlineScreen:
   title: "離線－無法連接伺服器"
   header: "無法連接伺服器"
-

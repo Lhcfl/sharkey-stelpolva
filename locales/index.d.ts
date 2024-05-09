@@ -5334,9 +5334,9 @@ export interface Locale extends ILocale {
              */
             "description": string;
             /**
-             * リアクションは、ノートの「＋」ボタンをクリックするとつけられます。試しにこのサンプルのノートにリアクションをつけてみてください！
+             * リアクションは、ノートの「{reaction}」ボタンをクリックするとつけられます。試しにこのサンプルのノートにリアクションをつけてみてください！
              */
-            "letsTryReacting": string;
+            "letsTryReacting": ParameterizedString<"reaction">;
             /**
              * リアクションをつけると先に進めるようになります。
              */
@@ -5346,9 +5346,9 @@ export interface Locale extends ILocale {
              */
             "reactNotification": string;
             /**
-             * 「ー」ボタンを押すとリアクションを取り消すことができます。
+             * 「{undo}」ボタンを押すとリアクションを取り消すことができます。
              */
-            "reactDone": string;
+            "reactDone": ParameterizedString<"undo">;
         };
         "_timeline": {
             /**
