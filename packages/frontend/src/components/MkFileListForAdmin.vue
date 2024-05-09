@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div>
-	<MkPagination v-slot="{items}" :pagination="pagination" class="urempief" :class="{ grid: viewMode === 'grid' }">
+	<MkPagination v-slot="{items}" :pagination="pagination" :displayLimit="50" class="urempief" :class="{ grid: viewMode === 'grid' }">
 		<MkA
 			v-for="file in (items as Misskey.entities.DriveFile[])"
 			:key="file.id"

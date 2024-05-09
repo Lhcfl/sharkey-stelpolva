@@ -42,7 +42,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<option value="-usedAt">{{ i18n.ts.usedAt }} ({{ i18n.ts.descendingOrder }})</option>
 				</MkSelect>
 			</div>
-			<MkPagination ref="pagingComponent" :pagination="pagination">
+			<MkPagination ref="pagingComponent" :pagination="pagination" :displayLimit="50">
 				<template #default="{ items }">
 					<div class="_gaps_s">
 						<MkInviteCode v-for="item in items" :key="item.id" :invite="(item as any)" :onDeleted="deleted" moderator/>
