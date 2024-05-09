@@ -352,6 +352,7 @@ definePageMetadata(() => ({
 				> .img {
 					width: 42px;
 					height: 42px;
+					object-fit: contain;
 				}
 
 				> .body {
@@ -398,6 +399,7 @@ definePageMetadata(() => ({
 				> .img {
 					width: 32px;
 					height: 32px;
+					object-fit: contain;
 				}
 
 				> .body {
