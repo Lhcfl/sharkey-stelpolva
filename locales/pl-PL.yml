@@ -73,7 +73,7 @@ exportRequested: "Zażądałeś eksportu. Może to zająć trochę czasu. Po zak
 importRequested: "Zażądano importu. Może to zająć chwilę."
 lists: "Listy"
 noLists: "Nie masz żadnych list"
-note: "Utwórz wpis"
+note: "Wpis"
 notes: "Wpisy"
 following: "Obserwowani"
 followers: "Obserwujący"
@@ -1400,4 +1400,3 @@ _moderationLogTypes:
   resetPassword: "Zresetuj hasło"
 _reversi:
   total: "Łącznie"
-
