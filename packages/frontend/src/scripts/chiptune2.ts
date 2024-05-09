@@ -1,10 +1,14 @@
-// @ts-nocheck
 /* eslint-disable */
 
 const ChiptuneAudioContext = window.AudioContext || window.webkitAudioContext;
 
 let libopenmpt
 let libopenmptLoadPromise
+
+type ChiptuneJsConfig = {
+	repeatCount: number | null;
+	context: AudioContext | null;
+};
 
 export function ChiptuneJsConfig (repeatCount?: number, context?: AudioContext) {
 	this.repeatCount = repeatCount;
@@ -13,7 +17,7 @@ export function ChiptuneJsConfig (repeatCount?: number, context?: AudioContext) 
 
 ChiptuneJsConfig.prototype.constructor = ChiptuneJsConfig;
 
-export function ChiptuneJsPlayer (config: object) {
+export function ChiptuneJsPlayer (config: ChiptuneJsConfig) {
 	this.config = config;
 	this.audioContext = config.context || new ChiptuneAudioContext();
 	this.context = this.audioContext.createGain();
@@ -27,7 +31,7 @@ ChiptuneJsPlayer.prototype.initialize = function() {
 	if (libopenmptLoadPromise) return libopenmptLoadPromise;
 	if (libopenmpt) return Promise.resolve();
 
-	libopenmptLoadPromise = new Promise(async (resolve, reject) => {
+	libopenmptLoadPromise = new Promise<void>(async (resolve, reject) => {
 		try {
 			const { Module } = await import('./libopenmpt/libopenmpt.js');
 			await new Promise((resolve) => {
