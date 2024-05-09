@@ -1265,10 +1265,10 @@ _initialTutorial:
   _reaction:
     title: "ツッコミってなんや？"
     description: "ノートには「ツッコミ」できんねん。「いいね」とか何言っとるかわからんし、簡単に表現できるのはええことやん？"
-    letsTryReacting: "ノートの「＋」ボタンでツッコめるわ。試しに下のノートにツッコんでみ。"
+    letsTryReacting: "ノートの「{reaction}」ボタンでツッコめるわ。試しに下のノートにツッコんでみ。"
     reactToContinue: "ツッコんだら進めるようになるで。"
     reactNotification: "あんたのノートが誰かにツッコまれたら、すぐ通知するで。"
-    reactDone: "「ー」ボタンでツッコミやめれるで。"
+    reactDone: "「{undo}」ボタンでツッコミやめれるで。"
   _timeline:
     title: "タイムラインのしくみ"
     description1: "Sharkeyには、いろいろタイムラインがあんで（ただ、サーバーによっては無効化されてるところもあるな）。"

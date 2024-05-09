@@ -4,7 +4,7 @@ stages:
 
 testCommit:
   stage: test
-  image: node:latest
+  image: node:iron
   services:
     - postgres:15
     - redis

@@ -25,7 +25,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div class="_gaps">
 						<MkButton primary rounded @click="assign"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts.assign }}</MkButton>
 
-						<MkPagination :pagination="usersPagination">
+						<MkPagination :pagination="usersPagination" :displayLimit="50">
 							<template #empty>
 								<div class="_fullinfo">
 									<img :src="infoImageUrl" class="_ghost"/>

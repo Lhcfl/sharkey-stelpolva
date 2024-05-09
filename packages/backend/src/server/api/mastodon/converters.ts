@@ -83,7 +83,7 @@ export class MastoConverters {
 		}
 		return 'unknown';
 	}
-  
+
 	public encodeFile(f: any): Entity.Attachment {
 		return {
 			id: f.id,
@@ -278,8 +278,9 @@ export class MastoConverters {
 			reactions: status.emoji_reactions,
 			emoji_reactions: status.emoji_reactions,
 			bookmarked: false,
-			quote: isQuote ? await this.convertReblog(status.reblog) : false,
-			edited_at: note.updatedAt?.toISOString(),
+			quote: isQuote ? await this.convertReblog(status.reblog) : null,
+			// optional chaining cannot be used, as it evaluates to undefined, not null
+			edited_at: note.updatedAt ? note.updatedAt.toISOString() : null,
 		});
 	}
 }

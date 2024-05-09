@@ -130,7 +130,7 @@ definePageMetadata(() => ({
 	title: i18n.ts.user,
 	icon: 'ph-user ph-bold ph-lg',
 	...user.value ? {
-		title: user.value.name ? `${user.value.name} (@${user.value.username})` : `@${user.value.username}`,
+		title: user.value.name ? ` (@${user.value.username})` : `@${user.value.username}`,
 		subtitle: `@${getAcct(user.value)}`,
 		userName: user.value,
 		avatar: user.value,

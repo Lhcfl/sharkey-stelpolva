@@ -1275,10 +1275,10 @@ _initialTutorial:
   _reaction:
     title: "Cosa sono le Reazioni?"
     description: "Puoi reagire alle Note. Le sensazioni che non si riescono a trasmettere con i \"Mi piace\" si possono esprimere facilmente inviando una reazione."
-    letsTryReacting: "Puoi aggiungere una Reazione cliccando il bottone \"+\" (più) della relativa Nota. Prova ad aggiungerne una a questa Nota di esempio!"
+    letsTryReacting: "Puoi aggiungere una Reazione cliccando il bottone \"{reaction}\" della relativa Nota. Prova ad aggiungerne una a questa Nota di esempio!"
     reactToContinue: "Aggiungere la Reazione ti consentirà di procedere col tutorial."
     reactNotification: "Quando qualcuno reagisce alle tue Note, ricevi una notifica in tempo reale."
-    reactDone: "Puoi annullare la tua Reazione premendo il bottone \"ー\" (meno)"
+    reactDone: "Puoi annullare la tua Reazione premendo il bottone \"{undo}\""
   _timeline:
     title: "Come funziona la Timeline"
     description1: "Misskey fornisce alcune Timeline (sequenze cronologiche di Note). Una di queste potrebbe essere stata disattivata dagli amministratori."
@@ -2509,4 +2509,3 @@ _reversi:
 _offlineScreen:
   title: "Scollegato. Impossibile connettersi al server"
   header: "Impossibile connettersi al server"
-

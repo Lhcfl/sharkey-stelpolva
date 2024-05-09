@@ -1263,10 +1263,10 @@ _initialTutorial:
   _reaction:
     title: "¿Qué son las reacciones?"
     description: "Se puede reaccionar a las Notas con diferentes emojis. Las reacciones te permiten expresar matices que no se pueden transmitir con un simple 'me gusta'."
-    letsTryReacting: "Puedes añadir reacciones pulsando en el botón '+' de la nota. ¡Intenta reaccionar a esta nota de ejemplo!"
+    letsTryReacting: "Puedes añadir reacciones pulsando en el botón '{reaction}' de la nota. ¡Intenta reaccionar a esta nota de ejemplo!"
     reactToContinue: "Añade una reacción para continuar."
     reactNotification: "Recibirás notificaciones en tiempo real cuando alguien reaccione a tu nota."
-    reactDone: "Puedes deshacer una reacción pulsando en el botón '-'."
+    reactDone: "Puedes deshacer una reacción pulsando en el botón '{undo}'."
   _timeline:
     title: "El concepto de Línea de tiempo"
     description1: "Misskey proporciona múltiples líneas de tiempo basadas en su uso (algunas pueden no estar disponibles dependiendo de las políticas de la instancia)."
@@ -2449,4 +2449,3 @@ _reversi:
   reversi: "Reversi"
   won: "{name} ha ganado"
   total: "Total"
-

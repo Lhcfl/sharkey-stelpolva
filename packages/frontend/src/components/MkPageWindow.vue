@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #header>
 		<template v-if="pageMetadata">
 			<i v-if="pageMetadata.icon" :class="pageMetadata.icon" style="margin-right: 0.5em;"></i>
-			<span>{{ pageMetadata.title }}</span>
+			<span><MkUserName v-if="pageMetadata.userName?.name" :user="pageMetadata.userName" />{{ pageMetadata.title }}</span>
 		</template>
 	</template>
 
@@ -43,6 +43,7 @@ import { claimAchievement } from '@/scripts/achievements.js';
 import { getScrollContainer } from '@/scripts/scroll.js';
 import { useRouterFactory } from '@/router/supplier.js';
 import { mainRouter } from '@/router/main.js';
+import MkUserName from './global/MkUserName.vue';
 
 const props = defineProps<{
 	initialPath: string;

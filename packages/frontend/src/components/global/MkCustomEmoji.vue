@@ -85,6 +85,7 @@ const errored = ref(url.value == null);
 
 function onClick(ev: MouseEvent) {
 	if (props.menu) {
+		ev.stopPropagation();
 		os.popupMenu([{
 			type: 'label',
 			text: `:${props.name}:`,

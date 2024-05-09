@@ -1271,10 +1271,10 @@ _initialTutorial:
   _reaction:
     title: "'리액션'이 무엇인가요?"
     description: "노트에 '리액션'을 보낼 수 있습니다. '좋아요'만으로는 충분히 전해지지 않는 감정을, 이모지에 실어서 가볍게 보낼 수 있습니다."
-    letsTryReacting: "리액션은 노트의 '+' 버튼을 클릭하여 붙일 수 있습니다. 지금 표시되는 샘플 노트에 리액션을 달아 보세요!"
+    letsTryReacting: "리액션은 노트의 '{reaction}' 버튼을 클릭하여 붙일 수 있습니다. 지금 표시되는 샘플 노트에 리액션을 달아 보세요!"
     reactToContinue: "다음으로 진행하려면 리액션을 보내세요."
     reactNotification: "누군가가 나의 노트에 리액션을 보내면 실시간으로 알림을 받게 됩니다."
-    reactDone: "'-' 버튼을 눌러서 리액션을 취소할 수 있습니다."
+    reactDone: "'{undo}' 버튼을 눌러서 리액션을 취소할 수 있습니다."
   _timeline:
     title: "타임라인에 대하여"
     description1: "Misskey에는 종류에 따라 여러 가지의 타임라인으로 구성되어 있습니다.(서버에 따라서는 일부 타임라인을 사용할 수 없는 경우가 있습니다)"
@@ -2505,4 +2505,3 @@ _reversi:
 _offlineScreen:
   title: "오프라인 - 서버에 접속할 수 없습니다"
   header: "서버에 접속할 수 없습니다"
-

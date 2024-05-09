@@ -283,6 +283,7 @@ namespace MisskeyAPI {
           : '',
         plain_content: n.text ? n.text : null,
         created_at: n.createdAt,
+        edited_at: n.updatedAt || null,
         emojis: mapEmojis(n.emojis).concat(mapReactionEmojis(n.reactionEmojis)),
         replies_count: n.repliesCount,
         reblogs_count: n.renoteCount,
@@ -303,7 +304,7 @@ namespace MisskeyAPI {
         pinned: null,
         emoji_reactions: typeof n.reactions === 'object' ? mapReactions(n.reactions, n.myReaction) : [],
         bookmarked: false,
-        quote: n.renote && n.text ? note(n.renote, n.user.host ? n.user.host : host ? host : null) : false
+        quote: n.renote && n.text ? note(n.renote, n.user.host ? n.user.host : host ? host : null) : null
       }
     }
 

@@ -79,13 +79,14 @@ export class ImportCustomEmojisProcessorService {
 					continue;
 				}
 				const emojiInfo = record.emoji;
-				if (!/^[a-zA-Z0-9_]+$/.test(emojiInfo.name)) {
-					this.logger.error(`invalid emojiname: ${emojiInfo.name}`);
+				const nameNfc = emojiInfo.name.normalize('NFC');
+				if (!/^[\p{Letter}\p{Number}\p{Mark}_+-]+$/u.test(nameNfc)) {
+					this.logger.error(`invalid emojiname: ${nameNfc}`);
 					continue;
 				}
 				const emojiPath = outputPath + '/' + record.fileName;
 				await this.emojisRepository.delete({
-					name: emojiInfo.name,
+					name: nameNfc,
 				});
 				const driveFile = await this.driveService.addFile({
 					user: null,
@@ -94,10 +95,10 @@ export class ImportCustomEmojisProcessorService {
 					force: true,
 				});
 				await this.customEmojiService.add({
-					name: emojiInfo.name,
-					category: emojiInfo.category,
+					name: nameNfc,
+					category: emojiInfo.category?.normalize('NFC'),
 					host: null,
-					aliases: emojiInfo.aliases,
+					aliases: emojiInfo.aliases?.map((a: string) => a.normalize('NFC')),
 					driveFile,
 					license: emojiInfo.license,
 					isSensitive: emojiInfo.isSensitive,
