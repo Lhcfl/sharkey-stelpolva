@@ -27,7 +27,6 @@
 		"@rollup/pluginutils": "5.1.0",
 		"@transfem-org/sfm-js": "0.24.5",
 		"@syuilo/aiscript": "0.18.0",
-		"@phosphor-icons/web": "^2.0.3",
 		"@twemoji/parser": "15.0.0",
 		"@vitejs/plugin-vue": "5.0.4",
 		"@vue/compiler-sfc": "3.4.21",
