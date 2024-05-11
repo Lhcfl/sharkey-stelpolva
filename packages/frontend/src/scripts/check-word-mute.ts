@@ -3,12 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-export function checkWordMute(note: Record<string, any>, me: Record<string, any> | null | undefined, mutedWords: Array<string | string[]>): boolean {
+import type { Note, MeDetailed } from "misskey-js/entities.js";
+
+export function checkWordMute(note: Note, me: MeDetailed | null | undefined, mutedWords: Array<string | string[]>): boolean {
 	// 自分自身
 	if (me && (note.userId === me.id)) return false;
 
 	if (mutedWords.length > 0) {
-		const text = ((note.cw ?? '') + '\n' + (note.text ?? '')).trim();
+		const text = getNoteText(note);
 
 		if (text === '') return false;
 
@@ -39,4 +41,26 @@ export function checkWordMute(note: Record<string, any>, me: Record<string, any>
 	}
 
 	return false;
+}
+
+function getNoteText(note: Note): string {
+	const textParts: string[] = [];
+
+	if (note.cw)
+		textParts.push(note.cw);
+
+	if (note.text)
+		textParts.push(note.text);
+
+	if (note.files)
+		for (const file of note.files)
+			if (file.comment)
+				textParts.push(file.comment);
+
+	if (note.poll)
+		for (const choice of note.poll.choices)
+			if (choice.text)
+				textParts.push(choice.text);
+
+	return textParts.join('\n').trim();
 }

@@ -85,7 +85,7 @@ export class ExportCustomEmojisProcessorService {
 		});
 
 		for (const emoji of customEmojis) {
-			if (!/^[a-zA-Z0-9_]+$/.test(emoji.name)) {
+			if (!/^[\p{Letter}\p{Number}\p{Mark}_+-]+$/u.test(emoji.name)) {
 				this.logger.error(`invalid emoji name: ${emoji.name}`);
 				continue;
 			}

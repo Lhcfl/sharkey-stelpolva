@@ -88,7 +88,7 @@
 		"@smithy/node-http-handler": "2.1.10",
 		"@swc/cli": "0.1.63",
 		"@swc/core": "1.3.107",
-		"@transfem-org/sfm-js": "0.24.4",
+		"@transfem-org/sfm-js": "0.24.5",
 		"@twemoji/parser": "15.0.0",
 		"accepts": "1.3.8",
 		"ajv": "8.12.0",

@@ -92,17 +92,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				//const emojis = await q.limit(ps.limit).getMany();
 
 				emojis = await q.orderBy('length(emoji.name)', 'ASC').getMany();
-				const queryarry = ps.query.match(/\:([a-z0-9_]*)\:/g);
+				const queryarry = ps.query.match(/:([\p{Letter}\p{Number}\p{Mark}_+-]*):/ug);
 
 				if (queryarry) {
 					emojis = emojis.filter(emoji =>
-						queryarry.includes(`:${emoji.name}:`),
+						queryarry.includes(`:${emoji.name.normalize('NFC')}:`),
 					);
 				} else {
+					const queryNfc = ps.query!.normalize('NFC');
 					emojis = emojis.filter(emoji =>
-						emoji.name.includes(ps.query!) ||
-						emoji.aliases.some(a => a.includes(ps.query!)) ||
-						emoji.category?.includes(ps.query!));
+						emoji.name.includes(queryNfc) ||
+						emoji.aliases.some(a => a.includes(queryNfc)) ||
+						emoji.category?.includes(queryNfc));
 				}
 				emojis.splice(ps.limit + 1);
 			} else {

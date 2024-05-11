@@ -4,7 +4,7 @@
 		<template #header><XHeader :actions="headerActions" :tabs="headerTabs"/></template>
 		<MkSpacer :contentMax="900">
 			<div class="_gaps_m">
-				<MkPagination ref="paginationComponent" :pagination="pagination">
+				<MkPagination ref="paginationComponent" :pagination="pagination" :displayLimit="50">
 					<template #default="{ items }">
 						<div class="_gaps_s">
 							<SkApprovalUser v-for="item in items" :key="item.id" :user="(item as any)" :onDeleted="deleted"/>

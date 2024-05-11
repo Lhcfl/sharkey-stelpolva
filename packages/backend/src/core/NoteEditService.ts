@@ -430,11 +430,16 @@ export class NoteEditService implements OnApplicationShutdown {
 			update.hasPoll = !!data.poll;
 		}
 
+		// technically we should check if the two sets of files are
+		// different, or if their descriptions have changed. In practice
+		// this is good enough.
+		const filesChanged = oldnote.fileIds?.length || data.files?.length;
+
 		const poll = await this.pollsRepository.findOneBy({ noteId: oldnote.id });
 
 		const oldPoll = poll ? { choices: poll.choices, multiple: poll.multiple, expiresAt: poll.expiresAt } : null;
 
-		if (Object.keys(update).length > 0) {
+		if (Object.keys(update).length > 0 || filesChanged) {
 			const exists = await this.noteEditRepository.findOneBy({ noteId: oldnote.id });
 
 			await this.noteEditRepository.insert({

@@ -16,9 +16,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 </div>
 <div v-else-if="phase === 'howToReact'" class="_gaps">
 	<div style="text-align: center; padding: 0 16px;">{{ i18n.ts._initialTutorial._reaction.description }}</div>
-	<div>{{ i18n.ts._initialTutorial._reaction.letsTryReacting }}</div>
+	<I18n :src="i18n.ts._initialTutorial._reaction.letsTryReacting" tag="div">
+		<template #reaction>
+			<i class="ph-smiley ph-bold ph-lg"></i>
+		</template>
+	</I18n>
 	<MkNote :class="$style.exampleNoteRoot" :note="exampleNote" :mock="true" @reaction="addReaction" @removeReaction="removeReaction"/>
-	<div v-if="onceReacted"><b style="color: var(--accent);"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts._initialTutorial.wellDone }}</b> {{ i18n.ts._initialTutorial._reaction.reactNotification }}<br>{{ i18n.ts._initialTutorial._reaction.reactDone }}</div>
+	<div v-if="onceReacted">
+		<b style="color: var(--accent);"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts._initialTutorial.wellDone }}</b> {{ i18n.ts._initialTutorial._reaction.reactNotification }}<br>
+		<I18n :src="i18n.ts._initialTutorial._reaction.reactDone">
+			<template #undo>
+				<i class="ph-minus ph-bold ph-lg"></i>
+			</template>
+		</I18n>
+	</div>
 </div>
 </template>
 

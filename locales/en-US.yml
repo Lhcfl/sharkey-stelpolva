@@ -1335,10 +1335,10 @@ _initialTutorial:
   _reaction:
     title: "What are Reactions?"
     description: "Notes can be reacted to with various emojis. Reactions allow you to express nuances that may not be conveyed with just a 'like.'"
-    letsTryReacting: "Reactions can be added by clicking the '+' button on the note. Try reacting to this sample note!"
+    letsTryReacting: "Reactions can be added by clicking the '{reaction}' button on the note. Try reacting to this sample note!"
     reactToContinue: "Add a reaction to proceed."
     reactNotification: "You'll receive real-time notifications when someone reacts to your note."
-    reactDone: "You can undo a reaction by pressing the '-' button."
+    reactDone: "You can undo a reaction by pressing the '{undo}' button."
   _timeline:
     title: "The Concept of Timelines"
     description1: "Sharkey provides multiple timelines based on usage (some may not be available depending on the server's policies)."

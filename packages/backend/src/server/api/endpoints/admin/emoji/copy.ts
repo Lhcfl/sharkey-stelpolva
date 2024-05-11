@@ -82,15 +82,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError();
 			}
 
+			const nameNfc = emoji.name.normalize('NFC');
 			// Duplication Check
-			const isDuplicate = await this.customEmojiService.checkDuplicate(emoji.name);
+			const isDuplicate = await this.customEmojiService.checkDuplicate(nameNfc);
 			if (isDuplicate) throw new ApiError(meta.errors.duplicateName);
 
 			const addedEmoji = await this.customEmojiService.add({
 				driveFile,
-				name: emoji.name,
-				category: emoji.category,
-				aliases: emoji.aliases,
+				name: nameNfc,
+				category: emoji.category?.normalize('NFC'),
+				aliases: emoji.aliases?.map(a => a.normalize('NFC')),
 				host: null,
 				license: emoji.license,
 				isSensitive: emoji.isSensitive,

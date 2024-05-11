@@ -40,7 +40,7 @@ export const meta = {
 export const paramDef = {
 	type: 'object',
 	properties: {
-		name: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' },
+		name: { type: 'string', pattern: '^[\\p{Letter}\\p{Number}\\p{Mark}_+-]+$' },
 		fileId: { type: 'string', format: 'misskey:id' },
 		category: {
 			type: 'string',
@@ -73,18 +73,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private emojiEntityService: EmojiEntityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			const nameNfc = ps.name.normalize('NFC');
 			const driveFile = await this.driveFilesRepository.findOneBy({ id: ps.fileId });
 			if (driveFile == null) throw new ApiError(meta.errors.noSuchFile);
-			const isDuplicate = await this.customEmojiService.checkDuplicate(ps.name);
+			const isDuplicate = await this.customEmojiService.checkDuplicate(nameNfc);
 			if (isDuplicate) throw new ApiError(meta.errors.duplicateName);
 
 			if (driveFile.user !== null) await this.driveFilesRepository.update(driveFile.id, { user: null });
 
 			const emoji = await this.customEmojiService.add({
 				driveFile,
-				name: ps.name,
-				category: ps.category ?? null,
-				aliases: ps.aliases ?? [],
+				name: nameNfc,
+				category: ps.category?.normalize('NFC') ?? null,
+				aliases: ps.aliases?.map(a => a.normalize('NFC')) ?? [],
 				host: null,
 				license: ps.license ?? null,
 				isSensitive: ps.isSensitive ?? false,
