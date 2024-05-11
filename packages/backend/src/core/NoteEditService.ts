@@ -699,6 +699,24 @@ export class NoteEditService implements OnApplicationShutdown {
 						dm.addFollowersRecipe();
 					}
 
+					if (['public', 'home'].includes(note.visibility)) {
+						// Send edit event to all users who replied to,
+						// renoted a post or reacted to a note.
+						const noteId = note.id;
+						const users = await this.usersRepository.createQueryBuilder()
+							.where(
+								'id IN (SELECT "userId" FROM note WHERE "replyId" = :noteId OR "renoteId" = :noteId UNION SELECT "userId" FROM note_reaction WHERE "noteId" = :noteId)',
+								{ noteId },
+							)
+							.andWhere('host IS NOT NULL')
+							.getMany();
+						for (const u of users) {
+							// User was verified to be remote by checking
+							// whether host IS NOT NULL in SQL query.
+							dm.addDirectRecipe(u as MiRemoteUser);
+						}
+					}
+
 					if (['public'].includes(note.visibility)) {
 						this.relayService.deliverToRelays(user, noteActivity);
 					}
