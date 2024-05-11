@@ -570,7 +570,10 @@ seems to do a decent job)
     `packages/frontend/src/ui/deck/tl-column.vue`,
     `packages/frontend/src/widgets/WidgetTimeline.vue`)
 * make sure there aren't any new `ti-*` classes (Tabler Icons), and
-  replace them with appropriate `ph-*` ones (Phosphor Icons)
+  replace them with appropriate `ph-*` ones (Phosphor Icons).
+  `git grep '["'\'']ti[ -](?!fw)'` should show you what to change.
+  NOTE: `ti-fw` is a special class that's defined by Misskey, leave it
+  alone
 * re-generate `misskey-js`: `pnpm build-misskey-js-with-types`
 * run tests `pnpm test` and fix as much as you can
   * right now `megalodon` doesn't pass its tests, you probably need to
