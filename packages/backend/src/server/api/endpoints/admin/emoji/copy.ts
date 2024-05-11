@@ -90,7 +90,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const addedEmoji = await this.customEmojiService.add({
 				driveFile,
 				name: nameNfc,
-				category: emoji.category?.normalize('NFC'),
+				category: emoji.category?.normalize('NFC') ?? null,
 				aliases: emoji.aliases?.map(a => a.normalize('NFC')),
 				host: null,
 				license: emoji.license,
