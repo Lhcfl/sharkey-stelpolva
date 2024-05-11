@@ -19,6 +19,6 @@ import { instance } from '@/instance.js';
 
 definePageMetadata(() => ({
 	title: i18n.ts.inquiry,
-	icon: 'ti ti-help-circle',
+	icon: 'ph-question ph-bold ph-lg',
 }));
 </script>

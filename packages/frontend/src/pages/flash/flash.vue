@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 						<div class="actions _panel">
 							<div class="items">
-								<MkButton v-tooltip="i18n.ts.reload" class="button" rounded @click="reset"><i class="ti ti-reload"></i></MkButton>
+								<MkButton v-tooltip="i18n.ts.reload" class="button" rounded @click="reset"><i class="ph-arrows-clockwise ph-bold ph-lg"></i></MkButton>
 							</div>
 							<div class="items">
 								<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary @click="unlike()"><i class="ph-heart ph-bold ph-lg"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
