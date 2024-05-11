@@ -22,7 +22,7 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import type { Config } from '@/config.js';
 import { DriveService } from './DriveService.js';
 
-const parseEmojiStrRegexp = /^(\w+)(?:@([\w.-]+))?$/;
+const parseEmojiStrRegexp = /^([-\w]+)(?:@([\w.-]+))?$/;
 
 @Injectable()
 export class CustomEmojiService implements OnApplicationShutdown {
