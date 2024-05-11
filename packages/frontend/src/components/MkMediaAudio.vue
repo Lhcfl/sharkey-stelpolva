@@ -143,13 +143,13 @@ function showMenu(ev: MouseEvent) {
 		{
 			type: 'switch',
 			text: i18n.ts._mediaControls.loop,
-			icon: 'ti ti-repeat',
+			icon: 'ph ph-repeat',
 			ref: loop,
 		},
 		{
 			type: 'radio',
 			text: i18n.ts._mediaControls.playbackRate,
-			icon: 'ti ti-clock-play',
+			icon: 'ph ph-gauge',
 			ref: speed,
 			options: {
 				'0.25x': 0.25,
@@ -188,7 +188,7 @@ function showMenu(ev: MouseEvent) {
 		}, {
 			type: 'link' as const,
 			text: i18n.ts._fileViewer.title,
-			icon: 'ti ti-info-circle',
+			icon: 'ph ph-info',
 			to: `/my/drive/file/${props.audio.id}`,
 		});
 	}

@@ -120,7 +120,7 @@ function showMenu(ev: MouseEvent) {
 	}, {
 		type: 'link' as const,
 		text: i18n.ts._fileViewer.title,
-		icon: 'ti ti-info-circle',
+		icon: 'ph ph-info',
 		to: `/my/drive/file/${props.image.id}`,
 	}] : [])], ev.currentTarget ?? ev.target);
 }

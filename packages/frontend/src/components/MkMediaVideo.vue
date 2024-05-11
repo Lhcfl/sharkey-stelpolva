@@ -39,10 +39,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 		>
 			<source :src="video.url">
 		</video>
-		<i class="ti ti-eye-off" :class="$style.hide" @click="hide = true"></i>
+		<i class="ph-eye-closed ph-bold ph-lg" :class="$style.hide" @click="hide = true"></i>
 		<div :class="$style.indicators">
 			<div v-if="video.comment" :class="$style.indicator">ALT</div>
-			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ti ti-eye-exclamation"></i></div>
+			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ph-warning ph-bold ph-lg"></i></div>
 		</div>
 	</div>
 
@@ -177,13 +177,13 @@ function showMenu(ev: MouseEvent) {
 		{
 			type: 'switch',
 			text: i18n.ts._mediaControls.loop,
-			icon: 'ti ti-repeat',
+			icon: 'ph ph-repeat',
 			ref: loop,
 		},
 		{
 			type: 'radio',
 			text: i18n.ts._mediaControls.playbackRate,
-			icon: 'ti ti-clock-play',
+			icon: 'ph ph-gauge',
 			ref: speed,
 			options: {
 				'0.25x': 0.25,
@@ -197,7 +197,7 @@ function showMenu(ev: MouseEvent) {
 		},
 		...(document.pictureInPictureEnabled ? [{
 			text: i18n.ts._mediaControls.pip,
-			icon: 'ti ti-picture-in-picture',
+			icon: 'ph ph-picture-in-picture',
 			action: togglePictureInPicture,
 		}] : []),
 		{
@@ -227,7 +227,7 @@ function showMenu(ev: MouseEvent) {
 		}, {
 			type: 'link' as const,
 			text: i18n.ts._fileViewer.title,
-			icon: 'ti ti-info-circle',
+			icon: 'ph ph-info',
 			to: `/my/drive/file/${props.video.id}`,
 		});
 	}

@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<div v-else-if="!$i.twoFactorEnabled" class="_gaps_s">
 				<MkButton primary gradate @click="registerTOTP">{{ i18n.ts._2fa.registerTOTP }}</MkButton>
-				<MkLink url="https://misskey-hub.net/docs/for-users/stepped-guides/how-to-enable-2fa/" target="_blank"><i class="ti ti-help-circle"></i> {{ i18n.ts.learnMore }}</MkLink>
+				<MkLink url="https://misskey-hub.net/docs/for-users/stepped-guides/how-to-enable-2fa/" target="_blank"><i class="ph-question ph-bold ph-lg"></i> {{ i18n.ts.learnMore }}</MkLink>
 			</div>
 		</MkFolder>
 
