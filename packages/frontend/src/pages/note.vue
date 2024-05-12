@@ -19,13 +19,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkButton v-if="note.channelId" rounded :class="$style.loadButton" @click="showNext = 'channel'"><i class="ph-caret-up ph-bold ph-lg"></i> <i class="ph-television-simple ph-bold ph-lg"></i></MkButton>
 							<MkButton rounded :class="$style.loadButton" @click="showNext = 'user'"><i class="ph-caret-up ph-bold ph-lg"></i> <i class="ph-user ph-bold ph-lg"></i></MkButton>
 						</div>
-						<div v-if="defaultStore.state.noteDesign === 'misskey'" class="_margin _gaps_s">
+						<div class="_margin _gaps_s">
 							<MkRemoteCaution v-if="note.user.host != null" :href="note.url ?? note.uri"/>
 							<MkNoteDetailed :key="note.id" v-model:note="note" :initialTab="initialTab" :class="$style.note" :expandAllCws="expandAllCws"/>
-						</div>
-						<div v-else-if="defaultStore.state.noteDesign === 'sharkey'" class="_margin _gaps_s">
-							<MkRemoteCaution v-if="note.user.host != null" :href="note.url ?? note.uri"/>
-							<SkNoteDetailed :key="note.id" v-model:note="note" :initialTab="initialTab" :class="$style.note" :expandAllCws="expandAllCws"/>
 						</div>
 						<div v-if="clips && clips.length > 0" class="_margin">
 							<div style="font-weight: bold; padding: 12px;">{{ i18n.ts.clip }}</div>
@@ -55,9 +51,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { computed, watch, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import type { Paging } from '@/components/MkPagination.vue';
-import MkNoteDetailed from '@/components/MkNoteDetailed.vue';
 import MkNotes from '@/components/MkNotes.vue';
-import SkNoteDetailed from '@/components/SkNoteDetailed.vue';
 import MkRemoteCaution from '@/components/MkRemoteCaution.vue';
 import MkButton from '@/components/MkButton.vue';
 import { misskeyApi } from '@/scripts/misskey-api.js';
@@ -66,6 +60,11 @@ import { i18n } from '@/i18n.js';
 import { dateString } from '@/filters/date.js';
 import MkClipPreview from '@/components/MkClipPreview.vue';
 import { defaultStore } from '@/store.js';
+
+const MkNoteDetailed = (
+	(defaultStore.state.noteDesign === 'misskey') ? (await import('@/components/MkNoteDetailed.vue')).default :
+	(defaultStore.state.noteDesign === 'sharkey') ? (await import('@/components/SkNoteDetailed.vue')).default :
+	null);
 
 const props = defineProps<{
 	noteId: string;
