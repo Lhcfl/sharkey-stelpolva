@@ -8,8 +8,7 @@ RUN apk add git linux-headers build-base
 
 ENV PYTHONUNBUFFERED=1
 RUN apk add --update python3 && ln -sf python3 /usr/bin/python
-RUN python3 -m ensurepip
-RUN pip3 install --no-cache --upgrade pip setuptools
+RUN apk add py3-pip py3-setuptools
 
 RUN corepack enable
 
@@ -65,7 +64,7 @@ COPY --chown=sharkey:sharkey --from=build /sharkey/sharkey-assets ./packages/fro
 COPY --chown=sharkey:sharkey package.json ./package.json
 COPY --chown=sharkey:sharkey pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --chown=sharkey:sharkey packages/backend/package.json ./packages/backend/package.json
-COPY --chown=sharkey:sharkey packages/backend/check_connect.js ./packages/backend/check_connect.js
+COPY --chown=sharkey:sharkey packages/backend/scripts/check_connect.js ./packages/backend/scripts/check_connect.js
 COPY --chown=sharkey:sharkey packages/backend/ormconfig.js ./packages/backend/ormconfig.js
 COPY --chown=sharkey:sharkey packages/backend/migration ./packages/backend/migration
 COPY --chown=sharkey:sharkey packages/backend/assets ./packages/backend/assets
