@@ -327,11 +327,11 @@ function applyEnvOverrides(config: Source) {
 	// these inner functions recurse through the config structure, using
 	// the given steps, building the env variable name
 
-	function _apply_top(steps: (string | number)[]) {
+	function _apply_top(steps: (string | string[] | number | number[])[]) {
 		_walk('', [], steps);
 	}
 
-	function _walk(name: string, path: (string | number)[], steps: (string | number)[]) {
+	function _walk(name: string, path: (string | number)[], steps: (string | string[] | number | number[])[]) {
 		// are there more steps after this one? recurse
 		if (steps.length > 1) {
 			const thisStep = steps.shift();
@@ -368,7 +368,7 @@ function applyEnvOverrides(config: Source) {
 	}
 
 	// this recurses down, bailing out if there's no config to override
-	function _descend(name: string, path: (string | number)[], thisStep: string | number, steps: (string | number)[]) {
+	function _descend(name: string, path: (string | number)[], thisStep: string | number, steps: (string | string[] | number | number[])[]) {
 		name = `${name}${_step2name(thisStep)}_`;
 		path = [ ...path, thisStep ];
 		_walk(name, path, steps);
@@ -390,10 +390,10 @@ function applyEnvOverrides(config: Source) {
 		}
 	}
 
-	const alwaysStrings = { 'chmodSocket': 1 };
+	const alwaysStrings = { 'chmodSocket': 1 } as any;
 
 	function _assign(path: (string | number)[], lastStep: string | number, value: string) {
-		let thisConfig = config;
+		let thisConfig = config as any;
 		for (const step of path) {
 			if (!thisConfig[step]) {
 				thisConfig[step] = {};
@@ -403,9 +403,11 @@ function applyEnvOverrides(config: Source) {
 
 		if (!alwaysStrings[lastStep]) {
 			if (value.match(/^[0-9]+$/)) {
-				value = parseInt(value);
+				thisConfig[lastStep] = parseInt(value);
+				return;
 			} else if (value.match(/^(true|false)$/i)) {
-				value = !!value.match(/^true$/i);
+				thisConfig[lastStep] = !!value.match(/^true$/i);
+				return;
 			}
 		}
 
@@ -416,7 +418,7 @@ function applyEnvOverrides(config: Source) {
 
 	_apply_top([['url', 'port', 'socket', 'chmodSocket', 'disableHsts']]);
 	_apply_top(['db', ['host', 'port', 'db', 'user', 'pass']]);
-	_apply_top(['dbSlaves', config.dbSlaves?.keys(), ['host', 'port', 'db', 'user', 'pass']]);
+	_apply_top(['dbSlaves', Array.from((config.dbSlaves ?? []).keys()), ['host', 'port', 'db', 'user', 'pass']]);
 	_apply_top([
 		['redis', 'redisForPubsub', 'redisForJobQueue', 'redisForTimelines'],
 		['host','port','username','pass','db','prefix'],
