@@ -293,6 +293,7 @@ import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { globalEvents } from '@/events.js';
 import { claimAchievement } from '@/scripts/achievements.js';
+import { deepMerge } from '@/scripts/merge.js';
 
 const lang = ref(miLocalStorage.getItem('lang'));
 const fontSize = ref(miLocalStorage.getItem('fontSize'));
@@ -319,7 +320,14 @@ const reactionsDisplaySize = computed(defaultStore.makeGetterSetter('reactionsDi
 const limitWidthOfReaction = computed(defaultStore.makeGetterSetter('limitWidthOfReaction'));
 const collapseRenotes = computed(defaultStore.makeGetterSetter('collapseRenotes'));
 const clickToOpen = computed(defaultStore.makeGetterSetter('clickToOpen'));
-const showBots = computed(defaultStore.makeGetterSetter('tlWithBots'));
+// copied from src/pages/timeline.vue
+const showBots = computed<boolean>({
+	get: () => defaultStore.reactiveState.tl.value.filter.withBots,
+	set: (newValue) => {
+		const out = deepMerge({ filter: { withBots: newValue } }, defaultStore.state.tl);
+		defaultStore.set('tl', out);
+	},
+});
 const collapseFiles = computed(defaultStore.makeGetterSetter('collapseFiles'));
 const autoloadConversation = computed(defaultStore.makeGetterSetter('autoloadConversation'));
 const reduceAnimation = computed(defaultStore.makeGetterSetter('animation', v => !v, v => !v));
