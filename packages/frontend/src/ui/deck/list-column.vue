@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i class="ph-list ph-bold ph-lg"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
-	<MkTimeline v-if="column.listId" ref="timeline" src="list" :list="column.listId" :withRenotes="withRenotes"/>
+	<MkTimeline v-if="column.listId" ref="timeline" src="list" :list="column.listId" :key="column.listId + column.withRenotes + column.onlyFiles" :withRenotes="withRenotes" :onlyFiles="onlyFiles"/>
 </XColumn>
 </template>
 
@@ -29,6 +29,7 @@ const props = defineProps<{
 
 const timeline = shallowRef<InstanceType<typeof MkTimeline>>();
 const withRenotes = ref(props.column.withRenotes ?? true);
+const onlyFiles = ref(props.column.onlyFiles ?? false);
 
 if (props.column.listId == null) {
 	setList();
@@ -37,6 +38,12 @@ if (props.column.listId == null) {
 watch(withRenotes, v => {
 	updateColumn(props.column.id, {
 		withRenotes: v,
+	});
+});
+
+watch(onlyFiles, v => {
+	updateColumn(props.column.id, {
+		onlyFiles: v,
 	});
 });
 
@@ -74,6 +81,11 @@ const menu = [
 		type: 'switch',
 		text: i18n.ts.showRenotes,
 		ref: withRenotes,
+	},
+	{
+		type: 'switch',
+		text: i18n.ts.fileAttachedOnly,
+		ref: onlyFiles,
 	},
 ];
 </script>

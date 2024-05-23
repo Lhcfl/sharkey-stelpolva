@@ -15,6 +15,8 @@ class ChannelChannel extends Channel {
 	public static shouldShare = false;
 	public static requireCredential = false as const;
 	private channelId: string;
+	private withFiles: boolean;
+	private withRenotes: boolean;
 
 	constructor(
 		private noteEntityService: NoteEntityService,
@@ -29,6 +31,8 @@ class ChannelChannel extends Channel {
 	@bindThis
 	public async init(params: any) {
 		this.channelId = params.channelId as string;
+		this.withFiles = params.withFiles ?? false;
+		this.withRenotes = params.withRenotes ?? true;
 
 		// Subscribe stream
 		this.subscriber.on('notesStream', this.onNote);
@@ -37,6 +41,10 @@ class ChannelChannel extends Channel {
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
 		if (note.channelId !== this.channelId) return;
+
+		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
+
+		if (note.renote && note.text == null && (note.fileIds == null || note.fileIds.length === 0) && !this.withRenotes) return;
 
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.userIdsWhoMeMuting)) return;

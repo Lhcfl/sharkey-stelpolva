@@ -51,6 +51,12 @@ export const paramDef = {
 		sinceDate: { type: 'integer' },
 		untilDate: { type: 'integer' },
 		allowPartial: { type: 'boolean', default: false }, // true is recommended but for compatibility false by default
+		withRenotes: { type: 'boolean', default: true },
+		withFiles: {
+			type: 'boolean',
+			default: false,
+			description: 'Only show notes that have attached files.',
+		},
 	},
 	required: ['channelId'],
 } as const;
@@ -89,7 +95,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (me) this.activeUsersChart.read(me);
 
 			if (!serverSettings.enableFanoutTimeline) {
-				return await this.noteEntityService.packMany(await this.getFromDb({ untilId, sinceId, limit: ps.limit, channelId: channel.id }, me), me);
+				return await this.noteEntityService.packMany(await this.getFromDb({ untilId, sinceId, limit: ps.limit, channelId: channel.id, withFiles: ps.withFiles, withRenotes: ps.withRenotes }, me), me);
 			}
 
 			return await this.fanoutTimelineEndpointService.timeline({
@@ -100,9 +106,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				me,
 				useDbFallback: true,
 				redisTimelines: [`channelTimeline:${channel.id}`],
-				excludePureRenotes: false,
+				excludePureRenotes: !ps.withRenotes,
+				excludeNoFiles: ps.withFiles,
 				dbFallback: async (untilId, sinceId, limit) => {
-					return await this.getFromDb({ untilId, sinceId, limit, channelId: channel.id }, me);
+					return await this.getFromDb({ untilId, sinceId, limit, channelId: channel.id, withFiles: ps.withFiles, withRenotes: ps.withRenotes }, me);
 				},
 			});
 		});
@@ -112,7 +119,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		untilId: string | null,
 		sinceId: string | null,
 		limit: number,
-		channelId: string
+		channelId: string,
+		withFiles: boolean,
+		withRenotes: boolean,
 	}, me: MiLocalUser | null) {
 		//#region fallback to database
 		const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
@@ -127,6 +136,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		if (me) {
 			this.queryService.generateMutedUserQuery(query, me);
 			this.queryService.generateBlockedUserQuery(query, me);
+		}
+
+		if (ps.withRenotes === false) {
+			query.andWhere(new Brackets(qb => {
+				qb.orWhere('note.renoteId IS NULL');
+				qb.orWhere(new Brackets(qb => {
+					qb.orWhere('note.text IS NOT NULL');
+					qb.orWhere('note.fileIds != \'{}\'');
+				}));
+			}));
+		}
+
+		if (ps.withFiles) {
+			query.andWhere('note.fileIds != \'{}\'');
 		}
 		//#endregion
 

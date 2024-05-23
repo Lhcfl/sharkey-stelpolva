@@ -39,7 +39,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<!-- スマホ・タブレットの場合、キーボードが表示されると投稿が見づらくなるので、デスクトップ場合のみ自動でフォーカスを当てる -->
 				<MkPostForm v-if="$i && defaultStore.reactiveState.showFixedPostFormInChannel.value" :channel="channel" class="post-form _panel" fixed :autofocus="deviceKind === 'desktop'"/>
 
-				<MkTimeline :key="channelId" src="channel" :channel="channelId" @before="before" @after="after" @note="miLocalStorage.setItemAsJson(`channelLastReadedAt:${channel.id}`, Date.now())"/>
+				<MkTimeline :key="channelId + withRenotes + onlyFiles" src="channel" :channel="channelId" :withRenotes="withRenotes" :onlyFiles="onlyFiles" @before="before" @after="after" @note="miLocalStorage.setItemAsJson(`channelLastReadedAt:${channel.id}`, Date.now())"/>
 			</div>
 			<div v-else-if="tab === 'featured'" key="featured">
 				<MkNotes :pagination="featuredPagination"/>
@@ -95,6 +95,7 @@ import { isSupportShare } from '@/scripts/navigator.js';
 import copyToClipboard from '@/scripts/copy-to-clipboard.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { useRouter } from '@/router/supplier.js';
+import { deepMerge } from '@/scripts/merge.js';
 
 const router = useRouter();
 
@@ -116,6 +117,15 @@ const featuredPagination = computed(() => ({
 		channelId: props.channelId,
 	},
 }));
+const withRenotes = computed<boolean>({
+	get: () => defaultStore.reactiveState.tl.value.filter.withRenotes,
+	set: (x) => saveTlFilter('withRenotes', x),
+});
+
+const onlyFiles = computed<boolean>({
+	get: () => defaultStore.reactiveState.tl.value.filter.onlyFiles,
+	set: (x) => saveTlFilter('onlyFiles', x),
+});
 
 watch(() => props.channelId, async () => {
 	channel.value = await misskeyApi('channels/show', {
@@ -135,6 +145,13 @@ watch(() => props.channelId, async () => {
 		}
 	}
 }, { immediate: true });
+
+function saveTlFilter(key: keyof typeof defaultStore.state.tl.filter, newValue: boolean) {
+	if (key !== 'withReplies' || $i) {
+		const out = deepMerge({ filter: { [key]: newValue } }, defaultStore.state.tl);
+		defaultStore.set('tl', out);
+	}
+}
 
 function edit() {
 	router.push(`/channels/${channel.value?.id}/edit`);
@@ -192,7 +209,21 @@ async function search() {
 
 const headerActions = computed(() => {
 	if (channel.value && channel.value.userId) {
-		const headerItems: PageHeaderItem[] = [];
+		const headerItems: PageHeaderItem[] = [{
+			icon: 'ph-dots-three ph-bold ph-lg',
+			text: i18n.ts.options,
+			handler: (ev) => {
+				os.popupMenu([{
+					type: 'switch',
+					text: i18n.ts.showRenotes,
+					ref: withRenotes,
+				}, {
+					type: 'switch',
+					text: i18n.ts.fileAttachedOnly,
+					ref: onlyFiles,
+				}], ev.currentTarget ?? ev.target);
+			},
+		}];
 
 		headerItems.push({
 			icon: 'ph-share-network ph-bold ph-lg',
