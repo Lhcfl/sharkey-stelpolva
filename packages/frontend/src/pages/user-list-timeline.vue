@@ -11,10 +11,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-if="queue > 0" :class="$style.new"><button class="_buttonPrimary" :class="$style.newButton" @click="top()">{{ i18n.ts.newNoteRecived }}</button></div>
 			<div :class="$style.tl">
 				<MkTimeline
-					ref="tlEl" :key="listId"
+					ref="tlEl" :key="listId + withRenotes + onlyFiles"
 					src="list"
 					:list="listId"
 					:sound="true"
+					:withRenotes="withRenotes"
+					:onlyFiles="onlyFiles"
 					@queue="queueUpdated"
 				/>
 			</div>
@@ -32,6 +34,9 @@ import { misskeyApi } from '@/scripts/misskey-api.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { i18n } from '@/i18n.js';
 import { useRouter } from '@/router/supplier.js';
+import { defaultStore } from '@/store.js';
+import { deepMerge } from '@/scripts/merge.js';
+import * as os from '@/os.js';
 
 const router = useRouter();
 
@@ -43,6 +48,21 @@ const list = ref<Misskey.entities.UserList | null>(null);
 const queue = ref(0);
 const tlEl = shallowRef<InstanceType<typeof MkTimeline>>();
 const rootEl = shallowRef<HTMLElement>();
+const withRenotes = computed<boolean>({
+	get: () => defaultStore.reactiveState.tl.value.filter.withRenotes,
+	set: (x) => saveTlFilter('withRenotes', x),
+});
+const onlyFiles = computed<boolean>({
+	get: () => defaultStore.reactiveState.tl.value.filter.onlyFiles,
+	set: (x) => saveTlFilter('onlyFiles', x),
+});
+
+function saveTlFilter(key: keyof typeof defaultStore.state.tl.filter, newValue: boolean) {
+	if (key !== 'withReplies' || $i) {
+		const out = deepMerge({ filter: { [key]: newValue } }, defaultStore.state.tl);
+		defaultStore.set('tl', out);
+	}
+}
 
 watch(() => props.listId, async () => {
 	list.value = await misskeyApi('users/lists/show', {
@@ -63,6 +83,20 @@ function settings() {
 }
 
 const headerActions = computed(() => list.value ? [{
+	icon: 'ph-dots-three ph-bold ph-lg',
+	text: i18n.ts.options,
+	handler: (ev) => {
+		os.popupMenu([{
+			type: 'switch',
+			text: i18n.ts.showRenotes,
+			ref: withRenotes,
+		}, {
+			type: 'switch',
+			text: i18n.ts.fileAttachedOnly,
+			ref: onlyFiles,
+		}], ev.currentTarget ?? ev.target);
+	},
+}, {
 	icon: 'ph-gear ph-bold ph-lg',
 	text: i18n.ts.settings,
 	handler: settings,

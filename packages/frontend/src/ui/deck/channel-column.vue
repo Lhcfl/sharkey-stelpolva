@@ -13,13 +13,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div style="padding: 8px; text-align: center;">
 			<MkButton primary gradate rounded inline small @click="post"><i class="ph-pencil-simple ph-bold ph-lg"></i></MkButton>
 		</div>
-		<MkTimeline ref="timeline" src="channel" :channel="column.channelId"/>
+		<MkTimeline ref="timeline" src="channel" :channel="column.channelId" :key="column.channelId + column.withRenotes + column.onlyFiles" :withRenotes="withRenotes" :onlyFiles="onlyFiles"/>
 	</template>
 </XColumn>
 </template>
 
 <script lang="ts" setup>
-import { shallowRef } from 'vue';
+import { watch, ref, shallowRef } from 'vue';
 import * as Misskey from 'misskey-js';
 import XColumn from './column.vue';
 import { updateColumn, Column } from './deck-store.js';
@@ -36,6 +36,20 @@ const props = defineProps<{
 
 const timeline = shallowRef<InstanceType<typeof MkTimeline>>();
 const channel = shallowRef<Misskey.entities.Channel>();
+const withRenotes = ref(props.column.withRenotes ?? true);
+const onlyFiles = ref(props.column.onlyFiles ?? false);
+
+watch(withRenotes, v => {
+	updateColumn(props.column.id, {
+		withRenotes: v,
+	});
+});
+
+watch(onlyFiles, v => {
+	updateColumn(props.column.id, {
+		onlyFiles: v,
+	});
+});
 
 if (props.column.channelId == null) {
 	setChannel();
@@ -75,5 +89,13 @@ const menu = [{
 	icon: 'ph-pencil-simple ph-bold ph-lg',
 	text: i18n.ts.selectChannel,
 	action: setChannel,
+}, {
+	type: 'switch',
+	text: i18n.ts.showRenotes,
+	ref: withRenotes,
+}, {
+	type: 'switch',
+	text: i18n.ts.fileAttachedOnly,
+	ref: onlyFiles,
 }];
 </script>
