@@ -2478,6 +2478,7 @@ _moderationLogTypes:
   unsetUserAvatar: "Unset this user's avatar"
   unsetUserBanner: "Unset this user's banner"
 _mfm:
+  uncommonFeature: "This is not a widespread feature, it may not display properly on most other fedi software, including other Misskey forks"
   intro: "MFM is a markup language used on Misskey, Sharkey, Firefish, Akkoma, and more that can be used in many places. Here you can view a list of all available MFM syntax."
   dummy: "Sharkey expands the world of the Fediverse"
   mention: "Mention"
@@ -2542,6 +2543,8 @@ _mfm:
   rotateDescription: "Turns content by a specified angle."
   position: "Position"
   positionDescription: "Move content by a specified amount."
+  followMouse: "Follow Mouse"
+  followMouseDescription: "Content will follow the mouse. On mobile it will follow wherever the user taps."
   scale: "Scale"
   scaleDescription: "Scale content by a specified amount."
   foreground: "Foreground color"
