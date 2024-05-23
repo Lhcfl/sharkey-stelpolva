@@ -305,6 +305,16 @@
 					</div>
 				</div>
 				<div class="section _block">
+					<div class="title">{{ i18n.ts._mfm.crop }}</div>
+					<div class="content">
+						<p>{{ i18n.ts._mfm.cropDescription }}</p>
+						<div class="preview">
+							<Mfm :text="preview_crop" />
+							<MkTextarea v-model="preview_crop"><span>MFM</span></MkTextarea>
+						</div>
+					</div>
+				</div>
+				<div class="section _block">
 					<div class="title">{{ i18n.ts._mfm.position }}</div>
 					<div class="content">
 						<p>{{ i18n.ts._mfm.positionDescription }}</p>
@@ -316,7 +326,7 @@
 				</div>
 				<div class="section _block" style="overflow: hidden">
 					<div class="title">{{ i18n.ts._mfm.followMouse }}</div>
-					<MkInfo warn>{{  i18n.ts._mfm.uncommonFeature }}</MkInfo>
+					<MkInfo warn>{{ i18n.ts._mfm.uncommonFeature }}</MkInfo>
 					<br/>
 					<div class="content">
 						<p>{{ i18n.ts._mfm.followMouseDescription }}</p>
@@ -333,6 +343,16 @@
 						<div class="preview">
 							<Mfm :text="preview_scale"/>
 							<MkTextarea v-model="preview_scale"><span>MFM</span></MkTextarea>
+						</div>
+					</div>
+				</div>
+				<div class="section _block">
+					<div class="title">{{ i18n.ts._mfm.fade }}</div>
+					<div class="content">
+						<p>{{ i18n.ts._mfm.fadeDescription }}</p>
+						<div class="preview">
+							<Mfm :text="preview_fade" />
+							<MkTextarea v-model="preview_fade"><span>MFM</span></MkTextarea>
 						</div>
 					</div>
 				</div>
@@ -445,6 +465,9 @@ const preview_rotate = ref(
 	'$[rotate 🍮]\n$[rotate.deg=45 🍮]\n$[rotate.x,deg=45 Hello, world!]',
 );
 const preview_position = ref('$[position.y=-1 🍮]\n$[position.x=-1 🍮]');
+const preview_crop = ref(
+	"$[crop.top=50 🍮] $[crop.right=50 🍮] $[crop.bottom=50 🍮] $[crop.left=50 🍮]",
+);
 const preview_followmouse = ref('$[followmouse.x 🍮]\n$[followmouse.x,y,rotateByVelocity,speed=0.4 🍮]');
 const preview_scale = ref(
 	'$[scale.x=1.3 🍮]\n$[scale.x=1.5,y=3 🍮]\n$[scale.y=0.3 🍮]',
@@ -454,6 +477,7 @@ const preview_bg = ref('$[bg.color=31748f Background color]');
 const preview_plain = ref(
 	'<plain>**bold** @mention #hashtag `code` $[x2 🍮]</plain>',
 );
+const preview_fade = ref(`$[fade 🍮] $[fade.out 🍮] $[fade.speed=3s 🍮] $[fade.delay=3s 🍮]`);
 </script>
 
 <style lang="scss" scoped>
