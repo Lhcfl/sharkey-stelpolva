@@ -162,7 +162,7 @@ export const DEFAULT_SERVER_ERROR_IMAGE_URL = 'https://launcher.moe/error.png';
 export const DEFAULT_NOT_FOUND_IMAGE_URL = 'https://launcher.moe/missingpage.webp';
 export const DEFAULT_INFO_IMAGE_URL = 'https://launcher.moe/nothinghere.png';
 
-export const MFM_TAGS = ['tada', 'jelly', 'twitch', 'shake', 'spin', 'jump', 'bounce', 'flip', 'x2', 'x3', 'x4', 'scale', 'position', 'fg', 'bg', 'border', 'font', 'blur', 'rainbow', 'sparkle', 'rotate', 'ruby', 'unixtime', 'followmouse'];
+export const MFM_TAGS = ['tada', 'jelly', 'twitch', 'shake', 'spin', 'jump', 'bounce', 'flip', 'x2', 'x3', 'x4', 'scale', 'position', 'fg', 'bg', 'border', 'font', 'blur', 'rainbow', 'sparkle', 'rotate', 'ruby', 'unixtime', 'crop', 'fade', 'followmouse'];
 export const MFM_PARAMS: Record<typeof MFM_TAGS[number], string[]> = {
 	tada: ['speed=', 'delay='],
 	jelly: ['speed=', 'delay='],
@@ -186,5 +186,7 @@ export const MFM_PARAMS: Record<typeof MFM_TAGS[number], string[]> = {
 	rotate: ['deg='],
 	ruby: [],
 	unixtime: [],
+	fade: ['speed=', 'delay=', 'loop=', 'out'],
+	crop: ['top=', 'bottom=', 'left=', 'right='],
 	followmouse: ['x', 'y', 'rotateByVelocity', 'speed='],
 };

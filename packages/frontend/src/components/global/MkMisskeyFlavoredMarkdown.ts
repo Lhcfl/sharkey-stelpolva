@@ -228,6 +228,22 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 						}
 						return h(MkSparkle, {}, genEl(token.children, scale));
 					}
+					case 'fade': {
+						// Dont run with reduced motion on
+						if (!defaultStore.state.animation) {
+							style = '';
+							break;
+						}
+			
+						const direction = token.props.args.out
+							? 'alternate-reverse'
+							: 'alternate';
+						const speed = validTime(token.props.args.speed) ?? '1.5s';
+						const delay = validTime(token.props.args.delay) ?? '0s';
+						const loop = safeParseFloat(token.props.args.loop) ?? 'infinite';
+						style = `animation: mfm-fade ${speed} ${delay} linear ${loop}; animation-direction: ${direction};`;
+						break;
+					}
 					case 'rotate': {
 						const degrees = safeParseFloat(token.props.args.deg) ?? 90;
 						style = `transform: rotate(${degrees}deg); transform-origin: center center;`;
@@ -260,6 +276,22 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 						const x = safeParseFloat(token.props.args.x) ?? 0;
 						const y = safeParseFloat(token.props.args.y) ?? 0;
 						style = `transform: translateX(${x}em) translateY(${y}em);`;
+						break;
+					}
+					case 'crop': {
+						const top = Number.parseFloat(
+							(token.props.args.top ?? '0').toString(),
+						);
+						const right = Number.parseFloat(
+							(token.props.args.right ?? '0').toString(),
+						);
+						const bottom = Number.parseFloat(
+							(token.props.args.bottom ?? '0').toString(),
+						);
+						const left = Number.parseFloat(
+							(token.props.args.left ?? '0').toString(),
+						);
+						style = `clip-path: inset(${top}% ${right}% ${bottom}% ${left}%);`;
 						break;
 					}
 					case 'scale': {

@@ -2543,12 +2543,16 @@ _mfm:
   rotateDescription: "Turns content by a specified angle."
   position: "Position"
   positionDescription: "Move content by a specified amount."
+  crop: "Crop"
+  cropDescription: "Crop content."
   followMouse: "Follow Mouse"
   followMouseDescription: "Content will follow the mouse. On mobile it will follow wherever the user taps."
   scale: "Scale"
   scaleDescription: "Scale content by a specified amount."
   foreground: "Foreground color"
   foregroundDescription: "Change the foreground color of text."
+  fade: 'Fade'
+  fadeDescription: 'Fade text in and out.'
   background: "Background color"
   backgroundDescription: "Change the background color of text."
   plain: "Plain"
