@@ -111,7 +111,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 						<div>
 							<MkButton v-if="iAmModerator" inline danger style="margin-right: 8px;" @click="unsetUserAvatar"><i class="ph-user-circle ph-bold ph-lg"></i> {{ i18n.ts.unsetUserAvatar }}</MkButton>
-							<MkButton v-if="iAmModerator" inline danger @click="unsetUserBanner"><i class="ph-photo ph-bold ph-lg"></i> {{ i18n.ts.unsetUserBanner }}</MkButton>
+							<MkButton v-if="iAmModerator" inline danger style="margin-right: 8px;" @click="unsetUserBanner"><i class="ph-image ph-bold ph-lg"></i> {{ i18n.ts.unsetUserBanner }}</MkButton>
+							<MkButton v-if="iAmModerator" inline danger @click="deleteAllFiles"><i class="ph-cloud ph-bold ph-lg"></i> {{ i18n.ts.deleteAllFiles }}</MkButton>
 						</div>
 						<MkButton v-if="$i.isAdmin" inline danger @click="deleteAccount">{{ i18n.ts.deleteAccount }}</MkButton>
 					</div>
