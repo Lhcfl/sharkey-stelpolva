@@ -266,6 +266,7 @@ function createFetcher() {
 		moderator.value = info.value.isModerator;
 		silenced.value = info.value.isSilenced;
 		approved.value = info.value.approved;
+		markedAsNSFW.value = info.value.alwaysMarkNsfw;
 		suspended.value = info.value.isSuspended;
 		moderationNote.value = info.value.moderationNote;
 
