@@ -390,7 +390,7 @@ function applyEnvOverrides(config: Source) {
 		}
 	}
 
-	const alwaysStrings = { 'chmodSocket': 1 } as any;
+	const alwaysStrings = { 'chmodSocket': true } as { [key: string]: boolean };
 
 	function _assign(path: (string | number)[], lastStep: string | number, value: string) {
 		let thisConfig = config as any;
