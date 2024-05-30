@@ -75,7 +75,7 @@ async function main() {
 			ev.mount();
 		}
 	}
-	if (cluster.isWorker || envOption.disableClustering) {
+	if (cluster.isWorker) {
 		await workerMain();
 	}
 
