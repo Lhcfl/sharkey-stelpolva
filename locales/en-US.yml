@@ -1830,7 +1830,7 @@ _registry:
   domain: "Domain"
   createKey: "Create key"
 _aboutMisskey:
-  about: "Sharkey is open-source software based on Misskey which has been in developed since 2014 by syuilo."
+  about: "Sharkey is open-source software based on Misskey which has been in development by syuilo since 2014."
   contributors: "Main contributors"
   allContributors: "All contributors"
   source: "Source code"
