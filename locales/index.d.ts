@@ -457,6 +457,10 @@ export interface Locale extends ILocale {
      */
     "renoted": string;
     /**
+     * {name} にブーストしました。
+     */
+    "renotedToX": ParameterizedString<"name">;
+    /**
      * 引用。
      */
     "quoted": string;
@@ -464,10 +468,6 @@ export interface Locale extends ILocale {
      * ブースト解除しました。
      */
     "rmboost": string;
-    /**
-     * {name} にリノートしました。
-     */
-    "renotedToX": ParameterizedString<"name">;
     /**
      * この投稿はブーストできません。
      */
@@ -4270,6 +4270,10 @@ export interface Locale extends ILocale {
      */
     "collapseRenotes": string;
     /**
+     * リアクションやブーストをしたことがあるノートをたたんで表示します。
+     */
+    "collapseRenotesDescription": string;
+    /**
      * ファイルを折りたたむ
      */
     "collapseFiles": string;
@@ -4277,10 +4281,6 @@ export interface Locale extends ILocale {
      * 返信に会話を読み込む
      */
     "autoloadConversation": string;
-    /**
-     * リアクションやリノートをしたことがあるノートをたたんで表示します。
-     */
-    "collapseRenotesDescription": string;
     /**
      * サーバー内部エラー
      */
