@@ -34,7 +34,7 @@
 - **ActivityPub support**\
 Not on Sharkey? No problem! Not only can Sharkey instances talk to each other, but you can make friends with people on other networks like Mastodon and Pixelfed!
 - **Federated Backgrounds and Music status**\
-You can add a background to your profile as well as a music status via ListenBrainz, show everyone what music you are currently listening too
+You can add a background to your profile as well as a music status via ListenBrainz, show everyone what music you are currently listening to
 - **Mastodon API**\
 Sharkey implements the Mastodon API unlike normal Misskey
 - **UI/UX Improvements**\
