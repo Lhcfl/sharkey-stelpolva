@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div style="padding: 8px; text-align: center;">
 			<MkButton primary gradate rounded inline small @click="post"><i class="ph-pencil-simple ph-bold ph-lg"></i></MkButton>
 		</div>
-		<MkTimeline ref="timeline" src="channel" :channel="column.channelId" :key="column.channelId + column.withRenotes + column.onlyFiles" :withRenotes="withRenotes" :onlyFiles="onlyFiles" @note="onNote"/>
+		<MkTimeline ref="timeline" src="channel" :key="column.channelId + column.withRenotes + column.onlyFiles" :channel="column.channelId" :withRenotes="withRenotes" :onlyFiles="onlyFiles" @note="onNote"/>
 	</template>
 </XColumn>
 </template>

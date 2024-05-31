@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i class="ph-list ph-bold ph-lg"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
-	<MkTimeline v-if="column.listId" ref="timeline" src="list" :list="column.listId" :key="column.listId + column.withRenotes + column.onlyFiles" :withRenotes="withRenotes" :onlyFiles="onlyFiles" @note="onNote"/>
+	<MkTimeline v-if="column.listId" ref="timeline" src="list" :key="column.listId + column.withRenotes + column.onlyFiles" :list="column.listId" :withRenotes="withRenotes" :onlyFiles="onlyFiles" @note="onNote"/>
 </XColumn>
 </template>
 
