@@ -632,8 +632,8 @@ export class DriveService {
 
 	@bindThis
 	public async updateFile(file: MiDriveFile, values: Partial<MiDriveFile>, updater: MiUser) {
-		const profile = await this.userProfilesRepository.findOneBy({ userId: file.userId });
-		const alwaysMarkNsfw = (await this.roleService.getUserPolicies(file.userId)).alwaysMarkNsfw || (profile !== null && profile!.alwaysMarkNsfw);
+		const profile = file.userId ? await this.userProfilesRepository.findOneBy({ userId: file.userId }) : null;
+		const alwaysMarkNsfw = file.userId ? (await this.roleService.getUserPolicies(file.userId)).alwaysMarkNsfw || (profile !== null && profile!.alwaysMarkNsfw) : false;
 
 		if (values.name != null && !this.driveFileEntityService.validateFileName(values.name)) {
 			throw new DriveService.InvalidFileNameError();
