@@ -3437,6 +3437,10 @@ export interface Locale extends ILocale {
      */
     "noMaintainerInformationWarning": string;
     /**
+     * 問い合わせ先URLが設定されていません。
+     */
+    "noInquiryUrlWarning": string;
+    /**
      * Botプロテクションが設定されていません。
      */
     "noBotProtectionWarning": string;
