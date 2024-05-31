@@ -154,6 +154,8 @@ function connectChannel() {
 	} else if (props.src === 'channel') {
 		if (props.channel == null) return;
 		connection = stream.useChannel('channel', {
+			withRenotes: props.withRenotes,
+			withFiles: props.onlyFiles ? true : undefined,
 			channelId: props.channel,
 		});
 	} else if (props.src === 'role') {
@@ -234,6 +236,8 @@ function updatePaginationQuery() {
 	} else if (props.src === 'channel') {
 		endpoint = 'channels/timeline';
 		query = {
+			withRenotes: props.withRenotes,
+			withFiles: props.onlyFiles ? true : undefined,
 			channelId: props.channel,
 		};
 	} else if (props.src === 'role') {

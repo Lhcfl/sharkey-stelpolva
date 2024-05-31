@@ -415,7 +415,7 @@ antennaKeywordsDescription: "Separate with spaces for an AND condition or with l
 notifyAntenna: "Notify about new notes"
 withFileAntenna: "Only notes with files"
 enableServiceworker: "Enable Push-Notifications for your Browser"
-antennaUsersDescription: "List one username per line"
+antennaUsersDescription: "List one username per line. Use \"*@instance.com\" to specify all users of an instance"
 caseSensitive: "Case sensitive"
 withReplies: "Include replies"
 connectedTo: "Following account(s) are connected"
@@ -1830,7 +1830,7 @@ _registry:
   domain: "Domain"
   createKey: "Create key"
 _aboutMisskey:
-  about: "Sharkey is open-source software based on Misskey which has been in developed since 2014 by syuilo."
+  about: "Sharkey is open-source software based on Misskey which has been in development by syuilo since 2014."
   contributors: "Main contributors"
   allContributors: "All contributors"
   source: "Source code"
@@ -2478,6 +2478,7 @@ _moderationLogTypes:
   unsetUserAvatar: "Unset this user's avatar"
   unsetUserBanner: "Unset this user's banner"
 _mfm:
+  uncommonFeature: "This is not a widespread feature, it may not display properly on most other fedi software, including other Misskey forks"
   intro: "MFM is a markup language used on Misskey, Sharkey, Firefish, Akkoma, and more that can be used in many places. Here you can view a list of all available MFM syntax."
   dummy: "Sharkey expands the world of the Fediverse"
   mention: "Mention"
@@ -2542,10 +2543,16 @@ _mfm:
   rotateDescription: "Turns content by a specified angle."
   position: "Position"
   positionDescription: "Move content by a specified amount."
+  crop: "Crop"
+  cropDescription: "Crop content."
+  followMouse: "Follow Mouse"
+  followMouseDescription: "Content will follow the mouse. On mobile it will follow wherever the user taps."
   scale: "Scale"
   scaleDescription: "Scale content by a specified amount."
   foreground: "Foreground color"
   foregroundDescription: "Change the foreground color of text."
+  fade: 'Fade'
+  fadeDescription: 'Fade text in and out.'
   background: "Background color"
   backgroundDescription: "Change the background color of text."
   plain: "Plain"

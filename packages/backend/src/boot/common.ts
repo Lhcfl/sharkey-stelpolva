@@ -36,7 +36,6 @@ export async function jobQueue() {
 	});
 
 	jobQueue.get(QueueProcessorService).start();
-	jobQueue.get(ChartManagementService).start();
 
 	return jobQueue;
 }
