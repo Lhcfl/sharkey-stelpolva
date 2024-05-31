@@ -112,6 +112,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps_m">
 			<MkSwitch v-model="useGroupedNotifications">{{ i18n.ts.useGroupedNotifications }}</MkSwitch>
 
+			<MkSwitch v-model="enableFaviconNotificationDot">{{ i18n.ts.enableFaviconNotificationDot }}</MkSwitch>
+
 			<MkRadios v-model="notificationPosition">
 				<template #label>{{ i18n.ts.position }}</template>
 				<option value="leftTop"><i class="ph-arrow-up-left ph-bold ph-lg"></i> {{ i18n.ts.leftTop }}</option>
@@ -345,6 +347,7 @@ const oneko = computed(defaultStore.makeGetterSetter('oneko'));
 const loadRawImages = computed(defaultStore.makeGetterSetter('loadRawImages'));
 const highlightSensitiveMedia = computed(defaultStore.makeGetterSetter('highlightSensitiveMedia'));
 const imageNewTab = computed(defaultStore.makeGetterSetter('imageNewTab'));
+const enableFaviconNotificationDot = computed(defaultStore.makeGetterSetter('enableFaviconNotificationDot'));
 const warnMissingAltText = computed(defaultStore.makeGetterSetter('warnMissingAltText'));
 const nsfw = computed(defaultStore.makeGetterSetter('nsfw'));
 const showFixedPostForm = computed(defaultStore.makeGetterSetter('showFixedPostForm'));
