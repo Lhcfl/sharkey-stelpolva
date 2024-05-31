@@ -524,7 +524,7 @@ export class NoteEditService implements OnApplicationShutdown {
 						noteVisibility: note.visibility,
 						userId: user.id,
 						userHost: user.host,
-						channelId: data.channelId,
+						channelId: data.channel ? data.channel.id : null,
 					});
 
 					if (!oldnote.hasPoll) {

@@ -55,7 +55,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			await this.federatedInstanceService.update(instance.id, {
-				isSuspended: ps.isSuspended,
 				suspensionState,
 				isNSFW: ps.isNSFW,
 				moderationNote: ps.moderationNote,

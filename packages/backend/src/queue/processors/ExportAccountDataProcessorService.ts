@@ -287,7 +287,7 @@ export class ExportAccountDataProcessorService {
 		const mutings = await this.mutingsRepository.findBy({
 			muterId: user.id,
 		});
-		
+
 		while (true) {
 			const followings = await this.followingsRepository.find({
 				where: {
@@ -353,7 +353,7 @@ export class ExportAccountDataProcessorService {
 
 		let followersCursor: MiFollowing['id'] | null = null;
 		let exportedFollowersCount = 0;
-		
+
 		while (true) {
 			const followers = await this.followingsRepository.find({
 				where: {
@@ -680,7 +680,6 @@ export class ExportAccountDataProcessorService {
 				localOnly: antenna.localOnly,
 				withReplies: antenna.withReplies,
 				withFile: antenna.withFile,
-				notify: antenna.notify,
 			}));
 
 			if (antennas.length - 1 !== index) {
@@ -749,9 +748,9 @@ export class ExportAccountDataProcessorService {
 				cleanup();
 				archiveCleanup();
 				if (profile.email) {
-					this.emailService.sendEmail(profile.email, 
-						'Your data archive is ready', 
-						`Click the following link to download the archive: ${driveFile.url}<br/>It is also available in your drive.`, 
+					this.emailService.sendEmail(profile.email,
+						'Your data archive is ready',
+						`Click the following link to download the archive: ${driveFile.url}<br/>It is also available in your drive.`,
 						`Click the following link to download the archive: ${driveFile.url}\r\n\r\nIt is also available in your drive.`,
 					);
 				}
