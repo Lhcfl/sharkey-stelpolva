@@ -19,6 +19,8 @@ testCommit:
     - pnpm install --frozen-lockfile
     - pnpm run build
     - pnpm run migrate
+    - pnpm run --filter=backend lint
+    - pnpm run --filter=frontend eslint
   cache:
     key: test
     policy: pull-push
