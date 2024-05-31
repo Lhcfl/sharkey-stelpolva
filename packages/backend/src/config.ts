@@ -371,13 +371,13 @@ function applyEnvOverrides(config: Source) {
 	}
 
 	function _step2name(step: string|number): string {
-		return step.toString().replaceAll(/[^a-z0-9]+/gi,'').toUpperCase();
+		return step.toString().replaceAll(/[^a-z0-9]+/gi, '').toUpperCase();
 	}
 
 	// this recurses down, bailing out if there's no config to override
 	function _descend(name: string, path: (string | number)[], thisStep: string | number, steps: (string | string[] | number | number[])[]) {
 		name = `${name}${_step2name(thisStep)}_`;
-		path = [ ...path, thisStep ];
+		path = [...path, thisStep];
 		_walk(name, path, steps);
 	}
 
@@ -387,7 +387,7 @@ function applyEnvOverrides(config: Source) {
 		name = `MK_CONFIG_${name}${_step2name(lastStep)}`;
 
 		const val = process.env[name];
-		if (val != null && val != undefined) {
+		if (val !== null && val !== undefined) {
 			_assign(path, lastStep, val);
 		}
 
@@ -428,7 +428,7 @@ function applyEnvOverrides(config: Source) {
 	_apply_top(['dbSlaves', Array.from((config.dbSlaves ?? []).keys()), ['host', 'port', 'db', 'user', 'pass']]);
 	_apply_top([
 		['redis', 'redisForPubsub', 'redisForJobQueue', 'redisForTimelines'],
-		['host','port','username','pass','db','prefix'],
+		['host', 'port', 'username', 'pass', 'db', 'prefix'],
 	]);
 	_apply_top(['meilisearch', ['host', 'port', 'apikey', 'ssl', 'index', 'scope']]);
 	_apply_top([['clusterLimit', 'deliverJobConcurrency', 'inboxJobConcurrency', 'relashionshipJobConcurrency', 'deliverJobPerSec', 'inboxJobPerSec', 'relashionshipJobPerSec', 'deliverJobMaxAttempts', 'inboxJobMaxAttempts']]);
