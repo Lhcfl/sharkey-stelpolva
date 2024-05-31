@@ -1310,10 +1310,10 @@ _initialTutorial:
   _reaction:
     title: "Apa itu Reaksi?"
     description: "Catatan dapat direaksi dengan berbagai emoji. Reaksi memperbolehkan kamu untuk mengekspresikan nuansa yang tidak dapat disampaikan hanya dengan sebuah \"suka\"."
-    letsTryReacting: "Reaksi dapat ditambahkan dengan mengklik tombol '+' pada catatan. Coba lakukan mereaksi contoh catatan ini!"
+    letsTryReacting: "Reaksi dapat ditambahkan dengan mengklik tombol '{reaction}' pada catatan. Coba lakukan mereaksi contoh catatan ini!"
     reactToContinue: "Tambahkan reaksi untuk melanjutkan."
     reactNotification: "Kamu akan menerima notifikasi real0time ketika seseorang mereaksi catatan kamu."
-    reactDone: "Kamu dapat mengurungkan reaksi dengan menekan tombol '-'."
+    reactDone: "Kamu dapat mengurungkan reaksi dengan menekan tombol '{undo}'."
   _timeline:
     title: "Konsep Lini Masa"
     description1: "Misskey menyediakan berbagai lini masa sesuai dengan penggunaan (beberapa mungkin tidak tersedia karena bergantung dengan kebijakan peladen)."
