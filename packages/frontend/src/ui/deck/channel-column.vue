@@ -13,21 +13,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div style="padding: 8px; text-align: center;">
 			<MkButton primary gradate rounded inline small @click="post"><i class="ph-pencil-simple ph-bold ph-lg"></i></MkButton>
 		</div>
-		<MkTimeline ref="timeline" src="channel" :channel="column.channelId" :key="column.channelId + column.withRenotes + column.onlyFiles" :withRenotes="withRenotes" :onlyFiles="onlyFiles"/>
+		<MkTimeline ref="timeline" src="channel" :channel="column.channelId" :key="column.channelId + column.withRenotes + column.onlyFiles" :withRenotes="withRenotes" :onlyFiles="onlyFiles" @note="onNote"/>
 	</template>
 </XColumn>
 </template>
 
 <script lang="ts" setup>
-import { watch, ref, shallowRef } from 'vue';
+import { ref, shallowRef, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import XColumn from './column.vue';
 import { updateColumn, Column } from './deck-store.js';
 import MkTimeline from '@/components/MkTimeline.vue';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
+import { favoritedChannelsCache } from '@/cache.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { i18n } from '@/i18n.js';
+import { MenuItem } from '@/types/menu.js';
+import { SoundStore } from '@/store.js';
+import { soundSettingsButton } from '@/ui/deck/tl-note-notification.js';
+import * as sound from '@/scripts/sound.js';
 
 const props = defineProps<{
 	column: Column;
@@ -51,25 +56,29 @@ watch(onlyFiles, v => {
 	});
 });
 
+const soundSetting = ref<SoundStore>(props.column.soundSetting ?? { type: null, volume: 1 });
+
 if (props.column.channelId == null) {
 	setChannel();
 }
 
+watch(soundSetting, v => {
+	updateColumn(props.column.id, { soundSetting: v });
+});
+
 async function setChannel() {
-	const channels = await misskeyApi('channels/my-favorites', {
-		limit: 100,
-	});
-	const { canceled, result: channel } = await os.select({
+	const channels = await favoritedChannelsCache.fetch();
+	const { canceled, result: chosenChannel } = await os.select({
 		title: i18n.ts.selectChannel,
 		items: channels.map(x => ({
 			value: x, text: x.name,
 		})),
 		default: props.column.channelId,
 	});
-	if (canceled) return;
+	if (canceled || chosenChannel == null) return;
 	updateColumn(props.column.id, {
-		channelId: channel.id,
-		name: channel.name,
+		channelId: chosenChannel.id,
+		name: chosenChannel.name,
 	});
 }
 
@@ -85,7 +94,11 @@ async function post() {
 	});
 }
 
-const menu = [{
+function onNote() {
+	sound.playMisskeySfxFile(soundSetting.value);
+}
+
+const menu: MenuItem[] = [{
 	icon: 'ph-pencil-simple ph-bold ph-lg',
 	text: i18n.ts.selectChannel,
 	action: setChannel,
@@ -97,5 +110,9 @@ const menu = [{
 	type: 'switch',
 	text: i18n.ts.fileAttachedOnly,
 	ref: onlyFiles,
+}, {
+	icon: 'ti ti-bell',
+	text: i18n.ts._deck.newNoteNotificationSettings,
+	action: () => soundSettingsButton(soundSetting),
 }];
 </script>

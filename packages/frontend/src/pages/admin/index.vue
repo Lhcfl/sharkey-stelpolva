@@ -34,9 +34,10 @@ import { i18n } from '@/i18n.js';
 import MkSuperMenu from '@/components/MkSuperMenu.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import { instance } from '@/instance.js';
+import { lookup } from '@/scripts/lookup.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
-import { lookupUser, lookupUserByEmail } from '@/scripts/lookup-user.js';
+import { lookupUser, lookupUserByEmail, lookupFile } from '@/scripts/admin-lookup.js';
 import { PageMetadata, definePageMetadata, provideMetadataReceiver, provideReactiveMetadata } from '@/scripts/page-metadata.js';
 import { useRouter } from '@/router/supplier.js';
 
@@ -92,7 +93,7 @@ const menuDef = computed(() => [{
 		type: 'button',
 		icon: 'ph-magnifying-glass ph-bold ph-lg',
 		text: i18n.ts.lookup,
-		action: lookup,
+		action: adminLookup,
 	}, ...(instance.disableRegistration ? [{
 		type: 'button',
 		icon: 'ph-user-plus ph-bold ph-lg',
@@ -297,7 +298,7 @@ function invite() {
 	});
 }
 
-function lookup(ev: MouseEvent) {
+function adminLookup(ev: MouseEvent) {
 	os.popupMenu([{
 		text: i18n.ts.user,
 		icon: 'ph-user ph-bold ph-lg',
@@ -311,22 +312,16 @@ function lookup(ev: MouseEvent) {
 			lookupUserByEmail();
 		},
 	}, {
-		text: i18n.ts.note,
-		icon: 'ph-pencil-simple ph-bold ph-lg',
-		action: () => {
-			alert('TODO');
-		},
-	}, {
 		text: i18n.ts.file,
 		icon: 'ph-cloud ph-bold ph-lg',
 		action: () => {
-			alert('TODO');
+			lookupFile();
 		},
 	}, {
-		text: i18n.ts.instance,
+		text: i18n.ts.lookup,
 		icon: 'ph-planet ph-bold ph-lg',
 		action: () => {
-			alert('TODO');
+			lookup();
 		},
 	}], ev.currentTarget ?? ev.target);
 }
