@@ -634,7 +634,7 @@ export function getRenoteMenu(props: {
 
 		normalExternalChannelRenoteItems.push({
 			type: 'parent',
-			icon: 'ti ti-repeat',
+			icon: 'ph ph-repeat',
 			text: appearNote.channel ? i18n.ts.renoteToOtherChannel : i18n.ts.renoteToChannel,
 			children: async () => {
 				const channels = await favoritedChannelsCache.fetch();

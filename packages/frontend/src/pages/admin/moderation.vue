@@ -40,7 +40,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkTextarea>
 
 					<MkInput v-model="inquiryUrl" type="url">
-						<template #prefix><i class="ti ti-link"></i></template>
+						<template #prefix><i class="ph-link ph-bold ph-lg"></i></template>
 						<template #label>{{ i18n.ts._serverSettings.inquiryUrl }}</template>
 						<template #caption>{{ i18n.ts._serverSettings.inquiryUrlDescription }}</template>
 					</MkInput>

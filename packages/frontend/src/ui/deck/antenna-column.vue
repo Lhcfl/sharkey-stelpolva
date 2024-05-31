@@ -79,7 +79,7 @@ const menu: MenuItem[] = [
 		action: editAntenna,
 	},
 	{
-		icon: 'ti ti-bell',
+		icon: 'ph-bell-ringing ph-bold ph-lg',
 		text: i18n.ts._deck.newNoteNotificationSettings,
 		action: () => soundSettingsButton(soundSetting),
 	},
