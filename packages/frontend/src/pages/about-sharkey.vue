@@ -105,6 +105,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<img src="https://secure.gravatar.com/avatar/ea0ea6451fdb74311efad369bdce018e?s=80&d=identicon" :class="$style.contributorAvatar">
 							<span :class="$style.contributorUsername">@fEmber</span>
 						</a>
+						<a href="https://activitypub.software/tess" target="_blank" :class="$style.contributor">
+							<img src="https://activitypub.software/uploads/-/system/user/avatar/132/avatar.png?width=128" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@tess</span>
+						</a>
 					</div>
 					<template #caption><MkLink url="https://activitypub.software/TransFem-org/Sharkey/-/graphs/develop">{{ i18n.ts._aboutMisskey.allContributors }}</MkLink></template>
 				</FormSection>
