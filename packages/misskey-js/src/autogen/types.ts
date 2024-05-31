@@ -11426,6 +11426,13 @@ export type operations = {
           untilDate?: number;
           /** @default false */
           allowPartial?: boolean;
+          /** @default true */
+          withRenotes?: boolean;
+          /**
+           * @description Only show notes that have attached files.
+           * @default false
+           */
+          withFiles?: boolean;
         };
       };
     };
