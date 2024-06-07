@@ -45,6 +45,7 @@ type MfmProps = {
 	enableEmojiMenu?: boolean;
 	enableEmojiMenuReaction?: boolean;
 	isAnim?: boolean;
+	isBlock?: boolean;
 };
 
 type MfmEvents = {
@@ -73,6 +74,8 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 		if (typeof c !== 'string') return null;
 		return c.match(/^[0-9a-f]{3,6}$/i) ? c : null;
 	};
+
+	const isBlock = props.isBlock ?? false;
 
 	const MkFormula = defineAsyncComponent(() => import('@/components/MkFormula.vue'));
 
@@ -234,7 +237,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 							style = '';
 							break;
 						}
-			
+
 						const direction = token.props.args.out
 							? 'alternate-reverse'
 							: 'alternate';
@@ -390,13 +393,13 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'center': {
-				return [h('bdi',h('div', {
+				return [h('div', {
 					style: 'text-align:center;',
-				}, genEl(token.children, scale)))];
+				}, h('bdi', genEl(token.children, scale)))];
 			}
 
 			case 'url': {
-				return [h('bdi',h(MkUrl, {
+				return [h('bdi', h(MkUrl, {
 					key: Math.random(),
 					url: token.props.url,
 					rel: 'nofollow noopener',
@@ -404,7 +407,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'link': {
-				return [h('bdi',h(MkLink, {
+				return [h('bdi', h(MkLink, {
 					key: Math.random(),
 					url: token.props.url,
 					rel: 'nofollow noopener',
@@ -412,7 +415,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'mention': {
-				return [h('bdi',h(MkMention, {
+				return [h('bdi', h(MkMention, {
 					key: Math.random(),
 					host: (token.props.host == null && props.author && props.author.host != null ? props.author.host : token.props.host) ?? host,
 					username: token.props.username,
@@ -420,7 +423,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'hashtag': {
-				return [h('bdi',h(MkA, {
+				return [h('bdi', h(MkA, {
 					key: Math.random(),
 					to: isNote ? `/tags/${encodeURIComponent(token.props.hashtag)}` : `/user-tags/${encodeURIComponent(token.props.hashtag)}`,
 					style: 'color:var(--hashtag);',
@@ -428,7 +431,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'blockCode': {
-				return [h('bdi',h(MkCode, {
+				return [h('bdi', { class: 'block' }, h(MkCode, {
 					key: Math.random(),
 					code: token.props.code,
 					lang: token.props.lang ?? undefined,
@@ -436,7 +439,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'inlineCode': {
-				return [h('bdi',h(MkCodeInline, {
+				return [h('bdi', h(MkCodeInline, {
 					key: Math.random(),
 					code: token.props.code,
 				}))];
@@ -444,13 +447,13 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 
 			case 'quote': {
 				if (!props.nowrap) {
-					return [h('bdi',h('div', {
+					return [h('bdi', { class: 'block' }, h('div', {
 						style: QUOTE_STYLE,
-					}, genEl(token.children, scale, true)))];
+					}, h('bdi',genEl(token.children, scale, true))))];
 				} else {
-					return [h('bdi',h('span', {
+					return [h('span', {
 						style: QUOTE_STYLE,
-					}, genEl(token.children, scale, true)))];
+					}, h('bdi',genEl(token.children, scale, true)))];
 				}
 			}
 
@@ -494,14 +497,14 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'mathInline': {
-				return [h('bdi',h(MkFormula, {
+				return [h('bdi', h(MkFormula, {
 					formula: token.props.formula,
 					block: false,
 				}))];
 			}
 
 			case 'mathBlock': {
-				return [h('bdi',h(MkFormula, {
+				return [h('bdi', { class: 'block' }, h(MkFormula, {
 					formula: token.props.formula,
 					block: true,
 				}))];
@@ -515,7 +518,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'plain': {
-				return [h('span', genEl(token.children, scale, true))];
+				return [h('bdi', h('span', genEl(token.children, scale, true)))];
 			}
 
 			default: {
@@ -527,7 +530,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 		}
 	}).flat(Infinity) as (VNode | string)[];
 
-	return h('bdi', h('span', {
+	return h('bdi', { ...( isBlock ? { class: 'block' } : {}) }, h('span', {
 		// https://codeday.me/jp/qa/20190424/690106.html
 		style: props.nowrap ? 'white-space: pre; word-wrap: normal; overflow: hidden; text-overflow: ellipsis;' : 'white-space: pre-wrap;',
 	}, genEl(rootAst, props.rootScale ?? 1)));
