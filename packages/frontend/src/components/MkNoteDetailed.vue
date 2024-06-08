@@ -342,7 +342,7 @@ let renoting = false;
 const keymap = {
 	'r': () => reply(true),
 	'e|a|plus': () => react(true),
-	'(q)': () => { if (canRenote && !renoted.value && !renoting) { renoting = true; renote(appearNote.value.visibility) } },
+	'(q)': () => { if (canRenote.value && !renoted.value && !renoting) { renoting = true; renote(appearNote.value.visibility) } },
 	'esc': blur,
 	'm|o': () => showMenu(true),
 	's': () => showContent.value !== showContent.value,
