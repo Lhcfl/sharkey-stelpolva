@@ -335,7 +335,7 @@ let renoting = false;
 const keymap = {
 	'r': () => reply(true),
 	'e|a|plus': () => react(true),
-	'(q)': () => { if (canRenote.value && !renoted.value && !renoting) { renoting = true; renote(appearNote.value.visibility) } },
+	'(q)': () => { if (canRenote.value && !renoted.value && !renoting) { renoting = true; renote(appearNote.value.visibility); } },
 	'up|k|shift+tab': focusBefore,
 	'down|j|tab': focusAfter,
 	'esc': blur,
@@ -440,7 +440,7 @@ function renote(visibility: Visibility, localOnly: boolean = false) {
 			}).then(() => {
 				os.toast(i18n.ts.renoted);
 				renoted.value = true;
-			}).finally(() => { renoting = false });
+			}).finally(() => { renoting = false; });
 		}
 	} else if (!appearNote.value.channel || appearNote.value.channel.allowRenoteToExternal) {
 		const el = renoteButton.value as HTMLElement | null | undefined;
@@ -459,7 +459,7 @@ function renote(visibility: Visibility, localOnly: boolean = false) {
 			}).then(() => {
 				os.toast(i18n.ts.renoted);
 				renoted.value = true;
-			}).finally(() => { renoting = false });
+			}).finally(() => { renoting = false; });
 		}
 	}
 }
