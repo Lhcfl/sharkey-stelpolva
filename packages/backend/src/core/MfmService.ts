@@ -129,14 +129,16 @@ export class MfmService {
 
 				case 'h1':
 				{
-					text += '【';
+					text += '**【';
 					appendChildren(node.childNodes);
-					text += '】\n';
+					text += '】**\n';
 					break;
 				}
 
 				case 'b':
 				case 'strong':
+				case 'h2':
+				case 'h3':
 				{
 					text += '**';
 					appendChildren(node.childNodes);
@@ -200,8 +202,6 @@ export class MfmService {
 				}
 
 				case 'p':
-				case 'h2':
-				case 'h3':
 				case 'h4':
 				case 'h5':
 				case 'h6':
