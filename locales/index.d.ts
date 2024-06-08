@@ -2793,6 +2793,10 @@ export interface Locale extends ILocale {
      */
     "notificationSettingDesc": string;
     /**
+     * ファビコン通知ドットを有効にする
+     */
+    "enableFaviconNotificationDot": string;
+    /**
      * グローバル設定を使う
      */
     "useGlobalSetting": string;

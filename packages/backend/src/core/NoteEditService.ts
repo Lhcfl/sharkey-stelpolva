@@ -299,6 +299,10 @@ export class NoteEditService implements OnApplicationShutdown {
 		}
 
 		if (this.isRenote(data)) {
+			if (data.renote.id === oldnote.id) {
+				throw new Error("A note can't renote itself");
+			}
+
 			switch (data.renote.visibility) {
 				case 'public':
 					// public noteは無条件にrenote可能

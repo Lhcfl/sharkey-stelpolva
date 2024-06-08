@@ -98,6 +98,9 @@ const selectedEmojis = ref<string[]>([]);
 const pagination = {
 	endpoint: 'admin/emoji/list' as const,
 	limit: 30,
+	offsetMode: computed(() => (
+		(query.value && query.value !== '') ? true : false
+	)),
 	params: computed(() => ({
 		query: (query.value && query.value !== '') ? query.value : null,
 	})),

@@ -110,7 +110,7 @@ export class MastoConverters {
 	private async encodeField(f: Entity.Field): Promise<Entity.Field> {
 		return {
 			name: f.name,
-			value: await this.mfmService.toMastoHtml(mfm.parse(f.value), [], true) ?? escapeMFM(f.value),
+			value: await this.mfmService.toMastoApiHtml(mfm.parse(f.value), [], true) ?? escapeMFM(f.value),
 			verified_at: null,
 		};
 	}
@@ -179,7 +179,7 @@ export class MastoConverters {
 			const files = this.driveFileEntityService.packManyByIds(edit.fileIds);
 			const item = {
 				account: noteUser,
-				content: this.mfmService.toMastoHtml(mfm.parse(edit.newText ?? ''), JSON.parse(note.mentionedRemoteUsers)).then(p => p ?? ''),
+				content: this.mfmService.toMastoApiHtml(mfm.parse(edit.newText ?? ''), JSON.parse(note.mentionedRemoteUsers)).then(p => p ?? ''),
 				created_at: lastDate.toISOString(),
 				emojis: [],
 				sensitive: files.then(files => files.length > 0 ? files.some((f) => f.isSensitive) : false),
@@ -240,7 +240,7 @@ export class MastoConverters {
 		});
 
 		const content = note.text !== null
-			? quoteUri.then(quoteUri => this.mfmService.toMastoHtml(mfm.parse(note.text!), JSON.parse(note.mentionedRemoteUsers), false, quoteUri))
+			? quoteUri.then(quoteUri => this.mfmService.toMastoApiHtml(mfm.parse(note.text!), JSON.parse(note.mentionedRemoteUsers), false, quoteUri))
 				.then(p => p ?? escapeMFM(note.text!))
 			: '';
 

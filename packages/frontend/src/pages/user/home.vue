@@ -236,22 +236,24 @@ const moderationNote = ref(props.user.moderationNote);
 const editModerationNote = ref(false);
 const noteview = ref<string | null>(null);
 
-let listenbrainzdata = false;
+const listenbrainzdata = ref(false);
 if (props.user.listenbrainz) {
-	try {
-		const response = await fetch(`https://api.listenbrainz.org/1/user/${props.user.listenbrainz}/playing-now`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-		});
-		const data = await response.json();
-		if (data.payload.listens && data.payload.listens.length !== 0) {
-			listenbrainzdata = true;
+	(async function() {
+		try {
+			const response = await fetch(`https://api.listenbrainz.org/1/user/${props.user.listenbrainz}/playing-now`, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+			});
+			const data = await response.json();
+			if (data.payload.listens && data.payload.listens.length !== 0) {
+				listenbrainzdata.value = true;
+			}
+		} catch (err) {
+			listenbrainzdata.value = false;
 		}
-	} catch (err) {
-		listenbrainzdata = false;
-	}
+	})()
 }
 
 const background = computed(() => {

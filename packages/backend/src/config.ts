@@ -100,6 +100,12 @@ type Source = {
 	perChannelMaxNoteCacheCount?: number;
 	perUserNotificationsMaxCount?: number;
 	deactivateAntennaThreshold?: number;
+
+	import?: {
+		downloadTimeout: number;
+		maxFileSize: number;
+	};
+
 	pidFile: string;
 };
 
@@ -182,6 +188,12 @@ export type Config = {
 	perChannelMaxNoteCacheCount: number;
 	perUserNotificationsMaxCount: number;
 	deactivateAntennaThreshold: number;
+
+	import: {
+		downloadTimeout: number;
+		maxFileSize: number;
+	} | undefined;
+
 	pidFile: string;
 };
 
@@ -291,6 +303,7 @@ export function loadConfig(): Config {
 		perChannelMaxNoteCacheCount: config.perChannelMaxNoteCacheCount ?? 1000,
 		perUserNotificationsMaxCount: config.perUserNotificationsMaxCount ?? 500,
 		deactivateAntennaThreshold: config.deactivateAntennaThreshold ?? (1000 * 60 * 60 * 24 * 7),
+		import: config.import,
 		pidFile: config.pidFile,
 	};
 }
@@ -436,4 +449,5 @@ function applyEnvOverrides(config: Source) {
 	_apply_top([['clusterLimit', 'deliverJobConcurrency', 'inboxJobConcurrency', 'relashionshipJobConcurrency', 'deliverJobPerSec', 'inboxJobPerSec', 'relashionshipJobPerSec', 'deliverJobMaxAttempts', 'inboxJobMaxAttempts']]);
 	_apply_top([['outgoingAddress', 'outgoingAddressFamily', 'proxy', 'proxySmtp', 'mediaProxy', 'videoThumbnailGenerator']]);
 	_apply_top([['maxFileSize', 'maxNoteLength', 'pidFile']]);
+	_apply_top(['import', ['downloadTimeout', 'maxFileSize']]);
 }
