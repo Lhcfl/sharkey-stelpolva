@@ -253,7 +253,7 @@ if (props.user.listenbrainz) {
 		} catch (err) {
 			listenbrainzdata.value = false;
 		}
-	})()
+	})();
 }
 
 const background = computed(() => {
