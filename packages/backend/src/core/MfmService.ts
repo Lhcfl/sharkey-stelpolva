@@ -135,10 +135,17 @@ export class MfmService {
 					break;
 				}
 
-				case 'b':
-				case 'strong':
 				case 'h2':
 				case 'h3':
+				{
+					text += '**';
+					appendChildren(node.childNodes);
+					text += '**\n';
+					break;
+				}
+
+				case 'b':
+				case 'strong':
 				{
 					text += '**';
 					appendChildren(node.childNodes);
