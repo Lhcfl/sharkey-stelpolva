@@ -1844,6 +1844,7 @@ _aboutMisskey:
   morePatrons: "We also appreciate the support of many other helpers not listed here. Thank you! 🥰"
   patrons: "Patrons"
   projectMembers: "Project members"
+  testers: "Testers"
 _displayOfSensitiveMedia:
   respect: "Hide media marked as sensitive"
   ignore: "Display media marked as sensitive"
