@@ -7164,6 +7164,10 @@ export interface Locale extends ILocale {
          * プロジェクトメンバー
          */
         "projectMembers": string;
+        /**
+         * テスター
+         */
+        "testers": string;
     };
     "_displayOfSensitiveMedia": {
         /**

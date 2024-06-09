@@ -110,7 +110,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<span :class="$style.contributorUsername">@tess</span>
 						</a>
 					</div>
-					<template #caption><MkLink url="https://activitypub.software/TransFem-org/Sharkey/-/graphs/develop">{{ i18n.ts._aboutMisskey.allContributors }}</MkLink></template>
+					<template #description><MkLink url="https://activitypub.software/TransFem-org/Sharkey/-/graphs/develop">{{ i18n.ts._aboutMisskey.allContributors }}</MkLink></template>
+				</FormSection>
+				<FormSection>
+					<template #label>{{ i18n.ts._aboutMisskey.testers }}</template>
+					<div :class="$style.contributors" style="margin-bottom: 8px;">
+						<a href="https://antani.cyou/@lucent" target="_blank" :class="$style.contributor">
+							<img src="https://antani.cyou/proxy/avatar.webp?url=https%3A%2F%2Fantani.cyou%2Ffiles%2Fa2944119-024c-4abd-86e5-64bf0d30b26f&avatar=1" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@lucent</span>
+						</a>
+						<a href="https://karilaa.app/@karilaa" target="_blank" :class="$style.contributor">
+							<img src="https://karilaa.app/proxy/avatar.webp?url=https%3A%2F%2Fkarilaa.app%2Ffiles%2Fc366e6f9-96d8-4d3b-b996-30e0a7cb3c5a&avatar=1" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@karilaa</span>
+						</a>
+						<a href="https://thetransagenda.gay/@phoenix_fairy" target="_blank" :class="$style.contributor">
+							<img src="https://thetransagenda.gay/proxy/avatar.webp?url=https%3A%2F%2Fs3.us-east-005.backblazeb2.com%2Ftranssharkey%2Fnull%2Fd93ac6dc-2020-4b5a-bce7-84b41e97a0ac.png&avatar=1" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@phoenix_fairy</span>
+						</a>
+					</div>
 				</FormSection>
 				<FormSection>
 					<template #label>Misskey Contributors</template>
