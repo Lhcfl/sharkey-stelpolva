@@ -74,7 +74,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						/>
 					</div>
 					<div class="description">
-						<Mfm v-if="user.description" :text="user.description" :isNote="false" :author="user"/>
+						<Mfm v-if="user.description" :text="user.description" :isBlock="true" :isNote="false" :author="user"/>
 						<p v-else class="empty">{{ i18n.ts.noAccountDescription }}</p>
 					</div>
 					<div class="fields system">

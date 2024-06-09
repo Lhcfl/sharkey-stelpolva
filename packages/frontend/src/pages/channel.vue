@@ -22,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div :class="$style.bannerFade"></div>
 					</div>
 					<div v-if="channel.description" :class="$style.description">
-						<Mfm :text="channel.description" :isNote="false"/>
+						<Mfm :text="channel.description" :isBlock="true" :isNote="false"/>
 					</div>
 				</div>
 

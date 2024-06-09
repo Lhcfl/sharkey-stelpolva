@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</span>
 			<span :class="$style.title">{{ announcement.title }}</span>
 		</div>
-		<div :class="$style.text"><Mfm :text="announcement.text"/></div>
+		<div :class="$style.text"><Mfm :text="announcement.text" :isBlock="true" /></div>
 		<MkButton primary full @click="ok">{{ i18n.ts.ok }}</MkButton>
 	</div>
 </MkModal>
