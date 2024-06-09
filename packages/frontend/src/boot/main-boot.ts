@@ -94,7 +94,7 @@ export async function mainBoot() {
 					}).render();
 				}
 			}
-		}	
+		}
 	} catch (error) {
 		// console.error(error);
 		console.error('Failed to initialise the seasonal screen effect canvas context:', error);
@@ -224,7 +224,7 @@ export async function mainBoot() {
 			if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 2) {
 				toast(i18n.tsx.welcomeBackWithName({
 					name: $i.name || $i.username,
-				}));
+				}), true);
 			}
 		}
 		miLocalStorage.setItem('lastUsed', Date.now().toString());
