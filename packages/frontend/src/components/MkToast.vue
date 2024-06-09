@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	>
 		<div v-if="showing" class="_acrylic" :class="$style.root" :style="{ zIndex }">
 			<div style="padding: 16px 24px;">
-				<Mfm :text="message" :plain="true"/>
+				<Mfm :text="message" plain="true"/>
 			</div>
 		</div>
 	</Transition>
