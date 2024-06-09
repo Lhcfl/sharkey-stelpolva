@@ -106,7 +106,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<span :class="$style.contributorUsername">@fEmber</span>
 						</a>
 					</div>
-					<template #caption><MkLink url="https://activitypub.software/TransFem-org/Sharkey/-/graphs/develop">{{ i18n.ts._aboutMisskey.allContributors }}</MkLink></template>
+					<template #description><MkLink url="https://activitypub.software/TransFem-org/Sharkey/-/graphs/develop">{{ i18n.ts._aboutMisskey.allContributors }}</MkLink></template>
 				</FormSection>
 				<FormSection>
 					<template #label>{{ i18n.ts._aboutMisskey.testers }}</template>
