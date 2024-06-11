@@ -12,11 +12,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 	:class="[$style.root, { [$style.showActionsOnlyHover]: defaultStore.state.showNoteActionsOnlyHover }]"
 	:tabindex="!isDeleted ? '-1' : undefined"
 >
-	<div v-if="appearNote.reply && replyCollapsed" :class="$style.collapsedReply">
-		<MkAvatar :class="$style.collapsedReplyAvatar" :user="appearNote.reply.user" link preview/>
-		<Mfm :text="getNoteSummary(appearNote.reply)" :plain="true" :nowrap="true" :author="appearNote.reply.user" :nyaize="'respect'" :class="$style.collapsedReplyText" @click="replyCollapsed = false"/>
+	<div v-if="appearNote.reply && inReplyToCollapsed" :class="$style.collapsedInReplyTo">
+		<MkAvatar :class="$style.collapsedInReplyToAvatar" :user="appearNote.reply.user" link preview/>
+		<Mfm :text="getNoteSummary(appearNote.reply)" :plain="true" :nowrap="true" :author="appearNote.reply.user" :nyaize="'respect'" :class="$style.collapsedInReplyToText" @click="inReplyToCollapsed = false"/>
 	</div>
-	<MkNoteSub v-if="appearNote.reply && !renoteCollapsed && !replyCollapsed" :note="appearNote.reply" :class="$style.replyTo"/>
+	<MkNoteSub v-if="appearNote.reply && !renoteCollapsed && !inReplyToCollapsed" :note="appearNote.reply" :class="$style.replyTo"/>
 	<div v-if="pinned" :class="$style.tip"><i class="ph-push-pin ph-bold ph-lg"></i> {{ i18n.ts.pinnedNote }}</div>
 	<!--<div v-if="appearNote._prId_" class="tip"><i class="ph-megaphone ph-bold ph-lg"></i> {{ i18n.ts.promotion }}<button class="_textButton hide" @click="readPromo()">{{ i18n.ts.hideThisNote }} <i class="ph-x ph-bold ph-lg"></i></button></div>-->
 	<!--<div v-if="appearNote._featuredId_" class="tip"><i class="ph-lightning ph-bold ph-lg"></i> {{ i18n.ts.featured }}</div>-->
@@ -314,7 +314,7 @@ const renoteCollapsed = ref(
 		(appearNote.value.myReaction != null)
 	)
 );
-const replyCollapsed = ref(defaultStore.state.collapseReplies && !renoteCollapsed.value);
+const inReplyToCollapsed = ref(defaultStore.state.collapseNotesRepliedTo && !renoteCollapsed.value);
 const defaultLike = computed(() => defaultStore.state.like ? defaultStore.state.like : null);
 const animated = computed(() => parsed.value ? checkAnimationFromMfm(parsed.value) : null);
 const allowAnim = ref(defaultStore.state.advancedMfm && defaultStore.state.animatedMfm ? true : false);
@@ -924,7 +924,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 	margin-right: 4px;
 }
 
-.collapsedRenoteTarget, .collapsedReply {
+.collapsedRenoteTarget, .collapsedInReplyTo {
 	display: flex;
 	align-items: center;
 	line-height: 28px;
@@ -932,12 +932,12 @@ function emitUpdReaction(emoji: string, delta: number) {
 	padding: 0 32px 18px;
 }
 
-.collapsedReply {
+.collapsedInReplyTo {
 	padding: 28px 32px 0;
 	opacity: 0.7;
 }
 
-.collapsedRenoteTargetAvatar, .collapsedReplyAvatar {
+.collapsedRenoteTargetAvatar, .collapsedInReplyToAvatar {
 	flex-shrink: 0;
 	display: inline-block;
 	width: 28px;
@@ -949,7 +949,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 	opacity: 0.7;
 }
 
-.collapsedRenoteTargetText, .collapsedReplyText {
+.collapsedRenoteTargetText, .collapsedInReplyToText {
 	overflow: hidden;
 	flex-shrink: 1;
 	text-overflow: ellipsis;
@@ -1167,7 +1167,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 		margin-top: 4px;
 	}
 
-	.collapsedReply {
+	.collapsedInReplyTo {
 		padding: 28px 16px 0;
 	}
 
