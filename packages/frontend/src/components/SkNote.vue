@@ -311,13 +311,12 @@ const translation = ref<Misskey.entities.NotesTranslateResponse | null>(null);
 const translating = ref(false);
 const showTicker = (defaultStore.state.instanceTicker === 'always') || (defaultStore.state.instanceTicker === 'remote' && appearNote.value.user.instance);
 const canRenote = computed(() => ['public', 'home'].includes(appearNote.value.visibility) || (appearNote.value.visibility === 'followers' && appearNote.value.userId === $i?.id));
-const renoteCollapsed = ref(
-	defaultStore.state.collapseRenotes && isRenote && (
-		($i && ($i.id === note.value.userId || $i.id === appearNote.value.userId)) || // `||` must be `||`! See https://github.com/misskey-dev/misskey/issues/13131
-		(appearNote.value.myReaction != null)
-	)
+const renoteCollapsedInitialValue = defaultStore.state.collapseRenotes && isRenote && (
+	($i && ($i.id === note.value.userId || $i.id === appearNote.value.userId)) || // `||` must be `||`! See https://github.com/misskey-dev/misskey/issues/13131
+	(appearNote.value.myReaction != null)
 );
-const inReplyToCollapsed = ref(defaultStore.state.collapseNotesRepliedTo && !renoteCollapsed.value);
+const renoteCollapsed = ref(renoteCollapsedInitialValue);
+const inReplyToCollapsed = ref(defaultStore.state.collapseNotesRepliedTo && !renoteCollapsedInitialValue);
 const defaultLike = computed(() => defaultStore.state.like ? defaultStore.state.like : null);
 const animated = computed(() => parsed.value ? checkAnimationFromMfm(parsed.value) : null);
 const allowAnim = ref(defaultStore.state.advancedMfm && defaultStore.state.animatedMfm ? true : false);
