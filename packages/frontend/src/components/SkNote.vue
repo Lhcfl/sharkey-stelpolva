@@ -1223,11 +1223,12 @@ function emitUpdReaction(emoji: string, delta: number) {
 	}
 
 	.collapsedInReplyTo {
-		padding: 28px 33px 0;
+		padding: 22px 33px 0;
 	}
 
 	.collapsedInReplyToLine {
 		left: calc(24px + .5 * var(--avatar));
+		top: calc(22px + 28px); // 22px of .root padding, plus 28px of avatar height
 	}
 
 	.article {

@@ -1170,7 +1170,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 	}
 
 	.collapsedInReplyTo {
-		padding: 28px 16px 0;
+		padding: 14px 16px 0;
 	}
 
 	.article {
