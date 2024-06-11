@@ -53,6 +53,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkSwitch v-model="showNoteActionsOnlyHover">{{ i18n.ts.showNoteActionsOnlyHover }}</MkSwitch>
 				<MkSwitch v-model="showClipButtonInNoteFooter">{{ i18n.ts.showClipButtonInNoteFooter }}</MkSwitch>
 				<MkSwitch v-model="collapseRenotes">{{ i18n.ts.collapseRenotes }}</MkSwitch>
+				<MkSwitch v-model="collapseReplies">{{ i18n.ts.collapseReplies }}</MkSwitch>
 				<MkSwitch v-model="collapseFiles">{{ i18n.ts.collapseFiles }}</MkSwitch>
 				<MkSwitch v-model="uncollapseCW">Uncollapse CWs on notes</MkSwitch>
 				<MkSwitch v-model="autoloadConversation">{{ i18n.ts.autoloadConversation }}</MkSwitch>
@@ -321,6 +322,7 @@ const showClipButtonInNoteFooter = computed(defaultStore.makeGetterSetter('showC
 const reactionsDisplaySize = computed(defaultStore.makeGetterSetter('reactionsDisplaySize'));
 const limitWidthOfReaction = computed(defaultStore.makeGetterSetter('limitWidthOfReaction'));
 const collapseRenotes = computed(defaultStore.makeGetterSetter('collapseRenotes'));
+const collapseReplies = computed(defaultStore.makeGetterSetter('collapseReplies'));
 const clickToOpen = computed(defaultStore.makeGetterSetter('clickToOpen'));
 // copied from src/pages/timeline.vue
 const showBots = computed<boolean>({

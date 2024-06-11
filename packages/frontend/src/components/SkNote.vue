@@ -12,7 +12,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 	:class="[$style.root, { [$style.showActionsOnlyHover]: defaultStore.state.showNoteActionsOnlyHover }]"
 	:tabindex="!isDeleted ? '-1' : undefined"
 >
-	<SkNoteSub v-if="appearNote.reply && !renoteCollapsed" :note="appearNote.reply" :class="$style.replyTo"/>
+	<SkNoteSub v-if="appearNote.reply && !renoteCollapsed && !replyCollapsed" :note="appearNote.reply" :class="$style.replyTo"/>
+	<div v-if="appearNote.reply && replyCollapsed && !renoteCollapsed" :class="$style.collapsedReply">
+		<div :class="$style.collapsedReplyLine"></div>
+		<MkAvatar :class="$style.collapsedReplyAvatar" :user="appearNote.reply.user" link preview/>
+		<Mfm :text="getNoteSummary(appearNote.reply)" :plain="true" :nowrap="true" :author="appearNote.reply.user" :nyaize="'respect'" :class="$style.collapsedReplyText" @click="replyCollapsed = false"/>
+	</div>
 	<div v-if="pinned" :class="$style.tip"><i class="ph-push-pin ph-bold ph-lg"></i> {{ i18n.ts.pinnedNote }}</div>
 	<!--<div v-if="appearNote._prId_" class="tip"><i class="ph-megaphone ph-bold ph-lg"></i> {{ i18n.ts.promotion }}<button class="_textButton hide" @click="readPromo()">{{ i18n.ts.hideThisNote }} <i class="ph-x ph-bold ph-lg"></i></button></div>-->
 	<!--<div v-if="appearNote._featuredId_" class="tip"><i class="ph-lightning ph-bold ph-lg"></i> {{ i18n.ts.featured }}</div>-->
@@ -309,6 +314,7 @@ const renoteCollapsed = ref(
 		(appearNote.value.myReaction != null)
 	)
 );
+const replyCollapsed = ref(defaultStore.state.collapseReplies && !renoteCollapsed.value);
 const defaultLike = computed(() => defaultStore.state.like ? defaultStore.state.like : null);
 const animated = computed(() => parsed.value ? checkAnimationFromMfm(parsed.value) : null);
 const allowAnim = ref(defaultStore.state.advancedMfm && defaultStore.state.animatedMfm ? true : false);
@@ -934,7 +940,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 	margin-right: 4px;
 }
 
-.collapsedRenoteTarget {
+.collapsedRenoteTarget, .collapsedReply {
 	display: flex;
 	align-items: center;
 	line-height: 28px;
@@ -942,7 +948,11 @@ function emitUpdReaction(emoji: string, delta: number) {
 	padding: 8px 38px 24px;
 }
 
-.collapsedRenoteTargetAvatar {
+.collapsedReply {
+	padding: 28px 44px 0;
+}
+
+.collapsedRenoteTargetAvatar, .collapsedReplyAvatar {
 	flex-shrink: 0;
 	display: inline-block;
 	width: 28px;
@@ -950,7 +960,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 	margin: 0 8px 0 0;
 }
 
-.collapsedRenoteTargetText {
+.collapsedRenoteTargetText, .collapsedReplyText {
 	overflow: hidden;
 	flex-shrink: 1;
 	text-overflow: ellipsis;
@@ -962,6 +972,15 @@ function emitUpdReaction(emoji: string, delta: number) {
 	&:hover {
 		text-decoration: underline;
 	}
+}
+
+.collapsedReplyLine {
+	position: absolute;
+	left: 56px;
+	// using solid instead of dotted, stylelistic choice
+	border-left: var(--thread-width) solid var(--thread);
+	top: calc(28px + 28px); // 28px of .root padding, plus 28px of avatar height (see SkNote)
+	height: 28px;
 }
 
 .article {
@@ -1142,6 +1161,14 @@ function emitUpdReaction(emoji: string, delta: number) {
 		padding: 8px 26px 24px;
 	}
 
+	.collapsedReply {
+		padding: 28px 35px 0;
+	}
+
+	.collapsedReplyLine {
+		left: 47px;
+	}
+
 	.article {
 		padding: 24px 26px;
 	}
@@ -1187,6 +1214,14 @@ function emitUpdReaction(emoji: string, delta: number) {
 	.collapsedRenoteTarget {
 		padding: 8px 24px 20px;
 		margin-top: 4px;
+	}
+
+	.collapsedReply {
+		padding: 28px 33px 0;
+	}
+
+	.collapsedReplyLine {
+		left: 45px;
 	}
 
 	.article {

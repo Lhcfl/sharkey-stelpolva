@@ -56,6 +56,7 @@ const { t, ts } = i18n;
 
 const defaultStoreSaveKeys: (keyof typeof defaultStore['state'])[] = [
 	'collapseRenotes',
+	'collapseReplies',
 	'menu',
 	'visibility',
 	'localOnly',
