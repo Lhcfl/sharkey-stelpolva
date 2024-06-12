@@ -3029,9 +3029,9 @@ export interface Locale extends ILocale {
      */
     "searchEngineOther": string;
     /**
-     * カスタム URI は、"https://www.google.com/search?q={query}" や "https://www.google.com/search?q=%s" のような形式で入力する必要があります。
+     * カスタム URI は、"https://www.google.com/search?q=\{query}" や "https://www.google.com/search?q=%s" のような形式で入力する必要があります。
      */
-    "searchEngineCustomURIDescription": ParameterizedString<"query">;
+    "searchEngineCustomURIDescription": string;
     /**
      * カスタム URI
      */

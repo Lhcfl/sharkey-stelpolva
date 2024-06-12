@@ -753,7 +753,7 @@ alwaysMarkSensitive: "デフォルトでメディアをセンシティブ設定�
 loadRawImages: "添付画像のサムネイルをオリジナル画質にする"
 searchEngine: "検索MFMの検索エンジン"
 searchEngineOther: "他"
-searchEngineCustomURIDescription: "カスタム URI は、\"https://www.google.com/search?q={query}\" や \"https://www.google.com/search?q=%s\" のような形式で入力する必要があります。"
+searchEngineCustomURIDescription: "カスタム URI は、\"https://www.google.com/search?q=\\{query}\" や \"https://www.google.com/search?q=%s\" のような形式で入力する必要があります。"
 searchEngineCusomURI: "カスタム URI"
 disableShowingAnimatedImages: "アニメーション画像を再生しない"
 highlightSensitiveMedia: "メディアがセンシティブであることを分かりやすく表示"

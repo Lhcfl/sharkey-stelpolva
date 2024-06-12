@@ -6,7 +6,10 @@ import ts from 'typescript';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const parameterRegExp = /\{(\w+)\}/g;
+// braces preceded by backslashes are literal, they don't represent
+// parameters; they get cleaned up by `locales/index.js` before
+// getting shipped to the browser
+const parameterRegExp = /(?<!\\)\{(\w+)\}/g;
 
 function createMemberType(item) {
 	if (typeof item !== 'string') {
