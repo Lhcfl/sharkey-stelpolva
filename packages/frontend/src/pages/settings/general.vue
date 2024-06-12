@@ -71,13 +71,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 						{{ value }}
 					</option>
 					<!-- If the user is on Other and enters a domain add this one so that the dropdown doesnt go blank -->
-					<option v-if="!Object.keys(searchEngineMap).includes(searchEngine)" :value="searchEngine">
+					<option v-if="useCustomSearchEngine" :value="searchEngine">
 						{{ i18n.ts.searchEngineOther }}
 					</option>
-					<!-- If one of the other options is selected show this as a blank other -->						<option v-if="Object.keys(searchEngineMap).includes(searchEngine)" value="">{{ i18n.ts.searchEngineOther }}</option>
+					<!-- If one of the other options is selected show this as a blank other -->
+					<option v-if="!useCustomSearchEngine" value="">{{ i18n.ts.searchEngineOther }}</option>
 				</MkSelect>
 
-				<div v-if="!Object.keys(searchEngineMap).includes(searchEngine)">
+				<div v-if="useCustomSearchEngine">
 					<MkInput v-model="searchEngine" :max="300">
 						<template #label>{{ i18n.ts.searchEngineCusomURI }}</template>
 						<template #caption>{{ i18n.ts.searchEngineCustomURIDescription }}</template>
@@ -568,4 +569,6 @@ definePageMetadata(() => ({
 	title: i18n.ts.general,
 	icon: 'ph-faders ph-bold ph-lg',
 }));
+
+const useCustomSearchEngine = computed(() => !Object.keys(searchEngineMap).includes(searchEngine.value));
 </script>
