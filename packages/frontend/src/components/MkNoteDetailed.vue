@@ -342,7 +342,7 @@ let renoting = false;
 const keymap = {
 	'r': () => reply(true),
 	'e|a|plus': () => react(true),
-	'(q)': () => { if (canRenote.value && !renoted.value && !renoting) { renoting = true; renote(appearNote.value.visibility); } },
+	'(q)': () => { if (canRenote.value && !renoted.value && !renoting) renote(appearNote.value.visibility); },
 	'esc': blur,
 	'm|o': () => showMenu(true),
 	's': () => showContent.value !== showContent.value,
@@ -434,6 +434,8 @@ useTooltip(quoteButton, async (showing) => {
 });
 
 function boostVisibility() {
+	if (renoting) return;
+
 	if (!defaultStore.state.showVisibilitySelectorOnBoost) {
 		renote(defaultStore.state.visibilityOnBoost);
 	} else {
@@ -444,6 +446,8 @@ function boostVisibility() {
 function renote(visibility: Visibility, localOnly: boolean = false) {
 	pleaseLogin();
 	showMovedDialog();
+
+	renoting = true;
 
 	if (appearNote.value.channel) {
 		const el = renoteButton.value as HTMLElement | null | undefined;
