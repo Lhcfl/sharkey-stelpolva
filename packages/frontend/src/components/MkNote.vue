@@ -336,7 +336,7 @@ let renoting = false;
 const keymap = {
 	'r': () => reply(true),
 	'e|a|plus': () => react(true),
-	'(q)': () => { if (canRenote.value && !renoted.value && !renoting) renote(appearNote.value.visibility); },
+	'(q)': () => { if (canRenote.value && !renoted.value && !renoting) renote(defaultStore.state.visibilityOnBoost); },
 	'up|k|shift+tab': focusBefore,
 	'down|j|tab': focusAfter,
 	'esc': blur,
