@@ -63,6 +63,27 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkSwitch v-model="showGapBetweenNotesInTimeline">{{ i18n.ts.showGapBetweenNotesInTimeline }}</MkSwitch>
 				<MkSwitch v-model="loadRawImages">{{ i18n.ts.loadRawImages }}</MkSwitch>
 				<MkSwitch v-model="showTickerOnReplies">Show instance ticker on replies</MkSwitch>
+				<MkSelect v-model="searchEngine" placeholder="Other">
+					<template #label>{{ i18n.ts.searchEngine }}</template>
+					<option
+						v-for="[key, value] in Object.entries(searchEngineMap)" :key="key" :value="key"
+					>
+						{{ value }}
+					</option>
+					<!-- If the user is on Other and enters a domain add this one so that the dropdown doesnt go blank -->
+					<option v-if="!Object.keys(searchEngineMap).includes(searchEngine)" :value="searchEngine">
+						{{ i18n.ts.searchEngineOther }}
+					</option>
+					<!-- If one of the other options is selected show this as a blank other -->						<option v-if="Object.keys(searchEngineMap).includes(searchEngine)" value="">{{ i18n.ts.searchEngineOther }}</option>
+				</MkSelect>
+
+				<div v-if="!Object.keys(searchEngineMap).includes(searchEngine)">
+					<MkInput v-model="searchEngine" :max="300">
+						<template #label>{{ i18n.ts.searchEngineCusomURI }}</template>
+						<template #caption>{{ i18n.ts.searchEngineCustomURIDescription }}</template>
+					</MkInput>
+				</div>
+
 				<MkRadios v-model="reactionsDisplaySize">
 					<template #label>{{ i18n.ts.reactionsDisplaySize }}</template>
 					<option value="small">{{ i18n.ts.small }}</option>
@@ -271,11 +292,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import MkRadios from '@/components/MkRadios.vue';
+import MkInput from '@/components/MkInput.vue';
 import MkRange from '@/components/MkRange.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkButton from '@/components/MkButton.vue';
@@ -284,6 +306,7 @@ import FormLink from '@/components/form/link.vue';
 import MkLink from '@/components/MkLink.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import { langs } from '@/config.js';
+import { searchEngineMap } from '@/scripts/search-engine-map.js';
 import { defaultStore } from '@/store.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
@@ -355,6 +378,9 @@ const keepScreenOn = computed(defaultStore.makeGetterSetter('keepScreenOn'));
 const disableStreamingTimeline = computed(defaultStore.makeGetterSetter('disableStreamingTimeline'));
 const useGroupedNotifications = computed(defaultStore.makeGetterSetter('useGroupedNotifications'));
 const showTickerOnReplies = computed(defaultStore.makeGetterSetter('showTickerOnReplies'));
+//const searchEngine = computed(defaultStore.makeGetterSetter('searchEngine'));
+const searchEngine = computed(defaultStore.makeGetterSetter('searchEngine'));
+
 const noteDesign = computed(defaultStore.makeGetterSetter('noteDesign'));
 const uncollapseCW = computed(defaultStore.makeGetterSetter('uncollapseCW'));
 const expandLongNote = computed(defaultStore.makeGetterSetter('expandLongNote'));
