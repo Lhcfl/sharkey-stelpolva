@@ -7027,6 +7027,8 @@ export type operations = {
           query?: string | null;
           /** @default 10 */
           limit?: number;
+          /** @default null */
+          offset?: number | null;
           /** Format: misskey:id */
           sinceId?: string;
           /** Format: misskey:id */
