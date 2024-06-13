@@ -30,8 +30,9 @@ export const meta = {
 	prohibitMoved: true,
 
 	limit: {
-		duration: ms('1minute'),
-		max: 5,
+		duration: ms('1hour'),
+		max: 300,
+		minInterval: ms('1sec'),
 	},
 
 	kind: 'write:notes',
