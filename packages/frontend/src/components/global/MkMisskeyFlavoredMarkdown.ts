@@ -452,11 +452,11 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 				if (!props.nowrap) {
 					return [h('bdi', { class: 'block' }, h('div', {
 						style: QUOTE_STYLE,
-					}, h('bdi',genEl(token.children, scale, true))))];
+					}, h('bdi', genEl(token.children, scale, true))))];
 				} else {
 					return [h('span', {
 						style: QUOTE_STYLE,
-					}, h('bdi',genEl(token.children, scale, true)))];
+					}, h('bdi', genEl(token.children, scale, true)))];
 				}
 			}
 
