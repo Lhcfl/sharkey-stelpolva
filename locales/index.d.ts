@@ -3053,6 +3053,22 @@ export interface Locale extends ILocale {
      */
     "loadRawImages": string;
     /**
+     * 検索MFMの検索エンジン
+     */
+    "searchEngine": string;
+    /**
+     * 他
+     */
+    "searchEngineOther": string;
+    /**
+     * カスタム URI は、"https://www.google.com/search?q=\{query}" や "https://www.google.com/search?q=%s" のような形式で入力する必要があります。
+     */
+    "searchEngineCustomURIDescription": string;
+    /**
+     * カスタム URI
+     */
+    "searchEngineCusomURI": string;
+    /**
      * アニメーション画像を再生しない
      */
     "disableShowingAnimatedImages": string;
@@ -7304,6 +7320,10 @@ export interface Locale extends ILocale {
          * プロジェクトメンバー
          */
         "projectMembers": string;
+        /**
+         * テスター
+         */
+        "testers": string;
     };
     "_displayOfSensitiveMedia": {
         /**

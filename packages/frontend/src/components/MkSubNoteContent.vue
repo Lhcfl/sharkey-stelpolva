@@ -9,14 +9,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-if="note.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 		<span v-if="note.deletedAt" style="opacity: 0.5">({{ i18n.ts.deletedNote }})</span>
 		<MkA v-if="note.replyId" :class="$style.reply" :to="`/notes/${note.replyId}`" @click.stop><i class="ph-arrow-bend-left-up ph-bold ph-lg"></i></MkA>
-		<Mfm v-if="note.text" :text="note.text" :author="note.user" :nyaize="'respect'" :isAnim="allowAnim" :emojiUrls="note.emojis"/>
+		<Mfm v-if="note.text" :text="note.text" :isBlock="true" :author="note.user" :nyaize="'respect'" :isAnim="allowAnim" :emojiUrls="note.emojis"/>
 		<MkButton v-if="!allowAnim && animated && !hideFiles" :class="$style.playMFMButton" :small="true" @click="animatedMFM()" @click.stop><i class="ph-play ph-bold ph-lg "></i> {{ i18n.ts._animatedMFM.play }}</MkButton>
 		<MkButton v-else-if="!defaultStore.state.animatedMfm && allowAnim && animated && !hideFiles" :class="$style.playMFMButton" :small="true" @click="animatedMFM()" @click.stop><i class="ph-stop ph-bold ph-lg "></i> {{ i18n.ts._animatedMFM.stop }}</MkButton>
 		<div v-if="note.text && translating || note.text && translation" :class="$style.translation">
 			<MkLoading v-if="translating" mini/>
 			<div v-else>
 				<b>{{ i18n.tsx.translatedFrom({ x: translation.sourceLang }) }}: </b>
-				<Mfm :text="translation.text" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
+				<Mfm :text="translation.text" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
 			</div>
 		</div>
 		<MkA v-if="note.renoteId" :class="$style.rp" :to="`/notes/${note.renoteId}`" @click.stop>RN: ...</MkA>

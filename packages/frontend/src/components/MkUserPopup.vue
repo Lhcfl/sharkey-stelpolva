@@ -28,7 +28,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div :class="$style.username"><MkAcct :user="user"/></div>
 			</div>
 			<div :class="$style.description">
-				<Mfm v-if="user.description" :nyaize="false" :class="$style.mfm" :text="user.description" :author="user"/>
+				<Mfm v-if="user.description" :nyaize="false" :class="$style.mfm" :text="user.description" :isBlock="true" :author="user"/>
 				<div v-else style="opacity: 0.7;">{{ i18n.ts.noAccountDescription }}</div>
 			</div>
 			<div v-if="user.fields.length > 0" :class="$style.fields">

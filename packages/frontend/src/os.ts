@@ -211,9 +211,10 @@ export function pageWindow(path: string) {
 	}, {}, 'closed');
 }
 
-export function toast(message: string) {
+export function toast(message: string, renderMfm = false) {
 	popup(MkToast, {
 		message,
+		renderMfm,
 	}, {}, 'closed');
 }
 

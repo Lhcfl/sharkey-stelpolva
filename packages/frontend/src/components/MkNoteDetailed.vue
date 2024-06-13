@@ -68,7 +68,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</header>
 		<div :class="$style.noteContent">
 			<p v-if="appearNote.cw != null" :class="$style.cw">
-				<Mfm v-if="appearNote.cw != ''" style="margin-right: 8px;" :text="appearNote.cw" :author="appearNote.user" :nyaize="'respect'"/>
+				<Mfm v-if="appearNote.cw != ''" style="margin-right: 8px;" :text="appearNote.cw" :isBlock="true" :author="appearNote.user" :nyaize="'respect'"/>
 				<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll"/>
 			</p>
 			<div v-show="appearNote.cw == null || showContent">
@@ -84,13 +84,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 					:enableEmojiMenu="true"
 					:enableEmojiMenuReaction="true"
 					:isAnim="allowAnim"
+					:isBlock="true"
 				/>
 				<a v-if="appearNote.renote != null" :class="$style.rn">RN:</a>
 				<div v-if="translating || translation" :class="$style.translation">
 					<MkLoading v-if="translating" mini/>
 					<div v-else-if="translation">
 						<b>{{ i18n.tsx.translatedFrom({ x: translation.sourceLang }) }}: </b>
-						<Mfm :text="translation.text" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis"/>
+						<Mfm :text="translation.text" :isBlock="true" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis"/>
 					</div>
 				</div>
 				<MkButton v-if="!allowAnim && animated" :class="$style.playMFMButton" :small="true" @click="animatedMFM()" @click.stop><i class="ph-play ph-bold ph-lg "></i> {{ i18n.ts._animatedMFM.play }}</MkButton>
@@ -351,7 +352,7 @@ let renoting = false;
 const keymap = {
 	'r': () => reply(true),
 	'e|a|plus': () => react(true),
-	'(q)': () => { if (canRenote.value && !renoted.value && !renoting) { renoting = true; renote(appearNote.value.visibility); } },
+	'(q)': () => { if (canRenote.value && !renoted.value && !renoting) renote(defaultStore.state.visibilityOnBoost); },
 	'esc': blur,
 	'm|o': () => showMenu(true),
 	's': () => showContent.value !== showContent.value,
@@ -443,6 +444,8 @@ useTooltip(quoteButton, async (showing) => {
 });
 
 function boostVisibility() {
+	if (renoting) return;
+
 	if (!defaultStore.state.showVisibilitySelectorOnBoost) {
 		renote(defaultStore.state.visibilityOnBoost);
 	} else {
@@ -475,6 +478,8 @@ if (appearNote.value.reactionAcceptance === 'likeOnly') {
 function renote(visibility: Visibility, localOnly: boolean = false) {
 	pleaseLogin();
 	showMovedDialog();
+
+	renoting = true;
 
 	if (appearNote.value.channel) {
 		const el = renoteButton.value as HTMLElement | null | undefined;
