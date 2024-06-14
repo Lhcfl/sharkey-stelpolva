@@ -90,6 +90,10 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'account',
 		default: false,
 	},
+	collapseNotesRepliedTo: {
+		where: 'account',
+		default: false,
+	},
 	collapseFiles: {
 		where: 'account',
 		default: false,
