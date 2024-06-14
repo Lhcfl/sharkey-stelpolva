@@ -4298,6 +4298,10 @@ export interface Locale extends ILocale {
      */
     "collapseRenotesDescription": string;
     /**
+     * 返信されたノート省略
+     */
+    "collapseNotesRepliedTo": string;
+    /**
      * ファイルを折りたたむ
      */
     "collapseFiles": string;
