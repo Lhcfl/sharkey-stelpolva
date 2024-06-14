@@ -50,10 +50,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<div class="_gaps_m">
 			<div class="_gaps_s">
+				<MkSwitch v-model="showNoteActionsOnlyHover">{{ i18n.ts.showNoteActionsOnlyHover }}</MkSwitch>
+				<MkSwitch v-model="showClipButtonInNoteFooter">{{ i18n.ts.showClipButtonInNoteFooter }}</MkSwitch>
 				<MkSwitch v-model="collapseRenotes">
 					<template #label>{{ i18n.ts.collapseRenotes }}</template>
 					<template #caption>{{ i18n.ts.collapseRenotesDescription }}</template>
 				</MkSwitch>
+				<MkSwitch v-model="collapseNotesRepliedTo">{{ i18n.ts.collapseNotesRepliedTo }}</MkSwitch>
 				<MkSwitch v-model="collapseFiles">{{ i18n.ts.collapseFiles }}</MkSwitch>
 				<MkSwitch v-model="uncollapseCW">Uncollapse CWs on notes</MkSwitch>
 				<MkSwitch v-model="expandLongNote">Always expand long notes</MkSwitch>
@@ -351,6 +354,7 @@ const showClipButtonInNoteFooter = computed(defaultStore.makeGetterSetter('showC
 const reactionsDisplaySize = computed(defaultStore.makeGetterSetter('reactionsDisplaySize'));
 const limitWidthOfReaction = computed(defaultStore.makeGetterSetter('limitWidthOfReaction'));
 const collapseRenotes = computed(defaultStore.makeGetterSetter('collapseRenotes'));
+const collapseNotesRepliedTo = computed(defaultStore.makeGetterSetter('collapseNotesRepliedTo'));
 const clickToOpen = computed(defaultStore.makeGetterSetter('clickToOpen'));
 // copied from src/pages/timeline.vue
 const showBots = computed<boolean>({
