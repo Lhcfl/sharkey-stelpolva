@@ -50,8 +50,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<div class="_gaps_m">
 			<div class="_gaps_s">
-				<MkSwitch v-model="showNoteActionsOnlyHover">{{ i18n.ts.showNoteActionsOnlyHover }}</MkSwitch>
-				<MkSwitch v-model="showClipButtonInNoteFooter">{{ i18n.ts.showClipButtonInNoteFooter }}</MkSwitch>
 				<MkSwitch v-model="collapseRenotes">
 					<template #label>{{ i18n.ts.collapseRenotes }}</template>
 					<template #caption>{{ i18n.ts.collapseRenotesDescription }}</template>
