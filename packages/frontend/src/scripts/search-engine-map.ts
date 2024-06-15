@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: leah and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 //store the URL and if its none of these its a custom one
 export const searchEngineMap = {
 	//The first one is the default search engine

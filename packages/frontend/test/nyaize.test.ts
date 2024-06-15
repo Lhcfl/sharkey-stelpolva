@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: dakkar and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { describe, test, assert, afterEach } from 'vitest';
 import { nyaize } from '@/scripts/nyaize.js';
 

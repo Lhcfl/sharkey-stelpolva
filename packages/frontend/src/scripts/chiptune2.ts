@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 /* eslint-disable */
 
 const ChiptuneAudioContext = window.AudioContext || window.webkitAudioContext;
