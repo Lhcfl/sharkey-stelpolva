@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 export class instanceDefaultLike1699819257000 {
     name = 'instanceDefaultLike1699819257000'
 

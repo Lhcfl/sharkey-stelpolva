@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: leah and other Cutiekey contributors
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <template>
 <span ref="container" :class="$style.root">
 	<span ref="el" :class="$style.inner" style="position: absolute">

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import type { MegalodonInterface } from 'megalodon';
 import type { FastifyRequest } from 'fastify';
 
@@ -65,7 +70,7 @@ export async function ApiAuthMastodon(request: FastifyRequest, client: Megalodon
 			client_id: Buffer.from(appData.url || '').toString('base64'),
 			client_secret: appData.clientSecret,
 		};
-            
+
 		return returns;
 	} catch (e: any) {
 		console.error(e);
