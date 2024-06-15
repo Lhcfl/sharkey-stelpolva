@@ -16,7 +16,8 @@ export function checkAnimationFromMfm(nodes: mfm.MfmNode[]): boolean {
 			node.props.name === 'jump' ||
 			node.props.name === 'bounce' ||
 			node.props.name === 'rainbow' ||
-			node.props.name === 'sparkle') {
+			node.props.name === 'sparkle' ||
+			node.props.name === 'followmouse') {
 				return true;
 			} else {
 				return false;
