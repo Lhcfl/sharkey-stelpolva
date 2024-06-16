@@ -235,8 +235,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 						return h(MkSparkle, {}, genEl(token.children, scale));
 					}
 					case 'fade': {
-						// Dont run with reduced motion on
-						if (!defaultStore.state.animation) {
+						if (!useAnim) {
 							style = '';
 							break;
 						}
