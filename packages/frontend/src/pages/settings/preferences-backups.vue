@@ -56,6 +56,7 @@ const { t, ts } = i18n;
 
 const defaultStoreSaveKeys: (keyof typeof defaultStore['state'])[] = [
 	'collapseRenotes',
+	'collapseNotesRepliedTo',
 	'menu',
 	'visibility',
 	'localOnly',
@@ -73,6 +74,7 @@ const defaultStoreSaveKeys: (keyof typeof defaultStore['state'])[] = [
 	'showReactionsCount',
 	'loadRawImages',
 	'warnMissingAltText',
+	'enableFaviconNotificationDot',
 	'imageNewTab',
 	'dataSaver',
 	'disableShowingAnimatedImages',

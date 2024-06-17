@@ -86,20 +86,20 @@ export class ApNoteService {
 		const expectHost = this.utilityService.extractDbHost(uri);
 
 		if (!validPost.includes(getApType(object))) {
-			return new Error(`invalid Note: invalid object type ${getApType(object)}`);
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note: invalid object type ${getApType(object)}`);
 		}
 
 		if (object.id && this.utilityService.extractDbHost(object.id) !== expectHost) {
-			return new Error(`invalid Note: id has different host. expected: ${expectHost}, actual: ${this.utilityService.extractDbHost(object.id)}`);
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note: id has different host. expected: ${expectHost}, actual: ${this.utilityService.extractDbHost(object.id)}`);
 		}
 
 		const actualHost = object.attributedTo && this.utilityService.extractDbHost(getOneApId(object.attributedTo));
 		if (object.attributedTo && actualHost !== expectHost) {
-			return new Error(`invalid Note: attributedTo has different host. expected: ${expectHost}, actual: ${actualHost}`);
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note: attributedTo has different host. expected: ${expectHost}, actual: ${actualHost}`);
 		}
 
 		if (object.published && !this.idService.isSafeT(new Date(object.published).valueOf())) {
-			return new Error('invalid Note: published timestamp is malformed');
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', 'invalid Note: published timestamp is malformed');
 		}
 
 		return null;
@@ -248,7 +248,7 @@ export class ApNoteService {
 			> => {
 				if (typeof uri !== 'string' || !/^https?:/.test(uri)) return { status: 'permerror' };
 				try {
-					const res = await this.resolveNote(uri);
+					const res = await this.resolveNote(uri, { resolver });
 					if (res == null) return { status: 'permerror' };
 					return { status: 'ok', res };
 				} catch (e) {
@@ -473,7 +473,7 @@ export class ApNoteService {
 			> => {
 				if (!/^https?:/.test(uri)) return { status: 'permerror' };
 				try {
-					const res = await this.resolveNote(uri);
+					const res = await this.resolveNote(uri, { resolver });
 					if (res == null) return { status: 'permerror' };
 					return { status: 'ok', res };
 				} catch (e) {

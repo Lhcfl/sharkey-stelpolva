@@ -49,7 +49,11 @@ const primaries = {
 };
 
 // 何故か文字列にバックスペース文字が混入することがあり、YAMLが壊れるので取り除く
-const clean = (text) => text.replace(new RegExp(String.fromCodePoint(0x08), 'g'), '');
+//
+// also, we remove the backslashes in front of open braces (the
+// backslashes are only needed to tell `generateDTS.js` that the
+// braces do not represent parameters)
+const clean = (text) => text.replace(new RegExp(String.fromCodePoint(0x08), 'g'), '').replaceAll(new RegExp(/\\+\{/,'g'), '{');
 
 export function build() {
 	const locales = languages.reduce((a, c) => (a[c] = yaml.load(clean(fs.readFileSync(new URL(`${c}.yml`, import.meta.url), 'utf-8'))) || {}, a), {});

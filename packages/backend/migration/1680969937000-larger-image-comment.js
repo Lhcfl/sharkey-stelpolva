@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: dakkar and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 export class largerImageComment1680969937000 {
     name = 'largerImageComment1680969937000';
 

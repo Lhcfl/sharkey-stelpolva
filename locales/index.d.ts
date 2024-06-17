@@ -457,6 +457,10 @@ export interface Locale extends ILocale {
      */
     "renoted": string;
     /**
+     * {name} にブーストしました。
+     */
+    "renotedToX": ParameterizedString<"name">;
+    /**
      * 引用。
      */
     "quoted": string;
@@ -484,6 +488,14 @@ export interface Locale extends ILocale {
      * チャンネル内引用
      */
     "inChannelQuote": string;
+    /**
+     * チャンネルにリノート
+     */
+    "renoteToChannel": string;
+    /**
+     * 他のチャンネルにリノート
+     */
+    "renoteToOtherChannel": string;
     /**
      * ピン留めされたノート
      */
@@ -945,7 +957,7 @@ export interface Locale extends ILocale {
      */
     "silencedInstances": string;
     /**
-     * サイレンスしたいインスタンスのホストを改行で区切って設定します。サイレンスされたインスタンスに所属するアカウントはすべて「サイレンス」として扱われ、フォローがすべてリクエストになり、フォロワーでないローカルアカウントにはメンションできなくなります。ブロックしたインスタンスには影響しません。
+     * サイレンスしたいサーバーのホストを改行で区切って設定します。サイレンスされたサーバーに所属するアカウントはすべて「サイレンス」として扱われ、フォローがすべてリクエストになります。ブロックしたインスタンスには影響しません。
      */
     "silencedInstancesDescription": string;
     /**
@@ -1308,6 +1320,10 @@ export interface Locale extends ILocale {
      * フォルダーを選択
      */
     "selectFolders": string;
+    /**
+     * ファイルが選択されていません
+     */
+    "fileNotSelected": string;
     /**
      * ファイル名を変更
      */
@@ -1940,6 +1956,10 @@ export interface Locale extends ILocale {
      * 引用として添付しますか？
      */
     "quoteQuestion": string;
+    /**
+     * クリップボードのテキストが長いです。テキストファイルとして添付しますか？
+     */
+    "attachAsFileQuestion": string;
     /**
      * まだチャットはありません
      */
@@ -2773,6 +2793,10 @@ export interface Locale extends ILocale {
      */
     "notificationSettingDesc": string;
     /**
+     * ファビコン通知ドットを有効にする
+     */
+    "enableFaviconNotificationDot": string;
+    /**
      * グローバル設定を使う
      */
     "useGlobalSetting": string;
@@ -3028,6 +3052,22 @@ export interface Locale extends ILocale {
      * 添付画像のサムネイルをオリジナル画質にする
      */
     "loadRawImages": string;
+    /**
+     * 検索MFMの検索エンジン
+     */
+    "searchEngine": string;
+    /**
+     * 他
+     */
+    "searchEngineOther": string;
+    /**
+     * カスタム URI は、"https://www.google.com/search?q=\{query}" や "https://www.google.com/search?q=%s" のような形式で入力する必要があります。
+     */
+    "searchEngineCustomURIDescription": string;
+    /**
+     * カスタム URI
+     */
+    "searchEngineCusomURI": string;
     /**
      * アニメーション画像を再生しない
      */
@@ -3416,6 +3456,10 @@ export interface Locale extends ILocale {
      * 管理者情報が設定されていません。
      */
     "noMaintainerInformationWarning": string;
+    /**
+     * 問い合わせ先URLが設定されていません。
+     */
+    "noInquiryUrlWarning": string;
     /**
      * Botプロテクションが設定されていません。
      */
@@ -4246,9 +4290,17 @@ export interface Locale extends ILocale {
      */
     "thisPostIsMissingAltText": string;
     /**
-     * 見たことのあるブーストを省略して表示
+     * ブーストのスマート省略
      */
     "collapseRenotes": string;
+    /**
+     * リアクションやブーストをしたことがあるノートをたたんで表示します。
+     */
+    "collapseRenotesDescription": string;
+    /**
+     * 返信されたノート省略
+     */
+    "collapseNotesRepliedTo": string;
     /**
      * ファイルを折りたたむ
      */
@@ -5153,6 +5205,38 @@ export interface Locale extends ILocale {
      * お問い合わせ
      */
     "inquiry": string;
+    "_delivery": {
+        /**
+         * 配信状態
+         */
+        "status": string;
+        /**
+         * 配信停止
+         */
+        "stop": string;
+        /**
+         * 配信再開
+         */
+        "resume": string;
+        "_type": {
+            /**
+             * 配信中
+             */
+            "none": string;
+            /**
+             * 手動停止中
+             */
+            "manuallySuspended": string;
+            /**
+             * サーバー削除のため停止中
+             */
+            "goneSuspended": string;
+            /**
+             * サーバー応答なしのため停止中
+             */
+            "autoSuspendedForNotResponding": string;
+        };
+    };
     "_bubbleGame": {
         /**
          * 遊び方
@@ -5612,6 +5696,14 @@ export interface Locale extends ILocale {
          * 有効にすると、タイムラインがキャッシュされていない場合にDBへ追加で問い合わせを行うフォールバック処理を行います。無効にすると、フォールバック処理を行わないことでさらにサーバーの負荷を軽減することができますが、タイムラインが取得できる範囲に制限が生じます。
          */
         "fanoutTimelineDbFallbackDescription": string;
+        /**
+         * 問い合わせ先URL
+         */
+        "inquiryUrl": string;
+        /**
+         * サーバー運営者へのお問い合わせフォームのURLや、運営者の連絡先等が記載されたWebページのURLを指定します。
+         */
+        "inquiryUrlDescription": string;
     };
     "_accountMigration": {
         /**
@@ -7232,6 +7324,10 @@ export interface Locale extends ILocale {
          * プロジェクトメンバー
          */
         "projectMembers": string;
+        /**
+         * テスター
+         */
+        "testers": string;
     };
     "_displayOfSensitiveMedia": {
         /**
@@ -8112,10 +8208,6 @@ export interface Locale extends ILocale {
          * ユーザーのプライベートな情報を見る
          */
         "read:admin:show-user": string;
-        /**
-         * ユーザーのプライベートな情報を見る
-         */
-        "read:admin:show-users": string;
         /**
          * ユーザーを凍結する
          */
@@ -9352,6 +9444,10 @@ export interface Locale extends ILocale {
          * カラムを追加
          */
         "addColumn": string;
+        /**
+         * 新着ノート通知の設定
+         */
+        "newNoteNotificationSettings": string;
         /**
          * カラムの設定
          */

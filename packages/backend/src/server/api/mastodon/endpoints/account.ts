@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { MastoConverters, convertRelationship } from '../converters.js';
 import { argsToBools, limitToInt } from './timeline.js';
 import type { MegalodonInterface } from 'megalodon';
@@ -104,7 +109,7 @@ export class ApiAccountMastodon {
 	public async getFollowers() {
 		try {
 			const data = await this.client.getAccountFollowers(
-				(this.request.params as any).id, 
+				(this.request.params as any).id,
 				limitToInt(this.request.query as any),
 			);
 			return await Promise.all(data.data.map(async (account) => await this.mastoconverter.convertAccount(account)));
@@ -118,7 +123,7 @@ export class ApiAccountMastodon {
 	public async getFollowing() {
 		try {
 			const data = await this.client.getAccountFollowing(
-				(this.request.params as any).id, 
+				(this.request.params as any).id,
 				limitToInt(this.request.query as any),
 			);
 			return await Promise.all(data.data.map(async (account) => await this.mastoconverter.convertAccount(account)));

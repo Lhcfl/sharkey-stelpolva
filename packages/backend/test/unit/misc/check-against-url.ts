@@ -14,38 +14,38 @@ function assertOne(activity: IObject) {
 
 describe('assertActivityMatchesUrls', () => {
 	test('id', () => {
-		expect(assertOne({ id: 'bad' })).toThrow(/bad Activity/);
-		expect(assertOne({ id: 'good' })).not.toThrow();
+		expect(assertOne({ type: 'Test', id: 'bad' })).toThrow(/bad Activity/);
+		expect(assertOne({ type: 'Test', id: 'good' })).not.toThrow();
 	});
 
 	test('simple url', () => {
-		expect(assertOne({ url: 'bad' })).toThrow(/bad Activity/);
-		expect(assertOne({ url: 'good' })).not.toThrow();
+		expect(assertOne({ type: 'Test', url: 'bad' })).toThrow(/bad Activity/);
+		expect(assertOne({ type: 'Test', url: 'good' })).not.toThrow();
 	});
 
 	test('array of urls', () => {
-		expect(assertOne({ url: ['bad'] })).toThrow(/bad Activity/);
-		expect(assertOne({ url: ['bad', 'other'] })).toThrow(/bad Activity/);
-		expect(assertOne({ url: ['good'] })).not.toThrow();
-		expect(assertOne({ url: ['bad', 'good'] })).not.toThrow();
+		expect(assertOne({ type: 'Test', url: ['bad'] })).toThrow(/bad Activity/);
+		expect(assertOne({ type: 'Test', url: ['bad', 'other'] })).toThrow(/bad Activity/);
+		expect(assertOne({ type: 'Test', url: ['good'] })).not.toThrow();
+		expect(assertOne({ type: 'Test', url: ['bad', 'good'] })).not.toThrow();
 	});
 
 	test('array of objects', () => {
-		expect(assertOne({ url: [{ href: 'bad' }] })).toThrow(/bad Activity/);
-		expect(assertOne({ url: [{ href: 'bad' }, { href: 'other' }] })).toThrow(/bad Activity/);
-		expect(assertOne({ url: [{ href: 'good' }] })).not.toThrow();
-		expect(assertOne({ url: [{ href: 'bad' }, { href: 'good' }] })).not.toThrow();
+		expect(assertOne({ type: 'Test', url: [{ type: 'Test', href: 'bad' }] })).toThrow(/bad Activity/);
+		expect(assertOne({ type: 'Test', url: [{ type: 'Test', href: 'bad' }, { type: 'Test', href: 'other' }] })).toThrow(/bad Activity/);
+		expect(assertOne({ type: 'Test', url: [{ type: 'Test', href: 'good' }] })).not.toThrow();
+		expect(assertOne({ type: 'Test', url: [{ type: 'Test', href: 'bad' }, { type: 'Test', href: 'good' }] })).not.toThrow();
 	});
 
 	test('mixed array', () => {
-		expect(assertOne({ url: [{ href: 'bad' }, 'other'] })).toThrow(/bad Activity/);
-		expect(assertOne({ url: [{ href: 'bad' }, 'good'] })).not.toThrow();
-		expect(assertOne({ url: ['bad', { href: 'good' }] })).not.toThrow();
+		expect(assertOne({ type: 'Test', url: [{ type: 'Test', href: 'bad' }, 'other'] })).toThrow(/bad Activity/);
+		expect(assertOne({ type: 'Test', url: [{ type: 'Test', href: 'bad' }, 'good'] })).not.toThrow();
+		expect(assertOne({ type: 'Test', url: ['bad', { type: 'Test', href: 'good' }] })).not.toThrow();
 	});
 
 	test('id and url', () => {
-		expect(assertOne({ id: 'other', url: 'bad' })).toThrow(/bad Activity/);
-		expect(assertOne({ id: 'bad', url: 'good' })).not.toThrow();
-		expect(assertOne({ id: 'good', url: 'bad' })).not.toThrow();
+		expect(assertOne({ type: 'Test', id: 'other', url: 'bad' })).toThrow(/bad Activity/);
+		expect(assertOne({ type: 'Test', id: 'bad', url: 'good' })).not.toThrow();
+		expect(assertOne({ type: 'Test', id: 'good', url: 'bad' })).not.toThrow();
 	});
 });

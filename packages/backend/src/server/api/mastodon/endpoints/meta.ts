@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Entity } from 'megalodon';
 import { FILE_TYPE_BROWSERSAFE } from '@/const.js';
 import type { Config } from '@/config.js';

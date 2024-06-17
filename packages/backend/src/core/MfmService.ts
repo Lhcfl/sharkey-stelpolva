@@ -132,9 +132,18 @@ export class MfmService {
 
 				case 'h1':
 				{
-					text += '【';
+					text += '**【';
 					appendChildren(node.childNodes);
-					text += '】\n';
+					text += '】**\n';
+					break;
+				}
+
+				case 'h2':
+				case 'h3':
+				{
+					text += '**';
+					appendChildren(node.childNodes);
+					text += '**\n';
 					break;
 				}
 
@@ -203,8 +212,6 @@ export class MfmService {
 				}
 
 				case 'p':
-				case 'h2':
-				case 'h3':
 				case 'h4':
 				case 'h5':
 				case 'h6':
@@ -464,10 +471,10 @@ export class MfmService {
 		return new XMLSerializer().serializeToString(body);
 	}
 
-	// the toMastoHtml function was taken from Iceshrimp and written by zotan and modified by marie to work with the current MK version
+	// the toMastoApiHtml function was taken from Iceshrimp and written by zotan and modified by marie to work with the current MK version
 
 	@bindThis
-	public async toMastoHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = [], inline = false, quoteUri: string | null = null) {
+	public async toMastoApiHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = [], inline = false, quoteUri: string | null = null) {
 		if (nodes == null) {
 			return null;
 		}
@@ -483,8 +490,8 @@ export class MfmService {
 		}
 
 		const handlers: {
-            [K in mfm.MfmNode['type']]: (node: mfm.NodeType<K>) => any;
-    } = {
+			[K in mfm.MfmNode['type']]: (node: mfm.NodeType<K>) => any;
+		} = {
 			async bold(node) {
 				const el = doc.createElement('span');
 				el.textContent = '**';
@@ -642,7 +649,7 @@ export class MfmService {
 
 			search: (node) => {
 				const a = doc.createElement('a');
-				a.setAttribute('href', `https"google.com/${node.props.query}`);
+				a.setAttribute('href', `https://www.google.com/search?q=${node.props.query}`);
 				a.textContent = node.props.content;
 				return a;
 			},

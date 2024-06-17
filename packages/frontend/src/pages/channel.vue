@@ -22,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div :class="$style.bannerFade"></div>
 					</div>
 					<div v-if="channel.description" :class="$style.description">
-						<Mfm :text="channel.description" :isNote="false"/>
+						<Mfm :text="channel.description" :isBlock="true" :isNote="false"/>
 					</div>
 				</div>
 
@@ -83,6 +83,7 @@ import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { deviceKind } from '@/scripts/device-kind.js';
 import MkNotes from '@/components/MkNotes.vue';
 import { url } from '@/config.js';
+import { favoritedChannelsCache } from '@/cache.js';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
 import { defaultStore } from '@/store.js';
@@ -170,6 +171,7 @@ function favorite() {
 		channelId: channel.value.id,
 	}).then(() => {
 		favorited.value = true;
+		favoritedChannelsCache.delete();
 	});
 }
 
@@ -185,6 +187,7 @@ async function unfavorite() {
 		channelId: channel.value.id,
 	}).then(() => {
 		favorited.value = false;
+		favoritedChannelsCache.delete();
 	});
 }
 

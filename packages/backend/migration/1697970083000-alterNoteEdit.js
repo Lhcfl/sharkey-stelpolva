@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 export class AlterNoteEdit1697970083000 {
 	name = "AlterNoteEdit1697970083000";
 

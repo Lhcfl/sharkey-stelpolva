@@ -73,7 +73,7 @@ export type Paging<E extends keyof Misskey.Endpoints = keyof Misskey.Endpoints> 
 	 */
 	reversed?: boolean;
 
-	offsetMode?: boolean;
+	offsetMode?: boolean | ComputedRef<boolean>;
 
 	pageEl?: HTMLElement;
 };
@@ -240,10 +240,11 @@ const fetchMore = async (): Promise<void> => {
 	if (!more.value || fetching.value || moreFetching.value || items.value.size === 0) return;
 	moreFetching.value = true;
 	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
+	const offsetMode = props.offsetMode ? isRef(props.offsetMode) ? props.offsetMode.value : props.offsetMode : false;
 	await misskeyApi<MisskeyEntity[]>(props.pagination.endpoint, {
 		...params,
 		limit: SECOND_FETCH_LIMIT,
-		...(props.pagination.offsetMode ? {
+		...(offsetMode ? {
 			offset: offset.value,
 		} : {
 			untilId: Array.from(items.value.keys()).at(-1),
@@ -304,10 +305,11 @@ const fetchMoreAhead = async (): Promise<void> => {
 	if (!more.value || fetching.value || moreFetching.value || items.value.size === 0) return;
 	moreFetching.value = true;
 	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
+	const offsetMode = props.offsetMode ? isRef(props.offsetMode) ? props.offsetMode.value : props.offsetMode : false;
 	await misskeyApi<MisskeyEntity[]>(props.pagination.endpoint, {
 		...params,
 		limit: SECOND_FETCH_LIMIT,
-		...(props.pagination.offsetMode ? {
+		...(offsetMode ? {
 			offset: offset.value,
 		} : {
 			sinceId: Array.from(items.value.keys()).at(-1),

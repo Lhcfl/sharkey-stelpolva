@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: nila and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 export class AddDonationUrl1704744370000 {
     name = 'AddDonationUrl1704744370000'
 

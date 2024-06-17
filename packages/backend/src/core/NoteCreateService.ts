@@ -627,6 +627,14 @@ export class NoteCreateService implements OnApplicationShutdown {
 			userHost: user.host,
 		});
 
+		// should really not happen, but better safe than sorry
+		if (data.reply?.id === insert.id) {
+			throw new Error("A note can't reply to itself");
+		}
+		if (data.renote?.id === insert.id) {
+			throw new Error("A note can't renote itself");
+		}
+
 		if (data.uri != null) insert.uri = data.uri;
 		if (data.url != null) insert.url = data.url;
 
@@ -662,6 +670,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 						noteVisibility: insert.visibility,
 						userId: user.id,
 						userHost: user.host,
+						channelId: insert.channelId,
 					});
 
 					await transactionalEntityManager.insert(MiPoll, poll);
