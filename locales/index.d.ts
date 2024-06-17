@@ -2809,6 +2809,10 @@ export interface Locale extends ILocale {
      */
     "notificationDotWorking": string;
     /**
+     * 機能しない場合は、サーバーにアクセスできる管理者がここを見て修正できます。{link}
+     */
+    "notificationDotNotWorkingAdvice": ParameterizedString<"link">;
+    /**
      * グローバル設定を使う
      */
     "useGlobalSetting": string;
