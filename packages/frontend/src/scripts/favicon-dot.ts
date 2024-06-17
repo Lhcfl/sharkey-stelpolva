@@ -6,12 +6,12 @@
 import tinycolor from 'tinycolor2';
 
 class FavIconDot {
-	canvas: HTMLCanvasElement;
-	src: string | null = null;
-	ctx: CanvasRenderingContext2D | null = null;
-	faviconImage: HTMLImageElement | null = null;
-	faviconEL: HTMLLinkElement | undefined;
-	hasLoaded: Promise<void> | undefined;
+	private readonly canvas: HTMLCanvasElement;
+	private src: string | null = null;
+	private ctx: CanvasRenderingContext2D | null = null;
+	private faviconImage: HTMLImageElement | null = null;
+	private faviconEL: HTMLLinkElement | undefined;
+	private hasLoaded: Promise<void> | undefined;
 
 	constructor() {
 		this.canvas = document.createElement('canvas');
@@ -88,32 +88,58 @@ class FavIconDot {
 		if (this.faviconEL) this.faviconEL.href = this.canvas.toDataURL('image/png');
 	}
 
-	async setVisible(isVisible: boolean) {
+	public async setVisible(isVisible: boolean) {
 		// Wait for it to have loaded the icon
 		await this.hasLoaded;
 		this.drawIcon();
 		if (isVisible) this.drawDot();
 		this.setFavicon();
 	}
+
+	public async worksOnInstance() {
+		try {
+			// Wait for it to have loaded the icon
+			await this.hasLoaded;
+			this.drawIcon();
+			this.drawDot();
+			this.canvas.toDataURL('image/png');
+		} catch (error) {
+			return false;			
+		}
+		return true;
+	}
 }
 
 let icon: FavIconDot | undefined = undefined;
 
-export function setFavIconDot(visible: boolean) {
+export async function setFavIconDot(visible: boolean) {
 	const setIconVisibility = async () => {
 		if (!icon) {
 			icon = new FavIconDot();
 			await icon.setup();
 		}
 
-		(icon as FavIconDot).setVisible(visible);
+		try {
+			(icon as FavIconDot).setVisible(visible);
+		} catch (error) {
+			//Probably failed due to CORS and a dirty canvas
+		}
 	};
 
 	// If document is already loaded, set visibility immediately
 	if (document.readyState === 'complete') {
-		setIconVisibility();
+		await setIconVisibility();
 	} else {
 		// Otherwise, set visibility when window loads
 		window.addEventListener('load', setIconVisibility);
 	}
+}
+
+export async function worksOnInstance() {
+	if (!icon) {
+		icon = new FavIconDot();
+		await icon.setup();
+	}
+	
+	return await icon.worksOnInstance();
 }
