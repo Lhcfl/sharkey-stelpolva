@@ -698,7 +698,7 @@ enableFaviconNotificationDot: "未読の通知があるときにタブのアイ�
 verifyNotificationDotWorkingButton: "通知ドットがインスタンスで機能するかどうかを確認します。"
 notificationDotNotWorking: "残念ながら、このインスタンスは現時点では通知ドット機能をサポートしていません。"
 notificationDotWorking: "通知ドットは、このインスタンスで正しく機能しています。"
-notificationDotNotWorkingAdvice: "機能しない場合は、サーバーにアクセスできる管理者がここを見て修正できます。{link}"
+notificationDotNotWorkingAdvice: "通知ドットが機能しない場合は、管理者にドキュメントを確認するように依頼してください {link}"
 useGlobalSetting: "グローバル設定を使う"
 useGlobalSettingDesc: "オンにすると、アカウントの通知設定が使用されます。オフにすると、個別に設定できるようになります。"
 other: "その他"

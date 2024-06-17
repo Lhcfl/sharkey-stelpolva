@@ -2809,7 +2809,7 @@ export interface Locale extends ILocale {
      */
     "notificationDotWorking": string;
     /**
-     * 機能しない場合は、サーバーにアクセスできる管理者がここを見て修正できます。{link}
+     * 通知ドットが機能しない場合は、管理者にドキュメントを確認するように依頼してください {link}
      */
     "notificationDotNotWorkingAdvice": ParameterizedString<"link">;
     /**

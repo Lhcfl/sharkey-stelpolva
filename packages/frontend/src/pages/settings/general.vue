@@ -581,9 +581,9 @@ async function testNotificationDot() {
 	const success = await worksOnInstance();
 	
 	if (success) {
-		os.toast(i18n.ts.notificationDotWorking, true);
+		os.toast(i18n.ts.notificationDotWorking);
 	} else {
-		os.toast(i18n.ts.notificationDotNotWorking, true);
+		os.toast(i18n.ts.notificationDotNotWorking);
 	}
 }
 
