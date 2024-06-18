@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: leah and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import tinycolor from 'tinycolor2';
 
 class FavIconDot {
@@ -17,13 +22,13 @@ class FavIconDot {
 	 */
 	public async setup() {
 		const element: HTMLLinkElement = await this.getOrMakeFaviconElement();
-		
+
 		this.faviconEL = element;
 		this.src = this.faviconEL.getAttribute('href');
 		this.ctx = this.canvas.getContext('2d');
-			
+
 		this.faviconImage = document.createElement('img');
-	
+
 		this.hasLoaded = new Promise((resolve, reject) => {
 			(this.faviconImage as HTMLImageElement).addEventListener('load', () => {
 				this.canvas.width = (this.faviconImage as HTMLImageElement).width;
@@ -100,7 +105,7 @@ export function setFavIconDot(visible: boolean) {
 			icon = new FavIconDot();
 			await icon.setup();
 		}
-		
+
 		(icon as FavIconDot).setVisible(visible);
 	};
 

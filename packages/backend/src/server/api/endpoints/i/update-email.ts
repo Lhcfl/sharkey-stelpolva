@@ -16,6 +16,7 @@ import { DI } from '@/di-symbols.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
+import { MetaService } from '@/core/MetaService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -39,6 +40,12 @@ export const meta = {
 			message: 'Unavailable email address.',
 			code: 'UNAVAILABLE',
 			id: 'a2defefb-f220-8849-0af6-17f816099323',
+		},
+
+		emailRequired: {
+			message: 'Email address is required.',
+			code: 'EMAIL_REQUIRED',
+			id: '324c7a88-59f2-492f-903f-89134f93e47e',
 		},
 	},
 
@@ -67,6 +74,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
+		private metaService: MetaService,
 		private userEntityService: UserEntityService,
 		private emailService: EmailService,
 		private userAuthService: UserAuthService,
@@ -98,6 +106,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				if (!res.available) {
 					throw new ApiError(meta.errors.unavailable);
 				}
+			} else if ((await this.metaService.fetch()).emailRequiredForSignup) {
+				throw new ApiError(meta.errors.emailRequired);
 			}
 
 			await this.userProfilesRepository.update(me.id, {

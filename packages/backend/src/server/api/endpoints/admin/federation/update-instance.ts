@@ -47,13 +47,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new Error('instance not found');
 			}
 
+			const isSuspendedBefore = instance.suspensionState !== 'none';
+			let suspensionState: undefined | 'manuallySuspended' | 'none';
+
+			if (ps.isSuspended != null && isSuspendedBefore !== ps.isSuspended) {
+				suspensionState = ps.isSuspended ? 'manuallySuspended' : 'none';
+			}
+
 			await this.federatedInstanceService.update(instance.id, {
-				isSuspended: ps.isSuspended,
+				suspensionState,
 				isNSFW: ps.isNSFW,
 				moderationNote: ps.moderationNote,
 			});
 
-			if (ps.isSuspended != null && instance.isSuspended !== ps.isSuspended) {
+			if (ps.isSuspended != null && isSuspendedBefore !== ps.isSuspended) {
 				if (ps.isSuspended) {
 					this.moderationLogService.log(me, 'suspendRemoteInstance', {
 						id: instance.id,

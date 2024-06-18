@@ -22,7 +22,7 @@ import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import { StatusError } from '@/misc/status-error.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
-import { LdSignatureService } from '@/core/activitypub/LdSignatureService.js';
+import { JsonLdService } from '@/core/activitypub/JsonLdService.js';
 import { ApInboxService } from '@/core/activitypub/ApInboxService.js';
 import { bindThis } from '@/decorators.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
@@ -39,7 +39,7 @@ export class InboxProcessorService {
 		private apInboxService: ApInboxService,
 		private federatedInstanceService: FederatedInstanceService,
 		private fetchInstanceMetadataService: FetchInstanceMetadataService,
-		private ldSignatureService: LdSignatureService,
+		private jsonLdService: JsonLdService,
 		private apPersonService: ApPersonService,
 		private apDbResolverService: ApDbResolverService,
 		private instanceChart: InstanceChart,
@@ -111,7 +111,7 @@ export class InboxProcessorService {
 		// また、signatureのsignerは、activity.actorと一致する必要がある
 		if (!httpSignatureValidated || authUser.user.uri !== activity.actor) {
 			let renewKeyFailed = true;
-			
+
 			if (!httpSignatureValidated) {
 				authUser.key = await this.apDbResolverService.refetchPublicKeyForApId(authUser.user);
 
@@ -122,20 +122,21 @@ export class InboxProcessorService {
 			}
 
 			// 一致しなくても、でもLD-Signatureがありそうならそっちも見る
-			if (activity.signature && renewKeyFailed) {
-				if (activity.signature.type !== 'RsaSignature2017') {
-					throw new Bull.UnrecoverableError(`skip: unsupported LD-signature type ${activity.signature.type}`);
+			const ldSignature = activity.signature;
+			if (ldSignature) {
+				if (ldSignature.type !== 'RsaSignature2017') {
+					throw new Bull.UnrecoverableError(`skip: unsupported LD-signature type ${ldSignature.type}`);
 				}
 
-				// activity.signature.creator: https://example.oom/users/user#main-key
+				// ldSignature.creator: https://example.oom/users/user#main-key
 				// みたいになっててUserを引っ張れば公開キーも入ることを期待する
-				if (activity.signature.creator) {
-					const candicate = activity.signature.creator.replace(/#.*/, '');
+				if (ldSignature.creator) {
+					const candicate = ldSignature.creator.replace(/#.*/, '');
 					await this.apPersonService.resolvePerson(candicate).catch(() => null);
 				}
 
 				// keyIdからLD-Signatureのユーザーを取得
-				authUser = await this.apDbResolverService.getAuthUserFromKeyId(activity.signature.creator);
+				authUser = await this.apDbResolverService.getAuthUserFromKeyId(ldSignature.creator);
 				if (authUser == null) {
 					throw new Bull.UnrecoverableError('skip: LD-Signatureのユーザーが取得できませんでした');
 				}
@@ -144,9 +145,10 @@ export class InboxProcessorService {
 					throw new Bull.UnrecoverableError('skip: LD-SignatureのユーザーはpublicKeyを持っていませんでした');
 				}
 
+				const jsonLd = this.jsonLdService.use();
+
 				// LD-Signature検証
-				const ldSignature = this.ldSignatureService.use();
-				const verified = await ldSignature.verifyRsaSignature2017(activity, authUser.key.keyPem).catch(() => false);
+				const verified = await jsonLd.verifyRsaSignature2017(activity, authUser.key.keyPem).catch(() => false);
 				if (!verified) {
 					throw new Bull.UnrecoverableError('skip: LD-Signatureの検証に失敗しました');
 				}
@@ -154,7 +156,7 @@ export class InboxProcessorService {
 				// アクティビティを正規化
 				delete activity.signature;
 				try {
-					activity = await ldSignature.compact(activity) as IActivity;
+					activity = await jsonLd.compact(activity) as IActivity;
 				} catch (e) {
 					throw new Bull.UnrecoverableError(`skip: failed to compact activity: ${e}`);
 				}
@@ -191,6 +193,8 @@ export class InboxProcessorService {
 			this.federatedInstanceService.update(i.id, {
 				latestRequestReceivedAt: new Date(),
 				isNotResponding: false,
+				// もしサーバーが死んでるために配信が止まっていた場合には自動的に復活させてあげる
+				suspensionState: i.suspensionState === 'autoSuspendedForNotResponding' ? 'none' : undefined,
 			});
 
 			this.fetchInstanceMetadataService.fetchInstanceMetadata(i);
@@ -205,13 +209,22 @@ export class InboxProcessorService {
 
 		// アクティビティを処理
 		try {
-			await this.apInboxService.performActivity(authUser.user, activity);
+			const result = await this.apInboxService.performActivity(authUser.user, activity);
+			if (result && !result.startsWith('ok')) {
+				this.logger.warn(`inbox activity ignored (maybe): id=${activity.id} reason=${result}`);
+				return result;
+			}
 		} catch (e) {
 			if (e instanceof IdentifiableError) {
 				if (e.id === '689ee33f-f97c-479a-ac49-1b9f8140af99') {
 					return 'blocked notes with prohibited words';
 				}
-				if (e.id === '85ab9bd7-3a41-4530-959d-f07073900109') return 'actor has been suspended';
+				if (e.id === '85ab9bd7-3a41-4530-959d-f07073900109') {
+					return 'actor has been suspended';
+				}
+				if (e.id === 'd450b8a9-48e4-4dab-ae36-f4db763fda7c') { // invalid Note
+					return e.message;
+				}
 			}
 			throw e;
 		}

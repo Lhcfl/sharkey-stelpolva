@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { VNode, h, defineAsyncComponent, SetupContext } from 'vue';
+import { VNode, h, defineAsyncComponent, SetupContext, provide } from 'vue';
 import * as mfm from '@transfem-org/sfm-js';
 import * as Misskey from 'misskey-js';
 import CkFollowMouse from '../CkFollowMouse.vue';
@@ -17,7 +17,7 @@ import MkCode from '@/components/MkCode.vue';
 import MkCodeInline from '@/components/MkCodeInline.vue';
 import MkGoogle from '@/components/MkGoogle.vue';
 import MkSparkle from '@/components/MkSparkle.vue';
-import MkA from '@/components/global/MkA.vue';
+import MkA, { MkABehavior } from '@/components/global/MkA.vue';
 import { host } from '@/config.js';
 import { defaultStore } from '@/store.js';
 import { nyaize as doNyaize } from '@/scripts/nyaize.js';
@@ -45,6 +45,7 @@ type MfmProps = {
 	enableEmojiMenu?: boolean;
 	enableEmojiMenuReaction?: boolean;
 	isAnim?: boolean;
+	linkNavigationBehavior?: MkABehavior;
 	isBlock?: boolean;
 };
 
@@ -54,6 +55,8 @@ type MfmEvents = {
 
 // eslint-disable-next-line import/no-default-export
 export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEvents>['emit'] }) {
+	provide('linkNavigationBehavior', props.linkNavigationBehavior);
+
 	const isNote = props.isNote ?? true;
 	const shouldNyaize = props.nyaize ? props.nyaize === 'respect' ? props.author?.isCat ? props.author.speakAsCat : false : false : false;
 
@@ -232,8 +235,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 						return h(MkSparkle, {}, genEl(token.children, scale));
 					}
 					case 'fade': {
-						// Dont run with reduced motion on
-						if (!defaultStore.state.animation) {
+						if (!useAnim) {
 							style = '';
 							break;
 						}
@@ -449,11 +451,11 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 				if (!props.nowrap) {
 					return [h('bdi', { class: 'block' }, h('div', {
 						style: QUOTE_STYLE,
-					}, h('bdi',genEl(token.children, scale, true))))];
+					}, h('bdi', genEl(token.children, scale, true))))];
 				} else {
 					return [h('span', {
 						style: QUOTE_STYLE,
-					}, h('bdi',genEl(token.children, scale, true)))];
+					}, h('bdi', genEl(token.children, scale, true)))];
 				}
 			}
 

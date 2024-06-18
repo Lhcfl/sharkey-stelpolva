@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { MastoConverters } from '../converters.js';
 import { limitToInt } from './timeline.js';
 import type { MegalodonInterface } from 'megalodon';

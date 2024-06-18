@@ -570,7 +570,7 @@ const extension_context_definition = {
 
 export const CONTEXT: (string | Context)[] = [...context_iris, extension_context_definition];
 
-export const CONTEXTS: Record<string, JsonLd> = {
+export const PRELOADED_CONTEXTS: Record<string, JsonLd> = {
 	'https://w3id.org/identity/v1': id_v1,
 	'https://w3id.org/security/v1': security_v1,
 	'https://www.w3.org/ns/activitystreams': activitystreams,

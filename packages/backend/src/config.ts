@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import * as yaml from 'js-yaml';
 import { globSync } from 'glob';
+import * as Sentry from '@sentry/node';
 import type { RedisOptions } from 'ioredis';
 
 type RedisOptionsSource = Partial<RedisOptions> & {
@@ -57,6 +58,8 @@ type Source = {
 		index: string;
 		scope?: 'local' | 'global' | string[];
 	};
+	sentryForBackend?: { options: Partial<Sentry.NodeOptions>; enableNodeProfiling: boolean; };
+	sentryForFrontend?: { options: Partial<Sentry.NodeOptions> };
 
 	publishTarballInsteadOfProvideRepositoryUrl?: boolean;
 
@@ -180,6 +183,8 @@ export type Config = {
 	redisForPubsub: RedisOptions & RedisOptionsSource;
 	redisForJobQueue: RedisOptions & RedisOptionsSource;
 	redisForTimelines: RedisOptions & RedisOptionsSource;
+	sentryForBackend: { options: Partial<Sentry.NodeOptions>; enableNodeProfiling: boolean; } | undefined;
+	sentryForFrontend: { options: Partial<Sentry.NodeOptions> } | undefined;
 	perChannelMaxNoteCacheCount: number;
 	perUserNotificationsMaxCount: number;
 	deactivateAntennaThreshold: number;
@@ -263,6 +268,8 @@ export function loadConfig(): Config {
 		redisForPubsub: config.redisForPubsub ? convertRedisOptions(config.redisForPubsub, host) : redis,
 		redisForJobQueue: config.redisForJobQueue ? convertRedisOptions(config.redisForJobQueue, host) : redis,
 		redisForTimelines: config.redisForTimelines ? convertRedisOptions(config.redisForTimelines, host) : redis,
+		sentryForBackend: config.sentryForBackend,
+		sentryForFrontend: config.sentryForFrontend,
 		id: config.id,
 		proxy: config.proxy,
 		proxySmtp: config.proxySmtp,
@@ -377,13 +384,13 @@ function applyEnvOverrides(config: Source) {
 	}
 
 	function _step2name(step: string|number): string {
-		return step.toString().replaceAll(/[^a-z0-9]+/gi,'').toUpperCase();
+		return step.toString().replaceAll(/[^a-z0-9]+/gi, '').toUpperCase();
 	}
 
 	// this recurses down, bailing out if there's no config to override
 	function _descend(name: string, path: (string | number)[], thisStep: string | number, steps: (string | string[] | number | number[])[]) {
 		name = `${name}${_step2name(thisStep)}_`;
-		path = [ ...path, thisStep ];
+		path = [...path, thisStep];
 		_walk(name, path, steps);
 	}
 
@@ -393,7 +400,7 @@ function applyEnvOverrides(config: Source) {
 		name = `MK_CONFIG_${name}${_step2name(lastStep)}`;
 
 		const val = process.env[name];
-		if (val != null && val != undefined) {
+		if (val !== null && val !== undefined) {
 			_assign(path, lastStep, val);
 		}
 
@@ -434,9 +441,11 @@ function applyEnvOverrides(config: Source) {
 	_apply_top(['dbSlaves', Array.from((config.dbSlaves ?? []).keys()), ['host', 'port', 'db', 'user', 'pass']]);
 	_apply_top([
 		['redis', 'redisForPubsub', 'redisForJobQueue', 'redisForTimelines'],
-		['host','port','username','pass','db','prefix'],
+		['host', 'port', 'username', 'pass', 'db', 'prefix'],
 	]);
 	_apply_top(['meilisearch', ['host', 'port', 'apikey', 'ssl', 'index', 'scope']]);
+	_apply_top([['sentryForFrontend', 'sentryForBackend'], 'options', ['dsn', 'profileSampleRate', 'serverName', 'includeLocalVariables', 'proxy', 'keepAlive', 'caCerts']]);
+	_apply_top(['sentryForBackend', 'enableNodeProfiling']);
 	_apply_top([['clusterLimit', 'deliverJobConcurrency', 'inboxJobConcurrency', 'relashionshipJobConcurrency', 'deliverJobPerSec', 'inboxJobPerSec', 'relashionshipJobPerSec', 'deliverJobMaxAttempts', 'inboxJobMaxAttempts']]);
 	_apply_top([['outgoingAddress', 'outgoingAddressFamily', 'proxy', 'proxySmtp', 'mediaProxy', 'videoThumbnailGenerator']]);
 	_apply_top([['maxFileSize', 'maxNoteLength', 'pidFile']]);

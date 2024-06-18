@@ -46,21 +46,21 @@ export function checkWordMute(note: Note, me: MeDetailed | null | undefined, mut
 function getNoteText(note: Note): string {
 	const textParts: string[] = [];
 
-	if (note.cw)
-		textParts.push(note.cw);
+	if (note.cw) textParts.push(note.cw);
 
-	if (note.text)
-		textParts.push(note.text);
+	if (note.text) textParts.push(note.text);
 
-	if (note.files)
-		for (const file of note.files)
-			if (file.comment)
-				textParts.push(file.comment);
+	if (note.files) {
+		for (const file of note.files) {
+			if (file.comment) textParts.push(file.comment);
+		}
+	}
 
-	if (note.poll)
-		for (const choice of note.poll.choices)
-			if (choice.text)
-				textParts.push(choice.text);
+	if (note.poll) {
+		for (const choice of note.poll.choices) {
+			if (choice.text) textParts.push(choice.text);
+		}
+	}
 
 	return textParts.join('\n').trim();
 }

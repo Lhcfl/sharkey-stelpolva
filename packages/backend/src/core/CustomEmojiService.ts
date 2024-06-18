@@ -22,7 +22,7 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import type { Config } from '@/config.js';
 import { DriveService } from './DriveService.js';
 
-const parseEmojiStrRegexp = /^(\w+)(?:@([\w.-]+))?$/;
+const parseEmojiStrRegexp = /^([-\w]+)(?:@([\w.-]+))?$/;
 
 @Injectable()
 export class CustomEmojiService implements OnApplicationShutdown {
@@ -369,10 +369,11 @@ export class CustomEmojiService implements OnApplicationShutdown {
 	@bindThis
 	public async populateEmojis(emojiNames: string[], noteUserHost: string | null): Promise<Record<string, string>> {
 		const emojis = await Promise.all(emojiNames.map(x => this.populateEmoji(x, noteUserHost)));
-		const res = {} as any;
+		const res = {} as Record<string, string>;
 		for (let i = 0; i < emojiNames.length; i++) {
-			if (emojis[i] != null) {
-				res[emojiNames[i]] = emojis[i];
+			const resolvedEmoji = emojis[i];
+			if (resolvedEmoji != null) {
+				res[emojiNames[i]] = resolvedEmoji;
 			}
 		}
 		return res;

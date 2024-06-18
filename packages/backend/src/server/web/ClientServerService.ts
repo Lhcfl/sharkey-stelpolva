@@ -202,9 +202,18 @@ export class ClientServerService {
 
 		// Authenticate
 		fastify.addHook('onRequest', async (request, reply) => {
+			if (request.routeOptions.url == null) {
+				reply.code(404).send('Not found');
+				return;
+			}
+
 			// %71ueueとかでリクエストされたら困るため
 			const url = decodeURI(request.routeOptions.url);
 			if (url === bullBoardPath || url.startsWith(bullBoardPath + '/')) {
+				if (!url.startsWith(bullBoardPath + '/static/')) {
+					reply.header('Cache-Control', 'private, max-age=0, must-revalidate');
+				}
+
 				const token = request.cookies.token;
 				if (token == null) {
 					reply.code(401).send('Login required');
@@ -447,7 +456,7 @@ export class ClientServerService {
 
 		//#endregion
 
-		const renderBase = async (reply: FastifyReply) => {
+		const renderBase = async (reply: FastifyReply, data: { [key: string]: any } = {}) => {
 			const meta = await this.metaService.fetch();
 			reply.header('Cache-Control', 'public, max-age=30');
 			return await reply.view('base', {
@@ -456,6 +465,7 @@ export class ClientServerService {
 				title: meta.name ?? 'Misskey',
 				desc: meta.description,
 				...await this.generateCommonPugData(meta),
+				...data,
 			});
 		};
 
@@ -474,7 +484,9 @@ export class ClientServerService {
 		};
 
 		// Atom
-		fastify.get<{ Params: { user: string; } }>('/@:user.atom', async (request, reply) => {
+		fastify.get<{ Params: { user?: string; } }>('/@:user.atom', async (request, reply) => {
+			if (request.params.user == null) return await renderBase(reply);
+
 			const feed = await getFeed(request.params.user);
 
 			if (feed) {
@@ -487,7 +499,9 @@ export class ClientServerService {
 		});
 
 		// RSS
-		fastify.get<{ Params: { user: string; } }>('/@:user.rss', async (request, reply) => {
+		fastify.get<{ Params: { user?: string; } }>('/@:user.rss', async (request, reply) => {
+			if (request.params.user == null) return await renderBase(reply);
+
 			const feed = await getFeed(request.params.user);
 
 			if (feed) {
@@ -500,7 +514,9 @@ export class ClientServerService {
 		});
 
 		// JSON
-		fastify.get<{ Params: { user: string; } }>('/@:user.json', async (request, reply) => {
+		fastify.get<{ Params: { user?: string; } }>('/@:user.json', async (request, reply) => {
+			if (request.params.user == null) return await renderBase(reply);
+
 			const feed = await getFeed(request.params.user);
 
 			if (feed) {
@@ -752,6 +768,18 @@ export class ClientServerService {
 			}
 		});
 		//#endregion
+
+		//region noindex pages
+		// Tags
+		fastify.get<{ Params: { clip: string; } }>('/tags/:tag', async (request, reply) => {
+			return await renderBase(reply, { noindex: true });
+		});
+
+		// User with Tags
+		fastify.get<{ Params: { clip: string; } }>('/user-tags/:tag', async (request, reply) => {
+			return await renderBase(reply, { noindex: true });
+		});
+		//endregion
 
 		fastify.get('/_info_card_', async (request, reply) => {
 			const meta = await this.metaService.fetch(true);

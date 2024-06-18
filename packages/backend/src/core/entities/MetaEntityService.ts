@@ -67,6 +67,7 @@ export class MetaEntityService {
 			impressumUrl: instance.impressumUrl,
 			donationUrl: instance.donationUrl,
 			privacyPolicyUrl: instance.privacyPolicyUrl,
+			inquiryUrl: instance.inquiryUrl,
 			disableRegistration: instance.disableRegistration,
 			emailRequiredForSignup: instance.emailRequiredForSignup,
 			approvalRequiredForSignup: instance.approvalRequiredForSignup,
@@ -114,6 +115,7 @@ export class MetaEntityService {
 			policies: { ...DEFAULT_POLICIES, ...instance.policies },
 
 			mediaProxy: this.config.mediaProxy,
+			enableUrlPreview: instance.urlPreviewEnabled,
 		};
 
 		return packed;
