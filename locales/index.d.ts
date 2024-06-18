@@ -2793,9 +2793,25 @@ export interface Locale extends ILocale {
      */
     "notificationSettingDesc": string;
     /**
-     * ファビコン通知ドットを有効にする
+     * 未読の通知があるときにタブのアイコンを目立たせる
      */
     "enableFaviconNotificationDot": string;
+    /**
+     * 通知ドットがインスタンスで機能するかどうかを確認します。
+     */
+    "verifyNotificationDotWorkingButton": string;
+    /**
+     * 残念ながら、このインスタンスは現時点では通知ドット機能をサポートしていません。
+     */
+    "notificationDotNotWorking": string;
+    /**
+     * 通知ドットは、このインスタンスで正しく機能しています。
+     */
+    "notificationDotWorking": string;
+    /**
+     * 通知ドットが機能しない場合は、管理者にドキュメントを確認するように依頼してください {link}
+     */
+    "notificationDotNotWorkingAdvice": ParameterizedString<"link">;
     /**
      * グローバル設定を使う
      */

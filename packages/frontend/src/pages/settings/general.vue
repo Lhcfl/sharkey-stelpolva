@@ -139,8 +139,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps_m">
 			<MkSwitch v-model="useGroupedNotifications">{{ i18n.ts.useGroupedNotifications }}</MkSwitch>
 
-			<MkSwitch v-model="enableFaviconNotificationDot">{{ i18n.ts.enableFaviconNotificationDot }}</MkSwitch>
+			<MkSwitch v-model="enableFaviconNotificationDot">
+				{{ i18n.ts.enableFaviconNotificationDot }}
+				<template #caption>
+					<I18n :src="i18n.ts.notificationDotNotWorkingAdvice" tag="span">
+						<template #link>
+							<MkLink url="https://docs.joinsharkey.org/docs/install/faqs/#ive-enabled-the-notification-dot-but-it-doesnt-show">{{ i18n.ts._mfm.link }}</MkLink>
+						</template>
+					</I18n>
+				</template>
+			</MkSwitch>
 
+			<!-- {{ i18n.ts.notificationDotNotWorkingAdvice }} -->
+
+			<!-- notificationDotNotWorkingAdvice -->
+			<MkButton @click="testNotificationDot">{{ i18n.ts.verifyNotificationDotWorkingButton }}</MkButton>
+			<!-- <p class="caption">Testing Testing</p> -->
 			<MkRadios v-model="notificationPosition">
 				<template #label>{{ i18n.ts.position }}</template>
 				<option value="leftTop"><i class="ph-arrow-up-left ph-bold ph-lg"></i> {{ i18n.ts.leftTop }}</option>
@@ -327,6 +341,7 @@ import { miLocalStorage } from '@/local-storage.js';
 import { globalEvents } from '@/events.js';
 import { claimAchievement } from '@/scripts/achievements.js';
 import { deepMerge } from '@/scripts/merge.js';
+import { worksOnInstance } from '@/scripts/favicon-dot.js';
 
 const lang = ref(miLocalStorage.getItem('lang'));
 const fontSize = ref(miLocalStorage.getItem('fontSize'));
@@ -560,6 +575,16 @@ function testNotification(): void {
 	smashTimer = window.setTimeout(() => {
 		smashCount = 0;
 	}, 300);
+}
+
+async function testNotificationDot() {
+	const success = await worksOnInstance();
+	
+	if (success) {
+		os.toast(i18n.ts.notificationDotWorking);
+	} else {
+		os.toast(i18n.ts.notificationDotNotWorking);
+	}
 }
 
 function enableAllDataSaver() {

@@ -21,6 +21,7 @@ import { initializeSw } from '@/scripts/initialize-sw.js';
 import { deckStore } from '@/ui/deck/deck-store.js';
 import { emojiPicker } from '@/scripts/emoji-picker.js';
 import { mainRouter } from '@/router/main.js';
+import { setFavIconDot } from '@/scripts/favicon-dot.js';
 
 export async function mainBoot() {
 	const { isClientUpdated } = await common(() => createApp(
@@ -261,6 +262,14 @@ export async function mainBoot() {
 			}
 		}
 
+		function attemptShowNotificationDot() {
+			if (defaultStore.state.enableFaviconNotificationDot) {
+				setFavIconDot(true);
+			}
+		}
+
+		if ($i.hasUnreadNotification) attemptShowNotificationDot();
+
 		const main = markRaw(stream.useChannel('main', null, 'System'));
 
 		// 自分の情報が更新されたとき
@@ -269,6 +278,8 @@ export async function mainBoot() {
 		});
 
 		main.on('readAllNotifications', () => {
+			setFavIconDot(false);
+
 			updateAccount({
 				hasUnreadNotification: false,
 				unreadNotificationsCount: 0,
@@ -276,6 +287,8 @@ export async function mainBoot() {
 		});
 
 		main.on('unreadNotification', () => {
+			attemptShowNotificationDot();
+			
 			const unreadNotificationsCount = ($i?.unreadNotificationsCount ?? 0) + 1;
 			updateAccount({
 				hasUnreadNotification: true,
