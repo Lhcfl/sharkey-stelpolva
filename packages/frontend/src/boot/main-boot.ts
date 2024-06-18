@@ -263,7 +263,6 @@ export async function mainBoot() {
 		}
 
 		function attemptShowNotificationDot() {
-			if (!$i) return;
 			if (defaultStore.state.enableFaviconNotificationDot) {
 				setFavIconDot(true);
 			}
