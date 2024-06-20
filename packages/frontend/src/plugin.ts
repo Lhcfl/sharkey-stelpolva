@@ -28,10 +28,31 @@ export async function install(plugin: Plugin): Promise<void> {
 		},
 		log: (): void => {
 		},
-		err: (err): void => {
-			pluginLogs.value.get(plugin.id).push(`${err}`);
-			throw err; // install時のtry-catchに反応させる
-		},
+		/* dakkar 2024-06-20
+
+			passing an `err` triggers an unwanted side-effect inside the
+			AiScript Interpreter:
+
+			- the plugin code throws an exception of any kind (in the
+			specific case that made us look, it was `note.text.split(...)`
+			on a note with no text)
+
+			- the Interpreter's `handleError` calls `this.abort()` before
+			calling our `err`
+
+			- from that point on, every evaluation of that Interpreter object
+			returns null
+
+			- which, at least inside a noteViewInterruptor, causes all notes
+      to be replaced with a null
+
+			I'm reporting this problem upstream, in the meantime we'll have
+			to do without error logs
+		*/
+		// err: (err): void => {
+		// 	pluginLogs.value.get(plugin.id).push(`${err}`);
+		// 	throw err; // install時のtry-catchに反応させる
+		// },
 	});
 
 	initPlugin({ plugin, aiscript });
