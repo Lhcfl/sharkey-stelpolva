@@ -86,7 +86,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 		to: '/contact',
 	}, (instance.impressumUrl) ? {
 		text: i18n.ts.impressum,
-		icon: 'ph-newspaper-clipping ph-bold ph-lg',
+		icon: 'ti ti-file-invoice',
 		action: () => {
 			window.open(instance.impressumUrl, '_blank', 'noopener');
 		},

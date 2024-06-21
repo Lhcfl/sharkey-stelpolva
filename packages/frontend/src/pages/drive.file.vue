@@ -50,6 +50,6 @@ const headerTabs = computed(() => [{
 
 definePageMetadata(() => ({
 	title: i18n.ts._fileViewer.title,
-	icon: 'ph-file-text ph-bold ph-lg',
+	icon: 'ti ti-file',
 }));
 </script>

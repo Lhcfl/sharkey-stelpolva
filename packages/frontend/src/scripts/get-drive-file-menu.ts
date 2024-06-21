@@ -82,7 +82,7 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 		type: 'link',
 		to: `/my/drive/file/${file.id}`,
 		text: i18n.ts._fileViewer.title,
-		icon: 'ph-file-text ph-bold ph-lg',
+		icon: 'ti ti-info-circle',
 	}, { type: 'divider' }, {
 		text: i18n.ts.rename,
 		icon: 'ti ti-forms',

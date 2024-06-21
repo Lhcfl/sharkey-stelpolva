@@ -201,6 +201,11 @@ export function getConfig(): UserConfig {
 					'ti ti-cloud': 'ph-cloud ph-bold ph-lg',
 					'ti ti-upload': 'ph-upload ph-bold ph-lg',
 					'ti ti-video': 'ph-video ph-bold ph-lg',
+					'ti ti-file': 'ph-file ph-bold ph-lg',
+					'ti ti-file-music': 'ph-file-audio ph-bold ph-lg',
+					'ti ti-file-text': 'ph-file-text ph-bold ph-lg',
+					'ti ti-file-zip': 'ph-file-zip ph-bold ph-lg',
+					'ti ti-file-invoice': 'ph-newspaper-clipping ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'
