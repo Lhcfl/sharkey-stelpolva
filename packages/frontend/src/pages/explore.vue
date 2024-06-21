@@ -62,6 +62,6 @@ const headerTabs = computed(() => [{
 
 definePageMetadata(() => ({
 	title: i18n.ts.explore,
-	icon: 'ph-hash ph-bold ph-lg',
+	icon: 'ti ti-hash',
 }));
 </script>

@@ -31,7 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div v-else>
 		<MkFoldableSection ref="tagsEl" :foldable="true" :expanded="false" class="_margin">
-			<template #header><i class="ph-hash ph-bold ph-lg ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.popularTags }}</template>
+			<template #header><i class="ti ti-hash ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.popularTags }}</template>
 
 			<div>
 				<MkA v-for="tag in tagsLocal" :key="'local:' + tag.tag" :to="`/user-tags/${tag.tag}`" style="margin-right: 16px; font-weight: bold;">{{ tag.tag }}</MkA>
@@ -40,7 +40,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</MkFoldableSection>
 
 		<MkFoldableSection v-if="tag != null" :key="`${tag}`" class="_margin">
-			<template #header><i class="ph-hash ph-bold ph-lg ti-fw" style="margin-right: 0.5em;"></i>{{ tag }}</template>
+			<template #header><i class="ti ti-hash ti-fw" style="margin-right: 0.5em;"></i>{{ tag }}</template>
 			<MkUserList :pagination="tagUsers"/>
 		</MkFoldableSection>
 
