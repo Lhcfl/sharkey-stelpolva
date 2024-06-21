@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div class="_gaps_m">
-	<FormLink to="/settings/plugin/install"><template #icon><i class="ph-download ph-bold ph-lg"></i></template>{{ i18n.ts._plugin.install }}</FormLink>
+	<FormLink to="/settings/plugin/install"><template #icon><i class="ti ti-download"></i></template>{{ i18n.ts._plugin.install }}</FormLink>
 
 	<FormSection>
 		<template #label>{{ i18n.ts.manage }}</template>

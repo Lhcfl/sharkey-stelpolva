@@ -55,6 +55,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts._plugin.install,
-	icon: 'ph-download ph-bold ph-lg',
+	icon: 'ti ti-download',
 }));
 </script>

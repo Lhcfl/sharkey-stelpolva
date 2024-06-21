@@ -75,6 +75,7 @@ export function getConfig(): UserConfig {
 				preventAssignment: true,
 				values: {
 					'ti ti-terminal-2': 'ph-terminal-window ph-bold ph-lg',
+					'ti ti-download': 'ph-download ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

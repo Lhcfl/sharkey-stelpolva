@@ -37,7 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							{{ i18n.ts._aboutMisskey.source }}
 						</FormLink>
 						<FormLink v-if="instance.providesTarball" :to="`/tarball/sharkey-${version}.tar.gz`" external>
-							<template #icon><i class="ph-download ph-bold ph-lg"></i></template>
+							<template #icon><i class="ti ti-download"></i></template>
 							{{ i18n.ts._aboutMisskey.source }}
 							<template #suffix>Tarball</template>
 						</FormLink>

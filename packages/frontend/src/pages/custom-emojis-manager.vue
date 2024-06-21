@@ -188,7 +188,7 @@ const remoteMenu = (emoji, ev: MouseEvent) => {
 
 const menu = (ev: MouseEvent) => {
 	os.popupMenu([{
-		icon: 'ph-download ph-bold ph-lg',
+		icon: 'ti ti-download',
 		text: i18n.ts.export,
 		action: async () => {
 			misskeyApi('export-custom-emojis', {

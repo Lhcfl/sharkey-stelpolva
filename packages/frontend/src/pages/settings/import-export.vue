@@ -10,8 +10,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>
-				<template #icon><i class="ph-download ph-bold ph-lg"></i></template>
-				<MkButton primary :class="$style.button" inline @click="exportNotes()"><i class="ph-download ph-bold ph-lg"></i> {{ i18n.ts.export }}</MkButton>
+				<template #icon><i class="ti ti-download"></i></template>
+				<MkButton primary :class="$style.button" inline @click="exportNotes()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
 			</MkFolder>
 			<MkFolder v-if="$i && $i.policies.canImportNotes">
 				<template #label>{{ i18n.ts.import }}</template>
@@ -32,16 +32,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template #label><i class="ph-star ph-bold ph-lg"></i> {{ i18n.ts._exportOrImport.favoritedNotes }}</template>
 		<MkFolder>
 			<template #label>{{ i18n.ts.export }}</template>
-			<template #icon><i class="ph-download ph-bold ph-lg"></i></template>
-			<MkButton primary :class="$style.button" inline @click="exportFavorites()"><i class="ph-download ph-bold ph-lg"></i> {{ i18n.ts.export }}</MkButton>
+			<template #icon><i class="ti ti-download"></i></template>
+			<MkButton primary :class="$style.button" inline @click="exportFavorites()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
 		</MkFolder>
 	</FormSection>
 	<FormSection>
 		<template #label><i class="ph-paperclip ph-bold ph-lg"></i> {{ i18n.ts._exportOrImport.clips }}</template>
 		<MkFolder>
 			<template #label>{{ i18n.ts.export }}</template>
-			<template #icon><i class="ph-download ph-bold ph-lg"></i></template>
-			<MkButton primary :class="$style.button" inline @click="exportClips()"><i class="ph-download ph-bold ph-lg"></i> {{ i18n.ts.export }}</MkButton>
+			<template #icon><i class="ti ti-download"></i></template>
+			<MkButton primary :class="$style.button" inline @click="exportClips()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
 		</MkFolder>
 	</FormSection>
 	<FormSection>
@@ -49,7 +49,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>
-				<template #icon><i class="ph-download ph-bold ph-lg"></i></template>
+				<template #icon><i class="ti ti-download"></i></template>
 				<div class="_gaps_s">
 					<MkSwitch v-model="excludeMutingUsers">
 						{{ i18n.ts._exportOrImport.excludeMutingUsers }}
@@ -57,7 +57,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkSwitch v-model="excludeInactiveUsers">
 						{{ i18n.ts._exportOrImport.excludeInactiveUsers }}
 					</MkSwitch>
-					<MkButton primary :class="$style.button" inline @click="exportFollowing()"><i class="ph-download ph-bold ph-lg"></i> {{ i18n.ts.export }}</MkButton>
+					<MkButton primary :class="$style.button" inline @click="exportFollowing()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
 				</div>
 			</MkFolder>
 			<MkFolder v-if="$i && !$i.movedTo">
@@ -75,8 +75,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>
-				<template #icon><i class="ph-download ph-bold ph-lg"></i></template>
-				<MkButton primary :class="$style.button" inline @click="exportUserLists()"><i class="ph-download ph-bold ph-lg"></i> {{ i18n.ts.export }}</MkButton>
+				<template #icon><i class="ti ti-download"></i></template>
+				<MkButton primary :class="$style.button" inline @click="exportUserLists()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
 			</MkFolder>
 			<MkFolder v-if="$i && !$i.movedTo">
 				<template #label>{{ i18n.ts.import }}</template>
@@ -90,8 +90,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>
-				<template #icon><i class="ph-download ph-bold ph-lg"></i></template>
-				<MkButton primary :class="$style.button" inline @click="exportMuting()"><i class="ph-download ph-bold ph-lg"></i> {{ i18n.ts.export }}</MkButton>
+				<template #icon><i class="ti ti-download"></i></template>
+				<MkButton primary :class="$style.button" inline @click="exportMuting()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
 			</MkFolder>
 			<MkFolder v-if="$i && !$i.movedTo">
 				<template #label>{{ i18n.ts.import }}</template>
@@ -105,8 +105,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>
-				<template #icon><i class="ph-download ph-bold ph-lg"></i></template>
-				<MkButton primary :class="$style.button" inline @click="exportBlocking()"><i class="ph-download ph-bold ph-lg"></i> {{ i18n.ts.export }}</MkButton>
+				<template #icon><i class="ti ti-download"></i></template>
+				<MkButton primary :class="$style.button" inline @click="exportBlocking()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
 			</MkFolder>
 			<MkFolder v-if="$i && !$i.movedTo">
 				<template #label>{{ i18n.ts.import }}</template>
@@ -120,8 +120,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>
-				<template #icon><i class="ph-download ph-bold ph-lg"></i></template>
-				<MkButton primary :class="$style.button" inline @click="exportAntennas()"><i class="ph-download ph-bold ph-lg"></i> {{ i18n.ts.export }}</MkButton>
+				<template #icon><i class="ti ti-download"></i></template>
+				<MkButton primary :class="$style.button" inline @click="exportAntennas()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
 			</MkFolder>
 			<MkFolder v-if="$i && !$i.movedTo">
 				<template #label>{{ i18n.ts.import }}</template>

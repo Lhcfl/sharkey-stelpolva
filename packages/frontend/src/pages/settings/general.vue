@@ -304,7 +304,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div class="_buttons">
 					<template v-for="lang in emojiIndexLangs" :key="lang">
 						<MkButton v-if="defaultStore.reactiveState.additionalUnicodeEmojiIndexes.value[lang]" danger @click="removeEmojiIndex(lang)"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.remove }} ({{ getEmojiIndexLangName(lang) }})</MkButton>
-						<MkButton v-else @click="downloadEmojiIndex(lang)"><i class="ph-download ph-bold ph-lg"></i> {{ getEmojiIndexLangName(lang) }}{{ defaultStore.reactiveState.additionalUnicodeEmojiIndexes.value[lang] ? ` (${ i18n.ts.installed })` : '' }}</MkButton>
+						<MkButton v-else @click="downloadEmojiIndex(lang)"><i class="ti ti-download"></i> {{ getEmojiIndexLangName(lang) }}{{ defaultStore.reactiveState.additionalUnicodeEmojiIndexes.value[lang] ? ` (${ i18n.ts.installed })` : '' }}</MkButton>
 					</template>
 				</div>
 			</MkFolder>

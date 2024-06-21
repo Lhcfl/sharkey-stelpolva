@@ -430,7 +430,7 @@ function menu(ev: MouseEvent, profileId: string) {
 	}, {
 		type: 'a',
 		text: ts.download,
-		icon: 'ph-download ph-bold ph-lg',
+		icon: 'ti ti-download',
 		href: URL.createObjectURL(new Blob([JSON.stringify(profiles.value[profileId], null, 2)], { type: 'application/json' })),
 		download: `${profiles.value[profileId].name}.json`,
 	}, { type: 'divider' }, {

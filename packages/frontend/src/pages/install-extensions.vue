@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div :class="$style.extInstallerIconWrapper">
 				<i v-if="data.type === 'plugin'" class="ph-plug ph-bold ph-lg"></i>
 				<i v-else-if="data.type === 'theme'" class="ph-palette ph-bold ph-lg"></i>
-				<i v-else class="ph-download ph-bold ph-lg"></i>
+				<i v-else class="ti ti-download"></i>
 			</div>
 			<h2 :class="$style.extInstallerTitle">{{ i18n.ts._externalResourceInstaller[`_${data.type}`].title }}</h2>
 			<div :class="$style.extInstallerNormDesc">{{ i18n.ts._externalResourceInstaller.checkVendorBeforeInstall }}</div>
@@ -314,7 +314,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts._externalResourceInstaller.title,
-	icon: 'ph-download ph-bold ph-lg',
+	icon: 'ti ti-download',
 }));
 </script>
 

@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		:title="media.name"
 		:download="media.name"
 	>
-		<span style="font-size: 1.6em;"><i class="ph-download ph-bold ph-lg"></i></span>
+		<span style="font-size: 1.6em;"><i class="ti ti-download"></i></span>
 		<b>{{ media.name }}</b>
 	</a>
 </div>

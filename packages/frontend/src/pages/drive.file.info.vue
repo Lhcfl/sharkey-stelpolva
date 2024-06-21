@@ -30,7 +30,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<i class="ph-eye-slash ph-bold ph-lg"></i>
 				</button>
 				<a v-tooltip="i18n.ts.download" :href="file.url" :download="file.name" class="_button" :class="$style.fileQuickActionsOthersButton">
-					<i class="ph-download ph-bold ph-lg"></i>
+					<i class="ti ti-download"></i>
 				</a>
 				<button v-tooltip="i18n.ts.delete" class="_button" :class="[$style.fileQuickActionsOthersButton, $style.danger]" @click="deleteFile()">
 					<i class="ph-trash ph-bold ph-lg"></i>
