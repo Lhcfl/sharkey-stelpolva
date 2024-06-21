@@ -304,7 +304,7 @@ export async function openAccountMenu(opts: {
 			}],
 		}, {
 			type: 'link' as const,
-			icon: 'ph-users ph-bold ph-lg',
+			icon: 'ti ti-users',
 			text: i18n.ts.manageAccounts,
 			to: '/settings/accounts',
 		}, {

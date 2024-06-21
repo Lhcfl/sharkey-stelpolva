@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-if="channel.isSensitive" class="sensitiveIndicator">{{ i18n.ts.sensitive }}</div>
 			<div class="status">
 				<div>
-					<i class="ph-users ph-bold ph-lg"></i>
+					<i class="ti ti-users ti-fw"></i>
 					<I18n :src="i18n.ts._channel.usersCount" tag="span" style="margin-left: 4px;">
 						<template #n>
 							<b>{{ channel.usersCount }}</b>

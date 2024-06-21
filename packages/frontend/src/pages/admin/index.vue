@@ -112,7 +112,7 @@ const menuDef = computed(() => [{
 		to: '/admin/overview',
 		active: currentPage.value?.route.name === 'overview',
 	}, {
-		icon: 'ph-users ph-bold ph-lg',
+		icon: 'ti ti-users',
 		text: i18n.ts.users,
 		to: '/admin/users',
 		active: currentPage.value?.route.name === 'users',

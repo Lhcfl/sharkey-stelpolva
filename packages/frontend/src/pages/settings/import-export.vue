@@ -45,7 +45,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</MkFolder>
 	</FormSection>
 	<FormSection>
-		<template #label><i class="ph-users ph-bold ph-lg"></i> {{ i18n.ts._exportOrImport.followingList }}</template>
+		<template #label><i class="ti ti-users"></i> {{ i18n.ts._exportOrImport.followingList }}</template>
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>
@@ -71,7 +71,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</FormSection>
 	<FormSection>
-		<template #label><i class="ph-users ph-bold ph-lg"></i> {{ i18n.ts._exportOrImport.userLists }}</template>
+		<template #label><i class="ti ti-users"></i> {{ i18n.ts._exportOrImport.userLists }}</template>
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>

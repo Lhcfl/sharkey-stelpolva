@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<XEditor :modelValue="role" readonly/>
 				</MkFolder>
 				<MkFolder v-if="role.target === 'manual'" defaultOpen>
-					<template #icon><i class="ph-users ph-bold ph-lg"></i></template>
+					<template #icon><i class="ti ti-users"></i></template>
 					<template #label>{{ i18n.ts.users }}</template>
 					<template #suffix>{{ role.usersCount }}</template>
 					<div class="_gaps">

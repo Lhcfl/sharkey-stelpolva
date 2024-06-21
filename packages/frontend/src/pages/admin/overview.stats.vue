@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkLoading v-if="fetching"/>
 		<div v-else :class="$style.root">
 			<div class="item _panel users">
-				<div class="icon"><i class="ph-users ph-bold ph-lg"></i></div>
+				<div class="icon"><i class="ti ti-users"></i></div>
 				<div class="body">
 					<div class="value">
 						<MkNumber :value="stats.originalUsersCount" style="margin-right: 0.5em;"/>

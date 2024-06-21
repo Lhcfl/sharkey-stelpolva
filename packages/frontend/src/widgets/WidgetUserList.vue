@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <MkContainer :showHeader="widgetProps.showHeader" class="mkw-userList">
-	<template #icon><i class="ph-users ph-bold ph-lg"></i></template>
+	<template #icon><i class="ti ti-users"></i></template>
 	<template #header>{{ list ? list.name : i18n.ts._widgets.userList }}</template>
 	<template #func="{ buttonStyleClass }"><button class="_button" :class="buttonStyleClass" @click="configure()"><i class="ti ti-settings"></i></button></template>
 

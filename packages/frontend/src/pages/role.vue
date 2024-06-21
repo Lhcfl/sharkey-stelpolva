@@ -85,7 +85,7 @@ const users = computed(() => ({
 
 const headerTabs = computed(() => [{
 	key: 'users',
-	icon: 'ph-users ph-bold ph-lg',
+	icon: 'ti ti-users',
 	title: i18n.ts.users,
 }, {
 	key: 'timeline',

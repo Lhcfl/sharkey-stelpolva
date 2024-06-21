@@ -52,7 +52,7 @@ const headerTabs = computed(() => [{
 	title: i18n.ts.featured,
 }, {
 	key: 'users',
-	icon: 'ph-users ph-bold ph-lg',
+	icon: 'ti ti-users',
 	title: i18n.ts.users,
 }, {
 	key: 'roles',
