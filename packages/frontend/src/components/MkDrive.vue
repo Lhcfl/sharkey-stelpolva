@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				@removeFolder="removeFolder"
 			/>
 			<template v-for="f in hierarchyFolders">
-				<span :class="[$style.navPathItem, $style.navSeparator]"><i class="ph-caret-right ph-bold ph-lg"></i></span>
+				<span :class="[$style.navPathItem, $style.navSeparator]"><i class="ti ti-chevron-right"></i></span>
 				<XNavFolder
 					:folder="f"
 					:parentFolder="folder"
@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					@removeFolder="removeFolder"
 				/>
 			</template>
-			<span v-if="folder != null" :class="[$style.navPathItem, $style.navSeparator]"><i class="ph-caret-right ph-bold ph-lg"></i></span>
+			<span v-if="folder != null" :class="[$style.navPathItem, $style.navSeparator]"><i class="ti ti-chevron-right"></i></span>
 			<span v-if="folder != null" :class="[$style.navPathItem, $style.navCurrent]">{{ folder.name }}</span>
 		</div>
 		<button class="_button" :class="$style.navMenu" @click="showMenu"><i class="ph-dots-three ph-bold ph-lg"></i></button>

@@ -26,7 +26,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span :class="$style.text"><slot></slot></span>
 		<span :class="$style.suffix">
 			<span :class="$style.suffixText"><slot name="suffix"></slot></span>
-			<i class="ph-caret-right ph-bold ph-lg"></i>
+			<i class="ti ti-chevron-right"></i>
 		</span>
 	</MkA>
 </div>

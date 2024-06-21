@@ -81,6 +81,9 @@ export function getConfig(): UserConfig {
 					'ti ti-planet': 'ph-planet ph-bold ph-lg',
 					'ti ti-world-x': 'ph-planet ph-bold ph-lg',
 					'ti ti-world-search': 'ph-planet ph-bold ph-lg',
+					'ti ti-chevron-right': 'ph-caret-right ph-bold ph-lg',
+					'ti ti-chevrons-right': 'ph-caret-right ph-bold ph-lg',
+					'ti ti-chevron-right ti-fw': 'ph-caret-right ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

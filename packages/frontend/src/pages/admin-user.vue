@@ -64,7 +64,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div style="display: flex; flex-direction: column; gap: 1em;">
 							<MkKeyValue oneline>
 								<template #key>{{ i18n.ts.instanceInfo }}</template>
-								<template #value><MkA :to="`/instance-info/${user.host}`" class="_link">{{ user.host }} <i class="ph-caret-right ph-bold ph-lg"></i></MkA></template>
+								<template #value><MkA :to="`/instance-info/${user.host}`" class="_link">{{ user.host }} <i class="ti ti-chevron-right"></i></MkA></template>
 							</MkKeyValue>
 							<MkKeyValue oneline>
 								<template #key>{{ i18n.ts.updatedAt }}</template>
