@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <!-- フォルダの中にはカスタム絵文字だけ（Unicode絵文字もこっち） -->
 <section v-if="!hasChildSection" v-panel style="border-radius: var(--radius-sm); border-bottom: 0.5px solid var(--divider);">
 	<header class="_acrylic" @click="shown = !shown">
-		<i class="toggle ti-fw" :class="shown ? 'ti ti-chevron-down' : 'ti ti-chevron-up'"></i> <slot></slot> (<i class="ph-bold ph-lg"></i>:{{ emojis.length }})
+		<i class="toggle ti-fw" :class="shown ? 'ti ti-chevron-down' : 'ti ti-chevron-up'"></i> <slot></slot> (<i class="ph-smiley-sticker ph-bold ph-lg"></i>:{{ emojis.length }})
 	</header>
 	<div v-if="shown" class="body">
 		<button
