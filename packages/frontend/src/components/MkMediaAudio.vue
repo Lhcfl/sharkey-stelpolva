@@ -176,7 +176,7 @@ function showMenu(ev: MouseEvent) {
 	if (iAmModerator) {
 		menu.push({
 			text: props.audio.isSensitive ? i18n.ts.unmarkAsSensitive : i18n.ts.markAsSensitive,
-			icon: props.audio.isSensitive ? 'ph-eye ph-bold ph-lg' : 'ph-eye-slash ph-bold ph-lg',
+			icon: props.audio.isSensitive ? 'ti ti-eye' : 'ph-eye-slash ph-bold ph-lg',
 			danger: true,
 			action: () => toggleSensitive(props.audio),
 		});

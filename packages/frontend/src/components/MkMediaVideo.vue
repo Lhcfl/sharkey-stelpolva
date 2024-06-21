@@ -215,7 +215,7 @@ function showMenu(ev: MouseEvent) {
 	if (iAmModerator) {
 		menu.push({
 			text: props.video.isSensitive ? i18n.ts.unmarkAsSensitive : i18n.ts.markAsSensitive,
-			icon: props.video.isSensitive ? 'ph-eye ph-bold ph-lg' : 'ph-eye-slash ph-bold ph-lg',
+			icon: props.video.isSensitive ? 'ti ti-eye' : 'ph-eye-slash ph-bold ph-lg',
 			danger: true,
 			action: () => toggleSensitive(props.video),
 		});

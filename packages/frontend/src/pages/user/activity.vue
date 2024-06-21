@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<XFollowing :user="user"/>
 		</MkFoldableSection>
 		<MkFoldableSection class="item">
-			<template #header><i class="ph-eye ph-bold ph-lg"></i> PV</template>
+			<template #header><i class="ti ti-eye"></i> PV</template>
 			<XPv :user="user"/>
 		</MkFoldableSection>
 	</div>

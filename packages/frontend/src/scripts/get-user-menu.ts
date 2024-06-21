@@ -316,7 +316,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 		//}
 
 		menu = menu.concat([{ type: 'divider' }, {
-			icon: user.isMuted ? 'ph-eye ph-bold ph-lg' : 'ph-eye-slash ph-bold ph-lg',
+			icon: user.isMuted ? 'ti ti-eye' : 'ph-eye-slash ph-bold ph-lg',
 			text: user.isMuted ? i18n.ts.unmute : i18n.ts.mute,
 			action: toggleMute,
 		}, {

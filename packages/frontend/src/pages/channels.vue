@@ -145,7 +145,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'following',
 	title: i18n.ts._channel.following,
-	icon: 'ph-eye ph-bold ph-lg',
+	icon: 'ti ti-eye',
 }, {
 	key: 'owned',
 	title: i18n.ts._channel.owned,
