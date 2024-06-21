@@ -64,10 +64,10 @@ function iconsReplace(opts: RollupReplaceOptions) {
 	return pluginReplace({
 		...opts,
 		preventAssignment: false,
-		// only replace these strings after a quote, remove a ` ti-fw`
-		// it if happens to be just after, and make sure they're
+		// only replace these strings at the start of strings, remove a
+		// `ti-fw` it if happens to be just after, and make sure they're
 		// followed by a word-boundary that's not a dash
-		delimiters: ['(?<=["\'])', '(?: ti-fw)?\\b(?!-)'],
+		delimiters: ['(?<=["\'`])', '(?: ti-fw)?\\b(?!-)'],
 	});
 }
 
@@ -171,6 +171,7 @@ export function getConfig(): UserConfig {
 					'ti ti-device-tv': 'ph-television ph-bold ph-lg',
 					'ti ti-cookie': 'ph-cookie ph-bold ph-lg',
 					'ti ti-copy': 'ph-copy ph-bold ph-lg',
+					'ti ti-chevron-up': 'ph-caret-up ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

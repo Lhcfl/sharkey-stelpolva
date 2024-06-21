@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i class="ph-list ph-bold ph-lg-2"></i>
 			</button>
 			<button class="_button" @click="toggleContent(!showBody)">
-				<template v-if="showBody"><i class="ph-caret-up ph-bold ph-lg"></i></template>
+				<template v-if="showBody"><i class="ti ti-chevron-up"></i></template>
 				<template v-else><i class="ph-caret-down ph-bold ph-lg"></i></template>
 			</button>
 		</div>

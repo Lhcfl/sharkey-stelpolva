@@ -26,7 +26,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</svg>
 		<div :class="$style.color"></div>
 		<button v-if="isStacked && !isMainColumn" :class="$style.toggleActive" class="_button" @click="toggleActive">
-			<template v-if="active"><i class="ph-caret-up ph-bold ph-lg"></i></template>
+			<template v-if="active"><i class="ti ti-chevron-up"></i></template>
 			<template v-else><i class="ph-caret-down ph-bold ph-lg"></i></template>
 		</button>
 		<span :class="$style.title"><slot name="header"></slot></span>
