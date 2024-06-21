@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<div class="_gaps_m">
 					<MkInput v-model="deeplAuthKey">
-						<template #prefix><i class="ph-key ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-key"></i></template>
 						<template #label>DeepL Auth Key</template>
 					</MkInput>
 					<MkSwitch v-model="deeplIsPro">

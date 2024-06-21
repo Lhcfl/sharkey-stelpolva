@@ -37,7 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</MkFolder>
 
 		<MkFolder>
-			<template #icon><i class="ph-key ph-bold ph-lg"></i></template>
+			<template #icon><i class="ti ti-key"></i></template>
 			<template #label>{{ i18n.ts.securityKeyAndPasskey }}</template>
 			<div class="_gaps_s">
 				<MkInfo>

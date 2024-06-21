@@ -35,18 +35,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<template #label>Use Verifymail.io API</template>
 						</MkSwitch>
 						<MkInput v-model="verifymailAuthKey">
-							<template #prefix><i class="ph-key ph-bold ph-lg"></i></template>
+							<template #prefix><i class="ti ti-key"></i></template>
 							<template #label>Verifymail.io API Auth Key</template>
 						</MkInput>
 						<MkSwitch v-model="enableTruemailApi">
 							<template #label>Use TrueMail API</template>
 						</MkSwitch>
 						<MkInput v-model="truemailInstance">
-							<template #prefix><i class="ph-key ph-bold ph-lg"></i></template>
+							<template #prefix><i class="ti ti-key"></i></template>
 							<template #label>TrueMail API Instance</template>
 						</MkInput>
 						<MkInput v-model="truemailAuthKey">
-							<template #prefix><i class="ph-key ph-bold ph-lg"></i></template>
+							<template #prefix><i class="ti ti-key"></i></template>
 							<template #label>TrueMail API Auth Key</template>
 						</MkInput>
 						<MkButton primary @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>

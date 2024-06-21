@@ -46,7 +46,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<MkInput v-model="impressumUrl" type="url">
 						<template #label>{{ i18n.ts.impressumUrl }}</template>
-						<template #prefix><i class="ph-link ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-link"></i></template>
 						<template #caption>{{ i18n.ts.impressumDescription }}</template>
 					</MkInput>
 
@@ -89,12 +89,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 							<template v-if="enableServiceWorker">
 								<MkInput v-model="swPublicKey">
-									<template #prefix><i class="ph-key ph-bold ph-lg"></i></template>
+									<template #prefix><i class="ti ti-key"></i></template>
 									<template #label>Public key</template>
 								</MkInput>
 
 								<MkInput v-model="swPrivateKey">
-									<template #prefix><i class="ph-key ph-bold ph-lg"></i></template>
+									<template #prefix><i class="ti ti-key"></i></template>
 									<template #label>Private key</template>
 								</MkInput>
 							</template>

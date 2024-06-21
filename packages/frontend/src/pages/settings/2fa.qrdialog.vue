@@ -77,7 +77,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<div style="text-align: center; font-weight: bold;">{{ i18n.ts._2fa.checkBackupCodesBeforeCloseThisWizard }}</div>
 
 							<MkFolder :defaultOpen="true">
-								<template #icon><i class="ph-key ph-bold ph-lg"></i></template>
+								<template #icon><i class="ti ti-key"></i></template>
 								<template #label>{{ i18n.ts._2fa.backupCodes }}</template>
 
 								<div class="_gaps">
