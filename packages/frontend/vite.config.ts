@@ -78,6 +78,9 @@ export function getConfig(): UserConfig {
 					'ti ti-download': 'ph-download ph-bold ph-lg',
 					'ti ti-circle-x': 'ph-x-circle ph-bold ph-lg',
 					'ti ti-plus': 'ph-plus ph-bold ph-lg',
+					'ti ti-planet': 'ph-planet ph-bold ph-lg',
+					'ti ti-world-x': 'ph-planet ph-bold ph-lg',
+					'ti ti-world-search': 'ph-planet ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

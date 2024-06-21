@@ -210,7 +210,7 @@ const menuDef = computed(() => [{
 		to: '/admin/security',
 		active: currentPage.value?.route.name === 'security',
 	}, {
-		icon: 'ph-planet ph-bold ph-lg',
+		icon: 'ti ti-planet',
 		text: i18n.ts.relays,
 		to: '/admin/relays',
 		active: currentPage.value?.route.name === 'relays',
@@ -323,7 +323,7 @@ function adminLookup(ev: MouseEvent) {
 		},
 	}, {
 		text: i18n.ts.lookup,
-		icon: 'ph-planet ph-bold ph-lg',
+		icon: 'ti ti-world-search',
 		action: () => {
 			lookup();
 		},

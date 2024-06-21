@@ -25,7 +25,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<MkFolder>
 		<template #label>{{ i18n.ts.noCrawle }}</template>
-		<template #icon><i class="ph-planet ph-bold ph-lg"></i></template>
+		<template #icon><i class="ti ti-world-x"></i></template>
 		<template #suffix>{{ noCrawle ? i18n.ts.on : i18n.ts.off }}</template>
 
 		<MkSwitch v-model="noCrawle">{{ i18n.ts.noCrawle }}<template #caption>{{ i18n.ts.noCrawleDescription }}</template></MkSwitch>

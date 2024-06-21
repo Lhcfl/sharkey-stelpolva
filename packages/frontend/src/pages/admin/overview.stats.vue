@@ -29,7 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</div>
 			<div class="item _panel instances">
-				<div class="icon"><i class="ph-planet ph-bold ph-lg"></i></div>
+				<div class="icon"><i class="ti ti-planet"></i></div>
 				<div class="body">
 					<div class="value">
 						<MkNumber :value="stats.instances" style="margin-right: 0.5em;"/>
