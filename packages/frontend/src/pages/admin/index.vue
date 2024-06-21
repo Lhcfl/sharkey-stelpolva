@@ -152,7 +152,7 @@ const menuDef = computed(() => [{
 		to: '/admin/queue',
 		active: currentPage.value?.route.name === 'queue',
 	}, {
-		icon: 'ph-cloud ph-bold ph-lg',
+		icon: 'ti ti-cloud',
 		text: i18n.ts.files,
 		to: '/admin/files',
 		active: currentPage.value?.route.name === 'files',
@@ -200,7 +200,7 @@ const menuDef = computed(() => [{
 		to: '/admin/email-settings',
 		active: currentPage.value?.route.name === 'email-settings',
 	}, {
-		icon: 'ph-cloud ph-bold ph-lg',
+		icon: 'ti ti-cloud',
 		text: i18n.ts.objectStorage,
 		to: '/admin/object-storage',
 		active: currentPage.value?.route.name === 'object-storage',
@@ -317,7 +317,7 @@ function adminLookup(ev: MouseEvent) {
 		},
 	}, {
 		text: i18n.ts.file,
-		icon: 'ph-cloud ph-bold ph-lg',
+		icon: 'ti ti-cloud',
 		action: () => {
 			lookupFile();
 		},

@@ -34,7 +34,7 @@ export const navbarItemDef = reactive({
 	},
 	drive: {
 		title: i18n.ts.drive,
-		icon: 'ph-cloud ph-bold ph-lg',
+		icon: 'ti ti-cloud',
 		show: computed(() => $i != null),
 		to: '/my/drive',
 	},

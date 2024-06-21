@@ -525,7 +525,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'drive',
 	title: i18n.ts.drive,
-	icon: 'ph-cloud ph-bold ph-lg',
+	icon: 'ti ti-cloud',
 }, {
 	key: 'chart',
 	title: i18n.ts.charts,

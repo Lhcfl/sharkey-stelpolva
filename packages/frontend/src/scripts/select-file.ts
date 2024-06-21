@@ -97,7 +97,7 @@ function select(src: any, label: string | null, multiple: boolean): Promise<Miss
 			action: () => chooseFileFromPc(multiple, keepOriginal.value).then(files => res(files)),
 		}, {
 			text: i18n.ts.fromDrive,
-			icon: 'ph-cloud ph-bold ph-lg',
+			icon: 'ti ti-cloud',
 			action: () => chooseFileFromDrive(multiple).then(files => res(files)),
 		}, {
 			text: i18n.ts.fromUrl,
