@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div>
 	<div :class="$style.banner">
-		<i class="ph-check ph-bold ph-lglist"></i>
+		<i class="ti ti-checklist"></i>
 	</div>
 	<MkSpacer :marginMin="20" :marginMax="28">
 		<div class="_gaps_m">
