@@ -48,7 +48,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkSpacer>
 						<div :class="$style.pageFooter">
 							<div class="_buttonsCenter">
-								<MkButton v-if="initialPage !== 1" rounded @click="page--"><i class="ph-arrow-left ph-bold pg-lg"></i> {{ i18n.ts.goBack }}</MkButton>
+								<MkButton v-if="initialPage !== 1" rounded @click="page--"><i class="ti ti-arrow-left"></i> {{ i18n.ts.goBack }}</MkButton>
 								<MkButton primary rounded gradate @click="page++">{{ i18n.ts.continue }} <i class="ti ti-arrow-right"></i></MkButton>
 							</div>
 						</div>
@@ -66,7 +66,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkSpacer>
 						<div :class="$style.pageFooter">
 							<div class="_buttonsCenter">
-								<MkButton v-if="initialPage !== 2" rounded @click="page--"><i class="ph-arrow-left ph-bold pg-lg"></i> {{ i18n.ts.goBack }}</MkButton>
+								<MkButton v-if="initialPage !== 2" rounded @click="page--"><i class="ti ti-arrow-left"></i> {{ i18n.ts.goBack }}</MkButton>
 								<MkButton primary rounded gradate :disabled="!isReactionTutorialPushed" @click="page++">{{ i18n.ts.continue }} <i class="ti ti-arrow-right"></i></MkButton>
 							</div>
 						</div>
@@ -81,7 +81,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkSpacer>
 						<div :class="$style.pageFooter">
 							<div class="_buttonsCenter">
-								<MkButton v-if="initialPage !== 3" rounded @click="page--"><i class="ph-arrow-left ph-bold pg-lg"></i> {{ i18n.ts.goBack }}</MkButton>
+								<MkButton v-if="initialPage !== 3" rounded @click="page--"><i class="ti ti-arrow-left"></i> {{ i18n.ts.goBack }}</MkButton>
 								<MkButton primary rounded gradate @click="page++">{{ i18n.ts.continue }} <i class="ti ti-arrow-right"></i></MkButton>
 							</div>
 						</div>
@@ -96,7 +96,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkSpacer>
 						<div :class="$style.pageFooter">
 							<div class="_buttonsCenter">
-								<MkButton v-if="initialPage !== 3" rounded @click="page--"><i class="ph-arrow-left ph-bold pg-lg"></i> {{ i18n.ts.goBack }}</MkButton>
+								<MkButton v-if="initialPage !== 3" rounded @click="page--"><i class="ti ti-arrow-left"></i> {{ i18n.ts.goBack }}</MkButton>
 								<MkButton primary rounded gradate @click="page++">{{ i18n.ts.continue }} <i class="ti ti-arrow-right"></i></MkButton>
 							</div>
 						</div>
@@ -114,7 +114,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkSpacer>
 						<div :class="$style.pageFooter">
 							<div class="_buttonsCenter">
-								<MkButton v-if="initialPage !== 2" rounded @click="page--"><i class="ph-arrow-left ph-bold pg-lg"></i> {{ i18n.ts.goBack }}</MkButton>
+								<MkButton v-if="initialPage !== 2" rounded @click="page--"><i class="ti ti-arrow-left"></i> {{ i18n.ts.goBack }}</MkButton>
 								<MkButton primary rounded gradate :disabled="!isSensitiveTutorialSucceeded" @click="page++">{{ i18n.ts.continue }} <i class="ti ti-arrow-right"></i></MkButton>
 							</div>
 						</div>
@@ -135,7 +135,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</I18n>
 							<div>{{ i18n.tsx._initialAccountSetting.haveFun({ name: instance.name ?? host }) }}</div>
 							<div class="_buttonsCenter" style="margin-top: 16px;">
-								<MkButton v-if="initialPage !== 4" rounded @click="page--"><i class="ph-arrow-left ph-bold pg-lg"></i> {{ i18n.ts.goBack }}</MkButton>
+								<MkButton v-if="initialPage !== 4" rounded @click="page--"><i class="ti ti-arrow-left"></i> {{ i18n.ts.goBack }}</MkButton>
 								<MkButton rounded primary gradate @click="close(false)">{{ i18n.ts.close }}</MkButton>
 							</div>
 						</div>

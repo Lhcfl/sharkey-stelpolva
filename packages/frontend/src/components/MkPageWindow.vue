@@ -68,7 +68,7 @@ const buttonsLeft = computed(() => {
 
 	if (history.value.length > 1) {
 		buttons.push({
-			icon: 'ph-arrow-left ph-bold ph-lg',
+			icon: 'ti ti-arrow-left',
 			onClick: back,
 		});
 	}
