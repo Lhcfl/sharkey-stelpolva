@@ -128,7 +128,7 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 
 	if (defaultStore.state.devMode) {
 		menu = menu.concat([{ type: 'divider' }, {
-			icon: 'ph-identification-card ph-bold ph-lg',
+			icon: 'ti ti-id',
 			text: i18n.ts.copyFileId,
 			action: () => {
 				copyToClipboard(file.id);

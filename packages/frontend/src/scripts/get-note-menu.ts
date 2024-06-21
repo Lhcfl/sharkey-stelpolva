@@ -505,7 +505,7 @@ export function getNoteMenu(props: {
 
 	if (defaultStore.state.devMode) {
 		menu = menu.concat([{ type: "divider" }, {
-			icon: 'ph-identification-card ph-bold ph-lg',
+			icon: 'ti ti-id',
 			text: i18n.ts.copyNoteId,
 			action: () => {
 				copyToClipboard(appearNote.id);
