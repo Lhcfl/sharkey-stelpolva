@@ -30,7 +30,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-if="folder != null" :class="[$style.navPathItem, $style.navSeparator]"><i class="ti ti-chevron-right"></i></span>
 			<span v-if="folder != null" :class="[$style.navPathItem, $style.navCurrent]">{{ folder.name }}</span>
 		</div>
-		<button class="_button" :class="$style.navMenu" @click="showMenu"><i class="ph-dots-three ph-bold ph-lg"></i></button>
+		<button class="_button" :class="$style.navMenu" @click="showMenu"><i class="ti ti-dots"></i></button>
 	</nav>
 	<div
 		ref="main"

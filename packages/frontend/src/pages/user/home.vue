@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 						<span v-if="$i && $i.id != user.id && user.isFollowed" class="followed">{{ i18n.ts.followsYou }}</span>
 						<div v-if="$i" class="actions">
-							<button class="menu _button" @click="menu"><i class="ph-dots-three ph-bold ph-lg"></i></button>
+							<button class="menu _button" @click="menu"><i class="ti ti-dots"></i></button>
 							<MkFollowButton v-if="$i.id != user.id" v-model:user="user" :inline="true" :transparent="false" :full="true" class="koudoku"/>
 						</div>
 					</div>

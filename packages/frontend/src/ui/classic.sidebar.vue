@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i class="ph-gauge ph-bold ph-lg ti-fw"></i><span class="text">{{ i18n.ts.controlPanel }}</span>
 	</MkA>
 	<button v-click-anime class="item _button" @click="more">
-		<i class="ph-dots-three ph-bold ph-lg ti-fw"></i><span class="text">{{ i18n.ts.more }}</span>
+		<i class="ti ti-dots ti-fw"></i><span class="text">{{ i18n.ts.more }}</span>
 		<span v-if="otherNavItemIndicated" class="indicator"><i class="_indicatorCircle"></i></span>
 	</button>
 	<MkA v-click-anime class="item" activeClass="active" to="/settings" :behavior="settingsWindowed ? 'window' : null">

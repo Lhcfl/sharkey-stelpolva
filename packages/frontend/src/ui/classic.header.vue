@@ -25,7 +25,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i class="ph-gauge ph-bold ph-lg ti-fw"></i>
 			</MkA>
 			<button v-click-anime class="item _button" @click="more">
-				<i class="ph-dots-three ph-bold ph-lg ti-fw"></i>
+				<i class="ti ti-dots ti-fw"></i>
 				<span v-if="otherNavItemIndicated" class="indicator"><i class="_indicatorCircle"></i></span>
 			</button>
 		</div>

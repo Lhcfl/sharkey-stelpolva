@@ -163,7 +163,7 @@ const menuDef = computed(() => [{
 		to: '/settings/migration',
 		active: currentPage.value?.route.name === 'migration',
 	}, {
-		icon: 'ph-dots-three ph-bold ph-lg',
+		icon: 'ti ti-dots',
 		text: i18n.ts.other,
 		to: '/settings/other',
 		active: currentPage.value?.route.name === 'other',

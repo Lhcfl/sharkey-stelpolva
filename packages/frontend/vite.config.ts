@@ -84,6 +84,7 @@ export function getConfig(): UserConfig {
 					'ti ti-chevron-right': 'ph-caret-right ph-bold ph-lg',
 					'ti ti-chevrons-right': 'ph-caret-right ph-bold ph-lg',
 					'ti ti-chevron-right ti-fw': 'ph-caret-right ph-bold ph-lg',
+					'ti ti-dots': 'ph-dots-three ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

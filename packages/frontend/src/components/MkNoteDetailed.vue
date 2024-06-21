@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</span>
 		<div :class="$style.renoteInfo">
 			<button ref="renoteTime" class="_button" :class="$style.renoteTime" @click="showRenoteMenu()">
-				<i v-if="isMyRenote" class="ph-dots-three ph-bold ph-lg" style="margin-right: 4px;"></i>
+				<i v-if="isMyRenote" class="ti ti-dots" style="margin-right: 4px;"></i>
 				<MkTime :time="note.createdAt"/>
 			</button>
 			<span v-if="note.visibility !== 'public'" style="margin-left: 0.5em;" :title="i18n.ts._visibility[note.visibility]">
@@ -158,7 +158,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i class="ph-paperclip ph-bold ph-lg"></i>
 			</button>
 			<button ref="menuButton" class="_button" :class="$style.noteFooterButton" @mousedown="showMenu()">
-				<i class="ph-dots-three ph-bold ph-lg"></i>
+				<i class="ti ti-dots"></i>
 			</button>
 		</footer>
 	</article>

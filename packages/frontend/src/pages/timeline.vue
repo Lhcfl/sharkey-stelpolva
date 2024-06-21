@@ -248,7 +248,7 @@ function closeTutorial(): void {
 const headerActions = computed(() => {
 	const tmp = [
 		{
-			icon: 'ph-dots-three ph-bold ph-lg',
+			icon: 'ti ti-dots',
 			text: i18n.ts.options,
 			handler: (ev) => {
 				os.popupMenu([{

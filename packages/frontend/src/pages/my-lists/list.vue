@@ -38,7 +38,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 										<MkA :class="$style.userItemBody" :to="`${userPage(item.user)}`">
 											<MkUserCardMini :user="item.user"/>
 										</MkA>
-										<button class="_button" :class="$style.menu" @click="showMembershipMenu(item, $event)"><i class="ph-dots-three ph-bold ph-lg"></i></button>
+										<button class="_button" :class="$style.menu" @click="showMembershipMenu(item, $event)"><i class="ti ti-dots"></i></button>
 										<button class="_button" :class="$style.remove" @click="removeUser(item, $event)"><i class="ph-x ph-bold ph-lg"></i></button>
 									</div>
 								</div>

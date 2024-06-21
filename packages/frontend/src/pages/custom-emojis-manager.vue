@@ -306,7 +306,7 @@ const headerActions = computed(() => [{
 	text: i18n.ts.addEmoji,
 	handler: add,
 }, {
-	icon: 'ph-dots-three ph-bold ph-lg',
+	icon: 'ti ti-dots',
 	handler: menu,
 }]);
 
