@@ -85,6 +85,24 @@ export function getConfig(): UserConfig {
 			pluginJson5(),
 			iconsReplace({
 				values: {
+					'ti ti-alert-triangle': 'ph-warning ph-bold ph-lg',
+				},
+				exclude: [
+					'**/components/MkAnnouncementDialog.*',
+					'**/pages/announcement.*',
+				],
+			}),
+			iconsReplace({
+				values: {
+					'ti ti-alert-triangle': 'ph-warning-circle ph-bold ph-lg',
+				},
+				include: [
+					'**/components/MkAnnouncementDialog.*',
+					'**/pages/announcement.*',
+				],
+			}),
+			iconsReplace({
+				values: {
 					'ti ti-terminal-2': 'ph-terminal-window ph-bold ph-lg',
 					'ti ti-download': 'ph-download ph-bold ph-lg',
 					'ti ti-circle-x': 'ph-x-circle ph-bold ph-lg',
@@ -118,7 +136,6 @@ export function getConfig(): UserConfig {
 					'ti ti-eye-off': 'ti ti-eye-exclamation',
 					'ti ti-eye-exclamation': 'ph-eye-slash ph-bold ph-lg',
 					'ti ti-lock': 'ph-lock ph-bold ph-lg',
-					'ti ti-alert-triangle': 'ph-warning ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

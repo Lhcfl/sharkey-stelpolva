@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span v-if="$i && !announcement.silence && !announcement.isRead" style="margin-right: 0.5em;">🆕</span>
 					<span style="margin-right: 0.5em;">
 						<i v-if="announcement.icon === 'info'" class="ph-info ph-bold ph-lg"></i>
-						<i v-else-if="announcement.icon === 'warning'" class="ph-warning-circle ph-bold ph-lg" style="color: var(--warn);"></i>
+						<i v-else-if="announcement.icon === 'warning'" class="ti ti-alert-triangle" style="color: var(--warn);"></i>
 						<i v-else-if="announcement.icon === 'error'" class="ph-seal-warning ph-bold ph-lg" style="color: var(--error);"></i>
 						<i v-else-if="announcement.icon === 'success'" class="ph-check-circle ph-bold ph-lg" style="color: var(--success);"></i>
 					</span>
