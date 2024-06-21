@@ -36,7 +36,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-if="otherNavItemIndicated" class="indicator"><i class="_indicatorCircle"></i></span>
 	</button>
 	<MkA v-click-anime class="item" activeClass="active" to="/settings" :behavior="settingsWindowed ? 'window' : null">
-		<i class="ph-gear ph-bold ph-lg ti-fw"></i><span class="text">{{ i18n.ts.settings }}</span>
+		<i class="ti ti-settings ti-fw"></i><span class="text">{{ i18n.ts.settings }}</span>
 	</MkA>
 	<div class="divider"></div>
 	<div class="about">

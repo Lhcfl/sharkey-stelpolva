@@ -84,7 +84,7 @@ const headerActions = computed(() => antenna.value ? [{
 	text: i18n.ts.jumpToSpecifiedDate,
 	handler: timetravel,
 }, {
-	icon: 'ph-gear ph-bold ph-lg',
+	icon: 'ti ti-settings',
 	text: i18n.ts.settings,
 	handler: settings,
 }] : []);

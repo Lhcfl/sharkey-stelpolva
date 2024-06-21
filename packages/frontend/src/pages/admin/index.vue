@@ -50,7 +50,7 @@ const router = useRouter();
 
 const indexInfo = {
 	title: i18n.ts.controlPanel,
-	icon: 'ph-gear ph-bold ph-lg',
+	icon: 'ti ti-settings',
 	hideHeader: true,
 };
 
@@ -180,7 +180,7 @@ const menuDef = computed(() => [{
 }, {
 	title: i18n.ts.settings,
 	items: [{
-		icon: 'ph-gear ph-bold ph-lg',
+		icon: 'ti ti-settings',
 		text: i18n.ts.general,
 		to: '/admin/settings',
 		active: currentPage.value?.route.name === 'settings',

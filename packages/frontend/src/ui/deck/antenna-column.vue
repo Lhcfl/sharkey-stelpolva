@@ -74,7 +74,7 @@ const menu: MenuItem[] = [
 		action: setAntenna,
 	},
 	{
-		icon: 'ph-gear ph-bold ph-lg',
+		icon: 'ti ti-settings',
 		text: i18n.ts.editAntenna,
 		action: editAntenna,
 	},

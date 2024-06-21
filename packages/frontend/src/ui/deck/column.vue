@@ -105,7 +105,7 @@ function toggleActive() {
 
 function getMenu() {
 	let items: MenuItem[] = [{
-		icon: 'ph-gear ph-bold ph-lg',
+		icon: 'ti ti-settings',
 		text: i18n.ts._deck.configureColumn,
 		action: async () => {
 			const { canceled, result } = await os.form(props.column.name, {

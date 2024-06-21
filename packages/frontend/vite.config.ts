@@ -102,6 +102,7 @@ export function getConfig(): UserConfig {
 					'ti ti-heart-filled': 'ph-heart ph-bold ph-lg',
 					'ti ti-heart-plus': 'ph-heart ph-bold ph-lg',
 					'ti ti-arrow-left': 'ph-arrow-left ph-bold ph-lg',
+					'ti ti-settings': 'ph-gear ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

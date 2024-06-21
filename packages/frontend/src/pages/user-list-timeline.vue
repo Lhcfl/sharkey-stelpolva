@@ -98,7 +98,7 @@ const headerActions = computed(() => list.value ? [{
 		}], ev.currentTarget ?? ev.target);
 	},
 }, {
-	icon: 'ph-gear ph-bold ph-lg',
+	icon: 'ti ti-settings',
 	text: i18n.ts.settings,
 	handler: settings,
 }] : []);

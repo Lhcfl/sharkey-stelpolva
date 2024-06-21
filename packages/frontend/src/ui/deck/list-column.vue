@@ -86,7 +86,7 @@ const menu: MenuItem[] = [
 		action: setList,
 	},
 	{
-		icon: 'ph-gear ph-bold ph-lg',
+		icon: 'ti ti-settings',
 		text: i18n.ts.editList,
 		action: editList,
 	},

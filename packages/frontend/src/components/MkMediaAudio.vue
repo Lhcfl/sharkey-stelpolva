@@ -53,7 +53,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i class="ph-download ph-bold ph-lg"></i>
 			</a>
 			<button class="_button" :class="$style.controlButton" @click="showMenu">
-				<i class="ph-gear ph-bold ph-lg"></i>
+				<i class="ti ti-settings"></i>
 			</button>
 		</div>
 		<div :class="[$style.controlsChild, $style.controlsTime]">{{ hms(elapsedTimeMs) }}</div>

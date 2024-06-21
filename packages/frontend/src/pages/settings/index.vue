@@ -40,7 +40,7 @@ import { useRouter } from '@/router/supplier.js';
 
 const indexInfo = {
 	title: i18n.ts.settings,
-	icon: 'ph-gear ph-bold ph-lg',
+	icon: 'ti ti-settings',
 	hideHeader: true,
 };
 const INFO = ref(indexInfo);

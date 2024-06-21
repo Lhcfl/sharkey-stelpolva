@@ -276,7 +276,7 @@ const headerActions = computed(() => []);
 const headerTabs = computed(() => [{
 	key: 'settings',
 	title: i18n.ts._pages.pageSetting,
-	icon: 'ph-gear ph-bold ph-lg',
+	icon: 'ti ti-settings',
 }, {
 	key: 'contents',
 	title: i18n.ts._pages.contents,

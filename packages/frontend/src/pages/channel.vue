@@ -262,7 +262,7 @@ const headerActions = computed(() => {
 
 		if (($i && $i.id === channel.value.userId) || iAmModerator) {
 			headerItems.push({
-				icon: 'ph-gear ph-bold ph-lg',
+				icon: 'ti ti-settings',
 				text: i18n.ts.edit,
 				handler: edit,
 			});

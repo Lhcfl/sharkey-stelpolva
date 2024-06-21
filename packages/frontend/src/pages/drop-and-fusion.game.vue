@@ -149,7 +149,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 				<div class="_woodenFrame" style="margin-left: auto;">
 					<div class="_woodenFrameInner" style="text-align: center;">
-						<div @click="showConfig = !showConfig"><i class="ph-gear ph-bold ph-lg"></i></div>
+						<div @click="showConfig = !showConfig"><i class="ti ti-settings"></i></div>
 					</div>
 				</div>
 			</div>
