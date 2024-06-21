@@ -67,7 +67,7 @@ function onContextmenu(ev) {
 			router.push(props.to, 'forcePage');
 		},
 	}, { type: 'divider' }, {
-		icon: 'ph-arrow-square-out ph-bold ph-lg',
+		icon: 'ti ti-external-link',
 		text: i18n.ts.openInNewTab,
 		action: () => {
 			window.open(props.to, '_blank', 'noopener');

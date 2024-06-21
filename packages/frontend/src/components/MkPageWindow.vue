@@ -121,7 +121,7 @@ const contextmenu = computed(() => ([{
 	text: i18n.ts.popout,
 	action: popout,
 }, {
-	icon: 'ph-arrow-square-out ph-bold ph-lg',
+	icon: 'ti ti-external-link',
 	text: i18n.ts.openInNewTab,
 	action: () => {
 		window.open(url + windowRouter.getCurrentPath(), '_blank', 'noopener');

@@ -335,7 +335,7 @@ export function getNoteMenu(props: {
 				getCopyNoteOriginLinkMenu(appearNote, 'Copy link (Origin)')
 			: undefined,
 			(appearNote.url || appearNote.uri) ? {
-				icon: 'ph-arrow-square-out ph-bold ph-lg',
+				icon: 'ti ti-external-link',
 				text: i18n.ts.showOnRemote,
 				action: () => {
 					window.open(appearNote.url ?? appearNote.uri, '_blank', 'noopener');
@@ -484,7 +484,7 @@ export function getNoteMenu(props: {
 			getCopyNoteOriginLinkMenu(appearNote, 'Copy link (Origin)')
 		: undefined,
 		(appearNote.url || appearNote.uri) ? {
-			icon: 'ph-arrow-square-out ph-bold ph-lg',
+			icon: 'ti ti-external-link',
 			text: i18n.ts.showOnRemote,
 			action: () => {
 				window.open(appearNote.url ?? appearNote.uri, '_blank', 'noopener');

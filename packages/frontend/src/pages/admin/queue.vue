@@ -53,7 +53,7 @@ function promoteAllQueues() {
 
 const headerActions = computed(() => [{
 	asFullButton: true,
-	icon: 'ph-arrow-square-out ph-bold ph-lg',
+	icon: 'ti ti-external-link',
 	text: i18n.ts.dashboard,
 	handler: () => {
 		window.open(config.url + '/queue', '_blank', 'noopener');

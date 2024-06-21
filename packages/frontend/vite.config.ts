@@ -212,6 +212,7 @@ export function getConfig(): UserConfig {
 					'ti ti-hash': 'ph-hash ph-bold ph-lg',
 					'ti ti-hourglass-empty': 'ph-hourglass ph-bold ph-lg',
 					'ti ti-search': 'ph-magnifying-glass ph-bold ph-lg',
+					'ti ti-external-link': 'ph-arrow-square-out ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

@@ -120,7 +120,7 @@ async function toggleIsSensitive(v) {
 
 const headerActions = computed(() => [{
 	text: i18n.ts.openInNewTab,
-	icon: 'ph-arrow-square-out ph-bold ph-lg',
+	icon: 'ti ti-external-link',
 	handler: () => {
 		window.open(file.value.url, '_blank', 'noopener');
 	},
