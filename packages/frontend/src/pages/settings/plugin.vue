@@ -42,7 +42,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 
 				<MkFolder>
-					<template #icon><i class="ph-terminal-window ph-bold ph-lg"></i></template>
+					<template #icon><i class="ti ti-terminal-2"></i></template>
 					<template #label>{{ i18n.ts._plugin.viewLog }}</template>
 
 					<div class="_gaps_s">

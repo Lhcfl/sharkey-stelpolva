@@ -154,7 +154,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.scratchpad,
-	icon: 'ph-terminal-window ph-bold ph-lg-2',
+	icon: 'ti ti-terminal-2',
 }));
 </script>
 

@@ -89,6 +89,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: 'API console',
-	icon: 'ph-terminal-window ph-bold ph-lg-2',
+	icon: 'ti ti-terminal-2',
 }));
 </script>

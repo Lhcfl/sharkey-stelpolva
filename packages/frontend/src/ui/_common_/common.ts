@@ -16,12 +16,12 @@ function toolsMenuItems(): MenuItem[] {
 		type: 'link',
 		to: '/scratchpad',
 		text: i18n.ts.scratchpad,
-		icon: 'ph-terminal-window ph-bold ph-lg-2',
+		icon: 'ti ti-terminal-2',
 	}, {
 		type: 'link',
 		to: '/api-console',
 		text: 'API Console',
-		icon: 'ph-terminal-window ph-bold ph-lg-2',
+		icon: 'ti ti-terminal-2',
 	}, {
 		type: 'link',
 		to: '/clicker',

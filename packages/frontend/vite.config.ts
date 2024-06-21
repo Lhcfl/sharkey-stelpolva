@@ -71,6 +71,12 @@ export function getConfig(): UserConfig {
 			pluginVue(),
 			pluginUnwindCssModuleClassName(),
 			pluginJson5(),
+			pluginReplace({
+				preventAssignment: true,
+				values: {
+					'ti ti-terminal-2': 'ph-terminal-window ph-bold ph-lg',
+				},
+			}),
 			...process.env.NODE_ENV === 'production'
 				? [
 					pluginReplace({
