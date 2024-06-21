@@ -87,7 +87,7 @@ const headerTabs = computed(() => user.value ? [{
 }, {
 	key: 'notes',
 	title: i18n.ts.notes,
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 }, {
 	key: 'activity',
 	title: i18n.ts.activity,

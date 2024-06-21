@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<template v-if="column.channelId">
 		<div style="padding: 8px; text-align: center;">
-			<MkButton primary gradate rounded inline small @click="post"><i class="ph-pencil-simple ph-bold ph-lg"></i></MkButton>
+			<MkButton primary gradate rounded inline small @click="post"><i class="ti ti-pencil"></i></MkButton>
 		</div>
 		<MkTimeline ref="timeline" :key="column.channelId + column.withRenotes + column.onlyFiles" src="channel" :channel="column.channelId" :withRenotes="withRenotes" :onlyFiles="onlyFiles" @note="onNote"/>
 	</template>
@@ -99,7 +99,7 @@ function onNote() {
 }
 
 const menu: MenuItem[] = [{
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 	text: i18n.ts.selectChannel,
 	action: setChannel,
 }, {

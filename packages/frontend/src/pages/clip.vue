@@ -94,7 +94,7 @@ async function unfavorite() {
 }
 
 const headerActions = computed(() => clip.value && isOwned.value ? [{
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 	text: i18n.ts.edit,
 	handler: async (): Promise<void> => {
 		const { canceled, result } = await os.form(clip.value.name, {

@@ -92,6 +92,8 @@ export function getConfig(): UserConfig {
 					'ti ti-confetti': 'ph-confetti ph-bold ph-lg',
 					'ti ti-home': 'ph-house ph-bold ph-lg',
 					'ti ti-clock': 'ph-clock ph-bold ph-lg',
+					'ti ti-pencil': 'ph-pencil-simple ph-bold ph-lg',
+					'ti ti-pencil ti-fw': 'ph-pencil-simple ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

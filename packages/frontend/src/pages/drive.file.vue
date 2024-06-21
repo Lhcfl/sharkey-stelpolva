@@ -45,7 +45,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'notes',
 	title: i18n.ts._fileViewer.attachedNotes,
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 }]);
 
 definePageMetadata(() => ({

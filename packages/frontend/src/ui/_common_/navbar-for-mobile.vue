@@ -39,7 +39,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div :class="$style.bottom">
 		<button class="_button" :class="$style.post" data-cy-open-post-form @click="os.post">
-			<i :class="$style.postIcon" class="ph-pencil-simple ph-bold ph-lg ti-fw"></i><span style="position: relative;">{{ i18n.ts.note }}</span>
+			<i :class="$style.postIcon" class="ti ti-pencil ti-fw"></i><span style="position: relative;">{{ i18n.ts.note }}</span>
 		</button>
 		<button class="_button" :class="$style.account" @click="openAccountMenu">
 			<MkAvatar :user="$i" :class="$style.avatar"/><MkAcct :class="$style.acct" class="_nowrap" :user="$i"/>

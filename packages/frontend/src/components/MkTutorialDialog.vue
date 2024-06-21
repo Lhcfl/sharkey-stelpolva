@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	@close="close(true)"
 	@closed="emit('closed')"
 >
-	<template v-if="page === 1" #header><i class="ph-pencil-simple ph-bold pg-lg"></i> {{ i18n.ts._initialTutorial._note.title }}</template>
+	<template v-if="page === 1" #header><i class="ti ti-pencil"></i> {{ i18n.ts._initialTutorial._note.title }}</template>
 	<template v-else-if="page === 2" #header><i class="ph-smiley ph-bold pg-lg"></i> {{ i18n.ts._initialTutorial._reaction.title }}</template>
 	<template v-else-if="page === 3" #header><i class="ti ti-home"></i> {{ i18n.ts._initialTutorial._timeline.title }}</template>
 	<template v-else-if="page === 4" #header><i class="ph-plus ph-bold pg-lg"></i> {{ i18n.ts._initialTutorial._postNote.title }}</template>

@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</span>
 		</button>
 		<button :class="$style.navButton" class="_button" @click="widgetsShowing = true"><i :class="$style.navButtonIcon" class="ph-stack ph-bold ph-lg"></i></button>
-		<button :class="$style.postButton" class="_button" @click="os.post()"><i :class="$style.navButtonIcon" class="ph-pencil-simple ph-bold ph-lg"></i></button>
+		<button :class="$style.postButton" class="_button" @click="os.post()"><i :class="$style.navButtonIcon" class="ti ti-pencil"></i></button>
 	</div>
 
 	<Transition

@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div :style="{ backgroundImage: channel.bannerUrl ? `url(${channel.bannerUrl})` : undefined }" :class="$style.banner">
 						<div :class="$style.bannerStatus">
 							<div><i class="ph-users ph-bold ph-lg"></i><I18n :src="i18n.ts._channel.usersCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.usersCount }}</b></template></I18n></div>
-							<div><i class="ph-pencil-simple ph-bold ph-lg"></i><I18n :src="i18n.ts._channel.notesCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.notesCount }}</b></template></I18n></div>
+							<div><i class="ti ti-pencil ti-fw"></i><I18n :src="i18n.ts._channel.notesCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.notesCount }}</b></template></I18n></div>
 						</div>
 						<div v-if="channel.isSensitive" :class="$style.sensitiveIndicator">{{ i18n.ts.sensitive }}</div>
 						<div :class="$style.bannerFade"></div>
@@ -61,7 +61,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.footer">
 			<MkSpacer :contentMax="700" :marginMin="16" :marginMax="16">
 				<div class="_buttonsCenter">
-					<MkButton inline rounded primary gradate @click="openPostForm()"><i class="ph-pencil-simple ph-bold ph-lg"></i> {{ i18n.ts.postToTheChannel }}</MkButton>
+					<MkButton inline rounded primary gradate @click="openPostForm()"><i class="ti ti-pencil"></i> {{ i18n.ts.postToTheChannel }}</MkButton>
 				</div>
 			</MkSpacer>
 		</div>

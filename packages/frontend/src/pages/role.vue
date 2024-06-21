@@ -89,7 +89,7 @@ const headerTabs = computed(() => [{
 	title: i18n.ts.users,
 }, {
 	key: 'timeline',
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 	title: i18n.ts.timeline,
 }]);
 
@@ -118,4 +118,3 @@ definePageMetadata(() => ({
 	border-radius: var(--radius-md);
 }
 </style>
-

@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkSpacer :contentMax="700">
 			<div class="_gaps">
 				<div class="_buttons">
-					<MkButton primary rounded @click="edit"><i class="ph-pencil-simple ph-bold ph-lg"></i> {{ i18n.ts.edit }}</MkButton>
+					<MkButton primary rounded @click="edit"><i class="ti ti-pencil"></i> {{ i18n.ts.edit }}</MkButton>
 					<MkButton danger rounded @click="del"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
 				</div>
 				<MkFolder>

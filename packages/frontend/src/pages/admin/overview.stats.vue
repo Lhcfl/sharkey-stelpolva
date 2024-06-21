@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</div>
 			<div class="item _panel notes">
-				<div class="icon"><i class="ph-pencil-simple ph-bold ph-lg"></i></div>
+				<div class="icon"><i class="ti ti-pencil"></i></div>
 				<div class="body">
 					<div class="value">
 						<MkNumber :value="stats.originalNotesCount" style="margin-right: 0.5em;"/>

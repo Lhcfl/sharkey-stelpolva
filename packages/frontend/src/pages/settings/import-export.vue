@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div class="_gaps_m">
 	<FormSection first>
-		<template #label><i class="ph-pencil-simple ph-bold ph-lg"></i> {{ i18n.ts._exportOrImport.allNotes }}</template>
+		<template #label><i class="ti ti-pencil"></i> {{ i18n.ts._exportOrImport.allNotes }}</template>
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>

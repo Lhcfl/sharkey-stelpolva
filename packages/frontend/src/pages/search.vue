@@ -45,7 +45,7 @@ const headerActions = computed(() => []);
 const headerTabs = computed(() => [{
 	key: 'note',
 	title: i18n.ts.notes,
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 }, {
 	key: 'user',
 	title: i18n.ts.users,

@@ -81,7 +81,7 @@ function onNote() {
 
 const menu: MenuItem[] = [
 	{
-		icon: 'ph-pencil-simple ph-bold ph-lg',
+		icon: 'ti ti-pencil',
 		text: i18n.ts.selectList,
 		action: setList,
 	},

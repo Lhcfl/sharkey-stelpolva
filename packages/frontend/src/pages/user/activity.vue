@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkHeatmap :user="user" :src="'notes'"/>
 		</MkFoldableSection>
 		<MkFoldableSection class="item">
-			<template #header><i class="ph-pencil-simple ph-bold ph-lg"></i> Notes</template>
+			<template #header><i class="ti ti-pencil"></i> Notes</template>
 			<XNotes :user="user"/>
 		</MkFoldableSection>
 		<MkFoldableSection class="item">

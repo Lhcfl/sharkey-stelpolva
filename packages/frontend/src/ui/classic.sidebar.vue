@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</button>
 	<div class="post" data-cy-open-post-form @click="os.post">
 		<MkButton class="button" gradate full rounded>
-			<i class="ph-pencil-simple ph-bold ph-lg ti-fw"></i><span v-if="!iconOnly" class="text">{{ i18n.ts.note }}</span>
+			<i class="ti ti-pencil ti-fw"></i><span v-if="!iconOnly" class="text">{{ i18n.ts.note }}</span>
 		</MkButton>
 	</div>
 	<div class="divider"></div>

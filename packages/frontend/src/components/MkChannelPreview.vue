@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</I18n>
 				</div>
 				<div>
-					<i class="ph-pencil-simple ph-bold ph-lg"></i>
+					<i class="ti ti-pencil ti-fw"></i>
 					<I18n :src="i18n.ts._channel.notesCount" tag="span" style="margin-left: 4px;">
 						<template #n>
 							<b>{{ channel.notesCount }}</b>

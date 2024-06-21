@@ -58,7 +58,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<span class="_indicateCounter" :class="$style.itemIndicateValueIcon">{{ $i.unreadNotificationsCount > 99 ? '99+' : $i.unreadNotificationsCount }}</span>
 			</span>
 		</button>
-		<button :class="$style.postButton" class="_button" @click="os.post()"><i :class="$style.navButtonIcon" class="ph-pencil-simple ph-bold ph-lg"></i></button>
+		<button :class="$style.postButton" class="_button" @click="os.post()"><i :class="$style.navButtonIcon" class="ti ti-pencil"></i></button>
 	</div>
 
 	<Transition

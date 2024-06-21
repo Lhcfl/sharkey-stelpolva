@@ -104,7 +104,7 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 		}),
 	}] : [], { type: 'divider' }, {
 		text: i18n.ts.createNoteFromTheFile,
-		icon: 'ph-pencil-simple ph-bold ph-lg',
+		icon: 'ti ti-pencil',
 		action: () => os.post({
 			initialFiles: [file],
 		}),
