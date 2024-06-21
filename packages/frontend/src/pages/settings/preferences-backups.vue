@@ -435,7 +435,7 @@ function menu(ev: MouseEvent, profileId: string) {
 		download: `${profiles.value[profileId].name}.json`,
 	}, { type: 'divider' }, {
 		text: ts.rename,
-		icon: 'ph-textbox ph-bold ph-lg',
+		icon: 'ti ti-forms',
 		action: () => rename(profileId),
 	}, {
 		text: ts._preferencesBackups.save,

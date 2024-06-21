@@ -264,7 +264,7 @@ function onContextmenu(ev: MouseEvent) {
 		},
 	}, { type: 'divider' }, {
 		text: i18n.ts.rename,
-		icon: 'ph-textbox ph-bold ph-lg',
+		icon: 'ti ti-forms',
 		action: rename,
 	}, { type: 'divider' }, {
 		text: i18n.ts.delete,

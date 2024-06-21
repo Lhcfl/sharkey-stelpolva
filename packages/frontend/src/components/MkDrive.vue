@@ -634,7 +634,7 @@ function getMenu() {
 		type: 'label',
 	}, folder.value ? {
 		text: i18n.ts.renameFolder,
-		icon: 'ph-textbox ph-bold ph-lg',
+		icon: 'ti ti-forms',
 		action: () => { if (folder.value) renameFolder(folder.value); },
 	} : undefined, folder.value ? {
 		text: i18n.ts.deleteFolder,

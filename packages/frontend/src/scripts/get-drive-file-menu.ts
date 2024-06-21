@@ -85,7 +85,7 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 		icon: 'ph-file-text ph-bold ph-lg',
 	}, { type: 'divider' }, {
 		text: i18n.ts.rename,
-		icon: 'ph-textbox ph-bold ph-lg',
+		icon: 'ti ti-forms',
 		action: () => rename(file),
 	}, {
 		text: file.isSensitive ? i18n.ts.unmarkAsSensitive : i18n.ts.markAsSensitive,

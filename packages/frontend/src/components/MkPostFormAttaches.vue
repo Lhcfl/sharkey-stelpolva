@@ -137,7 +137,7 @@ function showFileMenu(file: Misskey.entities.DriveFile, ev: MouseEvent): void {
 	const isImage = file.type.startsWith('image/');
 	os.popupMenu([{
 		text: i18n.ts.renameFile,
-		icon: 'ph-textbox ph-bold ph-lg',
+		icon: 'ti ti-forms',
 		action: () => { rename(file); },
 	}, {
 		text: file.isSensitive ? i18n.ts.unmarkAsSensitive : i18n.ts.markAsSensitive,
