@@ -37,7 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</div>
 				<div v-if="$i && !announcement.silence && !announcement.isRead" :class="$style.footer">
-					<MkButton primary @click="read(announcement)"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.gotIt }}</MkButton>
+					<MkButton primary @click="read(announcement)"><i class="ti ti-check"></i> {{ i18n.ts.gotIt }}</MkButton>
 				</div>
 			</div>
 			<MkError v-else-if="error" @retry="fetch()"/>

@@ -31,7 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		> <!-- we re-use t_pollEnded for "edited" instead of making an identical style -->
 			<i v-if="notification.type === 'follow'" class="ti ti-plus"></i>
 			<i v-else-if="notification.type === 'receiveFollowRequest'" class="ph-clock ph-bold ph-lg"></i>
-			<i v-else-if="notification.type === 'followRequestAccepted'" class="ph-check ph-bold ph-lg"></i>
+			<i v-else-if="notification.type === 'followRequestAccepted'" class="ti ti-check"></i>
 			<i v-else-if="notification.type === 'renote'" class="ph-rocket-launch ph-bold ph-lg"></i>
 			<i v-else-if="notification.type === 'reply'" class="ph-arrow-u-up-left ph-bold ph-lg"></i>
 			<i v-else-if="notification.type === 'mention'" class="ph-at ph-bold ph-lg"></i>
@@ -109,7 +109,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<template v-else-if="notification.type === 'receiveFollowRequest'">
 				<span :class="$style.text" style="opacity: 0.6;">{{ i18n.ts.receiveFollowRequest }}</span>
 				<div v-if="full && !followRequestDone" :class="$style.followRequestCommands">
-					<MkButton :class="$style.followRequestCommandButton" rounded primary @click="acceptFollowRequest()"><i class="ph-check ph-bold ph-lg"/> {{ i18n.ts.accept }}</MkButton>
+					<MkButton :class="$style.followRequestCommandButton" rounded primary @click="acceptFollowRequest()"><i class="ti ti-check"/> {{ i18n.ts.accept }}</MkButton>
 					<MkButton :class="$style.followRequestCommandButton" rounded danger @click="rejectFollowRequest()"><i class="ph-x ph-bold ph-lg"/> {{ i18n.ts.reject }}</MkButton>
 				</div>
 			</template>

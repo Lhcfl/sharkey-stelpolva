@@ -69,13 +69,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #key>{{ i18n.ts._externalResourceInstaller._vendorInfo.hashVerify }}</template>
 						<template #value>
 							<!--この画面が出ている時点でハッシュの検証には成功している-->
-							<i class="ph-check ph-bold ph-lg" style="color: var(--accent)"></i>
+							<i class="ti ti-check" style="color: var(--accent)"></i>
 						</template>
 					</MkKeyValue>
 				</div>
 			</FormSection>
 			<div class="_buttonsCenter">
-				<MkButton primary @click="install()"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.install }}</MkButton>
+				<MkButton primary @click="install()"><i class="ti ti-check"></i> {{ i18n.ts.install }}</MkButton>
 			</div>
 		</div>
 		<div v-else-if="uiPhase === 'error'" class="_gaps_m" :class="[$style.extInstallerRoot, $style.error]">

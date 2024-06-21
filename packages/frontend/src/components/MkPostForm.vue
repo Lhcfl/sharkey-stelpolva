@@ -46,7 +46,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template v-if="posted"></template>
 					<template v-else-if="posting"><MkEllipsis/></template>
 					<template v-else>{{ submitText }}</template>
-					<i style="margin-left: 6px;" :class="posted ? 'ph-check ph-bold ph-lg' : reply ? 'ph-arrow-u-up-left ph-bold ph-lg' : renote ? 'ph-quotes ph-bold ph-lg' : 'ph-paper-plane-tilt ph-bold ph-lg'"></i>
+					<i style="margin-left: 6px;" :class="posted ? 'ti ti-check' : reply ? 'ph-arrow-u-up-left ph-bold ph-lg' : renote ? 'ph-quotes ph-bold ph-lg' : 'ph-paper-plane-tilt ph-bold ph-lg'"></i>
 				</div>
 			</button>
 		</div>

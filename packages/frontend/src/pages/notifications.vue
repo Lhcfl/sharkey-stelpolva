@@ -74,7 +74,7 @@ const headerActions = computed(() => [tab.value === 'all' ? {
 	handler: setFilter,
 } : undefined, tab.value === 'all' ? {
 	text: i18n.ts.markAllAsRead,
-	icon: 'ph-check ph-bold ph-lg',
+	icon: 'ti ti-check',
 	handler: () => {
 		os.apiWithDialog('notifications/mark-all-as-read');
 	},

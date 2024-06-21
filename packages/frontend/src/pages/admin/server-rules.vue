@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</Sortable>
 				<div :class="$style.commands">
 					<MkButton rounded @click="serverRules.push('')"><i class="ti ti-plus"></i> {{ i18n.ts.add }}</MkButton>
-					<MkButton primary rounded @click="save"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
+					<MkButton primary rounded @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
 				</div>
 			</div>
 		</MkSpacer>

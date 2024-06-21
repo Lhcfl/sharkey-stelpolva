@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkInput v-model="emailAddress" type="email" manualSave>
 			<template #prefix><i class="ph-envelope ph-bold ph-lg"></i></template>
 			<template v-if="$i.email && !$i.emailVerified" #caption>{{ i18n.ts.verificationEmailSent }}</template>
-			<template v-else-if="emailAddress === $i.email && $i.emailVerified" #caption><i class="ph-check ph-bold ph-lg" style="color: var(--success);"></i> {{ i18n.ts.emailVerified }}</template>
+			<template v-else-if="emailAddress === $i.email && $i.emailVerified" #caption><i class="ti ti-check" style="color: var(--success);"></i> {{ i18n.ts.emailVerified }}</template>
 		</MkInput>
 	</FormSection>
 

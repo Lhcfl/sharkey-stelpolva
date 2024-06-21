@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div :class="$style.footer">
 		<MkButton v-if="!isFollowing" primary gradate rounded full @click="follow"><i class="ti ti-plus"></i> {{ i18n.ts.follow }}</MkButton>
-		<div v-else style="opacity: 0.7; text-align: center;">{{ i18n.ts.youFollowing }} <i class="ph-check ph-bold ph-lg"></i></div>
+		<div v-else style="opacity: 0.7; text-align: center;">{{ i18n.ts.youFollowing }} <i class="ti ti-check"></i></div>
 	</div>
 </div>
 </template>

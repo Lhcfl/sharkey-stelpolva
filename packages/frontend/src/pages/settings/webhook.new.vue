@@ -33,7 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</FormSection>
 
 	<div class="_buttons">
-		<MkButton primary inline @click="create"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.create }}</MkButton>
+		<MkButton primary inline @click="create"><i class="ti ti-check"></i> {{ i18n.ts.create }}</MkButton>
 	</div>
 </div>
 </template>

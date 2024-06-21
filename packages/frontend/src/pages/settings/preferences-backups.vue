@@ -425,7 +425,7 @@ function menu(ev: MouseEvent, profileId: string) {
 
 	return os.popupMenu([{
 		text: ts._preferencesBackups.apply,
-		icon: 'ph-check ph-bold ph-lg',
+		icon: 'ti ti-check',
 		action: () => applyProfile(profileId),
 	}, {
 		type: 'a',

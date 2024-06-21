@@ -72,7 +72,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</MkSpacer>
 		<div :class="$style.footer">
-			<MkButton primary rounded style="margin: 0 auto;" @click="done"><i class="ph-check ph-bold ph-lg"></i> {{ props.emoji ? i18n.ts.update : i18n.ts.create }}</MkButton>
+			<MkButton primary rounded style="margin: 0 auto;" @click="done"><i class="ti ti-check"></i> {{ props.emoji ? i18n.ts.update : i18n.ts.create }}</MkButton>
 		</div>
 	</div>
 </MkWindow>

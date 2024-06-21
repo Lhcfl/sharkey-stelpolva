@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<option value="info"><i class="ph-info ph-bold ph-lg"></i></option>
 					<option value="warning"><i class="ph-warning ph-bold ph-lg" style="color: var(--warn);"></i></option>
 					<option value="error"><i class="ti ti-circle-x" style="color: var(--error);"></i></option>
-					<option value="success"><i class="ph-check ph-bold ph-lg" style="color: var(--success);"></i></option>
+					<option value="success"><i class="ti ti-check" style="color: var(--success);"></i></option>
 				</MkRadios>
 				<MkRadios v-model="display">
 					<template #label>{{ i18n.ts.display }}</template>
@@ -43,7 +43,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</MkSpacer>
 		<div :class="$style.footer">
-			<MkButton primary rounded style="margin: 0 auto;" @click="done"><i class="ph-check ph-bold ph-lg"></i> {{ props.announcement ? i18n.ts.update : i18n.ts.create }}</MkButton>
+			<MkButton primary rounded style="margin: 0 auto;" @click="done"><i class="ti ti-check"></i> {{ props.announcement ? i18n.ts.update : i18n.ts.create }}</MkButton>
 		</div>
 	</div>
 </MkModalWindow>

@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<i v-if="announcement.icon === 'info'" class="ph-info ph-bold ph-lg"></i>
 								<i v-else-if="announcement.icon === 'warning'" class="ph-warning ph-bold ph-lg" style="color: var(--warn);"></i>
 								<i v-else-if="announcement.icon === 'error'" class="ti ti-circle-x" style="color: var(--error);"></i>
-								<i v-else-if="announcement.icon === 'success'" class="ph-check ph-bold ph-lg" style="color: var(--success);"></i>
+								<i v-else-if="announcement.icon === 'success'" class="ti ti-check" style="color: var(--success);"></i>
 							</span>
 							<MkA :to="`/announcements/${announcement.id}`"><span>{{ announcement.title }}</span></MkA>
 						</div>
@@ -36,7 +36,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</MkA>
 						</div>
 						<div v-if="tab !== 'past' && $i && !announcement.silence && !announcement.isRead" :class="$style.footer">
-							<MkButton primary @click="read(announcement)"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.gotIt }}</MkButton>
+							<MkButton primary @click="read(announcement)"><i class="ti ti-check"></i> {{ i18n.ts.gotIt }}</MkButton>
 						</div>
 					</section>
 				</MkPagination>

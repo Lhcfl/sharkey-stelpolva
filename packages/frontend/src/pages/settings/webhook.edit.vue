@@ -35,7 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkSwitch v-model="active">{{ i18n.ts._webhookSettings.active }}</MkSwitch>
 
 	<div class="_buttons">
-		<MkButton primary inline @click="save"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
+		<MkButton primary inline @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
 		<MkButton danger inline @click="del"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
 	</div>
 </div>

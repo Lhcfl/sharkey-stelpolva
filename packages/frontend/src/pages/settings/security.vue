@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div>
 					<div v-for="item in items" :key="item.id" v-panel class="timnmucd">
 						<header>
-							<i v-if="item.success" class="ph-check ph-bold ph-lg icon succ"></i>
+							<i v-if="item.success" class="ti ti-check icon succ"></i>
 							<i v-else class="ti ti-circle-x icon fail"></i>
 							<code class="ip _monospace">{{ item.ip }}</code>
 							<MkTime :time="item.createdAt" class="time"/>

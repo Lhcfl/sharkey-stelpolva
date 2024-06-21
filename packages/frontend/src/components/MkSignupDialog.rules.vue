@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<MkFolder v-if="availableServerRules" :defaultOpen="true">
 				<template #label>{{ i18n.ts.serverRules }}</template>
-				<template #suffix><i v-if="agreeServerRules" class="ph-check ph-bold ph-lg" style="color: var(--success)"></i></template>
+				<template #suffix><i v-if="agreeServerRules" class="ti ti-check" style="color: var(--success)"></i></template>
 
 				<ol class="_gaps_s" :class="$style.rules">
 					<li v-for="item in instance.serverRules" :class="$style.rule"><div :class="$style.ruleText" v-html="sanitizeHtml(item)"></div></li>
@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<MkFolder v-if="availableTos || availablePrivacyPolicy" :defaultOpen="true">
 				<template #label>{{ tosPrivacyPolicyLabel }}</template>
-				<template #suffix><i v-if="agreeTosAndPrivacyPolicy" class="ph-check ph-bold ph-lg" style="color: var(--success)"></i></template>
+				<template #suffix><i v-if="agreeTosAndPrivacyPolicy" class="ti ti-check" style="color: var(--success)"></i></template>
 				<div class="_gaps_s">
 					<div v-if="availableTos"><a :href="instance.tosUrl ?? undefined" class="_link" target="_blank">{{ i18n.ts.termsOfService }} <i class="ph-arrow-square-out ph-bold ph-lg"></i></a></div>
 					<div v-if="availablePrivacyPolicy"><a :href="instance.privacyPolicyUrl ?? undefined" class="_link" target="_blank">{{ i18n.ts.privacyPolicy }} <i class="ph-arrow-square-out ph-bold ph-lg"></i></a></div>
@@ -43,7 +43,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<MkFolder :defaultOpen="true">
 				<template #label>{{ i18n.ts.basicNotesBeforeCreateAccount }}</template>
-				<template #suffix><i v-if="agreeNote" class="ph-check ph-bold ph-lg" style="color: var(--success)"></i></template>
+				<template #suffix><i v-if="agreeNote" class="ti ti-check" style="color: var(--success)"></i></template>
 
 				<a href="https://activitypub.software/TransFem-org/Sharkey/-/blob/stable/IMPORTANT_NOTES.md" class="_link" target="_blank">{{ i18n.ts.basicNotesBeforeCreateAccount }} <i class="ph-arrow-square-out ph-bold ph-lg"></i></a>
 

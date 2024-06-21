@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<slot name="header"></slot>
 			</span>
 			<button v-if="!withOkButton" :class="$style.headerButton" class="_button" data-cy-modal-window-close @click="$emit('close')"><i class="ph-x ph-bold ph-lg"></i></button>
-			<button v-if="withOkButton" :class="$style.headerButton" class="_button" :disabled="okButtonDisabled" @click="$emit('ok')"><i class="ph-check ph-bold ph-lg"></i></button>
+			<button v-if="withOkButton" :class="$style.headerButton" class="_button" :disabled="okButtonDisabled" @click="$emit('ok')"><i class="ti ti-check"></i></button>
 		</div>
 		<div :class="$style.body">
 			<slot :width="bodyWidth" :height="bodyHeight"></slot>

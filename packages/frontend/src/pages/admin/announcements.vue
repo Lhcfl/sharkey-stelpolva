@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<i v-if="announcement.icon === 'info'" class="ph-info ph-bold ph-lg"></i>
 					<i v-else-if="announcement.icon === 'warning'" class="ph-warning ph-bold ph-lg" style="color: var(--warn);"></i>
 					<i v-else-if="announcement.icon === 'error'" class="ti ti-circle-x" style="color: var(--error);"></i>
-					<i v-else-if="announcement.icon === 'success'" class="ph-check ph-bold ph-lg" style="color: var(--success);"></i>
+					<i v-else-if="announcement.icon === 'success'" class="ti ti-check" style="color: var(--success);"></i>
 				</template>
 				<template #caption>{{ announcement.text }}</template>
 
@@ -36,7 +36,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<option value="info"><i class="ph-info ph-bold ph-lg"></i></option>
 						<option value="warning"><i class="ph-warning ph-bold ph-lg" style="color: var(--warn);"></i></option>
 						<option value="error"><i class="ti ti-circle-x" style="color: var(--error);"></i></option>
-						<option value="success"><i class="ph-check ph-bold ph-lg" style="color: var(--success);"></i></option>
+						<option value="success"><i class="ti ti-check" style="color: var(--success);"></i></option>
 					</MkRadios>
 					<MkRadios v-model="announcement.display">
 						<template #label>{{ i18n.ts.display }}</template>
@@ -57,7 +57,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<p v-if="announcement.reads">{{ i18n.tsx.nUsersRead({ n: announcement.reads }) }}</p>
 					<div class="buttons _buttons">
 						<MkButton class="button" inline primary @click="save(announcement)"><i class="ph-floppy-disk ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
-						<MkButton v-if="announcement.id != null" class="button" inline @click="archive(announcement)"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts._announcement.end }} ({{ i18n.ts.archive }})</MkButton>
+						<MkButton v-if="announcement.id != null" class="button" inline @click="archive(announcement)"><i class="ti ti-check"></i> {{ i18n.ts._announcement.end }} ({{ i18n.ts.archive }})</MkButton>
 						<MkButton v-if="announcement.id != null" class="button" inline danger @click="del(announcement)"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
 					</div>
 				</div>

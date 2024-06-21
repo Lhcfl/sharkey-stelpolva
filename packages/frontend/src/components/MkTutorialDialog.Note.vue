@@ -23,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</I18n>
 	<MkNote :class="$style.exampleNoteRoot" :note="exampleNote" :mock="true" @reaction="addReaction" @removeReaction="removeReaction"/>
 	<div v-if="onceReacted">
-		<b style="color: var(--accent);"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts._initialTutorial.wellDone }}</b> {{ i18n.ts._initialTutorial._reaction.reactNotification }}<br>
+		<b style="color: var(--accent);"><i class="ti ti-check"></i> {{ i18n.ts._initialTutorial.wellDone }}</b> {{ i18n.ts._initialTutorial._reaction.reactNotification }}<br>
 		<I18n :src="i18n.ts._initialTutorial._reaction.reactDone">
 			<template #undo>
 				<i class="ph-minus ph-bold ph-lg"></i>

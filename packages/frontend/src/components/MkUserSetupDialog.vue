@@ -108,7 +108,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkAnimBg style="position: absolute; top: 0;" :scale="1.5"/>
 					<MkSpacer :marginMin="20" :marginMax="28">
 						<div class="_gaps" style="text-align: center;">
-							<i class="ph-check ph-bold ph-lg" style="display: block; margin: auto; font-size: 3em; color: var(--accent);"></i>
+							<i class="ti ti-check" style="display: block; margin: auto; font-size: 3em; color: var(--accent);"></i>
 							<div style="font-size: 120%;">{{ i18n.ts._initialAccountSetting.initialAccountSettingCompleted }}</div>
 							<div>{{ i18n.tsx._initialAccountSetting.youCanContinueTutorial({ name: instance.name ?? host }) }}</div>
 							<div class="_buttonsCenter" style="margin-top: 16px;">

@@ -212,7 +212,7 @@ watch(theme, apply, { deep: true });
 
 const headerActions = computed(() => [{
 	asFullButton: true,
-	icon: 'ph-check ph-bold ph-lg',
+	icon: 'ti ti-check',
 	text: i18n.ts.saveAs,
 	handler: saveAs,
 }]);
