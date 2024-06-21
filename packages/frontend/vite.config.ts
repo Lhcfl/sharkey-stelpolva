@@ -72,7 +72,11 @@ export function getConfig(): UserConfig {
 			pluginUnwindCssModuleClassName(),
 			pluginJson5(),
 			pluginReplace({
-				preventAssignment: true,
+				preventAssignment: false,
+				// only replace these strings after a quote, remove a ` ti-fw`
+				// it if happens to be just after, and make sure they're
+				// followed by a word-boundary that's not a dash
+				delimiters: ['(?<=["\'])', '(?: ti-fw)?\\b(?!-)'],
 				values: {
 					'ti ti-terminal-2': 'ph-terminal-window ph-bold ph-lg',
 					'ti ti-download': 'ph-download ph-bold ph-lg',
@@ -83,7 +87,6 @@ export function getConfig(): UserConfig {
 					'ti ti-world-search': 'ph-planet ph-bold ph-lg',
 					'ti ti-chevron-right': 'ph-caret-right ph-bold ph-lg',
 					'ti ti-chevrons-right': 'ph-caret-right ph-bold ph-lg',
-					'ti ti-chevron-right ti-fw': 'ph-caret-right ph-bold ph-lg',
 					'ti ti-dots': 'ph-dots-three ph-bold ph-lg',
 					'ti ti-check': 'ph-check ph-bold ph-lg',
 					'ti ti-device-floppy': 'ph-floppy-disk ph-bold ph-lg',
@@ -93,7 +96,6 @@ export function getConfig(): UserConfig {
 					'ti ti-home': 'ph-house ph-bold ph-lg',
 					'ti ti-clock': 'ph-clock ph-bold ph-lg',
 					'ti ti-pencil': 'ph-pencil-simple ph-bold ph-lg',
-					'ti ti-pencil ti-fw': 'ph-pencil-simple ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'
