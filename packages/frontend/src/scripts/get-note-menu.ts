@@ -323,7 +323,7 @@ export function getNoteMenu(props: {
 					action: unclip,
 				}, { type: 'divider' }] : []
 			), {
-				icon: 'ph-info ph-bold ph-lg',
+				icon: 'ti ti-info-circle',
 				text: i18n.ts.details,
 				action: openDetail,
 			}, {
@@ -472,7 +472,7 @@ export function getNoteMenu(props: {
 			.filter(x => x !== undefined);
 	} else {
 		menu = [{
-			icon: 'ph-info ph-bold ph-lg',
+			icon: 'ti ti-info-circle',
 			text: i18n.ts.details,
 			action: openDetail,
 		}, {

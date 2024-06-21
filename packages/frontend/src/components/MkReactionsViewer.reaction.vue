@@ -112,7 +112,7 @@ async function menu(ev) {
 
 	os.popupMenu([{
 		text: i18n.ts.info,
-		icon: 'ph-info ph-bold ph-lg',
+		icon: 'ti ti-info-circle',
 		action: async () => {
 			os.popup(MkCustomEmojiDetailedDialog, {
 				emoji: await misskeyApiGet('emoji', {

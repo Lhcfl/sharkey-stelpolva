@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkButton danger rounded @click="del"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
 				</div>
 				<MkFolder>
-					<template #icon><i class="ph-info ph-bold ph-lg"></i></template>
+					<template #icon><i class="ti ti-info-circle"></i></template>
 					<template #label>{{ i18n.ts.info }}</template>
 					<XEditor :modelValue="role" readonly/>
 				</MkFolder>

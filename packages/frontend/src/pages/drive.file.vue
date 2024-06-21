@@ -41,7 +41,7 @@ const headerActions = computed(() => []);
 const headerTabs = computed(() => [{
 	key: 'info',
 	title: i18n.ts.info,
-	icon: 'ph-info ph-bold ph-lg',
+	icon: 'ti ti-info-circle',
 }, {
 	key: 'notes',
 	title: i18n.ts._fileViewer.attachedNotes,

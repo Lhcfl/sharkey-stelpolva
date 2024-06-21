@@ -26,7 +26,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			}"
 		>
 			<img :src="chosen.imageUrl" :class="$style.img">
-			<button class="_button" :class="$style.i" @click.prevent.stop="toggleMenu"><i :class="$style.iIcon" class="ph-info ph-bold ph-lg"></i></button>
+			<button class="_button" :class="$style.i" @click.prevent.stop="toggleMenu"><i :class="$style.iIcon" class="ti ti-info-circle"></i></button>
 		</component>
 	</div>
 	<div v-else :class="$style.menu">

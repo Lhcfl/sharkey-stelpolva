@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkFolder v-for="announcement in announcements" :key="announcement.id ?? announcement._id" :defaultOpen="announcement.id == null">
 				<template #label>{{ announcement.title }}</template>
 				<template #icon>
-					<i v-if="announcement.icon === 'info'" class="ph-info ph-bold ph-lg"></i>
+					<i v-if="announcement.icon === 'info'" class="ti ti-info-circle"></i>
 					<i v-else-if="announcement.icon === 'warning'" class="ti ti-alert-triangle" style="color: var(--warn);"></i>
 					<i v-else-if="announcement.icon === 'error'" class="ti ti-circle-x" style="color: var(--error);"></i>
 					<i v-else-if="announcement.icon === 'success'" class="ti ti-check" style="color: var(--success);"></i>
@@ -33,7 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkInput>
 					<MkRadios v-model="announcement.icon">
 						<template #label>{{ i18n.ts.icon }}</template>
-						<option value="info"><i class="ph-info ph-bold ph-lg"></i></option>
+						<option value="info"><i class="ti ti-info-circle"></i></option>
 						<option value="warning"><i class="ti ti-alert-triangle" style="color: var(--warn);"></i></option>
 						<option value="error"><i class="ti ti-circle-x" style="color: var(--error);"></i></option>
 						<option value="success"><i class="ti ti-check" style="color: var(--success);"></i></option>

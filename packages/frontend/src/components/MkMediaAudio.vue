@@ -188,7 +188,7 @@ function showMenu(ev: MouseEvent) {
 		}, {
 			type: 'link' as const,
 			text: i18n.ts._fileViewer.title,
-			icon: 'ph ph-info',
+			icon: 'ti ti-info-circle',
 			to: `/my/drive/file/${props.audio.id}`,
 		});
 	}

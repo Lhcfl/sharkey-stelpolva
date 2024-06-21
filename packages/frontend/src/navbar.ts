@@ -153,7 +153,7 @@ export const navbarItemDef = reactive({
 	},
 	about: {
 		title: i18n.ts.about,
-		icon: 'ph-info ph-bold ph-lg',
+		icon: 'ti ti-info-circle',
 		action: (ev) => {
 			openInstanceMenu(ev);
 		},

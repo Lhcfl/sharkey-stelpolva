@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<FormSection first>
 		<div class="_gaps_s">
 			<MkFolder>
-				<template #icon><i class="ph-info ph-bold ph-lg"></i></template>
+				<template #icon><i class="ti ti-info-circle"></i></template>
 				<template #label>{{ i18n.ts.accountInfo }}</template>
 
 				<div class="_gaps_m">

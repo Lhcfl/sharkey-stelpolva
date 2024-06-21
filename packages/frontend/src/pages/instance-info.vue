@@ -270,7 +270,7 @@ const headerActions = computed(() => [{
 const headerTabs = computed(() => [{
 	key: 'overview',
 	title: i18n.ts.overview,
-	icon: 'ph-info ph-bold ph-lg',
+	icon: 'ti ti-info-circle',
 }, {
 	key: 'chart',
 	title: i18n.ts.charts,

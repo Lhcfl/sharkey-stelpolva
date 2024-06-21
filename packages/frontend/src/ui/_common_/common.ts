@@ -47,7 +47,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 	}, {
 		type: 'link',
 		text: i18n.ts.instanceInfo,
-		icon: 'ph-info ph-bold ph-lg',
+		icon: 'ti ti-info-circle',
 		to: '/about',
 	}, {
 		type: 'link',
