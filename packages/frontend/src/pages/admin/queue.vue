@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<XQueue v-if="tab === 'deliver'" domain="deliver"/>
 		<XQueue v-else-if="tab === 'inbox'" domain="inbox"/>
 		<br>
-		<MkButton @click="promoteAllQueues"><i class="ph-arrow-clockwise ph-bold ph-lg"></i> {{ i18n.ts.retryAllQueuesNow }}</MkButton>
+		<MkButton @click="promoteAllQueues"><i class="ti ti-reload"></i> {{ i18n.ts.retryAllQueuesNow }}</MkButton>
 	</MkSpacer>
 </MkStickyContainer>
 </template>

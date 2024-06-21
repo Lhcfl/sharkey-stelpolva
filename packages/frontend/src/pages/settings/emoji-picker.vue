@@ -39,7 +39,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<div class="_buttons">
 				<MkButton inline @click="previewReaction"><i class="ti ti-eye"></i> {{ i18n.ts.preview }}</MkButton>
-				<MkButton inline danger @click="setDefaultReaction"><i class="ph-arrow-counter-clockwise ph-bold ph-lg"></i> {{ i18n.ts.default }}</MkButton>
+				<MkButton inline danger @click="setDefaultReaction"><i class="ti ti-reload"></i> {{ i18n.ts.default }}</MkButton>
 				<MkButton inline danger @click="overwriteFromPinnedEmojis"><i class="ph-copy ph-bold ph-lg"></i> {{ i18n.ts.overwriteFromPinnedEmojis }}</MkButton>
 			</div>
 		</div>
@@ -79,7 +79,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<div class="_buttons">
 				<MkButton inline @click="previewEmoji"><i class="ti ti-eye"></i> {{ i18n.ts.preview }}</MkButton>
-				<MkButton inline danger @click="setDefaultEmoji"><i class="ph-arrow-counter-clockwise ph-bold ph-lg"></i> {{ i18n.ts.default }}</MkButton>
+				<MkButton inline danger @click="setDefaultEmoji"><i class="ti ti-reload"></i> {{ i18n.ts.default }}</MkButton>
 				<MkButton inline danger @click="overwriteFromPinnedEmojisForReaction"><i class="ph-copy ph-bold ph-lg"></i> {{ i18n.ts.overwriteFromPinnedEmojisForReaction }}</MkButton>
 			</div>
 		</div>

@@ -103,6 +103,31 @@ export function getConfig(): UserConfig {
 			}),
 			iconsReplace({
 				values: {
+					'ti ti-reload': 'ph-arrow-clockwise ph-bold ph-lg',
+				},
+				exclude: [
+					'**/pages/settings/emoji-picker.*',
+					'**/pages/flash/flash.*',
+				],
+			}),
+			iconsReplace({
+				values: {
+					'ti ti-reload': 'ph-arrow-counter-clockwise ph-bold ph-lg',
+				},
+				include: [
+					'**/pages/settings/emoji-picker.*',
+				],
+			}),
+			iconsReplace({
+				values: {
+					'ti ti-reload': 'ph-arrows-clockwise ph-bold ph-lg',
+				},
+				include: [
+					'**/pages/flash/flash.*',
+				],
+			}),
+			iconsReplace({
+				values: {
 					'ti ti-terminal-2': 'ph-terminal-window ph-bold ph-lg',
 					'ti ti-download': 'ph-download ph-bold ph-lg',
 					'ti ti-circle-x': 'ph-x-circle ph-bold ph-lg',
