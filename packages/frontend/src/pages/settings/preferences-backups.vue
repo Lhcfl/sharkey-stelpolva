@@ -443,7 +443,7 @@ function menu(ev: MouseEvent, profileId: string) {
 		action: () => save(profileId),
 	}, { type: 'divider' }, {
 		text: ts.delete,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		action: () => deleteProfile(profileId),
 		danger: true,
 	}], (ev.currentTarget ?? ev.target ?? undefined) as unknown as HTMLElement | undefined);

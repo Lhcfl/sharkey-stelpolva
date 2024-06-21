@@ -462,7 +462,7 @@ export function getNoteMenu(props: {
 					action: delEdit,
 				},
 				{
-					icon: 'ph-trash ph-bold ph-lg',
+					icon: 'ti ti-trash',
 					text: i18n.ts.delete,
 					danger: true,
 					action: del,

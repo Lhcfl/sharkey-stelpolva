@@ -268,7 +268,7 @@ function onContextmenu(ev: MouseEvent) {
 		action: rename,
 	}, { type: 'divider' }, {
 		text: i18n.ts.delete,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		danger: true,
 		action: deleteFolder,
 	}];

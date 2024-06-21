@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div class="_gaps">
 				<div class="_buttons">
 					<MkButton primary rounded @click="edit"><i class="ti ti-pencil"></i> {{ i18n.ts.edit }}</MkButton>
-					<MkButton danger rounded @click="del"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
+					<MkButton danger rounded @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 				</div>
 				<MkFolder>
 					<template #icon><i class="ti ti-info-circle"></i></template>

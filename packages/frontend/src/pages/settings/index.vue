@@ -176,7 +176,7 @@ const menuDef = computed(() => [{
 		active: currentPage.value?.route.name === 'preferences-backups',
 	}, {
 		type: 'button',
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		text: i18n.ts.clearCache,
 		action: async () => {
 			await clearCache();

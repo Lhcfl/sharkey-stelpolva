@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="buttons">
 			<slot name="func"></slot>
 			<button v-if="removable" class="_button" @click="remove()">
-				<i class="ph-trash ph-bold ph-lg"></i>
+				<i class="ti ti-trash"></i>
 			</button>
 			<button v-if="draggable" class="drag-handle _button">
 				<i class="ph-list ph-bold ph-lg-2"></i>

@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<i v-else class="ti ti-clock" :class="$style.icon"></i>
 					<span>{{ i18n.ts._relayStatus[relay.status] }}</span>
 				</div>
-				<MkButton class="button" inline danger @click="remove(relay.inbox)"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.remove }}</MkButton>
+				<MkButton class="button" inline danger @click="remove(relay.inbox)"><i class="ti ti-trash"></i> {{ i18n.ts.remove }}</MkButton>
 			</div>
 		</div>
 	</MkSpacer>

@@ -121,7 +121,7 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 		download: file.name,
 	}, { type: 'divider' }, {
 		text: i18n.ts.delete,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		danger: true,
 		action: () => deleteFile(file),
 	}];

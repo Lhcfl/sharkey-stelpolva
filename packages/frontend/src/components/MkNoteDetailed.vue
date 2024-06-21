@@ -710,7 +710,7 @@ function showRenoteMenu(viaKeyboard = false): void {
 	pleaseLogin();
 	os.popupMenu([{
 		text: i18n.ts.unrenote,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		danger: true,
 		action: () => {
 			misskeyApi('notes/delete', {

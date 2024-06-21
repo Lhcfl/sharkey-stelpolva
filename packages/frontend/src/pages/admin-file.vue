@@ -41,7 +41,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 
 			<div>
-				<MkButton danger @click="del"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
+				<MkButton danger @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 			</div>
 		</div>
 		<div v-else-if="tab === 'ip' && info" class="_gaps_m">

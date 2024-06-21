@@ -159,7 +159,7 @@ function showFileMenu(file: Misskey.entities.DriveFile, ev: MouseEvent): void {
 		action: () => { detachMedia(file.id); },
 	}, {
 		text: i18n.ts.deleteFile,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		danger: true,
 		action: () => { detachAndDeleteMedia(file); },
 	}], ev.currentTarget ?? ev.target).then(() => menuShowing = false);

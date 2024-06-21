@@ -38,7 +38,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<div class="_buttons">
 					<MkButton v-if="plugin.config" inline @click="config(plugin)"><i class="ti ti-settings"></i> {{ i18n.ts.settings }}</MkButton>
-					<MkButton inline danger @click="uninstall(plugin)"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.uninstall }}</MkButton>
+					<MkButton inline danger @click="uninstall(plugin)"><i class="ti ti-trash"></i> {{ i18n.ts.uninstall }}</MkButton>
 				</div>
 
 				<MkFolder>

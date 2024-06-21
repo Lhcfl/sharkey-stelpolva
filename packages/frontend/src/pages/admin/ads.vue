@@ -72,7 +72,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						></i> {{ i18n.ts.save }}
 					</MkButton>
 					<MkButton class="button" inline danger @click="remove(ad)">
-						<i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.remove }}
+						<i class="ti ti-trash"></i> {{ i18n.ts.remove }}
 					</MkButton>
 				</div>
 			</div>

@@ -33,7 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<i class="ti ti-download"></i>
 				</a>
 				<button v-tooltip="i18n.ts.delete" class="_button" :class="[$style.fileQuickActionsOthersButton, $style.danger]" @click="deleteFile()">
-					<i class="ph-trash ph-bold ph-lg"></i>
+					<i class="ti ti-trash"></i>
 				</button>
 			</div>
 		</div>

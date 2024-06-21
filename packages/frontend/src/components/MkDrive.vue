@@ -638,7 +638,7 @@ function getMenu() {
 		action: () => { if (folder.value) renameFolder(folder.value); },
 	} : undefined, folder.value ? {
 		text: i18n.ts.deleteFolder,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		action: () => { deleteFolder(folder.value as Misskey.entities.DriveFolder); },
 	} : undefined, {
 		text: i18n.ts.createFolder,

@@ -173,7 +173,7 @@ export const navbarItemDef = reactive({
 	},
 	cacheClear: {
 		title: i18n.ts.clearCache,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		action: (ev) => {
 			clearCache();
 		},

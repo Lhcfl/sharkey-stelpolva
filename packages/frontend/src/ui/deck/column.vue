@@ -171,7 +171,7 @@ function getMenu() {
 			popRightColumn(props.column.id);
 		},
 	} : undefined, { type: 'divider' }, {
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		text: i18n.ts.remove,
 		danger: true,
 		action: () => {

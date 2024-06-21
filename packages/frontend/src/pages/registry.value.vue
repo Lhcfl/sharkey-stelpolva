@@ -37,7 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #value><MkTime :time="value.updatedAt" mode="detail"/></template>
 				</MkKeyValue>
 
-				<MkButton danger @click="del"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
+				<MkButton danger @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 			</template>
 		</div>
 	</MkSpacer>

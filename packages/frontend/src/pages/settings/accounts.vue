@@ -52,7 +52,7 @@ function menu(account, ev) {
 		action: () => switchAccount(account),
 	}, {
 		text: i18n.ts.logout,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		danger: true,
 		action: () => removeAccount(account),
 	}], ev.currentTarget ?? ev.target);

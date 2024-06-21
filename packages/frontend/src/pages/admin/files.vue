@@ -79,7 +79,7 @@ const headerActions = computed(() => [{
 	handler: lookupFile,
 }, {
 	text: i18n.ts.clearCachedFiles,
-	icon: 'ph-trash ph-bold ph-lg',
+	icon: 'ti ti-trash',
 	handler: clear,
 }]);
 

@@ -144,7 +144,7 @@ const headerActions = computed(() => clip.value && isOwned.value ? [{
 		});
 	},
 }] : []), {
-	icon: 'ph-trash ph-bold ph-lg',
+	icon: 'ti ti-trash',
 	text: i18n.ts.delete,
 	danger: true,
 	handler: async (): Promise<void> => {

@@ -36,7 +36,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<div class="_buttons">
 		<MkButton primary inline @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
-		<MkButton danger inline @click="del"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
+		<MkButton danger inline @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 	</div>
 </div>
 </template>

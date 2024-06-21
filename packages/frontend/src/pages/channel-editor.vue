@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkButton v-if="bannerId == null" @click="setBannerImage"><i class="ti ti-plus"></i> {{ i18n.ts._channel.setBanner }}</MkButton>
 				<div v-else-if="bannerUrl">
 					<img :src="bannerUrl" style="width: 100%;"/>
-					<MkButton @click="removeBannerImage()"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts._channel.removeBanner }}</MkButton>
+					<MkButton @click="removeBannerImage()"><i class="ti ti-trash"></i> {{ i18n.ts._channel.removeBanner }}</MkButton>
 				</div>
 			</div>
 
@@ -61,7 +61,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<div class="_buttons">
 				<MkButton primary @click="save()"><i class="ti ti-device-floppy"></i> {{ channelId ? i18n.ts.save : i18n.ts.create }}</MkButton>
-				<MkButton v-if="channelId" danger @click="archive()"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.archive }}</MkButton>
+				<MkButton v-if="channelId" danger @click="archive()"><i class="ti ti-trash"></i> {{ i18n.ts.archive }}</MkButton>
 			</div>
 		</div>
 	</MkSpacer>
