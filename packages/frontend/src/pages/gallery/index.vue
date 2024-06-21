@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkHorizontalSwipe v-model:tab="tab" :tabs="headerTabs">
 			<div v-if="tab === 'explore'" key="explore">
 				<MkFoldableSection class="_margin">
-					<template #header><i class="ph-clock ph-bold ph-lg"></i>{{ i18n.ts.recentPosts }}</template>
+					<template #header><i class="ti ti-clock"></i>{{ i18n.ts.recentPosts }}</template>
 					<MkPagination v-slot="{items}" :pagination="recentPostsPagination" :disableAutoLoad="true">
 						<div :class="$style.items">
 							<MkGalleryPostPreview v-for="post in items" :key="post.id" :post="post" class="post"/>

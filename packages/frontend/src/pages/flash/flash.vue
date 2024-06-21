@@ -46,8 +46,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div :class="$style.footer">
 					<Mfm :text="`By @${flash.user.username}`"/>
 					<div class="date">
-						<div v-if="flash.createdAt != flash.updatedAt"><i class="ph-clock ph-bold ph-lg"></i> {{ i18n.ts.updatedAt }}: <MkTime :time="flash.updatedAt" mode="detail"/></div>
-						<div><i class="ph-clock ph-bold ph-lg"></i> {{ i18n.ts.createdAt }}: <MkTime :time="flash.createdAt" mode="detail"/></div>
+						<div v-if="flash.createdAt != flash.updatedAt"><i class="ti ti-clock"></i> {{ i18n.ts.updatedAt }}: <MkTime :time="flash.updatedAt" mode="detail"/></div>
+						<div><i class="ti ti-clock"></i> {{ i18n.ts.createdAt }}: <MkTime :time="flash.createdAt" mode="detail"/></div>
 					</div>
 				</div>
 				<MkA v-if="$i && $i.id === flash.userId" :to="`/play/${flash.id}/edit`" style="color: var(--accent);">{{ i18n.ts._play.editThisPage }}</MkA>

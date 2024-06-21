@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div class="title">{{ post.title }}</div>
 						<div class="description"><Mfm :text="post.description" :isBlock="true"/></div>
 						<div class="info">
-							<i class="ph-clock ph-bold ph-lg"></i> <MkTime :time="post.createdAt" mode="detail"/>
+							<i class="ti ti-clock"></i> <MkTime :time="post.createdAt" mode="detail"/>
 						</div>
 						<div class="actions">
 							<div class="like">
@@ -44,7 +44,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 					<MkAd :prefer="['horizontal', 'horizontal-big']"/>
 					<MkContainer :max-height="300" :foldable="true" class="other">
-						<template #icon><i class="ph-clock ph-bold ph-lg"></i></template>
+						<template #icon><i class="ti ti-clock"></i></template>
 						<template #header>{{ i18n.ts.recentPosts }}</template>
 						<MkPagination v-slot="{items}" :pagination="otherPostsPagination">
 							<div class="sdrarzaf">

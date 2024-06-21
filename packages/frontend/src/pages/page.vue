@@ -75,7 +75,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkFollowButton v-if="!$i || $i.id != page.user.id" :user="page.user!" :inline="true" :transparent="false" :full="true" :class="$style.follow"/>
 					</div>
 					<div :class="$style.pageDate">
-						<div><i class="ph ph-clock ph-bold ph-lg"></i> {{ i18n.ts.createdAt }}: <MkTime :time="page.createdAt" mode="detail"/></div>
+						<div><i class="ti ti-clock"></i> {{ i18n.ts.createdAt }}: <MkTime :time="page.createdAt" mode="detail"/></div>
 						<div v-if="page.createdAt != page.updatedAt"><i class="ph-pencil-simple ph-bold ph-lg"></i> {{ i18n.ts.updatedAt }}: <MkTime :time="page.updatedAt" mode="detail"/></div>
 					</div>
 					<div :class="$style.pageLinks">
@@ -89,7 +89,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 				<MkAd :prefer="['horizontal', 'horizontal-big']"/>
 				<MkContainer :max-height="300" :foldable="true" class="other">
-					<template #icon><i class="ph-clock ph-bold ph-lg"></i></template>
+					<template #icon><i class="ti ti-clock"></i></template>
 					<template #header>{{ i18n.ts.recentPosts }}</template>
 					<MkPagination v-slot="{items}" :pagination="otherPostsPagination" :class="$style.relatedPagesRoot" class="_gaps">
 						<MkPagePreview v-for="page in items" :key="page.id" :page="page" :class="$style.relatedPagesItem"/>

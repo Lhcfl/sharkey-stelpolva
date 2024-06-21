@@ -30,7 +30,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			}]"
 		> <!-- we re-use t_pollEnded for "edited" instead of making an identical style -->
 			<i v-if="notification.type === 'follow'" class="ti ti-plus"></i>
-			<i v-else-if="notification.type === 'receiveFollowRequest'" class="ph-clock ph-bold ph-lg"></i>
+			<i v-else-if="notification.type === 'receiveFollowRequest'" class="ti ti-clock"></i>
 			<i v-else-if="notification.type === 'followRequestAccepted'" class="ti ti-check"></i>
 			<i v-else-if="notification.type === 'renote'" class="ph-rocket-launch ph-bold ph-lg"></i>
 			<i v-else-if="notification.type === 'reply'" class="ph-arrow-u-up-left ph-bold ph-lg"></i>

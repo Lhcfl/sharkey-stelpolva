@@ -56,7 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</section>
 
 			<section>
-				<header class="_acrylic"><i class="ph-clock ph-bold ph-lg ti-fw"></i> {{ i18n.ts.recentUsed }}</header>
+				<header class="_acrylic"><i class="ti ti-clock ti-fw"></i> {{ i18n.ts.recentUsed }}</header>
 				<div class="body">
 					<button
 						v-for="emoji in recentlyUsedEmojisDef"
