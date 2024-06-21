@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<FormSuspense :p="init">
 			<div class="_gaps_m">
 				<MkFolder>
-					<template #icon><i class="ph-shield ph-bold ph-lg"></i></template>
+					<template #icon><i class="ti ti-shield"></i></template>
 					<template #label>{{ i18n.ts.botProtection }}</template>
 					<template v-if="enableHcaptcha" #suffix>hCaptcha</template>
 					<template v-else-if="enableMcaptcha" #suffix>mCaptcha</template>

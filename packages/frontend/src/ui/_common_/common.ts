@@ -98,7 +98,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 		},
 	} : undefined, (instance.privacyPolicyUrl) ? {
 		text: i18n.ts.privacyPolicy,
-		icon: 'ph-shield ph-bold ph-lg',
+		icon: 'ti ti-shield-lock',
 		action: () => {
 			window.open(instance.privacyPolicyUrl, '_blank', 'noopener');
 		},

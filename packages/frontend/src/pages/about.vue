@@ -77,7 +77,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 								{{ i18n.ts.termsOfService }}
 							</FormLink>
 							<FormLink v-if="instance.privacyPolicyUrl" :to="instance.privacyPolicyUrl" external>
-								<template #icon><i class="ph-shield ph-bold ph-lg"></i></template>
+								<template #icon><i class="ti ti-shield-lock"></i></template>
 								{{ i18n.ts.privacyPolicy }}
 							</FormLink>
 							<FormLink v-if="instance.feedbackUrl" :to="instance.feedbackUrl" external>

@@ -31,7 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</MkInput>
 
 	<MkSelect v-model="rolePermission" :readonly="readonly">
-		<template #label><i class="ph-shield ph-bold ph-lg-lock"></i> {{ i18n.ts._role.permission }}</template>
+		<template #label><i class="ti ti-shield-lock"></i> {{ i18n.ts._role.permission }}</template>
 		<template #caption><div v-html="i18n.ts._role.descriptionOfPermission.replaceAll('\n', '<br>')"></div></template>
 		<option value="normal">{{ i18n.ts.normalUser }}</option>
 		<option value="moderator">{{ i18n.ts.moderator }}</option>

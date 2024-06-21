@@ -144,7 +144,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.moderation,
-	icon: 'ph-shield ph-bold ph-lg',
+	icon: 'ti ti-shield',
 }));
 </script>
 

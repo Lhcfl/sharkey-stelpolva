@@ -190,7 +190,7 @@ const menuDef = computed(() => [{
 		to: '/admin/branding',
 		active: currentPage.value?.route.name === 'branding',
 	}, {
-		icon: 'ph-shield ph-bold ph-lg',
+		icon: 'ti ti-shield',
 		text: i18n.ts.moderation,
 		to: '/admin/moderation',
 		active: currentPage.value?.route.name === 'moderation',

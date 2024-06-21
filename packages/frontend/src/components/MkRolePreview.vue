@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 			<template v-else>
 				<i v-if="role.isAdministrator" class="ph-crown ph-bold ph-lg" style="color: var(--accent);"></i>
-				<i v-else-if="role.isModerator" class="ph-shield ph-bold ph-lg" style="color: var(--accent);"></i>
+				<i v-else-if="role.isModerator" class="ti ti-shield" style="color: var(--accent);"></i>
 				<i v-else class="ph-user ph-bold ph-lg" style="opacity: 0.7;"></i>
 			</template>
 		</span>
