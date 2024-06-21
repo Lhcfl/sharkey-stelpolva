@@ -30,7 +30,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</span>
 		<span v-if="note.updatedAt" ref="menuVersionsButton" style="margin-left: 0.5em; cursor: pointer;" title="Edited" @mousedown="menuVersions()"><i class="ph-pencil-simple ph-bold ph-lg"></i></span>
 		<span v-if="note.localOnly" style="margin-left: 0.5em;" :title="i18n.ts._visibility['disableFederation']"><i class="ph-rocket ph-bold ph-lg"></i></span>
-		<span v-if="note.channel" style="margin-left: 0.5em;" :title="note.channel.name"><i class="ph-television ph-bold ph-lg"></i></span>
+		<span v-if="note.channel" style="margin-left: 0.5em;" :title="note.channel.name"><i class="ti ti-device-tv"></i></span>
 	</div>
 </header>
 </template>

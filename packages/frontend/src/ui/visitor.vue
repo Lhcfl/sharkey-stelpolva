@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkA to="/" class="link" activeClass="active"><i class="ti ti-home icon"></i> {{ i18n.ts.home }}</MkA>
 				<MkA v-if="isTimelineAvailable" to="/timeline" class="link" activeClass="active"><i class="ph-chat-text ph-bold ph-lg icon"></i> {{ i18n.ts.timeline }}</MkA>
 				<MkA to="/explore" class="link" activeClass="active"><i class="ph-hash ph-bold ph-lg icon"></i> {{ i18n.ts.explore }}</MkA>
-				<MkA to="/channels" class="link" activeClass="active"><i class="ph-television ph-bold ph-lg icon"></i> {{ i18n.ts.channel }}</MkA>
+				<MkA to="/channels" class="link" activeClass="active"><i class="ti ti-device-tv icon"></i> {{ i18n.ts.channel }}</MkA>
 			</div>
 			<div v-else-if="narrow === true" class="narrow">
 				<button class="menu _button" @click="showMenu = true">
@@ -51,7 +51,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA v-if="isTimelineAvailable" to="/timeline" class="link" activeClass="active"><i class="ph-chat-text ph-bold ph-lg icon"></i>{{ i18n.ts.timeline }}</MkA>
 			<MkA to="/explore" class="link" activeClass="active"><i class="ph-hash ph-bold ph-lg icon"></i>{{ i18n.ts.explore }}</MkA>
 			<MkA to="/announcements" class="link" activeClass="active"><i class="ph-megaphone ph-bold ph-lg icon"></i>{{ i18n.ts.announcements }}</MkA>
-			<MkA to="/channels" class="link" activeClass="active"><i class="ph-television ph-bold ph-lg icon"></i>{{ i18n.ts.channel }}</MkA>
+			<MkA to="/channels" class="link" activeClass="active"><i class="ti ti-device-tv icon"></i>{{ i18n.ts.channel }}</MkA>
 			<div class="divider"></div>
 			<MkA to="/pages" class="link" activeClass="active"><i class="ph-newspaper ph-bold ph-lg icon"></i>{{ i18n.ts.pages }}</MkA>
 			<MkA to="/play" class="link" activeClass="active"><i class="ph-play ph-bold ph-lg icon"></i>Play</MkA>

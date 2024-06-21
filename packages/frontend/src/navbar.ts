@@ -109,7 +109,7 @@ export const navbarItemDef = reactive({
 	},
 	channels: {
 		title: i18n.ts.channel,
-		icon: 'ph-television ph-bold ph-lg',
+		icon: 'ti ti-device-tv',
 		to: '/channels',
 	},
 	achievements: {

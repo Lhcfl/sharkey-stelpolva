@@ -294,7 +294,7 @@ const headerTabs = computed(() => [{
 
 definePageMetadata(() => ({
 	title: channel.value ? channel.value.name : i18n.ts.channel,
-	icon: 'ph-television ph-bold ph-lg',
+	icon: 'ti ti-device-tv',
 }));
 </script>
 

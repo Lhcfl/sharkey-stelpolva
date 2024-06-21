@@ -168,6 +168,7 @@ export function getConfig(): UserConfig {
 					'ti ti-checklist': 'ph-list-checks ph-bold ph-lg',
 					'ti ti-plane-departure': 'ph-airplane-takeoff ph-bold ph-lg',
 					'ti ti-minus': 'ph-minus ph-bold ph-lg',
+					'ti ti-device-tv': 'ph-television ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

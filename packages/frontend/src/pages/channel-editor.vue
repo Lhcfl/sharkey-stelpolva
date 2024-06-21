@@ -204,7 +204,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: props.channelId ? i18n.ts._channel.edit : i18n.ts._channel.create,
-	icon: 'ph-television ph-bold ph-lg',
+	icon: 'ti ti-device-tv',
 }));
 </script>
 

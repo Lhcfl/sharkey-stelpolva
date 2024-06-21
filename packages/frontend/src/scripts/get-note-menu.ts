@@ -416,7 +416,7 @@ export function getNoteMenu(props: {
 				{ type: 'divider' },
 				{
 					type: 'parent' as const,
-					icon: 'ph-television ph-bold ph-lg',
+					icon: 'ti ti-device-tv',
 					text: i18n.ts.channel,
 					children: async () => {
 						const channelChildMenu = [] as MenuItem[];
