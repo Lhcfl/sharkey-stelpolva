@@ -19,8 +19,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<MkButton v-tooltip="i18n.ts.reload" class="button" rounded @click="reset"><i class="ph-arrows-clockwise ph-bold ph-lg"></i></MkButton>
 							</div>
 							<div class="items">
-								<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary @click="unlike()"><i class="ph-heart ph-bold ph-lg"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
-								<MkButton v-else v-tooltip="i18n.ts.like" asLike class="button" rounded @click="like()"><i class="ph-heart ph-bold ph-lg"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
+								<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary @click="unlike()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
+								<MkButton v-else v-tooltip="i18n.ts.like" asLike class="button" rounded @click="like()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
 								<MkButton v-tooltip="i18n.ts.copyLink" class="button" rounded @click="copyLink"><i class="ph-link ph-bold ph-lg ti-fw"></i></MkButton>
 								<MkButton v-tooltip="i18n.ts.share" class="button" rounded @click="share"><i class="ph-share-network ph-bold ph-lg ti-fw"></i></MkButton>
 							</div>
@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<div class="summary"><Mfm :text="flash.summary" :isBlock="true"/></div>
 							<MkButton class="start" gradate rounded large @click="start">Play</MkButton>
 							<div class="info">
-								<span v-tooltip="i18n.ts.numberOfLikes"><i class="ph-heart ph-bold ph-lg"></i> {{ flash.likedCount }}</span>
+								<span v-tooltip="i18n.ts.numberOfLikes"><i class="ti ti-heart"></i> {{ flash.likedCount }}</span>
 							</div>
 						</div>
 					</div>

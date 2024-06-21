@@ -98,6 +98,9 @@ export function getConfig(): UserConfig {
 					'ti ti-pencil': 'ph-pencil-simple ph-bold ph-lg',
 					'ti ti-arrow-right': 'ph-arrow-right ph-bold ph-lg',
 					'ti ti-pin': 'ph-push-pin ph-bold ph-lg',
+					'ti ti-heart': 'ph-heart ph-bold ph-lg',
+					'ti ti-heart-filled': 'ph-heart ph-bold ph-lg',
+					'ti ti-heart-plus': 'ph-heart ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

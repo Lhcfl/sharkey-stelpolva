@@ -112,7 +112,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'liked',
 	title: i18n.ts._gallery.liked,
-	icon: 'ph-heart ph-bold ph-lg',
+	icon: 'ti ti-heart',
 }, {
 	key: 'my',
 	title: i18n.ts._gallery.my,
