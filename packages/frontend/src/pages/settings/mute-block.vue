@@ -45,7 +45,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkA :class="$style.userItemMainBody" :to="userPage(item.mutee)">
 								<MkUserCardMini :user="item.mutee"/>
 							</MkA>
-							<button class="_button" :class="$style.userToggle" @click="toggleRenoteMuteItem(item)"><i :class="$style.chevron" class="ph-caret-down ph-bold ph-lg"></i></button>
+							<button class="_button" :class="$style.userToggle" @click="toggleRenoteMuteItem(item)"><i :class="$style.chevron" class="ti ti-chevron-down"></i></button>
 							<button class="_button" :class="$style.remove" @click="unrenoteMute(item.mutee, $event)"><i class="ph-x ph-bold ph-lg"></i></button>
 						</div>
 						<div v-if="expandedRenoteMuteItems.includes(item.id)" :class="$style.userItemSub">
@@ -76,7 +76,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkA :class="$style.userItemMainBody" :to="userPage(item.mutee)">
 								<MkUserCardMini :user="item.mutee"/>
 							</MkA>
-							<button class="_button" :class="$style.userToggle" @click="toggleMuteItem(item)"><i :class="$style.chevron" class="ph-caret-down ph-bold ph-lg"></i></button>
+							<button class="_button" :class="$style.userToggle" @click="toggleMuteItem(item)"><i :class="$style.chevron" class="ti ti-chevron-down"></i></button>
 							<button class="_button" :class="$style.remove" @click="unmute(item.mutee, $event)"><i class="ph-x ph-bold ph-lg"></i></button>
 						</div>
 						<div v-if="expandedMuteItems.includes(item.id)" :class="$style.userItemSub">
@@ -109,7 +109,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkA :class="$style.userItemMainBody" :to="userPage(item.blockee)">
 								<MkUserCardMini :user="item.blockee"/>
 							</MkA>
-							<button class="_button" :class="$style.userToggle" @click="toggleBlockItem(item)"><i :class="$style.chevron" class="ph-caret-down ph-bold ph-lg"></i></button>
+							<button class="_button" :class="$style.userToggle" @click="toggleBlockItem(item)"><i :class="$style.chevron" class="ti ti-chevron-down"></i></button>
 							<button class="_button" :class="$style.remove" @click="unblock(item.blockee, $event)"><i class="ph-x ph-bold ph-lg"></i></button>
 						</div>
 						<div v-if="expandedBlockItems.includes(item.id)" :class="$style.userItemSub">

@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkTextarea v-model="summary" :mfmAutocomplete="true" :mfmPreview="true">
 				<template #label>{{ i18n.ts._play.summary }}</template>
 			</MkTextarea>
-			<MkButton primary @click="selectPreset">{{ i18n.ts.selectFromPresets }}<i class="ph-caret-down ph-bold ph-lg"></i></MkButton>
+			<MkButton primary @click="selectPreset">{{ i18n.ts.selectFromPresets }}<i class="ti ti-chevron-down"></i></MkButton>
 			<MkCodeEditor v-model="script" lang="is">
 				<template #label>{{ i18n.ts._play.script }}</template>
 			</MkCodeEditor>

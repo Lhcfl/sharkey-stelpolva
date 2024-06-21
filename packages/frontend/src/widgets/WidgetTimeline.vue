@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #header>
 		<button class="_button" @click="choose">
 			<span>{{ widgetProps.src === 'list' ? widgetProps.list.name : widgetProps.src === 'antenna' ? widgetProps.antenna.name : i18n.ts._timelines[widgetProps.src] }}</span>
-			<i :class="menuOpened ? 'ti ti-chevron-up' : 'ph-caret-down ph-bold ph-lg'" style="margin-left: 8px;"></i>
+			<i :class="menuOpened ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" style="margin-left: 8px;"></i>
 		</button>
 	</template>
 

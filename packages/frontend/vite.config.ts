@@ -172,6 +172,8 @@ export function getConfig(): UserConfig {
 					'ti ti-cookie': 'ph-cookie ph-bold ph-lg',
 					'ti ti-copy': 'ph-copy ph-bold ph-lg',
 					'ti ti-chevron-up': 'ph-caret-up ph-bold ph-lg',
+ 					'ti ti-chevron-down': 'ph-caret-down ph-bold ph-lg',
+ 					'ti ti-caret-down': 'ph-caret-down ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

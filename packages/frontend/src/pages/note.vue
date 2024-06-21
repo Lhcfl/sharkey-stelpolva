@@ -34,8 +34,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</div>
 						<div v-if="!showPrev" class="_buttons" :class="$style.loadPrev">
-							<MkButton v-if="note.channelId" rounded :class="$style.loadButton" @click="showPrev = 'channel'"><i class="ph-caret-down ph-bold ph-lg"></i> <i class="ph-television-simple ph-bold ph-lg"></i></MkButton>
-							<MkButton rounded :class="$style.loadButton" @click="showPrev = 'user'"><i class="ph-caret-down ph-bold ph-lg"></i> <i class="ph-user ph-bold ph-lg"></i></MkButton>
+							<MkButton v-if="note.channelId" rounded :class="$style.loadButton" @click="showPrev = 'channel'"><i class="ti ti-chevron-down"></i> <i class="ph-television-simple ph-bold ph-lg"></i></MkButton>
+							<MkButton rounded :class="$style.loadButton" @click="showPrev = 'user'"><i class="ti ti-chevron-down"></i> <i class="ph-user ph-bold ph-lg"></i></MkButton>
 						</div>
 					</div>
 
