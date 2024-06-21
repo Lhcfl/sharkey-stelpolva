@@ -1,5 +1,6 @@
 import path from 'path';
 import pluginReplace from '@rollup/plugin-replace';
+import type { RollupReplaceOptions } from '@rollup/plugin-replace';
 import pluginVue from '@vitejs/plugin-vue';
 import { type UserConfig, defineConfig } from 'vite';
 
@@ -59,6 +60,17 @@ function toBase62(n: number): string {
 	return result;
 }
 
+function iconsReplace(opts: RollupReplaceOptions) {
+	return pluginReplace({
+		...opts,
+		preventAssignment: false,
+		// only replace these strings after a quote, remove a ` ti-fw`
+		// it if happens to be just after, and make sure they're
+		// followed by a word-boundary that's not a dash
+		delimiters: ['(?<=["\'])', '(?: ti-fw)?\\b(?!-)'],
+	});
+}
+
 export function getConfig(): UserConfig {
 	return {
 		base: '/vite/',
@@ -71,12 +83,7 @@ export function getConfig(): UserConfig {
 			pluginVue(),
 			pluginUnwindCssModuleClassName(),
 			pluginJson5(),
-			pluginReplace({
-				preventAssignment: false,
-				// only replace these strings after a quote, remove a ` ti-fw`
-				// it if happens to be just after, and make sure they're
-				// followed by a word-boundary that's not a dash
-				delimiters: ['(?<=["\'])', '(?: ti-fw)?\\b(?!-)'],
+			iconsReplace({
 				values: {
 					'ti ti-terminal-2': 'ph-terminal-window ph-bold ph-lg',
 					'ti ti-download': 'ph-download ph-bold ph-lg',
