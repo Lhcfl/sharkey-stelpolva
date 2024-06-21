@@ -282,7 +282,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'raw',
 	title: 'Raw',
-	icon: 'ph-code ph-bold ph-lg',
+	icon: 'ti ti-code',
 }]);
 
 definePageMetadata(() => ({

@@ -36,7 +36,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							{{ i18n.ts.aboutMisskey }}
 						</FormLink>
 						<FormLink v-if="instance.repositoryUrl || instance.providesTarball" :to="instance.repositoryUrl || `/tarball/sharkey-${version}.tar.gz`" external>
-							<template #icon><i class="ph-code ph-bold ph-lg"></i></template>
+							<template #icon><i class="ti ti-code"></i></template>
 							{{ i18n.ts.sourceCode }}
 						</FormLink>
 						<MkInfo v-else warn>

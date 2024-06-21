@@ -51,7 +51,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #value>{{ i18n.ts[data.meta.base] }}</template>
 					</MkKeyValue>
 					<MkFolder>
-						<template #icon><i class="ph-code ph-bold ph-lg"></i></template>
+						<template #icon><i class="ti ti-code"></i></template>
 						<template #label>{{ i18n.ts._plugin.viewSource }}</template>
 
 						<MkCode :code="data.raw ?? ''"/>

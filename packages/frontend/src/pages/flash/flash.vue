@@ -38,7 +38,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</Transition>
 				<MkFolder :defaultOpen="false" :max-height="280" class="_margin">
-					<template #icon><i class="ph-code ph-bold ph-lg"></i></template>
+					<template #icon><i class="ti ti-code"></i></template>
 					<template #label>{{ i18n.ts._play.viewSource }}</template>
 
 					<MkCode :code="flash.script" lang="is" class="_monospace"/>

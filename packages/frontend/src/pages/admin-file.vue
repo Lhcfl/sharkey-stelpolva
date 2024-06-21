@@ -137,7 +137,7 @@ const headerTabs = computed(() => [{
 } : null, {
 	key: 'raw',
 	title: 'Raw data',
-	icon: 'ph-code ph-bold ph-lg',
+	icon: 'ti ti-code',
 }]);
 
 definePageMetadata(() => ({
