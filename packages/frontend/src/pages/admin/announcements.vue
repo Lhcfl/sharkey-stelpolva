@@ -56,7 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkSwitch>
 					<p v-if="announcement.reads">{{ i18n.tsx.nUsersRead({ n: announcement.reads }) }}</p>
 					<div class="buttons _buttons">
-						<MkButton class="button" inline primary @click="save(announcement)"><i class="ph-floppy-disk ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
+						<MkButton class="button" inline primary @click="save(announcement)"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
 						<MkButton v-if="announcement.id != null" class="button" inline @click="archive(announcement)"><i class="ti ti-check"></i> {{ i18n.ts._announcement.end }} ({{ i18n.ts.archive }})</MkButton>
 						<MkButton v-if="announcement.id != null" class="button" inline danger @click="del(announcement)"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
 					</div>

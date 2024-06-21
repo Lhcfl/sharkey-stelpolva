@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div class="_buttons">
 		<MkButton @click="addItem"><i class="ti ti-plus"></i> {{ i18n.ts.addItem }}</MkButton>
 		<MkButton danger @click="reset"><i class="ph-arrow-clockwise ph-bold ph-lg"></i> {{ i18n.ts.default }}</MkButton>
-		<MkButton primary class="save" @click="save"><i class="ph-floppy-disk ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
+		<MkButton primary class="save" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
 	</div>
 
 	<MkRadios v-model="menuDisplay">

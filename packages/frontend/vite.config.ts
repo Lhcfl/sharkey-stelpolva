@@ -86,6 +86,7 @@ export function getConfig(): UserConfig {
 					'ti ti-chevron-right ti-fw': 'ph-caret-right ph-bold ph-lg',
 					'ti ti-dots': 'ph-dots-three ph-bold ph-lg',
 					'ti ti-check': 'ph-check ph-bold ph-lg',
+					'ti ti-device-floppy': 'ph-floppy-disk ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

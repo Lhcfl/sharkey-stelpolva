@@ -170,7 +170,7 @@ const menuDef = computed(() => [{
 	}],
 }, {
 	items: [{
-		icon: 'ph-floppy-disk ph-bold ph-lg',
+		icon: 'ti ti-device-floppy',
 		text: i18n.ts.preferencesBackups,
 		to: '/settings/preferences-backups',
 		active: currentPage.value?.route.name === 'preferences-backups',

@@ -49,7 +49,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<template #prefix><i class="ph-key ph-bold ph-lg"></i></template>
 							<template #label>TrueMail API Auth Key</template>
 						</MkInput>
-						<MkButton primary @click="save"><i class="ph-floppy-disk ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
+						<MkButton primary @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
 
@@ -60,7 +60,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkTextarea v-model="bannedEmailDomains">
 							<template #label>Banned Email Domains List</template>
 						</MkTextarea>
-						<MkButton primary @click="save"><i class="ph-floppy-disk ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
+						<MkButton primary @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
 
