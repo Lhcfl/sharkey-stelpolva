@@ -95,7 +95,7 @@ const menuDef = computed(() => [{
 	title: i18n.ts.quickAction,
 	items: [{
 		type: 'button',
-		icon: 'ph-magnifying-glass ph-bold ph-lg',
+		icon: 'ti ti-search',
 		text: i18n.ts.lookup,
 		action: adminLookup,
 	}, ...(instance.disableRegistration ? [{

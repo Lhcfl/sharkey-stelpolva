@@ -75,7 +75,7 @@ function clear() {
 
 const headerActions = computed(() => [{
 	text: i18n.ts.lookup,
-	icon: 'ph-magnifying-glass ph-bold ph-lg',
+	icon: 'ti ti-search',
 	handler: lookupFile,
 }, {
 	text: i18n.ts.clearCachedFiles,

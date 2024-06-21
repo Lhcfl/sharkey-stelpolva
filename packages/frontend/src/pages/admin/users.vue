@@ -121,7 +121,7 @@ function show(user) {
 }
 
 const headerActions = computed(() => [{
-	icon: 'ph-magnifying-glass ph-bold ph-lg',
+	icon: 'ti ti-search',
 	text: i18n.ts.search,
 	handler: searchUser,
 }, {
@@ -131,7 +131,7 @@ const headerActions = computed(() => [{
 	handler: addUser,
 }, {
 	asFullButton: true,
-	icon: 'ph-magnifying-glass ph-bold ph-lg',
+	icon: 'ti ti-search',
 	text: i18n.ts.lookup,
 	handler: lookupUser,
 }]);

@@ -210,6 +210,8 @@ export function getConfig(): UserConfig {
 					'ti ti-mood-happy': 'ph-smiley ph-bold ph-lg',
 					'ti ti-leaf': 'ph-leaf ph-bold ph-lg',
 					'ti ti-hash': 'ph-hash ph-bold ph-lg',
+					'ti ti-hourglass-empty': 'ph-hourglass ph-bold ph-lg',
+					'ti ti-search': 'ph-magnifying-glass ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

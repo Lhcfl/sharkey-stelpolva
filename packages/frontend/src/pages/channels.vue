@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-if="tab === 'search'" key="search">
 				<div class="_gaps">
 					<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" @enter="search">
-						<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-search"></i></template>
 					</MkInput>
 					<MkRadios v-model="searchType" @update:modelValue="search()">
 						<option value="nameAndDescription">{{ i18n.ts._channel.nameAndDescription }}</option>
@@ -133,7 +133,7 @@ const headerActions = computed(() => [{
 const headerTabs = computed(() => [{
 	key: 'search',
 	title: i18n.ts.search,
-	icon: 'ph-magnifying-glass ph-bold ph-lg',
+	icon: 'ti ti-search',
 }, {
 	key: 'featured',
 	title: i18n.ts._channel.featured,

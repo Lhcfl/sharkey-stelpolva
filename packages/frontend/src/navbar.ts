@@ -58,7 +58,7 @@ export const navbarItemDef = reactive({
 	},
 	search: {
 		title: i18n.ts.search,
-		icon: 'ph-magnifying-glass ph-bold ph-lg',
+		icon: 'ti ti-search',
 		to: '/search',
 	},
 	lookup: {

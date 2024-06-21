@@ -48,7 +48,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div class="_gaps">
 					<div>
 						<MkInput v-model="searchQuery" @enter="search()">
-							<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+							<template #prefix><i class="ti ti-search"></i></template>
 						</MkInput>
 						<MkButton primary rounded style="margin-top: 8px;" @click="search()">{{ i18n.ts.search }}</MkButton>
 					</div>
@@ -289,7 +289,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'search',
 	title: i18n.ts.search,
-	icon: 'ph-magnifying-glass ph-bold ph-lg',
+	icon: 'ti ti-search',
 }]);
 
 definePageMetadata(() => ({
