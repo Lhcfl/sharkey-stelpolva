@@ -55,7 +55,7 @@ function onContextmenu(ev) {
 		type: 'label',
 		text: props.to,
 	}, {
-		icon: 'ph-app-window ph-bold ph-lg',
+		icon: 'ti ti-app-window',
 		text: i18n.ts.openInWindow,
 		action: () => {
 			os.pageWindow(props.to);

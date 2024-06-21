@@ -255,7 +255,7 @@ function onContextmenu(ev: MouseEvent) {
 	let menu: MenuItem[];
 	menu = [{
 		text: i18n.ts.openInWindow,
-		icon: 'ph-app-window ph-bold ph-lg',
+		icon: 'ti ti-app-window',
 		action: () => {
 			os.popup(defineAsyncComponent(() => import('@/components/MkDriveWindow.vue')), {
 				initialFolder: props.folder,

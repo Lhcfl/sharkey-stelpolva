@@ -178,6 +178,7 @@ export function getConfig(): UserConfig {
 					'ti ti-x': 'ph-x ph-bold ph-lg',
 					'ti ti-folder': 'ph-folder ph-bold ph-lg',
 					'ti ti-folder-plus': 'ph-folder-plus ph-bold ph-lg',
+					'ti ti-app-window': 'ph-app-window ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'
