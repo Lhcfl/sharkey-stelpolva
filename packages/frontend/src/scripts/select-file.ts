@@ -101,7 +101,7 @@ function select(src: any, label: string | null, multiple: boolean): Promise<Miss
 			action: () => chooseFileFromDrive(multiple).then(files => res(files)),
 		}, {
 			text: i18n.ts.fromUrl,
-			icon: 'ph-link ph-bold ph-lg',
+			icon: 'ti ti-link',
 			action: () => chooseFileFromUrl().then(file => res([file])),
 		}], src);
 	});

@@ -627,7 +627,7 @@ function getMenu() {
 		action: () => { selectLocalFile(); },
 	}, {
 		text: i18n.ts.fromUrl,
-		icon: 'ph-link ph-bold ph-lg',
+		icon: 'ti ti-link',
 		action: () => { urlUpload(); },
 	}, { type: 'divider' }, {
 		text: folder.value ? folder.value.name : i18n.ts.drive,

@@ -39,7 +39,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #label>{{ i18n.ts.mcaptchaSecretKey }}</template>
 				</MkInput>
 				<MkInput v-model="mcaptchaInstanceUrl">
-					<template #prefix><i class="ph-globe-simple ph-bold ph-lg"></i></template>
+					<template #prefix><i class="ti ti-link"></i></template>
 					<template #label>{{ i18n.ts.mcaptchaInstanceUrl }}</template>
 				</MkInput>
 				<FormSlot v-if="mcaptchaSiteKey && mcaptchaInstanceUrl">

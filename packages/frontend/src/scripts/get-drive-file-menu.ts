@@ -110,7 +110,7 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 		}),
 	}, {
 		text: i18n.ts.copyUrl,
-		icon: 'ph-link ph-bold ph-lg',
+		icon: 'ti ti-link',
 		action: () => copyUrl(file),
 	}, {
 		type: 'a',

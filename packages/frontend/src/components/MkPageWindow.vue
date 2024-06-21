@@ -128,7 +128,7 @@ const contextmenu = computed(() => ([{
 		windowEl.value?.close();
 	},
 }, {
-	icon: 'ph-link ph-bold ph-lg',
+	icon: 'ti ti-link',
 	text: i18n.ts.copyLink,
 	action: () => {
 		copyToClipboard(url + windowRouter.getCurrentPath());

@@ -36,7 +36,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<MkInput v-model="repositoryUrl" type="url">
 						<template #label>{{ i18n.ts.repositoryUrl }}</template>
-						<template #prefix><i class="ph-link ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-link"></i></template>
 						<template #caption>{{ i18n.ts.repositoryUrlDescription }}</template>
 					</MkInput>
 

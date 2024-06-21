@@ -146,7 +146,7 @@ export function getAbuseNoteMenu(note: Misskey.entities.Note, text: string): Men
 
 export function getCopyNoteLinkMenu(note: Misskey.entities.Note, text: string): MenuItem {
 	return {
-		icon: 'ph-link ph-bold ph-lg',
+		icon: 'ti ti-link',
 		text,
 		action: (): void => {
 			copyToClipboard(`${url}/notes/${note.id}`);

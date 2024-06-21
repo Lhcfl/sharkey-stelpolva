@@ -73,7 +73,7 @@ function onContextmenu(ev) {
 			window.open(props.to, '_blank', 'noopener');
 		},
 	}, {
-		icon: 'ph-link ph-bold ph-lg',
+		icon: 'ti ti-link',
 		text: i18n.ts.copyLink,
 		action: () => {
 			copyToClipboard(`${url}${props.to}`);
