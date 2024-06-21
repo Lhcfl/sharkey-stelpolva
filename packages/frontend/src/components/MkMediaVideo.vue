@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 >
 	<button v-if="hide" :class="$style.hidden" @click="hide = false">
 		<div :class="$style.hiddenTextWrapper">
-			<b v-if="video.isSensitive" style="display: block;"><i class="ph-warning ph-bold ph-lg"></i> {{ i18n.ts.sensitive }}{{ defaultStore.state.dataSaver.media ? ` (${i18n.ts.video}${video.size ? ' ' + bytes(video.size) : ''})` : '' }}</b>
+			<b v-if="video.isSensitive" style="display: block;"><i class="ti ti-eye-exclamation"></i> {{ i18n.ts.sensitive }}{{ defaultStore.state.dataSaver.media ? ` (${i18n.ts.video}${video.size ? ' ' + bytes(video.size) : ''})` : '' }}</b>
 			<b v-else style="display: block;"><i class="ph-film-strip ph-bold ph-lg"></i> {{ defaultStore.state.dataSaver.media && video.size ? bytes(video.size) : i18n.ts.video }}</b>
 			<span style="display: block;">{{ i18n.ts.clickToShow }}</span>
 		</div>
@@ -42,7 +42,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i class="ti ti-eye-off" :class="$style.hide" @click="hide = true"></i>
 		<div :class="$style.indicators">
 			<div v-if="video.comment" :class="$style.indicator">ALT</div>
-			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ph-warning ph-bold ph-lg"></i></div>
+			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ti ti-eye-exclamation"></i></div>
 		</div>
 	</div>
 
@@ -67,7 +67,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i class="ti ti-eye-off" :class="$style.hide" @click="hide = true"></i>
 		<div :class="$style.indicators">
 			<div v-if="video.comment" :class="$style.indicator">ALT</div>
-			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ph-warning ph-bold ph-lg"></i></div>
+			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ti ti-eye-exclamation"></i></div>
 		</div>
 		<div :class="$style.videoControls" @click.self="togglePlayPause">
 			<div :class="[$style.controlsChild, $style.controlsLeft]">
@@ -215,7 +215,7 @@ function showMenu(ev: MouseEvent) {
 	if (iAmModerator) {
 		menu.push({
 			text: props.video.isSensitive ? i18n.ts.unmarkAsSensitive : i18n.ts.markAsSensitive,
-			icon: props.video.isSensitive ? 'ti ti-eye' : 'ph-eye-slash ph-bold ph-lg',
+			icon: props.video.isSensitive ? 'ti ti-eye' : 'ti ti-eye-exclamation',
 			danger: true,
 			action: () => toggleSensitive(props.video),
 		});

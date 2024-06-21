@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<ImgWithBlurhash :class="$style.sensitiveImg" :hash="file.file.blurhash" :src="thumbnail(file.file)" :title="file.file.name" :forceBlurhash="true"/>
 					<div :class="$style.sensitive">
 						<div>
-							<div><i class="ph-eye-slash ph-bold ph-lg"></i> {{ i18n.ts.sensitive }}</div>
+							<div><i class="ti ti-eye-exclamation"></i> {{ i18n.ts.sensitive }}</div>
 							<div>{{ i18n.ts.clickToShow }}</div>
 						</div>
 					</div>

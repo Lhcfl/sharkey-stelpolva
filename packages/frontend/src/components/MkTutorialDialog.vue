@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template v-else-if="page === 2" #header><i class="ph-smiley ph-bold pg-lg"></i> {{ i18n.ts._initialTutorial._reaction.title }}</template>
 	<template v-else-if="page === 3" #header><i class="ti ti-home"></i> {{ i18n.ts._initialTutorial._timeline.title }}</template>
 	<template v-else-if="page === 4" #header><i class="ph-plus ph-bold pg-lg"></i> {{ i18n.ts._initialTutorial._postNote.title }}</template>
-	<template v-else-if="page === 5" #header><i class="ph-eye-slash ph-bold pg-lg"></i> {{ i18n.ts._initialTutorial._howToMakeAttachmentsSensitive.title }}</template>
+	<template v-else-if="page === 5" #header><i class="ti ti-eye-exclamation"></i> {{ i18n.ts._initialTutorial._howToMakeAttachmentsSensitive.title }}</template>
 	<template v-else #header>{{ i18n.ts._initialTutorial.title }}</template>
 
 	<div style="overflow-x: clip;">

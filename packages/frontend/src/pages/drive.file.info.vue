@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<i class="ti ti-eye"></i>
 				</button>
 				<button v-else v-tooltip="i18n.ts.markAsSensitive" class="_button" :class="$style.fileQuickActionsOthersButton" @click="toggleSensitive()">
-					<i class="ph-eye-slash ph-bold ph-lg"></i>
+					<i class="ti ti-eye-exclamation"></i>
 				</button>
 				<a v-tooltip="i18n.ts.download" :href="file.url" :download="file.name" class="_button" :class="$style.fileQuickActionsOthersButton">
 					<i class="ti ti-download"></i>
