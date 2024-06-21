@@ -28,7 +28,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</MkFolder>
 
 	<MkFolder :defaultOpen="!!$i.movedTo">
-		<template #icon><i class="ph-airplane-takeoff ph-bold ph-lg"></i></template>
+		<template #icon><i class="ti ti-plane-departure"></i></template>
 		<template #label>{{ i18n.ts._accountMigration.moveTo }}</template>
 
 		<div class="_gaps_m">
@@ -39,7 +39,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<FormInfo warn>{{ i18n.ts._accountMigration.moveCannotBeUndone }}</FormInfo>
 
 				<MkInput v-model="moveToAccount">
-					<template #prefix><i class="ph-airplane-takeoff ph-bold ph-lg"></i></template>
+					<template #prefix><i class="ti ti-plane-departure"></i></template>
 					<template #label>{{ i18n.ts._accountMigration.moveToLabel }}</template>
 				</MkInput>
 				<MkButton inline danger :disabled="!moveToAccount" @click="move">

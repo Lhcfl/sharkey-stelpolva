@@ -166,6 +166,7 @@ export function getConfig(): UserConfig {
 					'ti ti-user-exclamation': 'ph-warning-circle ph-bold ph-lg',
 					'ti ti-info-circle': 'ph-info ph-bold ph-lg',
 					'ti ti-checklist': 'ph-list-checks ph-bold ph-lg',
+					'ti ti-plane-departure': 'ph-airplane-takeoff ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'
