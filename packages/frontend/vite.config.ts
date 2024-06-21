@@ -170,6 +170,7 @@ export function getConfig(): UserConfig {
 					'ti ti-minus': 'ph-minus ph-bold ph-lg',
 					'ti ti-device-tv': 'ph-television ph-bold ph-lg',
 					'ti ti-cookie': 'ph-cookie ph-bold ph-lg',
+					'ti ti-copy': 'ph-copy ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

@@ -47,7 +47,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<div class="_gaps_s">
 						<div class="_buttons">
-							<MkButton inline @click="copy(pluginLogs.get(plugin.id)?.join('\n'))"><i class="ph-copy ph-bold ph-lg"></i> {{ i18n.ts.copy }}</MkButton>
+							<MkButton inline @click="copy(pluginLogs.get(plugin.id)?.join('\n'))"><i class="ti ti-copy"></i> {{ i18n.ts.copy }}</MkButton>
 						</div>
 
 						<MkCode :code="pluginLogs.get(plugin.id)?.join('\n') ?? ''"/>
@@ -60,7 +60,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<div class="_gaps_s">
 						<div class="_buttons">
-							<MkButton inline @click="copy(plugin.src)"><i class="ph-copy ph-bold ph-lg"></i> {{ i18n.ts.copy }}</MkButton>
+							<MkButton inline @click="copy(plugin.src)"><i class="ti ti-copy"></i> {{ i18n.ts.copy }}</MkButton>
 						</div>
 
 						<MkCode :code="plugin.src ?? ''" lang="is"/>

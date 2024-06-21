@@ -91,7 +91,7 @@ function onClick(ev: MouseEvent) {
 			text: `:${props.name}:`,
 		}, {
 			text: i18n.ts.copy,
-			icon: 'ph-copy ph-bold ph-lg',
+			icon: 'ti ti-copy',
 			action: () => {
 				copyToClipboard(`:${props.name}:`);
 				os.success();

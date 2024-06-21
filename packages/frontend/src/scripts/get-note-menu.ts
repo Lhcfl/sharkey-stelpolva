@@ -327,7 +327,7 @@ export function getNoteMenu(props: {
 				text: i18n.ts.details,
 				action: openDetail,
 			}, {
-				icon: 'ph-copy ph-bold ph-lg',
+				icon: 'ti ti-copy',
 				text: i18n.ts.copyContent,
 				action: copyContent,
 			}, getCopyNoteLinkMenu(appearNote, i18n.ts.copyLink)
@@ -476,7 +476,7 @@ export function getNoteMenu(props: {
 			text: i18n.ts.details,
 			action: openDetail,
 		}, {
-			icon: 'ph-copy ph-bold ph-lg',
+			icon: 'ti ti-copy',
 			text: i18n.ts.copyContent,
 			action: copyContent,
 		}, getCopyNoteLinkMenu(appearNote, i18n.ts.copyLink)
