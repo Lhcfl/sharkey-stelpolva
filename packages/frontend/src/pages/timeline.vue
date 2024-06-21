@@ -288,7 +288,7 @@ const headerActions = computed(() => {
 const headerTabs = computed(() => [...(defaultStore.reactiveState.pinnedUserLists.value.map(l => ({
 	key: 'list:' + l.id,
 	title: l.name,
-	icon: 'ph-star ph-bold ph-lg',
+	icon: 'ti ti-star',
 	iconOnly: true,
 }))), {
 	key: 'home',

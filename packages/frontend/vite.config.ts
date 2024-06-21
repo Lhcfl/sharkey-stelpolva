@@ -106,6 +106,7 @@ export function getConfig(): UserConfig {
 					'ti ti-link': 'ph-link ph-bold ph-lg',
 					'ti ti-key': 'ph-key ph-bold ph-lg',
 					'ti ti-code': 'ph-code ph-bold ph-lg',
+					'ti ti-star': 'ph-star ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

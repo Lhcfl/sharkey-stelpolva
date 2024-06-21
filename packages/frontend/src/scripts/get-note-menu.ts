@@ -357,7 +357,7 @@ export function getNoteMenu(props: {
 				text: i18n.ts.unfavorite,
 				action: () => toggleFavorite(false),
 			} : {
-				icon: 'ph-star ph-bold ph-lg',
+				icon: 'ti ti-star',
 				text: i18n.ts.favorite,
 				action: () => toggleFavorite(true),
 			}),
