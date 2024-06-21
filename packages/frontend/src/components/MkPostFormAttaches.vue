@@ -155,7 +155,7 @@ function showFileMenu(file: Misskey.entities.DriveFile, ev: MouseEvent): void {
 		type: 'divider',
 	}, {
 		text: i18n.ts.attachCancel,
-		icon: 'ph-x-circle ph-bold ph-lg',
+		icon: 'ti ti-circle-x',
 		action: () => { detachMedia(file.id); },
 	}, {
 		text: i18n.ts.deleteFile,

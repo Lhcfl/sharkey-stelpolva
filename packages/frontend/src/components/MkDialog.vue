@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			}]"
 		>
 			<i v-if="type === 'success'" :class="$style.iconInner" class="ph-check ph-bold ph-lg"></i>
-			<i v-else-if="type === 'error'" :class="$style.iconInner" class="ph-x-circle ph-bold ph-lg"></i>
+			<i v-else-if="type === 'error'" :class="$style.iconInner" class="ti ti-circle-x"></i>
 			<i v-else-if="type === 'warning'" :class="$style.iconInner" class="ph-warning ph-bold ph-lg"></i>
 			<i v-else-if="type === 'info'" :class="$style.iconInner" class="ph-info ph-bold ph-lg"></i>
 			<i v-else-if="type === 'question'" :class="$style.iconInner" class="ph-question ph-bold ph-lg"></i>

@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #icon>
 					<i v-if="announcement.icon === 'info'" class="ph-info ph-bold ph-lg"></i>
 					<i v-else-if="announcement.icon === 'warning'" class="ph-warning ph-bold ph-lg" style="color: var(--warn);"></i>
-					<i v-else-if="announcement.icon === 'error'" class="ph-x-circle ph-bold ph-lg" style="color: var(--error);"></i>
+					<i v-else-if="announcement.icon === 'error'" class="ti ti-circle-x" style="color: var(--error);"></i>
 					<i v-else-if="announcement.icon === 'success'" class="ph-check ph-bold ph-lg" style="color: var(--success);"></i>
 				</template>
 				<template #caption>{{ announcement.text }}</template>
@@ -35,7 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #label>{{ i18n.ts.icon }}</template>
 						<option value="info"><i class="ph-info ph-bold ph-lg"></i></option>
 						<option value="warning"><i class="ph-warning ph-bold ph-lg" style="color: var(--warn);"></i></option>
-						<option value="error"><i class="ph-x-circle ph-bold ph-lg" style="color: var(--error);"></i></option>
+						<option value="error"><i class="ti ti-circle-x" style="color: var(--error);"></i></option>
 						<option value="success"><i class="ph-check ph-bold ph-lg" style="color: var(--success);"></i></option>
 					</MkRadios>
 					<MkRadios v-model="announcement.display">

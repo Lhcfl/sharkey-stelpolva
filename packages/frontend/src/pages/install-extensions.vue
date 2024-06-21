@@ -80,7 +80,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 		<div v-else-if="uiPhase === 'error'" class="_gaps_m" :class="[$style.extInstallerRoot, $style.error]">
 			<div :class="$style.extInstallerIconWrapper">
-				<i class="ph-x-circle ph-bold ph-lg"></i>
+				<i class="ti ti-circle-x"></i>
 			</div>
 			<h2 :class="$style.extInstallerTitle">{{ errorKV?.title }}</h2>
 			<div :class="$style.extInstallerNormDesc">{{ errorKV?.description }}</div>

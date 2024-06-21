@@ -26,7 +26,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #label>{{ i18n.ts.icon }}</template>
 					<option value="info"><i class="ph-info ph-bold ph-lg"></i></option>
 					<option value="warning"><i class="ph-warning ph-bold ph-lg" style="color: var(--warn);"></i></option>
-					<option value="error"><i class="ph-x-circle ph-bold ph-lg" style="color: var(--error);"></i></option>
+					<option value="error"><i class="ti ti-circle-x" style="color: var(--error);"></i></option>
 					<option value="success"><i class="ph-check ph-bold ph-lg" style="color: var(--success);"></i></option>
 				</MkRadios>
 				<MkRadios v-model="display">
