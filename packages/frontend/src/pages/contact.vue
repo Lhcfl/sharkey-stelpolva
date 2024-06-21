@@ -35,6 +35,6 @@ import MkLink from '@/components/MkLink.vue';
 
 definePageMetadata(() => ({
 	title: i18n.ts.inquiry,
-	icon: 'ph-question ph-bold ph-lg',
+	icon: 'ti ti-help-circle',
 }));
 </script>

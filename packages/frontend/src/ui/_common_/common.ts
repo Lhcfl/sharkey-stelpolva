@@ -82,7 +82,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 	}, { type: 'divider' }, {
 		type: 'link',
 		text: i18n.ts.inquiry,
-		icon: 'ph-question ph-bold ph-lg',
+		icon: 'ti ti-help-circle',
 		to: '/contact',
 	}, (instance.impressumUrl) ? {
 		text: i18n.ts.impressum,
