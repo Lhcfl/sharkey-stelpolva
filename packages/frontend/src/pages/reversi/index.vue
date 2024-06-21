@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkButton primary gradate rounded @click="matchAny">{{ i18n.ts._reversi.freeMatch }}</MkButton>
 				<MkButton primary gradate rounded @click="matchUser">{{ i18n.ts.invite }}</MkButton>
 			</div>
-			<div style="font-size: 90%; opacity: 0.7; text-align: center;"><i class="ph-music-notes ph-bold ph-lg"></i> {{ i18n.ts.soundWillBePlayed }}</div>
+			<div style="font-size: 90%; opacity: 0.7; text-align: center;"><i class="ti ti-music"></i> {{ i18n.ts.soundWillBePlayed }}</div>
 		</div>
 
 		<MkFolder v-if="invitations.length > 0" :defaultOpen="true">

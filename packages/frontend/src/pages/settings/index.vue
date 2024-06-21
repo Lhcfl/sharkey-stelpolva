@@ -120,7 +120,7 @@ const menuDef = computed(() => [{
 		to: '/settings/statusbar',
 		active: currentPage.value?.route.name === 'statusbar',
 	}, {
-		icon: 'ph-music-notes ph-bold ph-lg',
+		icon: 'ti ti-music',
 		text: i18n.ts.sounds,
 		to: '/settings/sounds',
 		active: currentPage.value?.route.name === 'sounds',
