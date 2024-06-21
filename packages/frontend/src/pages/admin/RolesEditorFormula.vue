@@ -31,7 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i class="ph-list ph-bold ph-lg-2"></i>
 		</button>
 		<button v-if="draggable" class="_button" :class="$style.remove" @click="removeSelf">
-			<i class="ph-x ph-bold ph-lg"></i>
+			<i class="ti ti-x"></i>
 		</button>
 	</div>
 

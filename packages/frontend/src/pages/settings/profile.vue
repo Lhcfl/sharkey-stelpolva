@@ -73,7 +73,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #item="{element, index}">
 						<div :class="$style.fieldDragItem">
 							<button v-if="!fieldEditMode" class="_button" :class="$style.dragItemHandle" tabindex="-1"><i class="ph-list ph-bold ph-lg"></i></button>
-							<button v-if="fieldEditMode" :disabled="fields.length <= 1" class="_button" :class="$style.dragItemRemove" @click="deleteField(index)"><i class="ph-x ph-bold ph-lg"></i></button>
+							<button v-if="fieldEditMode" :disabled="fields.length <= 1" class="_button" :class="$style.dragItemRemove" @click="deleteField(index)"><i class="ti ti-x"></i></button>
 							<div :class="$style.dragItemForm">
 								<FormSplit :minWidth="200">
 									<MkInput v-model="element.name" small>

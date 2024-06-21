@@ -39,7 +39,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 											<MkUserCardMini :user="item.user"/>
 										</MkA>
 										<button class="_button" :class="$style.menu" @click="showMembershipMenu(item, $event)"><i class="ti ti-dots"></i></button>
-										<button class="_button" :class="$style.remove" @click="removeUser(item, $event)"><i class="ph-x ph-bold ph-lg"></i></button>
+										<button class="_button" :class="$style.remove" @click="removeUser(item, $event)"><i class="ti ti-x"></i></button>
 									</div>
 								</div>
 							</div>
@@ -118,7 +118,7 @@ function addUser() {
 async function removeUser(item, ev) {
 	os.popupMenu([{
 		text: i18n.ts.remove,
-		icon: 'ph-x ph-bold ph-lg',
+		icon: 'ti ti-x',
 		danger: true,
 		action: async () => {
 			if (!list.value) return;

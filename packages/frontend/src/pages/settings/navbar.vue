@@ -23,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					>
 						<button class="_button" :class="$style.itemHandle"><i class="ph-list ph-bold ph-lg"></i></button>
 						<i class="ti-fw" :class="[$style.itemIcon, navbarItemDef[element.type]?.icon]"></i><span :class="$style.itemText">{{ navbarItemDef[element.type]?.title ?? i18n.ts.divider }}</span>
-						<button class="_button" :class="$style.itemRemove" @click="removeItem(index)"><i class="ph-x ph-bold ph-lg"></i></button>
+						<button class="_button" :class="$style.itemRemove" @click="removeItem(index)"><i class="ti ti-x"></i></button>
 					</div>
 				</template>
 			</Sortable>

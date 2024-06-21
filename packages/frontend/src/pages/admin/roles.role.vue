@@ -41,7 +41,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 												<MkUserCardMini :user="item.user"/>
 											</MkA>
 											<button class="_button" :class="$style.userToggle" @click="toggleItem(item)"><i :class="$style.chevron" class="ti ti-chevron-down"></i></button>
-											<button class="_button" :class="$style.unassign" @click="unassign(item.user, $event)"><i class="ph-x ph-bold ph-lg"></i></button>
+											<button class="_button" :class="$style.unassign" @click="unassign(item.user, $event)"><i class="ti ti-x"></i></button>
 										</div>
 										<div v-if="expandedItems.includes(item.id)" :class="$style.userItemSub">
 											<div>Assigned: <MkTime :time="item.createdAt" mode="detail"/></div>
@@ -149,7 +149,7 @@ async function assign() {
 async function unassign(user, ev) {
 	os.popupMenu([{
 		text: i18n.ts.unassign,
-		icon: 'ph-x ph-bold ph-lg',
+		icon: 'ti ti-x',
 		danger: true,
 		action: async () => {
 			await os.apiWithDialog('admin/roles/unassign', { roleId: role.id, userId: user.id });

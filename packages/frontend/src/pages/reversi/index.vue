@@ -37,11 +37,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkA v-for="g in items" :key="g.id" v-panel :class="[$style.gamePreview, !g.isStarted && !g.isEnded && $style.gamePreviewWaiting, g.isStarted && !g.isEnded && $style.gamePreviewActive]" tabindex="-1" :to="`/reversi/g/${g.id}`">
 							<div :class="$style.gamePreviewPlayers">
 								<span v-if="g.winnerId === g.user1Id" style="margin-right: 0.75em; color: var(--accent); font-weight: bold;"><i class="ph-trophy ph-bold ph-lg"></i></span>
-								<span v-if="g.winnerId === g.user2Id" style="margin-right: 0.75em; visibility: hidden;"><i class="ph-x ph-bold ph-lg"></i></span>
+								<span v-if="g.winnerId === g.user2Id" style="margin-right: 0.75em; visibility: hidden;"><i class="ti ti-x"></i></span>
 								<MkAvatar :class="$style.gamePreviewPlayersAvatar" :user="g.user1"/>
 								<span style="margin: 0 1em;">vs</span>
 								<MkAvatar :class="$style.gamePreviewPlayersAvatar" :user="g.user2"/>
-								<span v-if="g.winnerId === g.user1Id" style="margin-left: 0.75em; visibility: hidden;"><i class="ph-x ph-bold ph-lg"></i></span>
+								<span v-if="g.winnerId === g.user1Id" style="margin-left: 0.75em; visibility: hidden;"><i class="ti ti-x"></i></span>
 								<span v-if="g.winnerId === g.user2Id" style="margin-left: 0.75em; color: var(--accent); font-weight: bold;"><i class="ph-trophy ph-bold ph-lg"></i></span>
 							</div>
 							<div :class="$style.gamePreviewFooter">
@@ -64,11 +64,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkA v-for="g in items" :key="g.id" v-panel :class="[$style.gamePreview, !g.isStarted && !g.isEnded && $style.gamePreviewWaiting, g.isStarted && !g.isEnded && $style.gamePreviewActive]" tabindex="-1" :to="`/reversi/g/${g.id}`">
 							<div :class="$style.gamePreviewPlayers">
 								<span v-if="g.winnerId === g.user1Id" style="margin-right: 0.75em; color: var(--accent); font-weight: bold;"><i class="ph-trophy ph-bold ph-lg"></i></span>
-								<span v-if="g.winnerId === g.user2Id" style="margin-right: 0.75em; visibility: hidden;"><i class="ph-x ph-bold ph-lg"></i></span>
+								<span v-if="g.winnerId === g.user2Id" style="margin-right: 0.75em; visibility: hidden;"><i class="ti ti-x"></i></span>
 								<MkAvatar :class="$style.gamePreviewPlayersAvatar" :user="g.user1"/>
 								<span style="margin: 0 1em;">vs</span>
 								<MkAvatar :class="$style.gamePreviewPlayersAvatar" :user="g.user2"/>
-								<span v-if="g.winnerId === g.user1Id" style="margin-left: 0.75em; visibility: hidden;"><i class="ph-x ph-bold ph-lg"></i></span>
+								<span v-if="g.winnerId === g.user1Id" style="margin-left: 0.75em; visibility: hidden;"><i class="ti ti-x"></i></span>
 								<span v-if="g.winnerId === g.user2Id" style="margin-left: 0.75em; color: var(--accent); font-weight: bold;"><i class="ph-trophy ph-bold ph-lg"></i></span>
 							</div>
 							<div :class="$style.gamePreviewFooter">

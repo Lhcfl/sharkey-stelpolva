@@ -126,7 +126,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div :class="$style.roleItemMain">
 						<MkRolePreview :class="$style.role" :role="role" :forModeration="true"/>
 						<button class="_button" @click="toggleRoleItem(role)"><i class="ti ti-chevron-down"></i></button>
-						<button v-if="role.target === 'manual'" class="_button" :class="$style.roleUnassign" @click="unassignRole(role, $event)"><i class="ph-x ph-bold ph-lg"></i></button>
+						<button v-if="role.target === 'manual'" class="_button" :class="$style.roleUnassign" @click="unassignRole(role, $event)"><i class="ti ti-x"></i></button>
 						<button v-else class="_button" :class="$style.roleUnassign" disabled><i class="ph-prohibit ph-bold ph-lg"></i></button>
 					</div>
 					<div v-if="expandedRoles.includes(role.id)" :class="$style.roleItemSub">
@@ -464,7 +464,7 @@ async function assignRole() {
 async function unassignRole(role, ev) {
 	os.popupMenu([{
 		text: i18n.ts.unassign,
-		icon: 'ph-x ph-bold ph-lg',
+		icon: 'ti ti-x',
 		danger: true,
 		action: async () => {
 			await os.apiWithDialog('admin/roles/unassign', { roleId: role.id, userId: user.value.id });

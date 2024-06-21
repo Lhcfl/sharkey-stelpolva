@@ -58,7 +58,7 @@ function setFilter(ev) {
 		},
 	}));
 	const items = includeTypes.value != null ? [{
-		icon: 'ph-x ph-bold ph-lg',
+		icon: 'ti ti-x',
 		text: i18n.ts.clear,
 		action: () => {
 			includeTypes.value = null;

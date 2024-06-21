@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkInput class="input" small :modelValue="choice" :placeholder="i18n.tsx._poll.choiceN({ n: i + 1 })" @update:modelValue="onInput(i, $event)">
 			</MkInput>
 			<button class="_button" @click="remove(i)">
-				<i class="ph-x ph-bold ph-lg"></i>
+				<i class="ti ti-x"></i>
 			</button>
 		</li>
 	</ul>
