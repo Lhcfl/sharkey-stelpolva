@@ -278,7 +278,7 @@ watch(pinnedEmojis, () => {
 
 definePageMetadata(() => ({
 	title: i18n.ts.emojiPicker,
-	icon: 'ph-smiley ph-bold ph-lg',
+	icon: 'ti ti-mood-happy',
 }));
 </script>
 

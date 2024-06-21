@@ -206,6 +206,8 @@ export function getConfig(): UserConfig {
 					'ti ti-file-text': 'ph-file-text ph-bold ph-lg',
 					'ti ti-file-zip': 'ph-file-zip ph-bold ph-lg',
 					'ti ti-file-invoice': 'ph-newspaper-clipping ph-bold ph-lg',
+					'ti ti-asterisk': 'ph-asterisk ph-bold ph-lg',
+					'ti ti-mood-happy': 'ph-smiley ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

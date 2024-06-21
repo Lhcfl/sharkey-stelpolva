@@ -72,7 +72,7 @@ const menuDef = computed(() => [{
 		to: '/settings/privacy',
 		active: currentPage.value?.route.name === 'privacy',
 	}, {
-		icon: 'ph-smiley ph-bold ph-lg',
+		icon: 'ti ti-mood-happy',
 		text: i18n.ts.emojiPicker,
 		to: '/settings/emoji-picker',
 		active: currentPage.value?.route.name === 'emojiPicker',
