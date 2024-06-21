@@ -96,6 +96,7 @@ export function getConfig(): UserConfig {
 					'ti ti-home': 'ph-house ph-bold ph-lg',
 					'ti ti-clock': 'ph-clock ph-bold ph-lg',
 					'ti ti-pencil': 'ph-pencil-simple ph-bold ph-lg',
+					'ti ti-arrow-right': 'ph-arrow-right ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

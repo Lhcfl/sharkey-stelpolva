@@ -48,7 +48,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 						<div class="_buttonsCenter" style="margin-top: 16px;">
 							<MkButton rounded @click="cancel">{{ i18n.ts.cancel }}</MkButton>
-							<MkButton primary rounded gradate @click="page++">{{ i18n.ts.continue }} <i class="ph-arrow-right ph-bold ph-lg"></i></MkButton>
+							<MkButton primary rounded gradate @click="page++">{{ i18n.ts.continue }} <i class="ti ti-arrow-right"></i></MkButton>
 						</div>
 					</MkSpacer>
 				</div>
@@ -63,7 +63,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 						<div class="_buttonsCenter" style="margin-top: 16px;">
 							<MkButton rounded @click="page--"><i class="ph-arrow-left ph-bold ph-lg"></i> {{ i18n.ts.goBack }}</MkButton>
-							<MkButton primary rounded gradate @click="tokenDone">{{ i18n.ts.continue }} <i class="ph-arrow-right ph-bold ph-lg"></i></MkButton>
+							<MkButton primary rounded gradate @click="tokenDone">{{ i18n.ts.continue }} <i class="ti ti-arrow-right"></i></MkButton>
 						</div>
 					</MkSpacer>
 				</div>

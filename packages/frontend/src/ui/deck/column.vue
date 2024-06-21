@@ -140,7 +140,7 @@ function getMenu() {
 				swapLeftColumn(props.column.id);
 			},
 		}, {
-			icon: 'ph-arrow-right ph-bold ph-lg',
+			icon: 'ti ti-arrow-right',
 			text: i18n.ts._deck.swapRight,
 			action: () => {
 				swapRightColumn(props.column.id);
