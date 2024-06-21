@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div class="zmdxowus">
 	<p v-if="choices.length < 2" class="caution">
-		<i class="ph-warning ph-bold ph-lg"></i>{{ i18n.ts._poll.noOnlyOneChoice }}
+		<i class="ti ti-alert-triangle"></i>{{ i18n.ts._poll.noOnlyOneChoice }}
 	</p>
 	<ul>
 		<li v-for="(choice, i) in choices" :key="i">

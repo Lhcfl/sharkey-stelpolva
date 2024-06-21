@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.root">
 			<img :class="$style.img" :src="serverErrorImageUrl" class="_ghost"/>
 			<div :class="$style.text">
-				<i class="ph-warning ph-bold ph-lg"></i>
+				<i class="ti ti-alert-triangle"></i>
 				{{ i18n.ts.nothing }}
 			</div>
 		</div>

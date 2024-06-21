@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<i v-if="webhook.active === false" class="ph-pause ph-bold ph-lg"></i>
 							<i v-else-if="webhook.latestStatus === null" class="ph-circle ph-bold ph-lg"></i>
 							<i v-else-if="[200, 201, 204].includes(webhook.latestStatus)" class="ti ti-check" :style="{ color: 'var(--success)' }"></i>
-							<i v-else class="ph-warning ph-bold ph-lg" :style="{ color: 'var(--error)' }"></i>
+							<i v-else class="ti ti-alert-triangle" :style="{ color: 'var(--error)' }"></i>
 						</template>
 						{{ webhook.name || webhook.url }}
 						<template #suffix>

@@ -19,14 +19,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #prefix>@</template>
 				<template #suffix>@{{ host }}</template>
 				<template #caption>
-					<div><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.cannotBeChangedLater }}</div>
+					<div><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.cannotBeChangedLater }}</div>
 					<span v-if="usernameState === 'wait'" style="color:#999"><MkLoading :em="true"/> {{ i18n.ts.checking }}</span>
 					<span v-else-if="usernameState === 'ok'" style="color: var(--success)"><i class="ti ti-check ti-fw"></i> {{ i18n.ts.available }}</span>
-					<span v-else-if="usernameState === 'unavailable'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.unavailable }}</span>
-					<span v-else-if="usernameState === 'error'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.error }}</span>
-					<span v-else-if="usernameState === 'invalid-format'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.usernameInvalidFormat }}</span>
-					<span v-else-if="usernameState === 'min-range'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.tooShort }}</span>
-					<span v-else-if="usernameState === 'max-range'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.tooLong }}</span>
+					<span v-else-if="usernameState === 'unavailable'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.unavailable }}</span>
+					<span v-else-if="usernameState === 'error'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.error }}</span>
+					<span v-else-if="usernameState === 'invalid-format'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.usernameInvalidFormat }}</span>
+					<span v-else-if="usernameState === 'min-range'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.tooShort }}</span>
+					<span v-else-if="usernameState === 'max-range'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.tooLong }}</span>
 				</template>
 			</MkInput>
 			<MkInput v-if="instance.emailRequiredForSignup" v-model="email" :debounce="true" type="email" :spellcheck="false" required data-cy-signup-email @update:modelValue="onChangeEmail">
@@ -35,21 +35,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #caption>
 					<span v-if="emailState === 'wait'" style="color:#999"><MkLoading :em="true"/> {{ i18n.ts.checking }}</span>
 					<span v-else-if="emailState === 'ok'" style="color: var(--success)"><i class="ti ti-check ti-fw"></i> {{ i18n.ts.available }}</span>
-					<span v-else-if="emailState === 'unavailable:used'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts._emailUnavailable.used }}</span>
-					<span v-else-if="emailState === 'unavailable:format'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts._emailUnavailable.format }}</span>
-					<span v-else-if="emailState === 'unavailable:disposable'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts._emailUnavailable.disposable }}</span>
-					<span v-else-if="emailState === 'unavailable:banned'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts._emailUnavailable.banned }}</span>
-					<span v-else-if="emailState === 'unavailable:mx'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts._emailUnavailable.mx }}</span>
-					<span v-else-if="emailState === 'unavailable:smtp'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts._emailUnavailable.smtp }}</span>
-					<span v-else-if="emailState === 'unavailable'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.unavailable }}</span>
-					<span v-else-if="emailState === 'error'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.error }}</span>
+					<span v-else-if="emailState === 'unavailable:used'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts._emailUnavailable.used }}</span>
+					<span v-else-if="emailState === 'unavailable:format'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts._emailUnavailable.format }}</span>
+					<span v-else-if="emailState === 'unavailable:disposable'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts._emailUnavailable.disposable }}</span>
+					<span v-else-if="emailState === 'unavailable:banned'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts._emailUnavailable.banned }}</span>
+					<span v-else-if="emailState === 'unavailable:mx'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts._emailUnavailable.mx }}</span>
+					<span v-else-if="emailState === 'unavailable:smtp'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts._emailUnavailable.smtp }}</span>
+					<span v-else-if="emailState === 'unavailable'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.unavailable }}</span>
+					<span v-else-if="emailState === 'error'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.error }}</span>
 				</template>
 			</MkInput>
 			<MkInput v-model="password" type="password" autocomplete="new-password" required data-cy-signup-password @update:modelValue="onChangePassword">
 				<template #label>{{ i18n.ts.password }}</template>
 				<template #prefix><i class="ti ti-lock"></i></template>
 				<template #caption>
-					<span v-if="passwordStrength == 'low'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.weakPassword }}</span>
+					<span v-if="passwordStrength == 'low'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.weakPassword }}</span>
 					<span v-if="passwordStrength == 'medium'" style="color: var(--warn)"><i class="ti ti-check ti-fw"></i> {{ i18n.ts.normalPassword }}</span>
 					<span v-if="passwordStrength == 'high'" style="color: var(--success)"><i class="ti ti-check ti-fw"></i> {{ i18n.ts.strongPassword }}</span>
 				</template>
@@ -59,7 +59,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #prefix><i class="ti ti-lock"></i></template>
 				<template #caption>
 					<span v-if="passwordRetypeState == 'match'" style="color: var(--success)"><i class="ti ti-check ti-fw"></i> {{ i18n.ts.passwordMatched }}</span>
-					<span v-if="passwordRetypeState == 'not-match'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.passwordNotMatched }}</span>
+					<span v-if="passwordRetypeState == 'not-match'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.passwordNotMatched }}</span>
 				</template>
 			</MkInput>
 			<MkInput v-if="instance.approvalRequiredForSignup" v-model="reason" type="text" :spellcheck="false" required data-cy-signup-reason>

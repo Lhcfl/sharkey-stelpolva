@@ -46,7 +46,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 
 			<MkFolder>
-				<template #icon><i class="ph-warning ph-bold ph-lg"></i></template>
+				<template #icon><i class="ti ti-alert-triangle"></i></template>
 				<template #label>{{ i18n.ts.closeAccount }}</template>
 
 				<div class="_gaps_m">

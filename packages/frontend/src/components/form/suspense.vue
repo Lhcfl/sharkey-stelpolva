@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </div>
 <div v-else>
 	<div :class="$style.error">
-		<div><i class="ph-warning ph-bold ph-lg"></i> {{ i18n.ts.somethingHappened }}</div>
+		<div><i class="ti ti-alert-triangle"></i> {{ i18n.ts.somethingHappened }}</div>
 		<MkButton inline style="margin-top: 16px;" @click="retry"><i class="ph-arrow-clockwise ph-bold ph-lg"></i> {{ i18n.ts.retry }}</MkButton>
 	</div>
 </div>
