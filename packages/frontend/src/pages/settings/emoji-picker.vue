@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div class="_gaps_m">
 	<MkFolder :defaultOpen="true">
-		<template #icon><i class="ph-pin ph-bold ph-lg"></i></template>
+		<template #icon><i class="ti ti-pin"></i></template>
 		<template #label>{{ i18n.ts.pinned }} ({{ i18n.ts.reaction }})</template>
 		<template #caption>{{ i18n.ts.pinnedEmojisForReactionSettingDescription }}</template>
 
@@ -46,7 +46,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</MkFolder>
 
 	<MkFolder>
-		<template #icon><i class="ph-pin ph-bold ph-lg"></i></template>
+		<template #icon><i class="ti ti-pin"></i></template>
 		<template #label>{{ i18n.ts.pinned }} ({{ i18n.ts.general }})</template>
 		<template #caption>{{ i18n.ts.pinnedEmojisSettingDescription }}</template>
 

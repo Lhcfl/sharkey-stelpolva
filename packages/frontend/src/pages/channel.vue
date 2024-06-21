@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 
 				<MkFoldableSection>
-					<template #header><i class="ph-push-pin ph-bold ph-lg" style="margin-right: 0.5em;"></i>{{ i18n.ts.pinnedNotes }}</template>
+					<template #header><i class="ti ti-pin ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.pinnedNotes }}</template>
 					<div v-if="channel.pinnedNotes && channel.pinnedNotes.length > 0" class="_gaps">
 						<MkNote v-for="note in channel.pinnedNotes" :key="note.id" class="_panel" :note="note"/>
 					</div>

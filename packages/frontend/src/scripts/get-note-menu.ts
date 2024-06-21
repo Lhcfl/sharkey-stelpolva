@@ -381,7 +381,7 @@ export function getNoteMenu(props: {
 				text: i18n.ts.unpin,
 				action: () => togglePin(false),
 			} : {
-				icon: 'ph-push-pin ph-bold ph-lg',
+				icon: 'ti ti-pin',
 				text: i18n.ts.pin,
 				action: () => togglePin(true),
 			} : undefined,
@@ -434,7 +434,7 @@ export function getNoteMenu(props: {
 							});
 						} else {
 							channelChildMenu.push({
-								icon: 'ph-push-pin ph-bold ph-lg',
+								icon: 'ti ti-pin',
 								text: i18n.ts.pin,
 								action: () => os.apiWithDialog('channels/update', {
 									channelId: appearNote.channel!.id,
