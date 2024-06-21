@@ -24,7 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted, onDeactivated, onMounted, computed, shallowRef, onActivated } from 'vue';
+import { defineAsyncComponent, onUnmounted, onDeactivated, onMounted, computed, shallowRef, onActivated } from 'vue';
 import MkPagination from '@/components/MkPagination.vue';
 import XNotification from '@/components/MkNotification.vue';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
@@ -36,10 +36,11 @@ import { defaultStore } from '@/store.js';
 import MkPullToRefresh from '@/components/MkPullToRefresh.vue';
 import * as Misskey from 'misskey-js';
 
-const MkNote = (
-	(defaultStore.state.noteDesign === 'misskey') ? (await import('@/components/MkNote.vue')).default :
-	(defaultStore.state.noteDesign === 'sharkey') ? (await import('@/components/SkNote.vue')).default :
-	null);
+const MkNote = defineAsyncComponent(() =>
+	(defaultStore.state.noteDesign === 'misskey') ? import('@/components/MkNote.vue') :
+	(defaultStore.state.noteDesign === 'sharkey') ? import('@/components/SkNote.vue') :
+	null
+);
 
 const props = defineProps<{
 	excludeTypes?: typeof notificationTypes[number][];

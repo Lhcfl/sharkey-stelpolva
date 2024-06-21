@@ -189,10 +189,11 @@ import { misskeyApi } from '@/scripts/misskey-api.js';
 import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/scripts/isFfVisibleForMe.js';
 import { useRouter } from '@/router/supplier.js';
 
-const MkNote = (
-	(defaultStore.state.noteDesign === 'misskey') ? (await import('@/components/MkNote.vue')).default :
-	(defaultStore.state.noteDesign === 'sharkey') ? (await import('@/components/SkNote.vue')).default :
-	null);
+const MkNote = defineAsyncComponent(() =>
+	(defaultStore.state.noteDesign === 'misskey') ? import('@/components/MkNote.vue') :
+	(defaultStore.state.noteDesign === 'sharkey') ? import('@/components/SkNote.vue') :
+	null
+);
 
 function calcAge(birthdate: string): number {
 	const date = new Date(birthdate);

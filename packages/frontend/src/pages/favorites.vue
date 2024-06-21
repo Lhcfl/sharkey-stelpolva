@@ -28,15 +28,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import MkPagination from '@/components/MkPagination.vue';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
+import { defineAsyncComponent } from 'vue';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { infoImageUrl } from '@/instance.js';
 import { defaultStore } from '@/store.js';
 
-const MkNote = (
-	(defaultStore.state.noteDesign === 'misskey') ? (await import('@/components/MkNote.vue')).default :
-	(defaultStore.state.noteDesign === 'sharkey') ? (await import('@/components/SkNote.vue')).default :
-	null);
+const MkNote = defineAsyncComponent(() =>
+	(defaultStore.state.noteDesign === 'misskey') ? import('@/components/MkNote.vue') :
+	(defaultStore.state.noteDesign === 'sharkey') ? import('@/components/SkNote.vue') :
+	null
+);
 
 const pagination = {
 	endpoint: 'i/favorites' as const,
