@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 >
 	<template v-if="!wait">
 		<template v-if="isFollowing">
-			<span v-if="full" :class="$style.text">{{ i18n.ts.unfollow }}</span><i class="ph-minus ph-bold ph-lg"></i>
+			<span v-if="full" :class="$style.text">{{ i18n.ts.unfollow }}</span><i class="ti ti-minus"></i>
 		</template>
 		<template v-else>
 			<span v-if="full" :class="$style.text">{{ i18n.ts.follow }}</span><i class="ti ti-plus"></i>

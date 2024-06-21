@@ -23,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<div v-if="(((widgetProps.src === 'local' || widgetProps.src === 'social') && !isLocalTimelineAvailable) || (widgetProps.src === 'bubble' && !isBubbleTimelineAvailable) || (widgetProps.src === 'global' && !isGlobalTimelineAvailable))" :class="$style.disabled">
 		<p :class="$style.disabledTitle">
-			<i class="ph-minus ph-bold ph-lg"></i>
+			<i class="ti ti-minus"></i>
 			{{ i18n.ts._disabledTimeline.title }}
 		</p>
 		<p :class="$style.disabledDescription">{{ i18n.ts._disabledTimeline.description }}</p>
