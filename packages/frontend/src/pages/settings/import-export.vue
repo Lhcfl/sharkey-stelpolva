@@ -62,11 +62,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 			<MkFolder v-if="$i && !$i.movedTo">
 				<template #label>{{ i18n.ts.import }}</template>
-				<template #icon><i class="ph-upload ph-bold ph-lg"></i></template>
+				<template #icon><i class="ti ti-upload"></i></template>
 				<MkSwitch v-model="withReplies">
 					{{ i18n.ts._exportOrImport.withReplies }}
 				</MkSwitch>
-				<MkButton primary :class="$style.button" inline @click="importFollowing($event)"><i class="ph-upload ph-bold ph-lg"></i> {{ i18n.ts.import }}</MkButton>
+				<MkButton primary :class="$style.button" inline @click="importFollowing($event)"><i class="ti ti-upload"></i> {{ i18n.ts.import }}</MkButton>
 			</MkFolder>
 		</div>
 	</FormSection>
@@ -80,8 +80,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 			<MkFolder v-if="$i && !$i.movedTo">
 				<template #label>{{ i18n.ts.import }}</template>
-				<template #icon><i class="ph-upload ph-bold ph-lg"></i></template>
-				<MkButton primary :class="$style.button" inline @click="importUserLists($event)"><i class="ph-upload ph-bold ph-lg"></i> {{ i18n.ts.import }}</MkButton>
+				<template #icon><i class="ti ti-upload"></i></template>
+				<MkButton primary :class="$style.button" inline @click="importUserLists($event)"><i class="ti ti-upload"></i> {{ i18n.ts.import }}</MkButton>
 			</MkFolder>
 		</div>
 	</FormSection>
@@ -95,8 +95,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 			<MkFolder v-if="$i && !$i.movedTo">
 				<template #label>{{ i18n.ts.import }}</template>
-				<template #icon><i class="ph-upload ph-bold ph-lg"></i></template>
-				<MkButton primary :class="$style.button" inline @click="importMuting($event)"><i class="ph-upload ph-bold ph-lg"></i> {{ i18n.ts.import }}</MkButton>
+				<template #icon><i class="ti ti-upload"></i></template>
+				<MkButton primary :class="$style.button" inline @click="importMuting($event)"><i class="ti ti-upload"></i> {{ i18n.ts.import }}</MkButton>
 			</MkFolder>
 		</div>
 	</FormSection>
@@ -110,8 +110,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 			<MkFolder v-if="$i && !$i.movedTo">
 				<template #label>{{ i18n.ts.import }}</template>
-				<template #icon><i class="ph-upload ph-bold ph-lg"></i></template>
-				<MkButton primary :class="$style.button" inline @click="importBlocking($event)"><i class="ph-upload ph-bold ph-lg"></i> {{ i18n.ts.import }}</MkButton>
+				<template #icon><i class="ti ti-upload"></i></template>
+				<MkButton primary :class="$style.button" inline @click="importBlocking($event)"><i class="ti ti-upload"></i> {{ i18n.ts.import }}</MkButton>
 			</MkFolder>
 		</div>
 	</FormSection>
@@ -125,8 +125,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 			<MkFolder v-if="$i && !$i.movedTo">
 				<template #label>{{ i18n.ts.import }}</template>
-				<template #icon><i class="ph-upload ph-bold ph-lg"></i></template>
-				<MkButton primary :class="$style.button" inline @click="importAntennas($event)"><i class="ph-upload ph-bold ph-lg"></i> {{ i18n.ts.import }}</MkButton>
+				<template #icon><i class="ti ti-upload"></i></template>
+				<MkButton primary :class="$style.button" inline @click="importAntennas($event)"><i class="ti ti-upload"></i> {{ i18n.ts.import }}</MkButton>
 			</MkFolder>
 		</div>
 	</FormSection>

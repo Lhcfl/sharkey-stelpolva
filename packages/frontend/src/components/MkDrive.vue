@@ -623,7 +623,7 @@ function getMenu() {
 		type: 'label',
 	}, {
 		text: i18n.ts.upload,
-		icon: 'ph-upload ph-bold ph-lg',
+		icon: 'ti ti-upload',
 		action: () => { selectLocalFile(); },
 	}, {
 		text: i18n.ts.fromUrl,

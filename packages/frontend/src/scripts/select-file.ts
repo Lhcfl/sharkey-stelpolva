@@ -93,7 +93,7 @@ function select(src: any, label: string | null, multiple: boolean): Promise<Miss
 			ref: keepOriginal,
 		}, {
 			text: i18n.ts.upload,
-			icon: 'ph-upload ph-bold ph-lg',
+			icon: 'ti ti-upload',
 			action: () => chooseFileFromPc(multiple, keepOriginal.value).then(files => res(files)),
 		}, {
 			text: i18n.ts.fromDrive,

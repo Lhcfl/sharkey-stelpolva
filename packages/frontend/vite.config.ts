@@ -183,6 +183,7 @@ export function getConfig(): UserConfig {
 					'ti ti-trash': 'ph-trash ph-bold ph-lg',
 					'ti ti-id': 'ph-identification-card ph-bold ph-lg',
 					'ti ti-cloud': 'ph-cloud ph-bold ph-lg',
+					'ti ti-upload': 'ph-upload ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

@@ -206,7 +206,7 @@ const menu = (ev: MouseEvent) => {
 				});
 		},
 	}, {
-		icon: 'ph-upload ph-bold ph-lg',
+		icon: 'ti ti-upload',
 		text: i18n.ts.import,
 		action: async () => {
 			const file = await selectFile(ev.currentTarget ?? ev.target);
