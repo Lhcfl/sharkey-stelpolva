@@ -20,8 +20,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	@dragend="onDragend"
 >
 	<p :class="$style.name">
-		<template v-if="hover"><i :class="$style.icon" class="ph-folder ph-bold ph-lg ti-fw"></i></template>
-		<template v-if="!hover"><i :class="$style.icon" class="ph-folder ph-bold ph-lg ti-fw"></i></template>
+		<template v-if="hover"><i :class="$style.icon" class="ti ti-folder ti-fw"></i></template>
+		<template v-if="!hover"><i :class="$style.icon" class="ti ti-folder ti-fw"></i></template>
 		{{ folder.name }}
 	</p>
 	<p v-if="defaultStore.state.uploadFolder == folder.id" :class="$style.upload">

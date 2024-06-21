@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #header><i class="ph-image-square ph-bold ph-lg"></i> {{ i18n.ts._pages.blocks.image }}</template>
 	<template #func>
 		<button @click="choose()">
-			<i class="ph-folder ph-bold ph-lg"></i>
+			<i class="ti ti-folder"></i>
 		</button>
 	</template>
 

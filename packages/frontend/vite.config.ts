@@ -176,6 +176,7 @@ export function getConfig(): UserConfig {
  					'ti ti-caret-down': 'ph-caret-down ph-bold ph-lg',
 					'ti ti-help-circle': 'ph-question ph-bold ph-lg',
 					'ti ti-x': 'ph-x ph-bold ph-lg',
+					'ti ti-folder': 'ph-folder ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'
