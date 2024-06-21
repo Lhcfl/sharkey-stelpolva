@@ -126,7 +126,23 @@ export function getConfig(): UserConfig {
 					'**/pages/flash/flash.*',
 				],
 			}),
-		iconsReplace({
+			iconsReplace({
+				values: {
+					'ti ti-photo': 'ph-image-square ph-bold ph-lg',
+				},
+				exclude: [
+					'**/pages/admin-user.*',
+				],
+			}),
+			iconsReplace({
+				values: {
+					'ti ti-photo': 'ph-image ph-bold ph-lg',
+				},
+				include: [
+					'**/pages/admin-user.*',
+				],
+			}),
+			iconsReplace({
 				values: {
 					'ti ti-terminal-2': 'ph-terminal-window ph-bold ph-lg',
 					'ti ti-download': 'ph-download ph-bold ph-lg',

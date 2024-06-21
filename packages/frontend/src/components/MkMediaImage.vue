@@ -33,7 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.hiddenText">
 			<div :class="$style.hiddenTextWrapper">
 				<b v-if="image.isSensitive" style="display: block;"><i class="ph-eye-closed ph-bold ph-lg"></i> {{ i18n.ts.sensitive }}{{ defaultStore.state.dataSaver.media ? ` (${i18n.ts.image}${image.size ? ' ' + bytes(image.size) : ''})` : '' }}</b>
-				<b v-else style="display: block;"><i class="ph-image-square ph-bold ph-lg"></i> {{ defaultStore.state.dataSaver.media && image.size ? bytes(image.size) : i18n.ts.image }}</b>
+				<b v-else style="display: block;"><i class="ti ti-photo"></i> {{ defaultStore.state.dataSaver.media && image.size ? bytes(image.size) : i18n.ts.image }}</b>
 				<span v-if="controls" style="display: block;">{{ i18n.ts.clickToShow }}</span>
 			</div>
 		</div>

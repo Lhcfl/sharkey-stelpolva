@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div ref="thumbnail" :class="$style.root">
 	<ImgWithBlurhash v-if="isThumbnailAvailable" :hash="file.blurhash" :src="file.thumbnailUrl" :alt="file.name" :title="file.name" :cover="fit !== 'contain'"/>
-	<i v-else-if="is === 'image'" class="ph-image-square ph-bold ph-lg" :class="$style.icon"></i>
+	<i v-else-if="is === 'image'" class="ti ti-photo" :class="$style.icon"></i>
 	<i v-else-if="is === 'video'" class="ph-video ph-bold ph-lg" :class="$style.icon"></i>
 	<i v-else-if="is === 'audio' || is === 'midi'" class="ph-file-audio ph-bold ph-lg" :class="$style.icon"></i>
 	<i v-else-if="is === 'csv'" class="ph-file-text ph-bold ph-lg" :class="$style.icon"></i>

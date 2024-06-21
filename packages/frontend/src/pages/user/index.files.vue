@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <MkContainer :max-height="300" :foldable="true">
-	<template #icon><i class="ph-image-square ph-bold ph-lg"></i></template>
+	<template #icon><i class="ti ti-photo"></i></template>
 	<template #header>{{ i18n.ts.files }}</template>
 	<div :class="$style.root">
 		<MkLoading v-if="fetching"/>
