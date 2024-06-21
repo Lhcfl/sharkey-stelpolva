@@ -92,7 +92,7 @@ const menuDef = computed(() => [{
 		to: '/settings/email',
 		active: currentPage.value?.route.name === 'email',
 	}, {
-		icon: 'ph-lock ph-bold ph-lg',
+		icon: 'ti ti-lock',
 		text: i18n.ts.security,
 		to: '/settings/security',
 		active: currentPage.value?.route.name === 'security',

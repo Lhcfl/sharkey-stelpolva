@@ -205,7 +205,7 @@ const menuDef = computed(() => [{
 		to: '/admin/object-storage',
 		active: currentPage.value?.route.name === 'object-storage',
 	}, {
-		icon: 'ph-lock ph-bold ph-lg',
+		icon: 'ti ti-lock',
 		text: i18n.ts.security,
 		to: '/admin/security',
 		active: currentPage.value?.route.name === 'security',

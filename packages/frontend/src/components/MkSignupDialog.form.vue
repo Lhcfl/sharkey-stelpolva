@@ -47,7 +47,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkInput>
 			<MkInput v-model="password" type="password" autocomplete="new-password" required data-cy-signup-password @update:modelValue="onChangePassword">
 				<template #label>{{ i18n.ts.password }}</template>
-				<template #prefix><i class="ph-lock ph-bold ph-lg"></i></template>
+				<template #prefix><i class="ti ti-lock"></i></template>
 				<template #caption>
 					<span v-if="passwordStrength == 'low'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.weakPassword }}</span>
 					<span v-if="passwordStrength == 'medium'" style="color: var(--warn)"><i class="ti ti-check ti-fw"></i> {{ i18n.ts.normalPassword }}</span>
@@ -56,7 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkInput>
 			<MkInput v-model="retypedPassword" type="password" autocomplete="new-password" required data-cy-signup-password-retype @update:modelValue="onChangePasswordRetype">
 				<template #label>{{ i18n.ts.password }} ({{ i18n.ts.retype }})</template>
-				<template #prefix><i class="ph-lock ph-bold ph-lg"></i></template>
+				<template #prefix><i class="ti ti-lock"></i></template>
 				<template #caption>
 					<span v-if="passwordRetypeState == 'match'" style="color: var(--success)"><i class="ti ti-check ti-fw"></i> {{ i18n.ts.passwordMatched }}</span>
 					<span v-if="passwordRetypeState == 'not-match'" style="color: var(--error)"><i class="ph-warning ph-bold ph-lg ti-fw"></i> {{ i18n.ts.passwordNotMatched }}</span>

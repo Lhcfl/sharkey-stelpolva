@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</MkInput>
 
 	<MkInput v-model="secret">
-		<template #prefix><i class="ph-lock ph-bold ph-lg"></i></template>
+		<template #prefix><i class="ti ti-lock"></i></template>
 		<template #label>{{ i18n.ts._webhookSettings.secret }}</template>
 	</MkInput>
 

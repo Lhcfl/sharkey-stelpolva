@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	@closed="emit('closed')"
 >
 	<template v-if="page === 1" #header><i class="ph-user-list ph-bold ph-lg"></i> {{ i18n.ts._initialAccountSetting.profileSetting }}</template>
-	<template v-else-if="page === 2" #header><i class="ph-lock ph-bold ph-lg"></i> {{ i18n.ts._initialAccountSetting.privacySetting }}</template>
+	<template v-else-if="page === 2" #header><i class="ti ti-lock"></i> {{ i18n.ts._initialAccountSetting.privacySetting }}</template>
 	<template v-else-if="page === 3" #header><i class="ph-user-plus ph-bold ph-lg"></i> {{ i18n.ts.follow }}</template>
 	<template v-else-if="page === 4" #header><i class="ph-bell-ringing ph-bold ph-lg"></i> {{ i18n.ts.pushNotification }}</template>
 	<template v-else-if="page === 5" #header>{{ i18n.ts.done }}</template>

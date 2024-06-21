@@ -24,7 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</button>
 		<button key="followers" :disabled="isReplyVisibilitySpecified" class="_button" :class="[$style.item, { [$style.active]: v === 'followers' }]" data-index="3" @click="choose('followers')">
-			<div :class="$style.icon"><i class="ph-lock ph-bold ph-lg"></i></div>
+			<div :class="$style.icon"><i class="ti ti-lock"></i></div>
 			<div :class="$style.body">
 				<span :class="$style.itemTitle">{{ i18n.ts._visibility.followers }}</span>
 				<span :class="$style.itemDescription">{{ i18n.ts._visibility.followersDescription }}</span>

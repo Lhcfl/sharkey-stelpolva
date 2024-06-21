@@ -110,6 +110,7 @@ export function getConfig(): UserConfig {
 					'ti ti-eye': 'ph-eye ph-bold ph-lg',
 					'ti ti-eye-off': 'ti ti-eye-exclamation',
 					'ti ti-eye-exclamation': 'ph-eye-slash ph-bold ph-lg',
+					'ti ti-lock': 'ph-lock ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'
