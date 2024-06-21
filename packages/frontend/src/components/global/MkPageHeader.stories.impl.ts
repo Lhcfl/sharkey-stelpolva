@@ -59,7 +59,7 @@ export const Icon = {
 		tabs: [
 			{
 				...OneTab.args.tabs[0],
-				icon: 'ph-house ph-bold ph-lg',
+				icon: 'ti ti-home',
 			},
 		],
 	},

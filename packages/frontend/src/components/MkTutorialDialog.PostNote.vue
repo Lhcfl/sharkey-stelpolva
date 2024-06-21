@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps">
 			<div>{{ i18n.ts._initialTutorial._postNote._visibility.description }}</div>
 			<div><i class="ph-globe-hemisphere-west ph-bold ph-lg"></i> <b>{{ i18n.ts._visibility.public }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.public }}</div>
-			<div><i class="ph-house ph-bold ph-lg"></i> <b>{{ i18n.ts._visibility.home }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.home }}</div>
+			<div><i class="ti ti-home"></i> <b>{{ i18n.ts._visibility.home }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.home }}</div>
 			<div><i class="ph-lock ph-bold ph-lg"></i> <b>{{ i18n.ts._visibility.followers }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.followers }}</div>
 			<div class="_gaps_s">
 				<div><i class="ph-envelope ph-bold ph-lg"></i> <b>{{ i18n.ts._visibility.specified }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.direct }}</div>

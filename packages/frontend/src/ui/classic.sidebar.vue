@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div class="divider"></div>
 	<MkA v-click-anime class="item index" activeClass="active" to="/" exact>
-		<i class="ph-house ph-bold ph-lg ti-fw"></i><span class="text">{{ i18n.ts.timeline }}</span>
+		<i class="ti ti-home ti-fw"></i><span class="text">{{ i18n.ts.timeline }}</span>
 	</MkA>
 	<template v-for="item in menu">
 		<div v-if="item === '-'" class="divider"></div>

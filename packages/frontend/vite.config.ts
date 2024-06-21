@@ -90,6 +90,7 @@ export function getConfig(): UserConfig {
 					'ti ti-shield': 'ph-shield ph-bold ph-lg',
 					'ti ti-shield-lock': 'ph-shield ph-bold ph-lg',
 					'ti ti-confetti': 'ph-confetti ph-bold ph-lg',
+					'ti ti-home': 'ph-house ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

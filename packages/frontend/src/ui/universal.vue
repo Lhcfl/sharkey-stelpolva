@@ -26,7 +26,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<div v-if="isMobile" ref="navFooter" :class="$style.nav">
 		<button :class="$style.navButton" class="_button" @click="drawerMenuShowing = true"><i :class="$style.navButtonIcon" class="ph-list ph-bold ph-lg-2"></i><span v-if="menuIndicated" :class="$style.navButtonIndicator"><i class="_indicatorCircle"></i></span></button>
-		<button :class="$style.navButton" class="_button" @click="isRoot ? top() : mainRouter.push('/')"><i :class="$style.navButtonIcon" class="ph-house ph-bold ph-lg"></i></button>
+		<button :class="$style.navButton" class="_button" @click="isRoot ? top() : mainRouter.push('/')"><i :class="$style.navButtonIcon" class="ti ti-home"></i></button>
 		<button :class="$style.navButton" class="_button" @click="mainRouter.push('/my/notifications')">
 			<i :class="$style.navButtonIcon" class="ph-bell ph-bold ph-lg"></i>
 			<span v-if="$i?.hasUnreadNotification" :class="$style.navButtonIndicator">

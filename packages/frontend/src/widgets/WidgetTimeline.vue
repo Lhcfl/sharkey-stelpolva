@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <MkContainer :showHeader="widgetProps.showHeader" :style="`height: ${widgetProps.height}px;`" :scrollable="true" data-cy-mkw-timeline class="mkw-timeline">
 	<template #icon>
-		<i v-if="widgetProps.src === 'home'" class="ph-house ph-bold ph-lg"></i>
+		<i v-if="widgetProps.src === 'home'" class="ti ti-home"></i>
 		<i v-else-if="widgetProps.src === 'local'" class="ti ti-planet"></i>
 		<i v-else-if="widgetProps.src === 'social'" class="ph-rocket-launch ph-bold ph-lg"></i>
 		<i v-else-if="widgetProps.src === 'bubble'" class="ph-drop ph-bold ph-lg"></i>
@@ -119,7 +119,7 @@ const choose = async (ev) => {
 	}));
 	os.popupMenu([{
 		text: i18n.ts._timelines.home,
-		icon: 'ph-house ph-bold ph-lg',
+		icon: 'ti ti-home',
 		action: () => { setSrc('home'); },
 	}, {
 		text: i18n.ts._timelines.local,

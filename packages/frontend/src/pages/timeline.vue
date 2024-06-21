@@ -293,7 +293,7 @@ const headerTabs = computed(() => [...(defaultStore.reactiveState.pinnedUserList
 }))), {
 	key: 'home',
 	title: i18n.ts._timelines.home,
-	icon: 'ph-house ph-bold ph-lg',
+	icon: 'ti ti-home',
 	iconOnly: true,
 }, ...(isLocalTimelineAvailable ? [{
 	key: 'local',
@@ -349,7 +349,7 @@ const headerTabsWhenNotLogin = computed(() => [
 
 definePageMetadata(() => ({
 	title: i18n.ts.timeline,
-	icon: src.value === 'local' ? 'ti ti-planet' : src.value === 'social' ? 'ph-rocket-launch ph-bold ph-lg' : src.value === 'global' ? 'ph-globe-hemisphere-west ph-bold ph-lg' : src.value === 'bubble' ? 'ph-drop ph-bold ph-lg' : 'ph-house ph-bold ph-lg',
+	icon: src.value === 'local' ? 'ti ti-planet' : src.value === 'social' ? 'ph-rocket-launch ph-bold ph-lg' : src.value === 'global' ? 'ph-globe-hemisphere-west ph-bold ph-lg' : src.value === 'bubble' ? 'ph-drop ph-bold ph-lg' : 'ti ti-home',
 }));
 </script>
 

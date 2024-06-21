@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</button>
 		<button key="home" :disabled="isReplyVisibilitySpecified" class="_button" :class="[$style.item, { [$style.active]: v === 'home' }]" data-index="2" @click="choose('home')">
-			<div :class="$style.icon"><i class="ph-house ph-bold ph-lg"></i></div>
+			<div :class="$style.icon"><i class="ti ti-home"></i></div>
 			<div :class="$style.body">
 				<span :class="$style.itemTitle">{{ i18n.ts._visibility.home }}</span>
 				<span :class="$style.itemDescription">{{ i18n.ts._visibility.homeDescription }}</span>

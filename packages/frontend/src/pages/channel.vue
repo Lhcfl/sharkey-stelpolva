@@ -281,7 +281,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'timeline',
 	title: i18n.ts.timeline,
-	icon: 'ph-house ph-bold ph-lg',
+	icon: 'ti ti-home',
 }, {
 	key: 'featured',
 	title: i18n.ts.featured,

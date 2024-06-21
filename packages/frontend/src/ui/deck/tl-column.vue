@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <XColumn :menu="menu" :column="column" :isStacked="isStacked" :refresher="() => timeline.reloadTimeline()">
 	<template #header>
-		<i v-if="column.tl === 'home'" class="ph-house ph-bold ph-lg"></i>
+		<i v-if="column.tl === 'home'" class="ti ti-home"></i>
 		<i v-else-if="column.tl === 'local'" class="ti ti-planet"></i>
 		<i v-else-if="column.tl === 'social'" class="ph-rocket-launch ph-bold ph-lg"></i>
 		<i v-else-if="column.tl === 'bubble'" class="ph-thumb-up ph-bold ph-lg"></i>

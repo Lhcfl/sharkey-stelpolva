@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 		<div :class="$style.middle">
 			<MkA v-tooltip.noDelay.right="i18n.ts.timeline" :class="$style.item" :activeClass="$style.active" to="/" exact>
-				<i :class="$style.itemIcon" class="ph-house ph-bold ph-lg ti-fw"></i><span :class="$style.itemText">{{ i18n.ts.timeline }}</span>
+				<i :class="$style.itemIcon" class="ti ti-home ti-fw"></i><span :class="$style.itemText">{{ i18n.ts.timeline }}</span>
 			</MkA>
 			<template v-for="item in menu">
 				<div v-if="item === '-'" :class="$style.divider"></div>

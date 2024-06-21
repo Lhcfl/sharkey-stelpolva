@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<img :src="instance.iconUrl ?? instance.faviconUrl ?? '/favicon.ico'" class="_ghost"/>
 			</button>
 			<MkA v-click-anime v-tooltip="i18n.ts.timeline" class="item index" activeClass="active" to="/" exact>
-				<i class="ph-house ph-bold ph-lg ti-fw"></i>
+				<i class="ti ti-home ti-fw"></i>
 			</MkA>
 			<template v-for="item in menu">
 				<div v-if="item === '-'" class="divider"></div>
