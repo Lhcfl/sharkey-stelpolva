@@ -166,7 +166,7 @@ function showMenu(ev: MouseEvent) {
 		},
 		{
 			text: i18n.ts.hide,
-			icon: 'ph-eye-closed ph-bold ph-lg',
+			icon: 'ti ti-eye-off',
 			action: () => {
 				hide.value = true;
 			},

@@ -58,7 +58,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</MkFolder>
 
 	<MkFolder>
-		<template #icon><i class="ph-eye-slash ph-bold ph-lg"></i></template>
+		<template #icon><i class="ti ti-eye-off"></i></template>
 		<template #label>{{ i18n.ts.mutedUsers }}</template>
 
 		<MkPagination :pagination="mutingPagination">

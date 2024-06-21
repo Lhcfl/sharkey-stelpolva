@@ -39,7 +39,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		>
 			<source :src="video.url">
 		</video>
-		<i class="ph-eye-closed ph-bold ph-lg" :class="$style.hide" @click="hide = true"></i>
+		<i class="ti ti-eye-off" :class="$style.hide" @click="hide = true"></i>
 		<div :class="$style.indicators">
 			<div v-if="video.comment" :class="$style.indicator">ALT</div>
 			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ph-warning ph-bold ph-lg"></i></div>
@@ -64,7 +64,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-else-if="!isActuallyPlaying" :class="$style.videoLoading">
 			<MkLoading/>
 		</div>
-		<i class="ph-eye-closed ph-bold ph-lg" :class="$style.hide" @click="hide = true"></i>
+		<i class="ti ti-eye-off" :class="$style.hide" @click="hide = true"></i>
 		<div :class="$style.indicators">
 			<div v-if="video.comment" :class="$style.indicator">ALT</div>
 			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ph-warning ph-bold ph-lg"></i></div>
@@ -205,7 +205,7 @@ function showMenu(ev: MouseEvent) {
 		},
 		{
 			text: i18n.ts.hide,
-			icon: 'ph-eye-closed ph-bold ph-lg',
+			icon: 'ti ti-eye-off',
 			action: () => {
 				hide.value = true;
 			},

@@ -46,7 +46,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-if="!image.comment" :class="$style.indicator" title="Image lacks descriptive text"><i class="ph-pencil-simple ph-bold ph-lg-off"></i></div>
 		</div>
 		<button :class="$style.menu" class="_button" @click.stop="showMenu"><i class="ti ti-dots" style="vertical-align: middle;"></i></button>
-		<i class="ph-eye-slash ph-bold ph-lg" :class="$style.hide" @click.stop="hide = true"></i>
+		<i class="ti ti-eye-off" :class="$style.hide" @click.stop="hide = true"></i>
 	</template>
 </div>
 </template>
@@ -104,7 +104,7 @@ watch(() => props.image, () => {
 function showMenu(ev: MouseEvent) {
 	os.popupMenu([{
 		text: i18n.ts.hide,
-		icon: 'ph-eye-slash ph-bold ph-lg',
+		icon: 'ti ti-eye-off',
 		action: () => {
 			hide.value = true;
 		},

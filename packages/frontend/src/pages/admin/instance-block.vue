@@ -63,7 +63,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'silence',
 	title: i18n.ts.silence,
-	icon: 'ph-eye-closed ph-bold ph-lg',
+	icon: 'ti ti-eye-off',
 }]);
 
 definePageMetadata(() => ({

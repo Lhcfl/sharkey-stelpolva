@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<MkFolder>
 		<template #label>{{ i18n.ts.hideOnlineStatus }}</template>
-		<template #icon><i class="ph-eye-slash ph-bold ph-lg"></i></template>
+		<template #icon><i class="ti ti-eye-off"></i></template>
 		<template #suffix>{{ hideOnlineStatus ? i18n.ts.on : i18n.ts.off }}</template>
 
 		<MkSwitch v-model="hideOnlineStatus">{{ i18n.ts.hideOnlineStatus }}<template #caption>{{ i18n.ts.hideOnlineStatusDescription }}</template></MkSwitch>
