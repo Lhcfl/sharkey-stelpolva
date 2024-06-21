@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<section class="ilrvjyvi">
 		<XBlocks v-model="children" class="children"/>
-		<MkButton rounded class="add" @click="add()"><i class="ph-plus ph-bold ph-lg"></i></MkButton>
+		<MkButton rounded class="add" @click="add()"><i class="ti ti-plus"></i></MkButton>
 	</section>
 </XContainer>
 </template>

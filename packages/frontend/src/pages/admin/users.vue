@@ -126,7 +126,7 @@ const headerActions = computed(() => [{
 	handler: searchUser,
 }, {
 	asFullButton: true,
-	icon: 'ph-plus ph-bold ph-lg',
+	icon: 'ti ti-plus',
 	text: i18n.ts.addUser,
 	handler: addUser,
 }, {

@@ -228,7 +228,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkButton primary rounded @click="updateBaseRole">{{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
-				<MkButton primary rounded @click="create"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts._role.new }}</MkButton>
+				<MkButton primary rounded @click="create"><i class="ti ti-plus"></i> {{ i18n.ts._role.new }}</MkButton>
 				<div class="_gaps_s">
 					<MkFoldableSection>
 						<template #header>{{ i18n.ts._role.manualRoles }}</template>

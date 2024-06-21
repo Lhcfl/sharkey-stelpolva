@@ -40,7 +40,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkSwitch v-model="hideTitleWhenPinned">{{ i18n.ts._pages.hideTitleWhenPinned }}</MkSwitch>
 
 				<div class="eyeCatch">
-					<MkButton v-if="eyeCatchingImageId == null && !readonly" @click="setEyeCatchingImage"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts._pages.eyeCatchingImageSet }}</MkButton>
+					<MkButton v-if="eyeCatchingImageId == null && !readonly" @click="setEyeCatchingImage"><i class="ti ti-plus"></i> {{ i18n.ts._pages.eyeCatchingImageSet }}</MkButton>
 					<div v-else-if="eyeCatchingImage">
 						<img :src="eyeCatchingImage.url" :alt="eyeCatchingImage.name" style="max-width: 100%;"/>
 						<MkButton v-if="!readonly" @click="removeEyeCatchingImage()"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts._pages.eyeCatchingImageRemove }}</MkButton>
@@ -53,7 +53,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div :class="$style.contents">
 				<XBlocks v-model="content" class="content"/>
 
-				<MkButton v-if="!readonly" rounded class="add" @click="add()"><i class="ph-plus ph-bold ph-lg"></i></MkButton>
+				<MkButton v-if="!readonly" rounded class="add" @click="add()"><i class="ti ti-plus"></i></MkButton>
 			</div>
 		</div>
 	</MkSpacer>

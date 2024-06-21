@@ -29,7 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</template>
 						<template #footer>
 							<button class="_button" :class="$style.emojisAdd" @click="chooseReaction">
-								<i class="ph-plus ph-bold ph-lg"></i>
+								<i class="ti ti-plus"></i>
 							</button>
 						</template>
 					</Sortable>
@@ -69,7 +69,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</template>
 						<template #footer>
 							<button class="_button" :class="$style.emojisAdd" @click="chooseEmoji">
-								<i class="ph-plus ph-bold ph-lg"></i>
+								<i class="ti ti-plus"></i>
 							</button>
 						</template>
 					</Sortable>

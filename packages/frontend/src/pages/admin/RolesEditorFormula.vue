@@ -44,7 +44,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</template>
 		</Sortable>
-		<MkButton rounded style="margin: 0 auto;" @click="addValue"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts.add }}</MkButton>
+		<MkButton rounded style="margin: 0 auto;" @click="addValue"><i class="ti ti-plus"></i> {{ i18n.ts.add }}</MkButton>
 	</div>
 
 	<div v-else-if="type === 'not'" :class="$style.item">

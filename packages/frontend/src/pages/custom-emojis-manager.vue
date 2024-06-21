@@ -172,7 +172,7 @@ const remoteMenu = (emoji, ev: MouseEvent) => {
 	},
 	{
 		text: i18n.ts.import,
-		icon: 'ph-plus ph-bold ph-lg',
+		icon: 'ti ti-plus',
 		action: () => { importEmoji(emoji); },
 	},
 	{
@@ -302,7 +302,7 @@ const delBulk = async () => {
 
 const headerActions = computed(() => [{
 	asFullButton: true,
-	icon: 'ph-plus ph-bold ph-lg',
+	icon: 'ti ti-plus',
 	text: i18n.ts.addEmoji,
 	handler: add,
 }, {

@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<FormSuspense :p="init">
 		<div class="_gaps">
 			<div class="_buttons">
-				<MkButton primary @click="addAccount"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts.addAccount }}</MkButton>
+				<MkButton primary @click="addAccount"><i class="ti ti-plus"></i> {{ i18n.ts.addAccount }}</MkButton>
 				<MkButton @click="init"><i class="ph-arrows-counter-clockwise ph-bold ph-lg"></i> {{ i18n.ts.reloadAccountsList }}</MkButton>
 			</div>
 

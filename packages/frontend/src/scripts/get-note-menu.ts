@@ -93,7 +93,7 @@ export async function getNoteClipMenu(props: {
 			});
 		},
 	})), { type: 'divider' }, {
-		icon: 'ph-plus ph-bold ph-lg',
+		icon: 'ti ti-plus',
 		text: i18n.ts.createNew,
 		action: async () => {
 			const { canceled, result } = await os.form(i18n.ts.createNewClip, {

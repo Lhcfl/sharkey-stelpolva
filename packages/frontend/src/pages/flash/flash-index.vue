@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<div v-else-if="tab === 'my'" key="my">
 				<div class="_gaps">
-					<MkButton gradate rounded style="margin: 0 auto;" @click="create()"><i class="ph-plus ph-bold ph-lg"></i></MkButton>
+					<MkButton gradate rounded style="margin: 0 auto;" @click="create()"><i class="ti ti-plus"></i></MkButton>
 					<MkPagination v-slot="{items}" :pagination="myFlashsPagination">
 						<div class="_gaps_s">
 							<MkFlashPreview v-for="flash in items" :key="flash.id" :flash="flash"/>
@@ -71,7 +71,7 @@ function create() {
 }
 
 const headerActions = computed(() => [{
-	icon: 'ph-plus ph-bold ph-lg',
+	icon: 'ti ti-plus',
 	text: i18n.ts.create,
 	handler: create,
 }]);

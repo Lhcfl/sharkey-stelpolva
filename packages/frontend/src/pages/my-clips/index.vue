@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkSpacer :contentMax="700">
 		<MkHorizontalSwipe v-model:tab="tab" :tabs="headerTabs">
 			<div v-if="tab === 'my'" key="my" class="_gaps">
-				<MkButton primary rounded class="add" @click="create"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts.add }}</MkButton>
+				<MkButton primary rounded class="add" @click="create"><i class="ti ti-plus"></i> {{ i18n.ts.add }}</MkButton>
 
 				<MkPagination v-slot="{ items }" ref="pagingComponent" :pagination="pagination" class="_gaps">
 					<MkClipPreview v-for="item in items" :key="item.id" :clip="item"/>

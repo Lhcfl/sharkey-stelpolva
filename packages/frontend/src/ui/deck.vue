@@ -40,7 +40,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<button v-tooltip.noDelay.left="i18n.ts._deck.deleteProfile" :class="$style.sideMenuButton" class="_button" @click="deleteProfile"><i class="ph-trash ph-bold ph-lg"></i></button>
 				</div>
 				<div :class="$style.sideMenuMiddle">
-					<button v-tooltip.noDelay.left="i18n.ts._deck.addColumn" :class="$style.sideMenuButton" class="_button" @click="addColumn"><i class="ph-plus ph-bold ph-lg"></i></button>
+					<button v-tooltip.noDelay.left="i18n.ts._deck.addColumn" :class="$style.sideMenuButton" class="_button" @click="addColumn"><i class="ti ti-plus"></i></button>
 				</div>
 				<div :class="$style.sideMenuBottom">
 					<button v-tooltip.noDelay.left="i18n.ts.settings" :class="$style.sideMenuButton" class="_button" @click="showSettings"><i class="ph-gear ph-bold ph-lg"></i></button>
@@ -236,7 +236,7 @@ function changeProfile(ev: MouseEvent) {
 			},
 		}))), { type: 'divider' as const }, {
 			text: i18n.ts._deck.newProfile,
-			icon: 'ph-plus ph-bold ph-lg',
+			icon: 'ti ti-plus',
 			action: async () => {
 				const { canceled, result: name } = await os.inputText({
 					title: i18n.ts._deck.profile,

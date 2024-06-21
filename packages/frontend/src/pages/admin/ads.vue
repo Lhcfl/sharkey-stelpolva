@@ -248,7 +248,7 @@ refresh();
 
 const headerActions = computed(() => [{
 	asFullButton: true,
-	icon: 'ph-plus ph-bold ph-lg',
+	icon: 'ti ti-plus',
 	text: i18n.ts.add,
 	handler: add,
 }]);
