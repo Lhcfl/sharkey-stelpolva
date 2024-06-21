@@ -159,7 +159,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 			copyToClipboard(`@${user.username}@${user.host ?? host}`);
 		},
 	}, ...(iAmModerator ? [{
-		icon: 'ph-warning-circle ph-bold ph-lg',
+		icon: 'ti ti-user-exclamation',
 		text: i18n.ts.moderation,
 		action: () => {
 			router.push(`/admin/user/${user.id}`);
@@ -338,7 +338,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 		}
 
 		menu = menu.concat([{ type: 'divider' }, {
-			icon: 'ph-warning-circle ph-bold ph-lg',
+			icon: 'ti ti-exclamation-circle',
 			text: i18n.ts.reportAbuse,
 			action: reportAbuse,
 		}]);

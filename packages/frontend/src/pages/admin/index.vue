@@ -167,7 +167,7 @@ const menuDef = computed(() => [{
 		to: '/admin/ads',
 		active: currentPage.value?.route.name === 'ads',
 	}, {
-		icon: 'ph-warning-circle ph-bold ph-lg',
+		icon: 'ti ti-exclamation-circle',
 		text: i18n.ts.abuseReports,
 		to: '/admin/abuses',
 		active: currentPage.value?.route.name === 'abuses',

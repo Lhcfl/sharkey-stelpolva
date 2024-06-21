@@ -129,7 +129,7 @@ export async function getNoteClipMenu(props: {
 
 export function getAbuseNoteMenu(note: Misskey.entities.Note, text: string): MenuItem {
 	return {
-		icon: 'ph-warning-circle ph-bold ph-lg',
+		icon: 'ti ti-exclamation-circle',
 		text,
 		action: (): void => {
 			const localUrl = `${url}/notes/${note.id}`;

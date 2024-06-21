@@ -162,6 +162,8 @@ export function getConfig(): UserConfig {
 					'ti ti-eye-exclamation': 'ph-eye-slash ph-bold ph-lg',
 					'ti ti-lock': 'ph-lock ph-bold ph-lg',
 					'ti ti-users': 'ph-users ph-bold ph-lg',
+					'ti ti-exclamation-circle': 'ph-warning-circle ph-bold ph-lg',
+					'ti ti-user-exclamation': 'ph-warning-circle ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'
