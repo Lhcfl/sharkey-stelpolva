@@ -142,7 +142,7 @@ const menuDef = computed(() => [{
 		to: '/admin/avatar-decorations',
 		active: currentPage.value?.route.name === 'avatarDecorations',
 	}, {
-		icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+		icon: 'ti ti-whirl',
 		text: i18n.ts.federation,
 		to: '/admin/federation',
 		active: currentPage.value?.route.name === 'federation',

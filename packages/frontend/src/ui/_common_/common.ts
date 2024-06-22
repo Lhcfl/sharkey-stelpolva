@@ -57,7 +57,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 	}, {
 		type: 'link',
 		text: i18n.ts.federation,
-		icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+		icon: 'ti ti-whirl',
 		to: '/about#federation',
 	}, {
 		type: 'link',

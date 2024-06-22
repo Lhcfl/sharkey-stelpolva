@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="widgetProps.src === 'local'" class="ti ti-planet"></i>
 		<i v-else-if="widgetProps.src === 'social'" class="ph-rocket-launch ph-bold ph-lg"></i>
 		<i v-else-if="widgetProps.src === 'bubble'" class="ph-drop ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'global'" class="ph-globe-hemisphere-west ph-bold ph-lg"></i>
+		<i v-else-if="widgetProps.src === 'global'" class="ti ti-whirl"></i>
 		<i v-else-if="widgetProps.src === 'list'" class="ti ti-list"></i>
 		<i v-else-if="widgetProps.src === 'antenna'" class="ti ti-antenna"></i>
 	</template>
@@ -135,7 +135,7 @@ const choose = async (ev) => {
 		action: () => { setSrc('bubble'); },
 	}, {
 		text: i18n.ts._timelines.global,
-		icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+		icon: 'ti ti-whirl',
 		action: () => { setSrc('global'); },
 	}, antennaItems.length > 0 ? { type: 'divider' } : undefined, ...antennaItems, listItems.length > 0 ? { type: 'divider' } : undefined, ...listItems], ev.currentTarget ?? ev.target).then(() => {
 		menuOpened.value = false;

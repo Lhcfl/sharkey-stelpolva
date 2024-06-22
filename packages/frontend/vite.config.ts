@@ -289,7 +289,6 @@ export function getConfig(): UserConfig {
 					'ti ti-badge': 'ph-seal-check ph-bold ph-lg',
 					'ti ti-window-maximize': 'ph-frame-corners ph-bold ph-lg',
 					'ti ti-password': 'ph-password ph-bold ph-lg',
-					'ti ti-key': 'ph-key ph-bold ph-lg',
 					'ti ti-123': 'ph-numpad ph-bold ph-lg',
 					'ti ti-world': 'ph-globe-hemisphere-west ph-bold ph-lg',
 					'ti ti-plug': 'ph-plug ph-bold ph-lg',
@@ -329,7 +328,7 @@ export function getConfig(): UserConfig {
 					'ti ti-ad': 'ph-flag ph-bold ph-lg',
 					'ti ti-paint': 'ph-paint-roller ph-bold ph-lg',
 					'ti ti-database': 'ph-database ph-bold ph-lg',
-
+					'ti ti-whirl': 'ph-globe-hemisphere-west ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

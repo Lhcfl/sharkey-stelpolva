@@ -117,7 +117,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.federation,
-	icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+	icon: 'ti ti-whirl',
 }));
 </script>
 

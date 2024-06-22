@@ -184,7 +184,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'federation',
 	title: i18n.ts.federation,
-	icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+	icon: 'ti ti-whirl',
 }, {
 	key: 'charts',
 	title: i18n.ts.charts,

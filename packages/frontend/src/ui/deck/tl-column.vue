@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="column.tl === 'local'" class="ti ti-planet"></i>
 		<i v-else-if="column.tl === 'social'" class="ph-rocket-launch ph-bold ph-lg"></i>
 		<i v-else-if="column.tl === 'bubble'" class="ph-thumb-up ph-bold ph-lg"></i>
-		<i v-else-if="column.tl === 'global'" class="ph-globe-hemisphere-west ph-bold ph-lg"></i>
+		<i v-else-if="column.tl === 'global'" class="ti ti-whirl"></i>
 		<span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
