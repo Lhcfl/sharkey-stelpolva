@@ -615,7 +615,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.general,
-	icon: 'ph-faders ph-bold ph-lg',
+	icon: 'ti ti-adjustments',
 }));
 
 const useCustomSearchEngine = computed(() => !Object.keys(searchEngineMap).includes(searchEngine.value));

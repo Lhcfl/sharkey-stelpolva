@@ -82,7 +82,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</FormSection>
 
 	<FormSection>
-		<FormLink to="/registry"><template #icon><i class="ph-faders ph-bold ph-lg"></i></template>{{ i18n.ts.registry }}</FormLink>
+		<FormLink to="/registry"><template #icon><i class="ti ti-adjustments"></i></template>{{ i18n.ts.registry }}</FormLink>
 	</FormSection>
 
 	<FormSection>

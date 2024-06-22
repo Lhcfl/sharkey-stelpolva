@@ -197,7 +197,7 @@ function showMenu(ev: MouseEvent) {
 		},
 		...(document.pictureInPictureEnabled ? [{
 			text: i18n.ts._mediaControls.pip,
-			icon: 'ph ph-picture-in-picture',
+			icon: 'ti ti-picture-in-picture',
 			action: togglePictureInPicture,
 		}] : []),
 		{

@@ -137,7 +137,7 @@ const menuDef = computed(() => [{
 		to: '/admin/emojis',
 		active: currentPage.value?.route.name === 'emojis',
 	}, {
-		icon: 'ph-sparkle ph-bold ph-lg',
+		icon: 'ti ti-sparkles',
 		text: i18n.ts.avatarDecorations,
 		to: '/admin/avatar-decorations',
 		active: currentPage.value?.route.name === 'avatarDecorations',
@@ -220,7 +220,7 @@ const menuDef = computed(() => [{
 		to: '/admin/instance-block',
 		active: currentPage.value?.route.name === 'instance-block',
 	}, {
-		icon: 'ph-ghost ph-bold ph-lg',
+		icon: 'ti ti-ghost',
 		text: i18n.ts.proxyAccount,
 		to: '/admin/proxy-account',
 		active: currentPage.value?.route.name === 'proxy-account',
@@ -230,7 +230,7 @@ const menuDef = computed(() => [{
 		to: '/admin/external-services',
 		active: currentPage.value?.route.name === 'external-services',
 	}, {
-		icon: 'ph-faders ph-bold ph-lg',
+		icon: 'ti ti-adjustments',
 		text: i18n.ts.other,
 		to: '/admin/other-settings',
 		active: currentPage.value?.route.name === 'other-settings',

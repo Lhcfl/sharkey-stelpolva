@@ -67,7 +67,7 @@ const menuDef = computed(() => [{
 		to: '/settings/profile',
 		active: currentPage.value?.route.name === 'profile',
 	}, {
-		icon: 'ph-lock ph-bold ph-lg-open',
+		icon: 'ti ti-lock-open',
 		text: i18n.ts.privacy,
 		to: '/settings/privacy',
 		active: currentPage.value?.route.name === 'privacy',
@@ -100,7 +100,7 @@ const menuDef = computed(() => [{
 }, {
 	title: i18n.ts.clientSettings,
 	items: [{
-		icon: 'ph-faders ph-bold ph-lg',
+		icon: 'ti ti-adjustments',
 		text: i18n.ts.general,
 		to: '/settings/general',
 		active: currentPage.value?.route.name === 'general',

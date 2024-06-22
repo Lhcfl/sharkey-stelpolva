@@ -303,7 +303,7 @@ const headerTabs = computed(() => [...(defaultStore.reactiveState.pinnedUserList
 }, {
 	key: 'social',
 	title: i18n.ts._timelines.social,
-	icon: 'ph-rocket-launch ph-bold ph-lg',
+	icon: 'ti ti-universe',
 	iconOnly: true,
 }] : []), ...(isBubbleTimelineAvailable ? [{
 	key: 'bubble',
@@ -349,7 +349,7 @@ const headerTabsWhenNotLogin = computed(() => [
 
 definePageMetadata(() => ({
 	title: i18n.ts.timeline,
-	icon: src.value === 'local' ? 'ti ti-planet' : src.value === 'social' ? 'ph-rocket-launch ph-bold ph-lg' : src.value === 'global' ? 'ti ti-whirl' : src.value === 'bubble' ? 'ph-drop ph-bold ph-lg' : 'ti ti-home',
+	icon: src.value === 'local' ? 'ti ti-planet' : src.value === 'social' ? 'ti ti-universe' : src.value === 'global' ? 'ti ti-whirl' : src.value === 'bubble' ? 'ph-drop ph-bold ph-lg' : 'ti ti-home',
 }));
 </script>
 

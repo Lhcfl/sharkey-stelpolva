@@ -89,8 +89,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-if="game.isEnded" class="_panel _gaps_s" style="padding: 16px;">
 			<div>{{ logPos }} / {{ game.logs.length }}</div>
 			<div v-if="!autoplaying" class="_buttonsCenter">
-				<MkButton :disabled="logPos === 0" @click="logPos = 0"><i class="ph-caret-left ph-bold ph-lg"></i></MkButton>
-				<MkButton :disabled="logPos === 0" @click="logPos--"><i class="ph-caret-left ph-bold ph-lg"></i></MkButton>
+				<MkButton :disabled="logPos === 0" @click="logPos = 0"><i class="ti ti-chevrons-left"></i></MkButton>
+				<MkButton :disabled="logPos === 0" @click="logPos--"><i class="ti ti-chevron-left"></i></MkButton>
 				<MkButton :disabled="logPos === game.logs.length" @click="logPos++"><i class="ti ti-chevron-right"></i></MkButton>
 				<MkButton :disabled="logPos === game.logs.length" @click="logPos = game.logs.length"><i class="ti ti-chevrons-right"></i></MkButton>
 			</div>

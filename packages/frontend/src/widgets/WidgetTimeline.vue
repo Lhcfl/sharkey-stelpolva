@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #icon>
 		<i v-if="widgetProps.src === 'home'" class="ti ti-home"></i>
 		<i v-else-if="widgetProps.src === 'local'" class="ti ti-planet"></i>
-		<i v-else-if="widgetProps.src === 'social'" class="ph-rocket-launch ph-bold ph-lg"></i>
+		<i v-else-if="widgetProps.src === 'social'" class="ti ti-universe"></i>
 		<i v-else-if="widgetProps.src === 'bubble'" class="ph-drop ph-bold ph-lg"></i>
 		<i v-else-if="widgetProps.src === 'global'" class="ti ti-whirl"></i>
 		<i v-else-if="widgetProps.src === 'list'" class="ti ti-list"></i>
@@ -127,7 +127,7 @@ const choose = async (ev) => {
 		action: () => { setSrc('local'); },
 	}, {
 		text: i18n.ts._timelines.social,
-		icon: 'ph-rocket-launch ph-bold ph-lg',
+		icon: 'ti ti-universe',
 		action: () => { setSrc('social'); },
 	}, {
 		text: 'Bubble',

@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkAvatar :class="$style.avatar" :user="$i" forceShowDecoration @click="changeAvatar"/>
 			<div class="_buttonsCenter">
 				<MkButton primary rounded @click="changeAvatar">{{ i18n.ts._profile.changeAvatar }}</MkButton>
-				<MkButton primary rounded link to="/settings/avatar-decoration">{{ i18n.ts.decorate }} <i class="ph-sparkle ph-bold ph-lg"></i></MkButton>
+				<MkButton primary rounded link to="/settings/avatar-decoration">{{ i18n.ts.decorate }} <i class="ti ti-sparkles"></i></MkButton>
 			</div>
 		</div>
 	</div>

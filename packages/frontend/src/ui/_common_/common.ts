@@ -36,7 +36,7 @@ function toolsMenuItems(): MenuItem[] {
 		type: 'link',
 		to: '/avatar-decorations',
 		text: i18n.ts.manageAvatarDecorations,
-		icon: 'ph-sparkle ph-bold ph-lg',
+		icon: 'ti ti-sparkles',
 	} : undefined];
 }
 
