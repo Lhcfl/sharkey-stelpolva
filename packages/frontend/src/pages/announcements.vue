@@ -104,11 +104,11 @@ const headerActions = computed(() => []);
 const headerTabs = computed(() => [{
 	key: 'current',
 	title: i18n.ts.currentAnnouncements,
-	icon: 'ph-fire ph-bold ph-lg',
+	icon: 'ti ti-flare',
 }, {
 	key: 'past',
 	title: i18n.ts.pastAnnouncements,
-	icon: 'ph-circle ph-bold ph-lg',
+	icon: 'ti ti-point',
 }]);
 
 definePageMetadata(() => ({

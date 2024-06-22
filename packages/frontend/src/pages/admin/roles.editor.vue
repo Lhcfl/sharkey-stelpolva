@@ -667,7 +667,7 @@ const q = ref('');
 function getPriorityIcon(option) {
 	if (option.priority === 2) return 'ti ti-arrows-up';
 	if (option.priority === 1) return 'ti ti-arrow-narrow-up';
-	return 'ph-circle ph-bold ph-lg';
+	return 'ti ti-point';
 }
 
 function matchQuery(keywords: string[]): boolean {

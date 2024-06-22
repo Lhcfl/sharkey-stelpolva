@@ -86,7 +86,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</FormSection>
 	<FormSection>
-		<template #label><i class="ph-user-minus ph-bold ph-lg"></i> {{ i18n.ts._exportOrImport.muteList }}</template>
+		<template #label><i class="ti ti-user-off"></i> {{ i18n.ts._exportOrImport.muteList }}</template>
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>
@@ -101,7 +101,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</FormSection>
 	<FormSection>
-		<template #label><i class="ph-user-minus ph-bold ph-lg"></i> {{ i18n.ts._exportOrImport.blockingList }}</template>
+		<template #label><i class="ti ti-user-off"></i> {{ i18n.ts._exportOrImport.blockingList }}</template>
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>
@@ -252,7 +252,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.importAndExport,
-	icon: 'ph-package ph-bold ph-lg',
+	icon: 'ti ti-package',
 }));
 </script>
 

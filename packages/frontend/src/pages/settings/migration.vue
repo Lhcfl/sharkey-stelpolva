@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div class="_gaps_m">
 	<MkFolder :defaultOpen="true">
-		<template #icon><i class="ph-airplane-landing ph-bold ph-lg"></i></template>
+		<template #icon><i class="ti ti-plane-arrival"></i></template>
 		<template #label>{{ i18n.ts._accountMigration.moveFrom }}</template>
 		<template #caption>{{ i18n.ts._accountMigration.moveFromSub }}</template>
 
@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 			<div class="_gaps">
 				<MkInput v-for="(_, i) in accountAliases" v-model="accountAliases[i]">
-					<template #prefix><i class="ph-airplane-landing ph-bold ph-lg"></i></template>
+					<template #prefix><i class="ti ti-plane-arrival"></i></template>
 					<template #label>{{ i18n.tsx._accountMigration.moveFromLabel({ n: i + 1 }) }}</template>
 				</MkInput>
 			</div>
@@ -123,7 +123,7 @@ init();
 
 definePageMetadata(() => ({
 	title: i18n.ts.accountMigration,
-	icon: 'ph-airplane ph-bold ph-lg',
+	icon: 'ti ti-plane',
 }));
 </script>
 

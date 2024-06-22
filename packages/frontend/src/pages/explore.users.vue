@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div v-if="origin === 'local'">
 		<template v-if="tag == null">
 			<MkFoldableSection class="_margin" persistKey="explore-pinned-users">
-				<template #header><i class="ph-bookmark ph-bold ph-lg ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.pinnedUsers }}</template>
+				<template #header><i class="ti ti-bookmark ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.pinnedUsers }}</template>
 				<MkUserList :pagination="pinnedUsers"/>
 			</MkFoldableSection>
 			<MkFoldableSection class="_margin" persistKey="explore-popular-users">

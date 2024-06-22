@@ -317,7 +317,7 @@ export function getNoteMenu(props: {
 		menu = [
 			...(
 				props.currentClip?.userId === $i.id ? [{
-					icon: 'ph-backspace ph-bold ph-lg',
+					icon: 'ti ti-backspace',
 					text: i18n.ts.unclip,
 					danger: true,
 					action: unclip,
@@ -347,13 +347,13 @@ export function getNoteMenu(props: {
 				action: share,
 			}] : []),
 			$i && $i.policies.canUseTranslator && instance.translatorAvailable ? {
-				icon: 'ph-translate ph-bold ph-lg',
+				icon: 'ti ti-language-hiragana',
 				text: i18n.ts.translate,
 				action: translate,
 			} : undefined,
 			{ type: 'divider' },
 			statePromise.then(state => state.isFavorited ? {
-				icon: 'ph-star-half ph-bold ph-lg',
+				icon: 'ti ti-star-off',
 				text: i18n.ts.unfavorite,
 				action: () => toggleFavorite(false),
 			} : {
@@ -368,16 +368,16 @@ export function getNoteMenu(props: {
 				children: () => getNoteClipMenu(props),
 			},
 			statePromise.then(state => state.isMutedThread ? {
-				icon: 'ph-bell-slash ph-bold ph-lg',
+				icon: 'ti ti-message-off',
 				text: i18n.ts.unmuteThread,
 				action: () => toggleThreadMute(false),
 			} : {
-				icon: 'ph-bell-slash ph-bold ph-lg',
+				icon: 'ti ti-message-off',
 				text: i18n.ts.muteThread,
 				action: () => toggleThreadMute(true),
 			}),
 			appearNote.userId === $i.id ? ($i.pinnedNoteIds ?? []).includes(appearNote.id) ? {
-				icon: 'ph-push-pin-slash ph-bold ph-lg',
+				icon: 'ti ti-pinned-off',
 				text: i18n.ts.unpin,
 				action: () => togglePin(false),
 			} : {
@@ -425,7 +425,7 @@ export function getNoteMenu(props: {
 
 						if (channel.pinnedNoteIds.includes(appearNote.id)) {
 							channelChildMenu.push({
-								icon: 'ph-push-pin-slash ph-bold ph-lg',
+								icon: 'ti ti-pinned-off',
 								text: i18n.ts.unpin,
 								action: () => os.apiWithDialog('channels/update', {
 									channelId: appearNote.channel!.id,

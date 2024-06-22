@@ -115,7 +115,7 @@ const menuDef = computed(() => [{
 		to: '/settings/navbar',
 		active: currentPage.value?.route.name === 'navbar',
 	}, {
-		icon: 'ph-equals ph-bold ph-lg',
+		icon: 'ti ti-equal-double',
 		text: i18n.ts.statusbar,
 		to: '/settings/statusbar',
 		active: currentPage.value?.route.name === 'statusbar',
@@ -143,22 +143,22 @@ const menuDef = computed(() => [{
 		to: '/settings/mute-block',
 		active: currentPage.value?.route.name === 'mute-block',
 	}, {
-		icon: 'ph-key ph-bold ph-lg',
+		icon: 'ti ti-api',
 		text: 'API',
 		to: '/settings/api',
 		active: currentPage.value?.route.name === 'api',
 	}, {
-		icon: 'ph-webhooks-logo ph-bold ph-lg',
+		icon: 'ti ti-webhook',
 		text: 'Webhook',
 		to: '/settings/webhook',
 		active: currentPage.value?.route.name === 'webhook',
 	}, {
-		icon: 'ph-package ph-bold ph-lg',
+		icon: 'ti ti-package',
 		text: i18n.ts.importAndExport,
 		to: '/settings/import-export',
 		active: currentPage.value?.route.name === 'import-export',
 	}, {
-		icon: 'ph-airplane ph-bold ph-lg',
+		icon: 'ti ti-plane',
 		text: `${i18n.ts.accountMigration}`,
 		to: '/settings/migration',
 		active: currentPage.value?.route.name === 'migration',
@@ -183,7 +183,7 @@ const menuDef = computed(() => [{
 		},
 	}, {
 		type: 'button',
-		icon: 'ph-power ph-bold ph-lg',
+		icon: 'ti ti-power',
 		text: i18n.ts.logout,
 		action: async () => {
 			const { canceled } = await os.confirm({

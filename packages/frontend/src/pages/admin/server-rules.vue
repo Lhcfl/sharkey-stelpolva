@@ -69,7 +69,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.serverRules,
-	icon: 'ph-check ph-bold ph-lg',
+	icon: 'ti ti-checkbox',
 }));
 </script>
 

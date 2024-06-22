@@ -30,7 +30,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<MkInput v-model="profile.location" manualSave>
 		<template #label>{{ i18n.ts.location }}</template>
-		<template #prefix><i class="ph-map-pin ph-bold ph-lg"></i></template>
+		<template #prefix><i class="ti ti-map-pin"></i></template>
 	</MkInput>
 
 	<MkInput v-model="profile.birthday" :max="setMaxBirthDate()" type="date" manualSave>

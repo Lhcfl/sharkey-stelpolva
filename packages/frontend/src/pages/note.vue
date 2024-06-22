@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<div class="_margin">
 						<div v-if="!showNext" class="_buttons" :class="$style.loadNext">
-							<MkButton v-if="note.channelId" rounded :class="$style.loadButton" @click="showNext = 'channel'"><i class="ti ti-chevron-up"></i> <i class="ph-television-simple ph-bold ph-lg"></i></MkButton>
+							<MkButton v-if="note.channelId" rounded :class="$style.loadButton" @click="showNext = 'channel'"><i class="ti ti-chevron-up"></i> <i class="ti ti-device-tv"></i></MkButton>
 							<MkButton rounded :class="$style.loadButton" @click="showNext = 'user'"><i class="ti ti-chevron-up"></i> <i class="ti ti-user"></i></MkButton>
 						</div>
 						<div v-if="defaultStore.state.noteDesign === 'misskey'" class="_margin _gaps_s">
@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</div>
 						<div v-if="!showPrev" class="_buttons" :class="$style.loadPrev">
-							<MkButton v-if="note.channelId" rounded :class="$style.loadButton" @click="showPrev = 'channel'"><i class="ti ti-chevron-down"></i> <i class="ph-television-simple ph-bold ph-lg"></i></MkButton>
+							<MkButton v-if="note.channelId" rounded :class="$style.loadButton" @click="showPrev = 'channel'"><i class="ti ti-chevron-down"></i> <i class="ti ti-device-tv"></i></MkButton>
 							<MkButton rounded :class="$style.loadButton" @click="showPrev = 'user'"><i class="ti ti-chevron-down"></i> <i class="ti ti-user"></i></MkButton>
 						</div>
 					</div>

@@ -135,7 +135,7 @@ async function removeUser(item, ev) {
 async function showMembershipMenu(item, ev) {
 	os.popupMenu([{
 		text: item.withReplies ? i18n.ts.hideRepliesToOthersInTimeline : i18n.ts.showRepliesToOthersInTimeline,
-		icon: item.withReplies ? 'ph-envelope-open ph-bold ph-lg' : 'ti ti-messages',
+		icon: item.withReplies ? 'ti ti-messages-off' : 'ti ti-messages',
 		action: async () => {
 			misskeyApi('users/lists/update-membership', {
 				listId: list.value.id,

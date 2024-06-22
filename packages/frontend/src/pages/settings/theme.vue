@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div class="selects">
 		<MkSelect v-model="lightThemeId" large class="select">
 			<template #label>{{ i18n.ts.themeForLightMode }}</template>
-			<template #prefix><i class="ph-sun ph-bold ph-lg"></i></template>
+			<template #prefix><i class="ti ti-sun"></i></template>
 			<option v-if="instanceLightTheme" :key="'instance:' + instanceLightTheme.id" :value="instanceLightTheme.id">{{ instanceLightTheme.name }}</option>
 			<optgroup v-if="installedLightThemes.length > 0" :label="i18n.ts._theme.installedThemes">
 				<option v-for="x in installedLightThemes" :key="'installed:' + x.id" :value="x.id">{{ x.name }}</option>
@@ -45,7 +45,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</MkSelect>
 		<MkSelect v-model="darkThemeId" large class="select">
 			<template #label>{{ i18n.ts.themeForDarkMode }}</template>
-			<template #prefix><i class="ph-moon ph-bold ph-lg"></i></template>
+			<template #prefix><i class="ti ti-moon"></i></template>
 			<option v-if="instanceDarkTheme" :key="'instance:' + instanceDarkTheme.id" :value="instanceDarkTheme.id">{{ instanceDarkTheme.name }}</option>
 			<optgroup v-if="installedDarkThemes.length > 0" :label="i18n.ts._theme.installedThemes">
 				<option v-for="x in installedDarkThemes" :key="'installed:' + x.id" :value="x.id">{{ x.name }}</option>

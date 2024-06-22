@@ -69,7 +69,7 @@ function setFilter(ev) {
 
 const headerActions = computed(() => [tab.value === 'all' ? {
 	text: i18n.ts.filter,
-	icon: 'ph-funnel ph-bold ph-lg',
+	icon: 'ti ti-filter',
 	highlighted: includeTypes.value != null,
 	handler: setFilter,
 } : undefined, tab.value === 'all' ? {
@@ -83,7 +83,7 @@ const headerActions = computed(() => [tab.value === 'all' ? {
 const headerTabs = computed(() => [{
 	key: 'all',
 	title: i18n.ts.all,
-	icon: 'ph-circle ph-bold ph-lg',
+	icon: 'ti ti-point',
 }, {
 	key: 'mentions',
 	title: i18n.ts.mentions,

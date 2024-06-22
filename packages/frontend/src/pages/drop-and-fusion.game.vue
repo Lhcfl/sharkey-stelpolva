@@ -1220,7 +1220,7 @@ onDeactivated(() => {
 
 definePageMetadata(() => ({
 	title: i18n.ts.bubbleGame,
-	icon: 'ph-orange-slice ph-bold ph-lg',
+	icon: 'ti ti-apple',
 }));
 </script>
 
