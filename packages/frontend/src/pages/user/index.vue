@@ -115,7 +115,7 @@ const headerTabs = computed(() => user.value ? [{
 }, {
 	key: 'flashs',
 	title: 'Play',
-	icon: 'ph-play ph-bold ph-lg',
+	icon: 'ti ti-player-play',
 }, {
 	key: 'gallery',
 	title: i18n.ts.gallery,

@@ -54,7 +54,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA to="/channels" class="link" activeClass="active"><i class="ti ti-device-tv icon"></i>{{ i18n.ts.channel }}</MkA>
 			<div class="divider"></div>
 			<MkA to="/pages" class="link" activeClass="active"><i class="ph-newspaper ph-bold ph-lg icon"></i>{{ i18n.ts.pages }}</MkA>
-			<MkA to="/play" class="link" activeClass="active"><i class="ph-play ph-bold ph-lg icon"></i>Play</MkA>
+			<MkA to="/play" class="link" activeClass="active"><i class="ti ti-player-play icon"></i>Play</MkA>
 			<MkA to="/gallery" class="link" activeClass="active"><i class="ph-images-square ph-bold ph-lgs icon"></i>{{ i18n.ts.gallery }}</MkA>
 			<div class="action">
 				<button class="_buttonPrimary" @click="signup()">{{ i18n.ts.signup }}</button>

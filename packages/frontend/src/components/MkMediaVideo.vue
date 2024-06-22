@@ -60,7 +60,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		>
 			<source :src="video.url">
 		</video>
-		<button v-if="isReady && !isPlaying" class="_button" :class="$style.videoOverlayPlayButton" @click="togglePlayPause"><i class="ph-play ph-bold ph-lg"></i></button>
+		<button v-if="isReady && !isPlaying" class="_button" :class="$style.videoOverlayPlayButton" @click="togglePlayPause"><i class="ti ti-player-play-filled"></i></button>
 		<div v-else-if="!isActuallyPlaying" :class="$style.videoLoading">
 			<MkLoading/>
 		</div>
@@ -72,8 +72,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.videoControls" @click.self="togglePlayPause">
 			<div :class="[$style.controlsChild, $style.controlsLeft]">
 				<button class="_button" :class="$style.controlButton" @click="togglePlayPause">
-					<i v-if="isPlaying" class="ph-pause ph-bold ph-lg"></i>
-					<i v-else class="ph-play ph-bold ph-lg"></i>
+					<i v-if="isPlaying" class="ti ti-player-pause-filled"></i>
+					<i v-else class="ti ti-player-play-filled"></i>
 				</button>
 			</div>
 			<div :class="[$style.controlsChild, $style.controlsRight]">
@@ -91,8 +91,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div :class="[$style.controlsChild, $style.controlsTime]">{{ hms(elapsedTimeMs) }}</div>
 			<div :class="[$style.controlsChild, $style.controlsVolume]">
 				<button class="_button" :class="$style.controlButton" @click="toggleMute">
-					<i v-if="volume === 0" class="ph-speaker-x ph-bold ph-lg"></i>
-					<i v-else class="ph-speaker-high ph-bold ph-lg"></i>
+					<i v-if="volume === 0" class="ti ti-volume-3"></i>
+					<i v-else class="ti ti-volume"></i>
 				</button>
 				<MkMediaRange
 					v-model="volume"

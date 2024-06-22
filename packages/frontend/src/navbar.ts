@@ -93,7 +93,7 @@ export const navbarItemDef = reactive({
 	},
 	play: {
 		title: 'Play',
-		icon: 'ph-play ph-bold ph-lg',
+		icon: 'ti ti-player-play',
 		to: '/play',
 	},
 	gallery: {

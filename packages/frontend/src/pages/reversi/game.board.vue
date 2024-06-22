@@ -94,7 +94,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkButton :disabled="logPos === game.logs.length" @click="logPos++"><i class="ti ti-chevron-right"></i></MkButton>
 				<MkButton :disabled="logPos === game.logs.length" @click="logPos = game.logs.length"><i class="ti ti-chevrons-right"></i></MkButton>
 			</div>
-			<MkButton style="margin: auto;" :disabled="autoplaying" @click="autoplay()"><i class="ph-play ph-bold ph-lg"></i></MkButton>
+			<MkButton style="margin: auto;" :disabled="autoplaying" @click="autoplay()"><i class="ti ti-player-play"></i></MkButton>
 		</div>
 
 		<div class="_panel" style="padding: 16px;">

@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</MkRange>
 
 	<div class="_buttons">
-		<MkButton inline @click="listen"><i class="ph-play ph-bold ph-lg"></i> {{ i18n.ts.listen }}</MkButton>
+		<MkButton inline @click="listen"><i class="ti ti-player-play"></i> {{ i18n.ts.listen }}</MkButton>
 		<MkButton inline primary @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
 	</div>
 </div>

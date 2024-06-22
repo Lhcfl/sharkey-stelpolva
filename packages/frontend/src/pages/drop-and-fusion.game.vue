@@ -105,7 +105,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</I18n>
 					</div>
 				</div>
-				<div v-if="replaying" :class="$style.replayIndicator"><span :class="$style.replayIndicatorText"><i class="ph-play ph-bold ph-lg"></i> {{ i18n.ts.replaying }}</span></div>
+				<div v-if="replaying" :class="$style.replayIndicator"><span :class="$style.replayIndicatorText"><i class="ti ti-player-play"></i> {{ i18n.ts.replaying }}</span></div>
 			</div>
 
 			<div v-if="replaying" class="_woodenFrame">
@@ -116,9 +116,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 				<div class="_woodenFrameInner">
 					<div class="_buttonsCenter">
-						<MkButton @click="endReplay"><i class="ph-stop ph-bold ph-lg"></i> {{ i18n.ts.endReplay }}</MkButton>
-						<MkButton :primary="replayPlaybackRate === 4" @click="replayPlaybackRate = replayPlaybackRate === 4 ? 1 : 4"><i class="ph-skip-forward ph-bold ph-lg"></i> x4</MkButton>
-						<MkButton :primary="replayPlaybackRate === 16" @click="replayPlaybackRate = replayPlaybackRate === 16 ? 1 : 16"><i class="ph-skip-forward ph-bold ph-lg"></i> x16</MkButton>
+						<MkButton @click="endReplay"><i class="ti ti-player-stop"></i> {{ i18n.ts.endReplay }}</MkButton>
+						<MkButton :primary="replayPlaybackRate === 4" @click="replayPlaybackRate = replayPlaybackRate === 4 ? 1 : 4"><i class="ti ti-player-track-next"></i> x4</MkButton>
+						<MkButton :primary="replayPlaybackRate === 16" @click="replayPlaybackRate = replayPlaybackRate === 16 ? 1 : 16"><i class="ti ti-player-track-next"></i> x16</MkButton>
 					</div>
 				</div>
 			</div>

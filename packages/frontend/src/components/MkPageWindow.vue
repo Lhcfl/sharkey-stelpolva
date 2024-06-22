@@ -81,7 +81,7 @@ const buttonsRight = computed(() => {
 		title: i18n.ts.reload,
 		onClick: reload,
 	}, {
-		icon: 'ph-eject ph-bold ph-lg',
+		icon: 'ti ti-player-eject',
 		title: i18n.ts.showInPage,
 		onClick: expand,
 	}];
@@ -113,7 +113,7 @@ provide('forceSpacerMin', true);
 provide('shouldBackButton', false);
 
 const contextmenu = computed(() => ([{
-	icon: 'ph-eject ph-bold ph-lg',
+	icon: 'ti ti-player-eject',
 	text: i18n.ts.showInPage,
 	action: expand,
 }, {

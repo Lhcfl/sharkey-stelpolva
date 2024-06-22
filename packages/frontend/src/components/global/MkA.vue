@@ -61,7 +61,7 @@ function onContextmenu(ev) {
 			os.pageWindow(props.to);
 		},
 	}, {
-		icon: 'ph-eject ph-bold ph-lg',
+		icon: 'ti ti-player-eject',
 		text: i18n.ts.showInPage,
 		action: () => {
 			router.push(props.to, 'forcePage');
