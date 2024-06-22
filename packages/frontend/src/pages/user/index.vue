@@ -91,7 +91,7 @@ const headerTabs = computed(() => user.value ? [{
 }, {
 	key: 'activity',
 	title: i18n.ts.activity,
-	icon: 'ph-chart-line ph-bold ph-lg',
+	icon: 'ti ti-chart-line',
 }, ...(user.value.host == null ? [{
 	key: 'achievements',
 	title: i18n.ts.achievements,

@@ -182,6 +182,22 @@ export function getConfig(): UserConfig {
 			}),
 			iconsReplace({
 				values: {
+					'ti ti-apps': 'ph-squares-four ph-bold ph-lg',
+				},
+				include: [
+					'**/pages/**',
+				],
+			}),
+			iconsReplace({
+				values: {
+					'ti ti-apps': 'ph-stack ph-bold ph-lg',
+				},
+				include: [
+					'**/ui/**',
+				],
+			}),
+			iconsReplace({
+				values: {
 					'ti ti-terminal-2': 'ph-terminal-window ph-bold ph-lg',
 					'ti ti-download': 'ph-download ph-bold ph-lg',
 					'ti ti-circle-x': 'ph-x-circle ph-bold ph-lg',
@@ -346,6 +362,10 @@ export function getConfig(): UserConfig {
 					'ti ti-bell-off': 'ph-bell ph-bold ph-lg',
 					'ti ti-tool': 'ph-wrench ph-bold ph-lg',
 					'ti ti-refresh': 'ph-arrows-counter-clockwise ph-bold ph-lg',
+					'ti ti-section': 'ph-selection-all ph-bold ph-lg',
+					'ti ti-selector': 'ph-caret-up-down ph-bold ph-lg',
+					'ti ti-chart-line': 'ph-chart-line ph-bold ph-lg',
+					'ti ti-stack-2': 'ph-stack ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

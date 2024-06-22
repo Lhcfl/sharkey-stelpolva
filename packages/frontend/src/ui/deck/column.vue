@@ -159,7 +159,7 @@ function getMenu() {
 			},
 		} : undefined],
 	}, {
-		icon: 'ph-stack ph-bold ph-lg',
+		icon: 'ti ti-stack-2',
 		text: i18n.ts._deck.stackLeft,
 		action: () => {
 			stackLeftColumn(props.column.id);

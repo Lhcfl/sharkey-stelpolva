@@ -274,7 +274,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'chart',
 	title: i18n.ts.charts,
-	icon: 'ph-chart-line ph-bold ph-lg',
+	icon: 'ti ti-chart-line',
 }, {
 	key: 'users',
 	title: i18n.ts.users,
