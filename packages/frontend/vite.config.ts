@@ -273,6 +273,9 @@ export function getConfig(): UserConfig {
 					'ti ti-arrow-big-right': 'ph-arrow-fat-right ph-bold ph-lg',
 					'ti ti-arrow-up': 'ph-arrow-up ph-bold ph-lg',
 					'ti ti-arrow-down': 'ph-arrow-down ph-bold ph-lg',
+					'ti ti-arrow-back-up': 'ph-arrow-u-up-left ph-bold ph-lg',
+					'ti ti-quote': 'ph-quotes ph-bold ph-lg',
+					'ti ti-send': 'ph-paper-plane-tilt ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

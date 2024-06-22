@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div style="text-align: center; padding: 0 16px;">{{ i18n.ts._initialTutorial._note.description }}</div>
 	<MkNote :class="$style.exampleNoteRoot" style="pointer-events: none;" :note="exampleNote" :mock="true"/>
 	<div class="_gaps_s">
-		<div><i class="ph-arrow-u-up-left ph-bold ph-lg"></i> <b>{{ i18n.ts.reply }}</b> … {{ i18n.ts._initialTutorial._note.reply }}</div>
+		<div><i class="ti ti-arrow-back-up"></i> <b>{{ i18n.ts.reply }}</b> … {{ i18n.ts._initialTutorial._note.reply }}</div>
 		<div><i class="ti ti-repeat"></i> <b>{{ i18n.ts.renote }}</b> … {{ i18n.ts._initialTutorial._note.renote }}</div>
 		<div><i class="ph-smiley ph-bold ph-lg"></i> <b>{{ i18n.ts.reaction }}</b> … {{ i18n.ts._initialTutorial._note.reaction }}</div>
 		<div><i class="ti ti-dots"></i> <b>{{ i18n.ts.menu }}</b> … {{ i18n.ts._initialTutorial._note.menu }}</div>

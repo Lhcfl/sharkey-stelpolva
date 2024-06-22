@@ -33,9 +33,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i v-else-if="notification.type === 'receiveFollowRequest'" class="ti ti-clock"></i>
 			<i v-else-if="notification.type === 'followRequestAccepted'" class="ti ti-check"></i>
 			<i v-else-if="notification.type === 'renote'" class="ti ti-repeat"></i>
-			<i v-else-if="notification.type === 'reply'" class="ph-arrow-u-up-left ph-bold ph-lg"></i>
+			<i v-else-if="notification.type === 'reply'" class="ti ti-arrow-back-up"></i>
 			<i v-else-if="notification.type === 'mention'" class="ph-at ph-bold ph-lg"></i>
-			<i v-else-if="notification.type === 'quote'" class="ph-quotes ph-bold ph-lg"></i>
+			<i v-else-if="notification.type === 'quote'" class="ti ti-quote"></i>
 			<i v-else-if="notification.type === 'pollEnded'" class="ph-chart-bar-horizontal ph-bold ph-lg"></i>
 			<i v-else-if="notification.type === 'achievementEarned'" class="ph-trophy ph-bold ph-lg"></i>
 			<template v-else-if="notification.type === 'roleAssigned'">
@@ -70,14 +70,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</header>
 		<div>
 			<MkA v-if="notification.type === 'reaction' || notification.type === 'reaction:grouped'" :class="$style.text" :to="notePage(notification.note)" :title="getNoteSummary(notification.note)">
-				<i class="ph-quotes ph-bold ph-lg" :class="$style.quote"></i>
+				<i class="ti ti-quote" :class="$style.quote"></i>
 				<Mfm :text="getNoteSummary(notification.note)" :isBlock="true" :plain="true" :nowrap="true" :author="notification.note.user"/>
-				<i class="ph-quotes ph-bold ph-lg" :class="$style.quote"></i>
+				<i class="ti ti-quote" :class="$style.quote"></i>
 			</MkA>
 			<MkA v-else-if="notification.type === 'renote' || notification.type === 'renote:grouped'" :class="$style.text" :to="notePage(notification.note)" :title="getNoteSummary(notification.note.renote)">
-				<i class="ph-quotes ph-bold ph-lg" :class="$style.quote"></i>
+				<i class="ti ti-quote" :class="$style.quote"></i>
 				<Mfm :text="getNoteSummary(notification.note.renote)" :isBlock="true" :plain="true" :nowrap="true" :author="notification.note.renote?.user"/>
-				<i class="ph-quotes ph-bold ph-lg" :class="$style.quote"></i>
+				<i class="ti ti-quote" :class="$style.quote"></i>
 			</MkA>
 			<MkA v-else-if="notification.type === 'reply'" :class="$style.text" :to="notePage(notification.note)" :title="getNoteSummary(notification.note)">
 				<Mfm :text="getNoteSummary(notification.note)" :isBlock="true" :plain="true" :nowrap="true" :author="notification.note.user"/>
@@ -92,9 +92,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<Mfm :text="getNoteSummary(notification.note)" :isBlock="true" :plain="true" :nowrap="true" :author="notification.note.user"/>
 			</MkA>
 			<MkA v-else-if="notification.type === 'pollEnded'" :class="$style.text" :to="notePage(notification.note)" :title="getNoteSummary(notification.note)">
-				<i class="ph-quotes ph-bold ph-lg" :class="$style.quote"></i>
+				<i class="ti ti-quote" :class="$style.quote"></i>
 				<Mfm :text="getNoteSummary(notification.note)" :isBlock="true" :plain="true" :nowrap="true" :author="notification.note.user"/>
-				<i class="ph-quotes ph-bold ph-lg" :class="$style.quote"></i>
+				<i class="ti ti-quote" :class="$style.quote"></i>
 			</MkA>
 			<div v-else-if="notification.type === 'roleAssigned'" :class="$style.text">
 				{{ notification.role.name }}
