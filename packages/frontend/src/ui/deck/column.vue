@@ -132,7 +132,7 @@ function getMenu() {
 	}, {
 		type: 'parent',
 		text: i18n.ts.move + '...',
-		icon: 'ph-arrows-out-cardinal ph-bold ph-lg',
+		icon: 'ti ti-arrows-move',
 		children: [{
 			icon: 'ti ti-arrow-left',
 			text: i18n.ts._deck.swapLeft,
@@ -146,13 +146,13 @@ function getMenu() {
 				swapRightColumn(props.column.id);
 			},
 		}, props.isStacked ? {
-			icon: 'ph-arrow-up ph-bold ph-lg',
+			icon: 'ti ti-arrow-up',
 			text: i18n.ts._deck.swapUp,
 			action: () => {
 				swapUpColumn(props.column.id);
 			},
 		} : undefined, props.isStacked ? {
-			icon: 'ph-arrow-down ph-bold ph-lg',
+			icon: 'ti ti-arrow-down',
 			text: i18n.ts._deck.swapDown,
 			action: () => {
 				swapDownColumn(props.column.id);

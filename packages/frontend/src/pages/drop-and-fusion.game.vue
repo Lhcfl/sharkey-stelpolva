@@ -173,7 +173,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div>
 						<div v-for="(mono, i) in game.monoDefinitions.sort((a, b) => a.level - b.level)" :key="mono.id" style="display: inline-block;">
 							<img :src="getTextureImageUrl(mono)" style="width: 32px; vertical-align: bottom;"/>
-							<div v-if="i < game.monoDefinitions.length - 1" style="display: inline-block; margin-left: 4px; vertical-align: bottom;"><i class="ph-arrow-fat-right ph-bold ph-lg"></i></div>
+							<div v-if="i < game.monoDefinitions.length - 1" style="display: inline-block; margin-left: 4px; vertical-align: bottom;"><i class="ti ti-arrow-big-right"></i></div>
 						</div>
 					</div>
 				</div>

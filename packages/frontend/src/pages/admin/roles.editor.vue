@@ -665,8 +665,8 @@ const rolePermission = computed({
 const q = ref('');
 
 function getPriorityIcon(option) {
-	if (option.priority === 2) return 'ph-arrow-up ph-bold ph-lg';
-	if (option.priority === 1) return 'ph-arrow-up ph-bold ph-lg';
+	if (option.priority === 2) return 'ti ti-arrows-up';
+	if (option.priority === 1) return 'ti ti-arrow-narrow-up';
 	return 'ph-circle ph-bold ph-lg';
 }
 

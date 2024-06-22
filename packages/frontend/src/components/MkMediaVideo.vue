@@ -84,8 +84,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<i class="ti ti-settings"></i>
 				</button>
 				<button class="_button" :class="$style.controlButton" @click="toggleFullscreen">
-					<i v-if="isFullscreen" class="ph-arrows-in ph-bold ph-lg"></i>
-					<i v-else class="ph-arrows-out ph-bold ph-lg"></i>
+					<i v-if="isFullscreen" class="ti ti-arrows-minimize"></i>
+					<i v-else class="ti ti-arrows-maximize"></i>
 				</button>
 			</div>
 			<div :class="[$style.controlsChild, $style.controlsTime]">{{ hms(elapsedTimeMs) }}</div>
