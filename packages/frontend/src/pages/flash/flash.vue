@@ -22,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary @click="unlike()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
 								<MkButton v-else v-tooltip="i18n.ts.like" asLike class="button" rounded @click="like()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
 								<MkButton v-tooltip="i18n.ts.copyLink" class="button" rounded @click="copyLink"><i class="ti ti-link ti-fw"></i></MkButton>
-								<MkButton v-tooltip="i18n.ts.share" class="button" rounded @click="share"><i class="ph-share-network ph-bold ph-lg ti-fw"></i></MkButton>
+								<MkButton v-tooltip="i18n.ts.share" class="button" rounded @click="share"><i class="ti ti-share ti-fw"></i></MkButton>
 							</div>
 						</div>
 					</div>
@@ -109,7 +109,7 @@ function share(ev: MouseEvent) {
 		},
 		...(isSupportShare() ? [{
 			text: i18n.ts.share,
-			icon: 'ph-share-network ph-bold ph-lg ti-fw',
+			icon: 'ti ti-share',
 			action: shareWithNavigator,
 		}] : []),
 	], ev.currentTarget ?? ev.target);

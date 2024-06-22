@@ -165,20 +165,20 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 			router.push(`/admin/user/${user.id}`);
 		},
 	}] : []), {
-		icon: 'ph-rss ph-bold ph-lg',
+		icon: 'ti ti-rss',
 		text: i18n.ts.copyRSS,
 		action: () => {
 			copyToClipboard(`${user.host ?? host}/@${user.username}.atom`);
 		},
 	}, ...(user.host != null && user.url != null ? [{
-		icon: 'ph-share ph-bold ph-lg',
+		icon: 'ti ti-external-link',
 		text: i18n.ts.showOnRemote,
 		action: () => {
 			if (user.url == null) return;
 			window.open(user.url, '_blank', 'noopener');
 		},
 	}] : []), {
-		icon: 'ph-share-network ph-bold ph-lg',
+		icon: 'ti ti-share',
 		text: i18n.ts.copyProfileUrl,
 		action: () => {
 			const canonical = user.host === null ? `@${user.username}` : `@${user.username}@${toUnicode(user.host)}`;
@@ -305,7 +305,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 		// フォローしたとしても user.isFollowing はリアルタイム更新されないので不便なため
 		//if (user.isFollowing) {
 		menu = menu.concat([{
-			icon: user.withReplies ? 'ph-envelope-open ph-bold ph-lg' : 'ph-envelope ph-bold ph-lg-off',
+			icon: user.withReplies ? 'ti ti-messages-off' : 'ti ti-messages',
 			text: user.withReplies ? i18n.ts.hideRepliesToOthersInTimeline : i18n.ts.showRepliesToOthersInTimeline,
 			action: toggleWithReplies,
 		}, {
@@ -331,7 +331,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 
 		if (user.isFollowed) {
 			menu = menu.concat([{
-				icon: 'ph-link ph-bold ph-lg-off',
+				icon: 'ti ti-link-off',
 				text: i18n.ts.breakFollow,
 				action: invalidateFollow,
 			}]);

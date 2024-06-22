@@ -35,7 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<MkInput v-model="profile.birthday" :max="setMaxBirthDate()" type="date" manualSave>
 		<template #label>{{ i18n.ts.birthday }}</template>
-		<template #prefix><i class="ph-cake ph-bold ph-lg"></i></template>
+		<template #prefix><i class="ti ti-cake"></i></template>
 	</MkInput>
 
 	<MkInput v-model="profile.listenbrainz" manualSave>

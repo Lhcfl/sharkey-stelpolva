@@ -48,7 +48,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 								</div>
 								<div :class="$style.pageBannerTitleSubActions">
 									<MkA v-if="page.userId === $i?.id" v-tooltip="i18n.ts._pages.editThisPage" :to="`/pages/edit/${page.id}`" class="_button" :class="$style.generalActionButton"><i class="ti ti-pencil ti-fw"></i></MkA>
-									<button v-tooltip="i18n.ts.share" class="_button" :class="$style.generalActionButton" @click="share"><i class="ph-share-network ph-bold ph-lg ti-fw"></i></button>
+									<button v-tooltip="i18n.ts.share" class="_button" :class="$style.generalActionButton" @click="share"><i class="ti ti-share ti-fw"></i></button>
 								</div>
 							</div>
 						</div>
@@ -63,7 +63,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 						<div :class="$style.other">
 							<button v-tooltip="i18n.ts.copyLink" class="_button" :class="$style.generalActionButton" @click="copyLink"><i class="ti ti-link ti-fw"></i></button>
-							<button v-tooltip="i18n.ts.share" class="_button" :class="$style.generalActionButton" @click="share"><i class="ph-share-network ph-bold ph-lg ti-fw"></i></button>
+							<button v-tooltip="i18n.ts.share" class="_button" :class="$style.generalActionButton" @click="share"><i class="ti ti-share ti-fw"></i></button>
 						</div>
 					</div>
 					<div :class="$style.pageUser">
@@ -175,7 +175,7 @@ function share(ev: MouseEvent) {
 		},
 		...(isSupportShare() ? [{
 			text: i18n.ts.share,
-			icon: 'ph-share-network',
+			icon: 'ti ti-share',
 			action: shareWithNavigator,
 		}] : []),
 	], ev.currentTarget ?? ev.target);

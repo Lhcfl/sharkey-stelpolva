@@ -287,7 +287,7 @@ const headerTabs = computed(() => [{
 
 definePageMetadata(() => ({
 	title: props.host,
-	icon: 'ph-hard-drives ph-bold ph-lg',
+	icon: 'ti ti-server',
 }));
 </script>
 

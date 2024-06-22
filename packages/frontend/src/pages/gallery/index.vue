@@ -116,7 +116,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'my',
 	title: i18n.ts._gallery.my,
-	icon: 'ph-pencil-simple-line ph-bold ph-lg',
+	icon: 'ti ti-edit',
 }]);
 
 definePageMetadata(() => ({

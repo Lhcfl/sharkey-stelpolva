@@ -22,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 			<div class="divider"></div>
 			<MkA v-if="$i.isAdmin || $i.isModerator" v-click-anime v-tooltip="i18n.ts.controlPanel" class="item" activeClass="active" to="/admin" :behavior="settingsWindowed ? 'window' : null">
-				<i class="ph-gauge ph-bold ph-lg ti-fw"></i>
+				<i class="ti ti-dashboard ti-fw"></i>
 			</MkA>
 			<button v-click-anime class="item _button" @click="more">
 				<i class="ti ti-dots ti-fw"></i>

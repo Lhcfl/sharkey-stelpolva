@@ -107,7 +107,7 @@ const menuDef = computed(() => [{
 }, {
 	title: i18n.ts.administration,
 	items: [{
-		icon: 'ph-gauge ph-bold ph-lg',
+		icon: 'ti ti-dashboard',
 		text: i18n.ts.dashboard,
 		to: '/admin/overview',
 		active: currentPage.value?.route.name === 'overview',

@@ -26,7 +26,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<span v-if="user.isLocked" :title="i18n.ts.isLocked"><i class="ti ti-lock"></i></span>
 								<span v-if="user.isBot" :title="i18n.ts.isBot"><i class="ph-robot ph-bold ph-lg"></i></span>
 								<button v-if="$i && !isEditingMemo && !memoDraft" class="_button add-note-button" @click="showMemoTextarea">
-									<i class="ph-pencil-simple-line ph-bold ph-lg"/> {{ i18n.ts.addMemo }}
+									<i class="ti ti-edit"/> {{ i18n.ts.addMemo }}
 								</button>
 							</div>
 						</div>
@@ -83,7 +83,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<dd class="value">{{ user.location }}</dd>
 						</dl>
 						<dl v-if="user.birthday" class="field">
-							<dt class="name"><i class="ph-cake ph-bold ph-lg ti-fw"></i> {{ i18n.ts.birthday }}</dt>
+							<dt class="name"><i class="ti ti-cake ti-fw"></i> {{ i18n.ts.birthday }}</dt>
 							<dd class="value">{{ user.birthday.replace('-', '/').replace('-', '/') }} ({{ i18n.tsx.yearsOld({ age }) }})</dd>
 						</dl>
 						<dl class="field">

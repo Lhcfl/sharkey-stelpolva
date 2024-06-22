@@ -280,7 +280,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'contents',
 	title: i18n.ts._pages.contents,
-	icon: 'ph-note ph-bold ph-lg',
+	icon: 'ti ti-note',
 }]);
 
 definePageMetadata(() => ({

@@ -229,7 +229,7 @@ const headerActions = computed(() => {
 		}];
 
 		headerItems.push({
-			icon: 'ph-share-network ph-bold ph-lg',
+			icon: 'ti ti-link',
 			text: i18n.ts.copyUrl,
 			handler: async (): Promise<void> => {
 				if (!channel.value) {
@@ -243,7 +243,7 @@ const headerActions = computed(() => {
 
 		if (isSupportShare()) {
 			headerItems.push({
-				icon: 'ph-share-network ph-bold ph-lg',
+				icon: 'ti ti-share',
 				text: i18n.ts.share,
 				handler: async (): Promise<void> => {
 					if (!channel.value) {

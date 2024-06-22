@@ -342,7 +342,7 @@ export function getNoteMenu(props: {
 				},
 			} : undefined,
 			...(isSupportShare() ? [{
-				icon: 'ph-share-network ph-bold ph-lg',
+				icon: 'ti ti-share',
 				text: i18n.ts.share,
 				action: share,
 			}] : []),
@@ -456,7 +456,7 @@ export function getNoteMenu(props: {
 					action: edit,
 				} : undefined,
 				{
-					icon: 'ph-pencil-simple-line ph-bold ph-lg',
+					icon: 'ti ti-edit',
 					text: i18n.ts.deleteAndEdit,
 					danger: true,
 					action: delEdit,

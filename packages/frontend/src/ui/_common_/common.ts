@@ -77,7 +77,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 	} : undefined, {
 		type: 'parent',
 		text: i18n.ts.tools,
-		icon: 'ph-toolbox ph-bold ph-lg',
+		icon: 'ti ti-tool',
 		children: toolsMenuItems(),
 	}, { type: 'divider' }, {
 		type: 'link',
@@ -110,13 +110,13 @@ export function openInstanceMenu(ev: MouseEvent) {
 		},
 	} : undefined, (!instance.impressumUrl && !instance.tosUrl && !instance.privacyPolicyUrl && !instance.donationUrl) ? undefined : { type: 'divider' }, {
 		text: i18n.ts.document,
-		icon: 'ph-libghtbulb ph-bold ph-lg',
+		icon: 'ti ti-bulb',
 		action: () => {
 			window.open('https://misskey-hub.net/docs/for-users/', '_blank', 'noopener');
 		},
 	}, ($i) ? {
 		text: i18n.ts._initialTutorial.launchTutorial,
-		icon: 'ph-presentation ph-bold ph-lg',
+		icon: 'ti ti-presentation',
 		action: () => {
 			os.popup(defineAsyncComponent(() => import('@/components/MkTutorialDialog.vue')), {}, {}, 'closed');
 		},

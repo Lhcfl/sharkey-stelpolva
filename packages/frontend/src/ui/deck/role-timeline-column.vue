@@ -68,7 +68,7 @@ const menu: MenuItem[] = [{
 	text: i18n.ts.role,
 	action: setRole,
 }, {
-	icon: 'ph-bell-ringing ph-bold ph-lg',
+	icon: 'ti ti-bell',
 	text: i18n.ts._deck.newNoteNotificationSettings,
 	action: () => soundSettingsButton(soundSetting),
 }];

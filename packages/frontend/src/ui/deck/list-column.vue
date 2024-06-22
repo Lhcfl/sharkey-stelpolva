@@ -101,7 +101,7 @@ const menu: MenuItem[] = [
 		ref: onlyFiles,
 	},
 	{
-		icon: 'ph-bell-ringing ph-bold ph-lg',
+		icon: 'ti ti-bell',
 		text: i18n.ts._deck.newNoteNotificationSettings,
 		action: () => soundSettingsButton(soundSetting),
 	},

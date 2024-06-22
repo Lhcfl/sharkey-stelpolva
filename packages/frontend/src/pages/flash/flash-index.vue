@@ -83,7 +83,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'my',
 	title: i18n.ts._play.my,
-	icon: 'ph-pencil-simple-line ph-bold ph-lg',
+	icon: 'ti ti-edit',
 }, {
 	key: 'liked',
 	title: i18n.ts._play.liked,

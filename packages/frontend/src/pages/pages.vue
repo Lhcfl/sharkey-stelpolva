@@ -81,7 +81,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'my',
 	title: i18n.ts._pages.my,
-	icon: 'ph-pencil-simple-line ph-bold ph-lg',
+	icon: 'ti ti-edit',
 }, {
 	key: 'liked',
 	title: i18n.ts._pages.liked,
@@ -90,6 +90,6 @@ const headerTabs = computed(() => [{
 
 definePageMetadata(() => ({
 	title: i18n.ts.pages,
-	icon: 'ph-note ph-bold ph-lg',
+	icon: 'ti ti-note',
 }));
 </script>

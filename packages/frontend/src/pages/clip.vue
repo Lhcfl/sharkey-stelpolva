@@ -127,14 +127,14 @@ const headerActions = computed(() => clip.value && isOwned.value ? [{
 		clipsCache.delete();
 	},
 }, ...(clip.value.isPublic ? [{
-	icon: 'ph-share-network ph-bold ph-lg',
+	icon: 'ti ti-link',
 	text: i18n.ts.copyUrl,
 	handler: async (): Promise<void> => {
 		copyToClipboard(`${url}/clips/${clip.value.id}`);
 		os.success();
 	},
 }] : []), ...(clip.value.isPublic && isSupportShare() ? [{
-	icon: 'ph-share-network ph-bold ph-lg',
+	icon: 'ti ti-share',
 	text: i18n.ts.share,
 	handler: async (): Promise<void> => {
 		navigator.share({
