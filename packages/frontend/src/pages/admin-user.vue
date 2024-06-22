@@ -72,7 +72,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</MkKeyValue>
 						</div>
 
-						<MkButton @click="updateRemoteUser"><i class="ph-arrows-counter-clockwise ph-bold ph-lg"></i> {{ i18n.ts.updateRemoteUser }}</MkButton>
+						<MkButton @click="updateRemoteUser"><i class="ti ti-refresh"></i> {{ i18n.ts.updateRemoteUser }}</MkButton>
 					</div>
 				</FormSection>
 

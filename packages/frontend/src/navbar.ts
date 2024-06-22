@@ -18,7 +18,7 @@ import { unisonReload } from '@/scripts/unison-reload.js';
 export const navbarItemDef = reactive({
 	notifications: {
 		title: i18n.ts.notifications,
-		icon: 'ph-bell ph-bold ph-lg',
+		icon: 'ti ti-bell',
 		show: computed(() => $i != null),
 		indicated: computed(() => $i != null && $i.hasUnreadNotification),
 		indicateValue: computed(() => {
@@ -160,7 +160,7 @@ export const navbarItemDef = reactive({
 	},
 	reload: {
 		title: i18n.ts.reload,
-		icon: 'ph-arrows-clockwise ph-bold ph-lg',
+		icon: 'ti ti-refresh',
 		action: (ev) => {
 			location.reload();
 		},

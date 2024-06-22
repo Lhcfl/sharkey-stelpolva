@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps">
 			<div class="_buttons">
 				<MkButton primary @click="addAccount"><i class="ti ti-plus"></i> {{ i18n.ts.addAccount }}</MkButton>
-				<MkButton @click="init"><i class="ph-arrows-counter-clockwise ph-bold ph-lg"></i> {{ i18n.ts.reloadAccountsList }}</MkButton>
+				<MkButton @click="init"><i class="ti ti-refresh"></i> {{ i18n.ts.reloadAccountsList }}</MkButton>
 			</div>
 
 			<MkUserCardMini v-for="user in accounts" :key="user.id" :user="user" :class="$style.user" @click.prevent="menu(user, $event)"/>

@@ -82,7 +82,7 @@ const menuDef = computed(() => [{
 		to: '/settings/drive',
 		active: currentPage.value?.route.name === 'drive',
 	}, {
-		icon: 'ph-bell ph-bold ph-lg',
+		icon: 'ti ti-bell',
 		text: i18n.ts.notifications,
 		to: '/settings/notifications',
 		active: currentPage.value?.route.name === 'notifications',

@@ -61,7 +61,7 @@ async function create() {
 
 const headerActions = computed(() => [{
 	asFullButton: true,
-	icon: 'ph-arrows-counter-clockwise ph-bold ph-lg',
+	icon: 'ti ti-refresh',
 	text: i18n.ts.reload,
 	handler: () => {
 		userListsCache.delete();

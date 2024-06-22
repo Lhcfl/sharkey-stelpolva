@@ -96,7 +96,7 @@ const headerTabs = computed(() => [{
 
 definePageMetadata(() => ({
 	title: i18n.ts.notifications,
-	icon: 'ph-bell ph-bold ph-lg',
+	icon: 'ti ti-bell',
 }));
 </script>
 

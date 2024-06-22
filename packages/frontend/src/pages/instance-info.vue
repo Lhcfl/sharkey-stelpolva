@@ -48,7 +48,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkSwitch v-model="isBlocked" :disabled="!meta || !instance" @update:modelValue="toggleBlock">{{ i18n.ts.blockThisInstance }}</MkSwitch>
 						<MkSwitch v-model="isSilenced" :disabled="!meta || !instance" @update:modelValue="toggleSilenced">{{ i18n.ts.silenceThisInstance }}</MkSwitch>
 						<MkSwitch v-model="isNSFW" :disabled="!instance" @update:modelValue="toggleNSFW">Mark as NSFW</MkSwitch>
-						<MkButton @click="refreshMetadata"><i class="ph-arrows-clockwise ph-bold ph-lg"></i> Refresh metadata</MkButton>
+						<MkButton @click="refreshMetadata"><i class="ti ti-refresh"></i> Refresh metadata</MkButton>
 						<MkTextarea v-model="moderationNote" manualSave>
 							<template #label>{{ i18n.ts.moderationNote }}</template>
 						</MkTextarea>

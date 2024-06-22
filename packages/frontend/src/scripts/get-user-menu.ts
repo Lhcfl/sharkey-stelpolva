@@ -309,7 +309,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 			text: user.withReplies ? i18n.ts.hideRepliesToOthersInTimeline : i18n.ts.showRepliesToOthersInTimeline,
 			action: toggleWithReplies,
 		}, {
-			icon: user.notify === 'none' ? 'ph-bell ph-bold ph-lg' : 'ph-bell ph-bold ph-lg-off',
+			icon: user.notify === 'none' ? 'ti ti-bell' : 'ti ti-bell-off',
 			text: user.notify === 'none' ? i18n.ts.notifyNotes : i18n.ts.unnotifyNotes,
 			action: toggleNotify,
 		}]);
@@ -346,7 +346,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 
 	if (user.host !== null) {
 		menu = menu.concat([{ type: 'divider' }, {
-			icon: 'ph-arrows-counter-clockwise ph-bold ph-lg',
+			icon: 'ti ti-refresh',
 			text: i18n.ts.updateRemoteUser,
 			action: userInfoUpdate,
 		}]);

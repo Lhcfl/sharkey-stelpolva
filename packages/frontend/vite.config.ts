@@ -108,6 +108,7 @@ export function getConfig(): UserConfig {
 				exclude: [
 					'**/pages/settings/emoji-picker.*',
 					'**/pages/flash/flash.*',
+					'**/components/MkPageWindow.*',
 				],
 			}),
 			iconsReplace({
@@ -124,6 +125,7 @@ export function getConfig(): UserConfig {
 				},
 				include: [
 					'**/pages/flash/flash.*',
+					'**/components/MkPageWindow.*',
 				],
 			}),
 			iconsReplace({
@@ -338,6 +340,12 @@ export function getConfig(): UserConfig {
 					'ti ti-chevrons-left': 'ph-caret-dobule-left ph-bold ph-lg',
 					'ti ti-chevron-left': 'ph-caret-left ph-bold ph-lg',
 					'ti ti-dice': 'ph ph-dice-five ph-bold ph-lg',
+					'ti ti-pencil-plus': 'ph-plus ph-bold pg-lg',
+					'ti ti-mood-smile': 'ph-smiley ph-bold pg-lg',
+					'ti ti-bell': 'ph-bell ph-bold ph-lg',
+					'ti ti-bell-off': 'ph-bell ph-bold ph-lg',
+					'ti ti-tool': 'ph-wrench ph-bold ph-lg',
+					'ti ti-refresh': 'ph-arrows-counter-clockwise ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

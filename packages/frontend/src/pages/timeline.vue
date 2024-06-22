@@ -275,7 +275,7 @@ const headerActions = computed(() => {
 	];
 	if (deviceKind === 'desktop') {
 		tmp.unshift({
-			icon: 'ph-arrows-counter-clockwise ph-bold ph-lg',
+			icon: 'ti ti-refresh',
 			text: i18n.ts.reload,
 			handler: (ev: Event) => {
 				tlComponent.value?.reloadTimeline();

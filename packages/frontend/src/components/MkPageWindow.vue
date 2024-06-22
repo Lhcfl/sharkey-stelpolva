@@ -77,7 +77,7 @@ const buttonsLeft = computed(() => {
 });
 const buttonsRight = computed(() => {
 	const buttons = [{
-		icon: 'ph-arrows-clockwise ph-bold ph-lg',
+		icon: 'ti ti-reload',
 		title: i18n.ts.reload,
 		onClick: reload,
 	}, {
