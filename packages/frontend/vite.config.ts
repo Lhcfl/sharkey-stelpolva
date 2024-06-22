@@ -262,6 +262,7 @@ export function getConfig(): UserConfig {
 					'ti ti-rocket': 'ph-rocket-launch ph-bold ph-lg',
 					'ti ti-rocket-off': 'ph-rocket ph-bold ph-lg',
 					'ti ti-repeat-off': 'ph-repeat ph-bold ph-lg',
+					'ti ti-movie': 'ph-film-strip ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'
