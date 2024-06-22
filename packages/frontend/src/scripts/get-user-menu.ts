@@ -320,7 +320,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 			text: user.isMuted ? i18n.ts.unmute : i18n.ts.mute,
 			action: toggleMute,
 		}, {
-			icon: user.isRenoteMuted ? 'ph-repeat ph-bold ph-lg' : 'ph-repeat ph-bold ph-lg-off',
+			icon: user.isRenoteMuted ? 'ti ti-repeat' : 'ti ti-repeat-off',
 			text: user.isRenoteMuted ? i18n.ts.renoteUnmute : i18n.ts.renoteMute,
 			action: toggleRenoteMute,
 		}, {

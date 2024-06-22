@@ -54,7 +54,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkUserList :pagination="recentlyUpdatedUsersF"/>
 			</MkFoldableSection>
 			<MkFoldableSection class="_margin">
-				<template #header><i class="ph-rocket-launch ph-bold ph-lg ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.recentlyDiscoveredUsers }}</template>
+				<template #header><i class="ti ti-rocket ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.recentlyDiscoveredUsers }}</template>
 				<MkUserList :pagination="recentlyRegisteredUsersF"/>
 			</MkFoldableSection>
 		</template>

@@ -144,6 +144,26 @@ export function getConfig(): UserConfig {
 			}),
 			iconsReplace({
 				values: {
+					'ti ti-repeat': 'ph-rocket-launch ph-bold ph-lg',
+				},
+				exclude: [
+					'**/components/MkMedia*',
+					'**/scripts/get-user-menu.*',
+					'**/pages/gallery/post.*',
+				],
+			}),
+			iconsReplace({
+				values: {
+					'ti ti-repeat': 'ph ph-repeat ph-bold ph-lg',
+				},
+				include: [
+					'**/components/MkMedia*',
+					'**/scripts/get-user-menu.*',
+					'**/pages/gallery/post.*',
+				],
+			}),
+			iconsReplace({
+				values: {
 					'ti ti-terminal-2': 'ph-terminal-window ph-bold ph-lg',
 					'ti ti-download': 'ph-download ph-bold ph-lg',
 					'ti ti-circle-x': 'ph-x-circle ph-bold ph-lg',
@@ -223,6 +243,9 @@ export function getConfig(): UserConfig {
 					'ti ti-player-eject': 'ph-eject ph-bold ph-lg',
 					'ti ti-player-stop': 'ph-stop ph-bold ph-lg',
 					'ti ti-player-track-next': 'ph-skip-forward ph-bold ph-lg',
+					'ti ti-rocket': 'ph-rocket-launch ph-bold ph-lg',
+					'ti ti-rocket-off': 'ph-rocket ph-bold ph-lg',
+					'ti ti-repeat-off': 'ph-repeat ph-bold ph-lg',
 				},
 			}),
 			...process.env.NODE_ENV === 'production'

@@ -143,7 +143,7 @@ function showMenu(ev: MouseEvent) {
 		{
 			type: 'switch',
 			text: i18n.ts._mediaControls.loop,
-			icon: 'ph ph-repeat',
+			icon: 'ti ti-repeat',
 			ref: loop,
 		},
 		{

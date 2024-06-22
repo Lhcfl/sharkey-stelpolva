@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<b>{{ i18n.ts._initialTutorial._postNote._visibility.doNotSendConfidencialOnDirect1 }}</b> {{ i18n.ts._initialTutorial._postNote._visibility.doNotSendConfidencialOnDirect2 }}
 				</MkInfo>
 			</div>
-			<div><i class="ph-rocket ph-bold ph-lg"></i> <b>{{ i18n.ts._visibility.disableFederation }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.localOnly }}</div>
+			<div><i class="ti ti-rocket-off"></i> <b>{{ i18n.ts._visibility.disableFederation }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.localOnly }}</div>
 		</div>
 	</MkFormSection>
 	<MkFormSection>

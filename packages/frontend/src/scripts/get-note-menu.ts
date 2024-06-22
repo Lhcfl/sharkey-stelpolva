@@ -557,7 +557,7 @@ export function getRenoteMenu(props: {
 	if (appearNote.channel) {
 		channelRenoteItems.push(...[{
 			text: i18n.ts.inChannelRenote,
-			icon: 'ph ph-repeat',
+			icon: 'ti ti-repeat',
 			action: () => {
 				const el = props.renoteButton.value;
 				if (el) {
@@ -593,7 +593,7 @@ export function getRenoteMenu(props: {
 	if (!appearNote.channel || appearNote.channel.allowRenoteToExternal) {
 		normalRenoteItems.push(...[{
 			text: i18n.ts.renote,
-			icon: 'ph ph-repeat',
+			icon: 'ti ti-repeat',
 			action: () => {
 				const el = props.renoteButton.value;
 				if (el) {
@@ -634,7 +634,7 @@ export function getRenoteMenu(props: {
 
 		normalExternalChannelRenoteItems.push({
 			type: 'parent',
-			icon: 'ph ph-repeat',
+			icon: 'ti ti-repeat',
 			text: appearNote.channel ? i18n.ts.renoteToOtherChannel : i18n.ts.renoteToChannel,
 			children: async () => {
 				const channels = await favoritedChannelsCache.fetch();

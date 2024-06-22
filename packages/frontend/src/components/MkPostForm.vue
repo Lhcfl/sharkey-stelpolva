@@ -33,8 +33,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</button>
 			</template>
 			<button v-click-anime v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="channel != null || visibility === 'specified'" @click="toggleLocalOnly">
-				<span v-if="!localOnly"><i class="ph-rocket-launch ph-bold ph-lg"></i></span>
-				<span v-else><i class="ph-rocket ph-bold ph-lg"></i></span>
+				<span v-if="!localOnly"><i class="ti ti-rocket"></i></span>
+				<span v-else><i class="ti ti-rocket-off"></i></span>
 			</button>
 			<button v-click-anime v-tooltip="i18n.ts.reactionAcceptance" class="_button" :class="[$style.headerRightItem, { [$style.danger]: reactionAcceptance === 'likeOnly' }]" @click="toggleReactionAcceptance">
 				<span v-if="reactionAcceptance === 'likeOnly'"><i class="ti ti-heart"></i></span>
@@ -773,7 +773,7 @@ async function post(ev?: MouseEvent) {
 			visibility.value = 'home';
 		}
 	}
-	
+
 	if (defaultStore.state.warnMissingAltText) {
 		const filesData = toRaw(files.value);
 
@@ -793,7 +793,7 @@ async function post(ev?: MouseEvent) {
 			});
 
 			if (canceled) return;
-			if (result === 'cancel') return;	
+			if (result === 'cancel') return;
 		}
 	}
 
