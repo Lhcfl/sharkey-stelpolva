@@ -61,9 +61,9 @@ import { dateString } from '@/filters/date.js';
 import MkClipPreview from '@/components/MkClipPreview.vue';
 import { defaultStore } from '@/store.js';
 
-const MkNote = defineAsyncComponent(() =>
-	(defaultStore.state.noteDesign === 'misskey') ? import('@/components/MkNote.vue') :
-	(defaultStore.state.noteDesign === 'sharkey') ? import('@/components/SkNote.vue') :
+const MkNoteDetailed = defineAsyncComponent(() =>
+	(defaultStore.state.noteDesign === 'misskey') ? import('@/components/MkNoteDetailed.vue') :
+	(defaultStore.state.noteDesign === 'sharkey') ? import('@/components/SkNoteDetailed.vue') :
 	null
 );
 
