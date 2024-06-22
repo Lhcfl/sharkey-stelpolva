@@ -147,7 +147,7 @@ const menuDef = computed(() => [{
 		to: '/admin/federation',
 		active: currentPage.value?.route.name === 'federation',
 	}, {
-		icon: 'ph-clock ph-bold ph-lg-play',
+		icon: 'ti ti-clock-play',
 		text: i18n.ts.jobQueue,
 		to: '/admin/queue',
 		active: currentPage.value?.route.name === 'queue',

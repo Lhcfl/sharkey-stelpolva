@@ -164,6 +164,22 @@ export function getConfig(): UserConfig {
 			}),
 			iconsReplace({
 				values: {
+					'ti ti-clock-play': 'ph-clock ph-bold ph-lg',
+				},
+				exclude: [
+					'**/components/MkMedia*',
+				],
+			}),
+			iconsReplace({
+				values: {
+					'ti ti-clock-play': 'ph ph-gauge ph-bold ph-lg',
+				},
+				include: [
+					'**/components/MkMedia*',
+				],
+			}),
+			iconsReplace({
+				values: {
 					'ti ti-terminal-2': 'ph-terminal-window ph-bold ph-lg',
 					'ti ti-download': 'ph-download ph-bold ph-lg',
 					'ti ti-circle-x': 'ph-x-circle ph-bold ph-lg',

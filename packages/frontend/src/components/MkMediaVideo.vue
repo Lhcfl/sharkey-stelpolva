@@ -183,7 +183,7 @@ function showMenu(ev: MouseEvent) {
 		{
 			type: 'radio',
 			text: i18n.ts._mediaControls.playbackRate,
-			icon: 'ph ph-gauge',
+			icon: 'ti ti-clock-play',
 			ref: speed,
 			options: {
 				'0.25x': 0.25,
