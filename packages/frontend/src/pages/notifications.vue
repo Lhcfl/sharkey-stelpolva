@@ -87,11 +87,11 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'mentions',
 	title: i18n.ts.mentions,
-	icon: 'ph-at ph-bold ph-lg',
+	icon: 'ti ti-at',
 }, {
 	key: 'directNotes',
 	title: i18n.ts.directNotes,
-	icon: 'ph-envelope ph-bold ph-lg',
+	icon: 'ti ti-mail',
 }]);
 
 definePageMetadata(() => ({

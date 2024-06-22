@@ -38,7 +38,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-if="note.visibility !== 'public'" style="margin-left: 0.5em;" :title="i18n.ts._visibility[note.visibility]">
 				<i v-if="note.visibility === 'home'" class="ti ti-home"></i>
 				<i v-else-if="note.visibility === 'followers'" class="ti ti-lock"></i>
-				<i v-else-if="note.visibility === 'specified'" ref="specified" class="ph-envelope ph-bold ph-lg"></i>
+				<i v-else-if="note.visibility === 'specified'" ref="specified" class="ti ti-mail"></i>
 			</span>
 			<span v-if="note.localOnly" style="margin-left: 0.5em;" :title="i18n.ts._visibility['disableFederation']"><i class="ti ti-rocket-off"></i></span>
 		</div>
@@ -56,7 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<span v-if="appearNote.visibility !== 'public'" style="margin-left: 0.5em;" :title="i18n.ts._visibility[appearNote.visibility]">
 							<i v-if="appearNote.visibility === 'home'" class="ti ti-home"></i>
 							<i v-else-if="appearNote.visibility === 'followers'" class="ti ti-lock"></i>
-							<i v-else-if="appearNote.visibility === 'specified'" ref="specified" class="ph-envelope ph-bold ph-lg"></i>
+							<i v-else-if="appearNote.visibility === 'specified'" ref="specified" class="ti ti-mail"></i>
 						</span>
 						<span v-if="appearNote.updatedAt" ref="menuVersionsButton" style="margin-left: 0.5em;" title="Edited" @mousedown="menuVersions()"><i class="ph-pencil-simple ph-bold ph-lg"></i></span>
 						<span v-if="appearNote.localOnly" style="margin-left: 0.5em;" :title="i18n.ts._visibility['disableFederation']"><i class="ti ti-rocket-off"></i></span>
@@ -133,7 +133,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<p v-if="appearNote.renoteCount > 0" :class="$style.noteFooterButtonCount">{{ number(appearNote.renoteCount) }}</p>
 			</button>
 			<button v-else class="_button" :class="$style.noteFooterButton" disabled>
-				<i class="ph-prohibit ph-bold ph-lg"></i>
+				<i class="ti ti-ban"></i>
 			</button>
 			<button
 				v-if="canRenote"
@@ -155,7 +155,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<p v-if="(appearNote.reactionAcceptance === 'likeOnly' || defaultStore.state.showReactionsCount) && appearNote.reactionCount > 0" :class="$style.noteFooterButtonCount">{{ number(appearNote.reactionCount) }}</p>
 			</button>
 			<button v-if="defaultStore.state.showClipButtonInNoteFooter" ref="clipButton" class="_button" :class="$style.noteFooterButton" @mousedown="clip()">
-				<i class="ph-paperclip ph-bold ph-lg"></i>
+				<i class="ti ti-paperclip"></i>
 			</button>
 			<button ref="menuButton" class="_button" :class="$style.noteFooterButton" @mousedown="showMenu()">
 				<i class="ti ti-dots"></i>

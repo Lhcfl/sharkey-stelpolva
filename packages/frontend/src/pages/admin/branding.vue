@@ -200,7 +200,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.branding,
-	icon: 'ph-paint-roller ph-bold ph-lg',
+	icon: 'ti ti-paint',
 }));
 </script>
 

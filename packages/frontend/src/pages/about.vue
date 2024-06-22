@@ -58,13 +58,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</MkKeyValue>
 						</FormSplit>
 						<FormLink v-if="instance.impressumUrl" :to="instance.impressumUrl" external>
-							<template #icon><i class="ph-newspaper-clipping ph-bold ph-lg"></i></template>
+							<template #icon><i class="ti ti-user-shield"></i></template>
 							{{ i18n.ts.impressum }}
 						</FormLink>
 						<div class="_gaps_s">
 							<MkFolder v-if="instance.serverRules.length > 0">
 								<template #label>
-									<i class="ph-list-checks ph-bold ph-lg"></i>
+									<i class="ti ti-checkup-list"></i>
 									{{ i18n.ts.serverRules }}
 								</template>
 
@@ -73,7 +73,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 								</ol>
 							</MkFolder>
 							<FormLink v-if="instance.tosUrl" :to="instance.tosUrl" external>
-								<template #icon><i class="ph-notebook ph-bold ph-lg"></i></template>
+								<template #icon><i class="ti ti-license"></i></template>
 								{{ i18n.ts.termsOfService }}
 							</FormLink>
 							<FormLink v-if="instance.privacyPolicyUrl" :to="instance.privacyPolicyUrl" external>
@@ -81,7 +81,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 								{{ i18n.ts.privacyPolicy }}
 							</FormLink>
 							<FormLink v-if="instance.feedbackUrl" :to="instance.feedbackUrl" external>
-								<template #icon><i class="ph-envelope ph-bold ph-lg"></i></template>
+								<template #icon><i class="ti ti-message"></i></template>
 								{{ i18n.ts.feedback }}
 							</FormLink>
 						</div>

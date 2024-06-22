@@ -93,11 +93,11 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 		action: () => toggleSensitive(file),
 	}, {
 		text: i18n.ts.describeFile,
-		icon: 'ph-text-indent ph-bold ph-lg',
+		icon: 'ti ti-text-caption',
 		action: () => describe(file),
 	}, ...isImage ? [{
 		text: i18n.ts.cropImage,
-		icon: 'ph-crop ph-bold ph-lg',
+		icon: 'ti ti-crop',
 		action: () => os.cropImage(file, {
 			aspectRatio: NaN,
 			uploadFolder: folder ? folder.id : folder,

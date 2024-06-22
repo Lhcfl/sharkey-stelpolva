@@ -116,7 +116,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</FormSection>
 	<FormSection>
-		<template #label><i class="ph-flying-saucer ph-bold ph-lg"></i> {{ i18n.ts.antennas }}</template>
+		<template #label><i class="ti ti-antenna"></i> {{ i18n.ts.antennas }}</template>
 		<div class="_gaps_s">
 			<MkFolder>
 				<template #label>{{ i18n.ts.export }}</template>

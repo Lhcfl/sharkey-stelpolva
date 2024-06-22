@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						v-if="element.type === '-' || navbarItemDef[element.type]"
 						:class="$style.item"
 					>
-						<button class="_button" :class="$style.itemHandle"><i class="ph-list ph-bold ph-lg"></i></button>
+						<button class="_button" :class="$style.itemHandle"><i class="ti ti-menu"></i></button>
 						<i class="ti-fw" :class="[$style.itemIcon, navbarItemDef[element.type]?.icon]"></i><span :class="$style.itemText">{{ navbarItemDef[element.type]?.title ?? i18n.ts.divider }}</span>
 						<button class="_button" :class="$style.itemRemove" @click="removeItem(index)"><i class="ti ti-x"></i></button>
 					</div>
@@ -120,7 +120,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.navbar,
-	icon: 'ph-list ph-bold ph-lg',
+	icon: 'ti ti-list',
 }));
 </script>
 

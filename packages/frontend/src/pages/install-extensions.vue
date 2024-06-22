@@ -10,8 +10,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkLoading v-if="uiPhase === 'fetching'"/>
 		<div v-else-if="uiPhase === 'confirm' && data" class="_gaps_m" :class="$style.extInstallerRoot">
 			<div :class="$style.extInstallerIconWrapper">
-				<i v-if="data.type === 'plugin'" class="ph-plug ph-bold ph-lg"></i>
-				<i v-else-if="data.type === 'theme'" class="ph-palette ph-bold ph-lg"></i>
+				<i v-if="data.type === 'plugin'" class="ti ti-plug"></i>
+				<i v-else-if="data.type === 'theme'" class="ti ti-palette"></i>
 				<i v-else class="ti ti-download"></i>
 			</div>
 			<h2 :class="$style.extInstallerTitle">{{ i18n.ts._externalResourceInstaller[`_${data.type}`].title }}</h2>

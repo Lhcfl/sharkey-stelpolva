@@ -29,6 +29,6 @@ import { definePageMetadata } from '@/scripts/page-metadata.js';
 
 definePageMetadata(() => ({
 	title: 'Misskey Games',
-	icon: 'ph-game-controller ph-bold ph-lg',
+	icon: 'ti ti-device-gamepad',
 }));
 </script>

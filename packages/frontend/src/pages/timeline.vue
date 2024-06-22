@@ -316,12 +316,12 @@ const headerTabs = computed(() => [...(defaultStore.reactiveState.pinnedUserList
 	icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
 	iconOnly: true,
 }] : []), {
-	icon: 'ph-list ph-bold ph-lg',
+	icon: 'ti ti-list',
 	title: i18n.ts.lists,
 	iconOnly: true,
 	onClick: chooseList,
 }, {
-	icon: 'ph-flying-saucer ph-bold ph-lg',
+	icon: 'ti ti-antenna',
 	title: i18n.ts.antennas,
 	iconOnly: true,
 	onClick: chooseAntenna,
@@ -349,7 +349,7 @@ const headerTabsWhenNotLogin = computed(() => [
 
 definePageMetadata(() => ({
 	title: i18n.ts.timeline,
-	icon: src.value === 'local' ? 'ti ti-planet' : src.value === 'social' ? 'ph-rocket-launch ph-bold ph-lg' : src.value === 'global' ? 'ph-globe-hemisphere-west ph-bold ph-lg' : src.value === 'bubble' ? 'ph-drop ph-bold ph-lg' : 'ti ti-home',
+	icon: src.value === 'local' ? 'ti ti-planet' : src.value === 'social' ? 'ph-rocket-launch ph-bold ph-lg' : src.value === 'global' ? 'ti ti-world' : src.value === 'bubble' ? 'ph-drop ph-bold ph-lg' : 'ti ti-home',
 }));
 </script>
 

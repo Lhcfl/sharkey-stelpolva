@@ -363,7 +363,7 @@ export function getNoteMenu(props: {
 			}),
 			{
 				type: 'parent' as const,
-				icon: 'ph-paperclip ph-bold ph-lg',
+				icon: 'ti ti-paperclip',
 				text: i18n.ts.clip,
 				children: () => getNoteClipMenu(props),
 			},
@@ -387,7 +387,7 @@ export function getNoteMenu(props: {
 			} : undefined,
 			{
 				type: 'parent' as const,
-				icon: 'ph-user ph-bold ph-lg',
+				icon: 'ti ti-user',
 				text: i18n.ts.user,
 				children: async () => {
 					const user = appearNote.userId === $i?.id ? $i : await misskeyApi('users/show', { userId: appearNote.userId });
@@ -400,7 +400,7 @@ export function getNoteMenu(props: {
 		...($i.isModerator || $i.isAdmin ? [
 			{ type: 'divider' },
 			{
-				icon: 'ph-megaphone ph-bold ph-lg',
+				icon: 'ti ti-speakerphone',
 				text: i18n.ts.promote,
 				action: promote
 			}]
@@ -495,7 +495,7 @@ export function getNoteMenu(props: {
 
 	if (noteActions.length > 0) {
 		menu = menu.concat([{ type: "divider" }, ...noteActions.map(action => ({
-			icon: 'ph-plug ph-bold ph-lg',
+			icon: 'ti ti-plug',
 			text: action.title,
 			action: () => {
 				action.handler(appearNote);
@@ -578,7 +578,7 @@ export function getRenoteMenu(props: {
 			},
 		}, {
 			text: i18n.ts.inChannelQuote,
-			icon: 'ph ph-quotes',
+			icon: 'ti ti-quote',
 			action: () => {
 				if (!props.mock) {
 					os.post({
@@ -624,7 +624,7 @@ export function getRenoteMenu(props: {
 			},
 		}, (props.mock) ? undefined : {
 			text: i18n.ts.quote,
-			icon: 'ph ph-quotes',
+			icon: 'ti ti-quote',
 			action: () => {
 				os.post({
 					renote: appearNote,

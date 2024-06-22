@@ -165,7 +165,7 @@ function getMenu() {
 			stackLeftColumn(props.column.id);
 		},
 	}, props.isStacked ? {
-		icon: 'ph-frame-corners ph-bold ph-lg',
+		icon: 'ti ti-window-maximize',
 		text: i18n.ts._deck.popRight,
 		action: () => {
 			popRightColumn(props.column.id);

@@ -135,7 +135,7 @@ async function removeUser(item, ev) {
 async function showMembershipMenu(item, ev) {
 	os.popupMenu([{
 		text: item.withReplies ? i18n.ts.hideRepliesToOthersInTimeline : i18n.ts.showRepliesToOthersInTimeline,
-		icon: item.withReplies ? 'ph-envelope-open ph-bold ph-lg' : 'ph-envelope ph-bold ph-lg',
+		icon: item.withReplies ? 'ph-envelope-open ph-bold ph-lg' : 'ti ti-messages',
 		action: async () => {
 			misskeyApi('users/lists/update-membership', {
 				listId: list.value.id,
@@ -188,7 +188,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: list.value ? list.value.name : i18n.ts.lists,
-	icon: 'ph-list ph-bold ph-lg',
+	icon: 'ti ti-list',
 }));
 </script>
 

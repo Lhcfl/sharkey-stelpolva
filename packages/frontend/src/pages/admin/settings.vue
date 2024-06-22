@@ -29,7 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkInput>
 
 						<MkInput v-model="maintainerEmail" type="email">
-							<template #prefix><i class="ph-envelope ph-bold ph-lg"></i></template>
+							<template #prefix><i class="ti ti-mail"></i></template>
 							<template #label>{{ i18n.ts.maintainerEmail }}</template>
 						</MkInput>
 					</FormSplit>

@@ -91,7 +91,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</MkFolder>
 
 	<MkFolder>
-		<template #icon><i class="ph-prohibit ph-bold ph-lg"></i></template>
+		<template #icon><i class="ti ti-ban"></i></template>
 		<template #label>{{ i18n.ts.blockedUsers }}</template>
 
 		<MkPagination :pagination="blockingPagination">
@@ -231,7 +231,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.muteAndBlock,
-	icon: 'ph-prohibit ph-bold ph-lg',
+	icon: 'ti ti-ban',
 }));
 </script>
 

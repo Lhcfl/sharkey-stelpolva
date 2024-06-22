@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkSpacer v-else :contentMax="800">
 		<div class="_gaps_m" style="text-align: center;">
 			<div v-if="resetCycle && inviteLimit">{{ i18n.tsx.inviteLimitResetCycle({ time: resetCycle, limit: inviteLimit }) }}</div>
-			<MkButton inline primary rounded :disabled="currentInviteLimit !== null && currentInviteLimit <= 0" @click="create"><i class="ph-user-plus ph-bold ph-lg"></i> {{ i18n.ts.createInviteCode }}</MkButton>
+			<MkButton inline primary rounded :disabled="currentInviteLimit !== null && currentInviteLimit <= 0" @click="create"><i class="ti ti-user-plus"></i> {{ i18n.ts.createInviteCode }}</MkButton>
 			<div v-if="currentInviteLimit !== null">{{ i18n.tsx.createLimitRemaining({ limit: currentInviteLimit }) }}</div>
 
 			<MkPagination ref="pagingComponent" :pagination="pagination">
@@ -95,7 +95,7 @@ update();
 
 definePageMetadata(() => ({
 	title: i18n.ts.invite,
-	icon: 'ph-user-plus ph-bold ph-lg',
+	icon: 'ti ti-user-plus',
 }));
 </script>
 

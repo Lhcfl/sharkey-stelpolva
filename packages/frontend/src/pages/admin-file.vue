@@ -133,7 +133,7 @@ const headerTabs = computed(() => [{
 }, iAmModerator ? {
 	key: 'ip',
 	title: 'IP',
-	icon: 'ph-password ph-bold ph-lg',
+	icon: 'ti ti-password',
 } : null, {
 	key: 'raw',
 	title: 'Raw data',

@@ -123,7 +123,7 @@ function onGameEnd() {
 
 definePageMetadata(() => ({
 	title: i18n.ts.bubbleGame,
-	icon: 'ph-game-controller ph-bold ph-lg',
+	icon: 'ti ti-device-gamepad',
 }));
 </script>
 

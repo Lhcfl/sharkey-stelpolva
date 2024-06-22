@@ -52,6 +52,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.statusbar,
-	icon: 'ph-list ph-bold ph-lg',
+	icon: 'ti ti-list',
 }));
 </script>

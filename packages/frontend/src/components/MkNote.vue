@@ -21,8 +21,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<MkNoteSub v-if="appearNote.reply && !renoteCollapsed && !inReplyToCollapsed" :note="appearNote.reply" :class="$style.replyTo"/>
 	<div v-if="pinned" :class="$style.tip"><i class="ti ti-pin"></i> {{ i18n.ts.pinnedNote }}</div>
-	<!--<div v-if="appearNote._prId_" class="tip"><i class="ph-megaphone ph-bold ph-lg"></i> {{ i18n.ts.promotion }}<button class="_textButton hide" @click="readPromo()">{{ i18n.ts.hideThisNote }} <i class="ti ti-x"></i></button></div>-->
-	<!--<div v-if="appearNote._featuredId_" class="tip"><i class="ph-lightning ph-bold ph-lg"></i> {{ i18n.ts.featured }}</div>-->
+	<!--<div v-if="appearNote._prId_" class="tip"><i class="ti ti-speakerphone"></i> {{ i18n.ts.promotion }}<button class="_textButton hide" @click="readPromo()">{{ i18n.ts.hideThisNote }} <i class="ti ti-x"></i></button></div>-->
+	<!--<div v-if="appearNote._featuredId_" class="tip"><i class="ti ti-bolt"></i> {{ i18n.ts.featured }}</div>-->
 	<div v-if="isRenote" :class="$style.renote">
 		<div v-if="note.channel" :class="$style.colorBar" :style="{ background: note.channel.color }"></div>
 		<MkAvatar :class="$style.renoteAvatar" :user="note.user" link preview/>
@@ -42,7 +42,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-if="note.visibility !== 'public'" style="margin-left: 0.5em;" :title="i18n.ts._visibility[note.visibility]">
 				<i v-if="note.visibility === 'home'" class="ti ti-home"></i>
 				<i v-else-if="note.visibility === 'followers'" class="ti ti-lock"></i>
-				<i v-else-if="note.visibility === 'specified'" ref="specified" class="ph-envelope ph-bold ph-lg"></i>
+				<i v-else-if="note.visibility === 'specified'" ref="specified" class="ti ti-mail"></i>
 			</span>
 			<span v-if="note.localOnly" style="margin-left: 0.5em;" :title="i18n.ts._visibility['disableFederation']"><i class="ti ti-rocket-off"></i></span>
 			<span v-if="note.channel" style="margin-left: 0.5em;" :title="note.channel.name"><i class="ti ti-device-tv"></i></span>
@@ -132,7 +132,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<p v-if="appearNote.renoteCount > 0" :class="$style.footerButtonCount">{{ number(appearNote.renoteCount) }}</p>
 				</button>
 				<button v-else :class="$style.footerButton" class="_button" disabled>
-					<i class="ph-prohibit ph-bold ph-lg"></i>
+					<i class="ti ti-ban"></i>
 				</button>
 				<button
 					v-if="canRenote && !props.mock"
@@ -155,7 +155,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<p v-if="(appearNote.reactionAcceptance === 'likeOnly' || defaultStore.state.showReactionsCount) && appearNote.reactionCount > 0" :class="$style.footerButtonCount">{{ number(appearNote.reactionCount) }}</p>
 				</button>
 				<button v-if="defaultStore.state.showClipButtonInNoteFooter" ref="clipButton" :class="$style.footerButton" class="_button" @mousedown="clip()">
-					<i class="ph-paperclip ph-bold ph-lg"></i>
+					<i class="ti ti-paperclip"></i>
 				</button>
 				<button ref="menuButton" :class="$style.footerButton" class="_button" @mousedown="showMenu()">
 					<i class="ti ti-dots"></i>

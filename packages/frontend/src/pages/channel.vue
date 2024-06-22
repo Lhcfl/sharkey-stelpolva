@@ -285,7 +285,7 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'featured',
 	title: i18n.ts.featured,
-	icon: 'ph-lightning ph-bold ph-lg',
+	icon: 'ti ti-bolt',
 }, {
 	key: 'search',
 	title: i18n.ts.search,

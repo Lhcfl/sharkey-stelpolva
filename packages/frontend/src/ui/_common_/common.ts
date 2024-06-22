@@ -67,13 +67,13 @@ export function openInstanceMenu(ev: MouseEvent) {
 	}, { type: 'divider' }, {
 		type: 'link',
 		text: i18n.ts.ads,
-		icon: 'ph-flag ph-bold ph-lg',
+		icon: 'ti ti-ad',
 		to: '/ads',
 	}, ($i && ($i.isAdmin || $i.policies.canInvite) && instance.disableRegistration) ? {
 		type: 'link',
 		to: '/invite',
 		text: i18n.ts.invite,
-		icon: 'ph-user-plus ph-bold ph-lg',
+		icon: 'ti ti-user-plus',
 	} : undefined, {
 		type: 'parent',
 		text: i18n.ts.tools,
@@ -92,7 +92,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 		},
 	} : undefined, (instance.tosUrl) ? {
 		text: i18n.ts.termsOfService,
-		icon: 'ph-notebook ph-bold ph-lg',
+		icon: 'ti ti-notebook',
 		action: () => {
 			window.open(instance.tosUrl, '_blank', 'noopener');
 		},

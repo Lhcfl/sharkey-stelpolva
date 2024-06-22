@@ -164,7 +164,7 @@ const headerActions = computed(() => clip.value && isOwned.value ? [{
 
 definePageMetadata(() => ({
 	title: clip.value ? clip.value.name : i18n.ts.clip,
-	icon: 'ph-paperclip ph-bold ph-lg',
+	icon: 'ti ti-paperclip',
 }));
 </script>
 

@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <XColumn :menu="menu" :column="column" :isStacked="isStacked" :refresher="() => timeline.reloadTimeline()">
 	<template #header>
-		<i class="ph-list ph-bold ph-lg"></i><span style="margin-left: 8px;">{{ column.name }}</span>
+		<i class="ti ti-list"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
 	<MkTimeline v-if="column.listId" ref="timeline" :key="column.listId + column.withRenotes + column.onlyFiles" src="list" :list="column.listId" :withRenotes="withRenotes" :onlyFiles="onlyFiles" @note="onNote"/>

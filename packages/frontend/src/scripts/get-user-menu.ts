@@ -153,7 +153,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 	}
 
 	let menu = [{
-		icon: 'ph-at ph-bold ph-lg',
+		icon: 'ti ti-at',
 		text: i18n.ts.copyUsername,
 		action: () => {
 			copyToClipboard(`@${user.username}@${user.host ?? host}`);
@@ -185,7 +185,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 			copyToClipboard(`${url}/${canonical}`);
 		},
 	}, {
-		icon: 'ph-envelope ph-bold ph-lg',
+		icon: 'ti ti-mail',
 		text: i18n.ts.sendMessage,
 		action: () => {
 			const canonical = user.host === null ? `@${user.username}` : `@${user.username}@${user.host}`;
@@ -199,7 +199,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 		},
 	}, {
 		type: 'parent',
-		icon: 'ph-list ph-bold ph-lg',
+		icon: 'ti ti-list',
 		text: i18n.ts.addToList,
 		children: async () => {
 			const lists = await userListsCache.fetch();
@@ -232,7 +232,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 		},
 	}, {
 		type: 'parent',
-		icon: 'ph-flying-saucer ph-bold ph-lg',
+		icon: 'ti ti-antenna',
 		text: i18n.ts.addToAntenna,
 		children: async () => {
 			const antennas = await antennasCache.fetch();
@@ -263,7 +263,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 		if (iAmModerator) {
 			menu = menu.concat([{
 				type: 'parent',
-				icon: 'ph-seal-check ph-bold ph-lg',
+				icon: 'ti ti-badges',
 				text: i18n.ts.roles,
 				children: async () => {
 					const roles = await rolesCache.fetch();
@@ -324,7 +324,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 			text: user.isRenoteMuted ? i18n.ts.renoteUnmute : i18n.ts.renoteMute,
 			action: toggleRenoteMute,
 		}, {
-			icon: 'ph-prohibit ph-bold ph-lg',
+			icon: 'ti ti-ban',
 			text: user.isBlocking ? i18n.ts.unblock : i18n.ts.block,
 			action: toggleBlock,
 		}]);
@@ -374,7 +374,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 
 	if (userActions.length > 0) {
 		menu = menu.concat([{ type: 'divider' }, ...userActions.map(action => ({
-			icon: 'ph-plug ph-bold ph-lg',
+			icon: 'ti ti-plug',
 			text: action.title,
 			action: () => {
 				action.handler(user);

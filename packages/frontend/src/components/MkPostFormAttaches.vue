@@ -145,11 +145,11 @@ function showFileMenu(file: Misskey.entities.DriveFile, ev: MouseEvent): void {
 		action: () => { toggleSensitive(file); },
 	}, {
 		text: i18n.ts.describeFile,
-		icon: 'ph-text-indent ph-bold ph-lg',
+		icon: 'ti ti-text-caption',
 		action: () => { describe(file); },
 	}, ...isImage ? [{
 		text: i18n.ts.cropImage,
-		icon: 'ph-crop ph-bold ph-lg',
+		icon: 'ti ti-crop',
 		action: () : void => { crop(file); },
 	}] : [], {
 		type: 'divider',

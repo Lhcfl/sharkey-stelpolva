@@ -100,7 +100,7 @@ const menuDef = computed(() => [{
 		action: adminLookup,
 	}, ...(instance.disableRegistration ? [{
 		type: 'button',
-		icon: 'ph-user-plus ph-bold ph-lg',
+		icon: 'ti ti-user-plus',
 		text: i18n.ts.createInviteCode,
 		action: invite,
 	}] : [])],
@@ -117,7 +117,7 @@ const menuDef = computed(() => [{
 		to: '/admin/users',
 		active: currentPage.value?.route.name === 'users',
 	}, {
-		icon: 'ph-user-plus ph-bold ph-lg',
+		icon: 'ti ti-user-plus',
 		text: i18n.ts.invite,
 		to: '/admin/invites',
 		active: currentPage.value?.route.name === 'invites',
@@ -127,7 +127,7 @@ const menuDef = computed(() => [{
 		to: '/admin/approvals',
 		active: currentPage.value?.route.name === 'approvals',
 	}, {
-		icon: 'ph-seal-check ph-bold ph-lg',
+		icon: 'ti ti-badges',
 		text: i18n.ts.roles,
 		to: '/admin/roles',
 		active: currentPage.value?.route.name === 'roles',
@@ -157,12 +157,12 @@ const menuDef = computed(() => [{
 		to: '/admin/files',
 		active: currentPage.value?.route.name === 'files',
 	}, {
-		icon: 'ph-megaphone ph-bold ph-lg',
+		icon: 'ti ti-speakerphone',
 		text: i18n.ts.announcements,
 		to: '/admin/announcements',
 		active: currentPage.value?.route.name === 'announcements',
 	}, {
-		icon: 'ph-flag ph-bold ph-lg',
+		icon: 'ti ti-ad',
 		text: i18n.ts.ads,
 		to: '/admin/ads',
 		active: currentPage.value?.route.name === 'ads',
@@ -185,7 +185,7 @@ const menuDef = computed(() => [{
 		to: '/admin/settings',
 		active: currentPage.value?.route.name === 'settings',
 	}, {
-		icon: 'ph-paint-roller ph-bold ph-lg',
+		icon: 'ti ti-paint',
 		text: i18n.ts.branding,
 		to: '/admin/branding',
 		active: currentPage.value?.route.name === 'branding',
@@ -195,7 +195,7 @@ const menuDef = computed(() => [{
 		to: '/admin/moderation',
 		active: currentPage.value?.route.name === 'moderation',
 	}, {
-		icon: 'ph-envelope ph-bold ph-lg',
+		icon: 'ti ti-mail',
 		text: i18n.ts.emailServer,
 		to: '/admin/email-settings',
 		active: currentPage.value?.route.name === 'email-settings',
@@ -215,7 +215,7 @@ const menuDef = computed(() => [{
 		to: '/admin/relays',
 		active: currentPage.value?.route.name === 'relays',
 	}, {
-		icon: 'ph-prohibit ph-bold ph-lg',
+		icon: 'ti ti-ban',
 		text: i18n.ts.instanceBlocking,
 		to: '/admin/instance-block',
 		active: currentPage.value?.route.name === 'instance-block',
@@ -238,7 +238,7 @@ const menuDef = computed(() => [{
 }, {
 	title: i18n.ts.info,
 	items: [{
-		icon: 'ph-database ph-bold ph-lg',
+		icon: 'ti ti-database',
 		text: i18n.ts.database,
 		to: '/admin/database',
 		active: currentPage.value?.route.name === 'database',
@@ -305,13 +305,13 @@ function invite() {
 function adminLookup(ev: MouseEvent) {
 	os.popupMenu([{
 		text: i18n.ts.user,
-		icon: 'ph-user ph-bold ph-lg',
+		icon: 'ti ti-user',
 		action: () => {
 			lookupUser();
 		},
 	}, {
 		text: `${i18n.ts.user} (${i18n.ts.email})`,
-		icon: 'ph-user ph-bold ph-lg',
+		icon: 'ti ti-user',
 		action: () => {
 			lookupUserByEmail();
 		},

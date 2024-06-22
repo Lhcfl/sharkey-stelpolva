@@ -95,7 +95,7 @@ const headerTabs = computed(() => user.value ? [{
 }, ...(user.value.host == null ? [{
 	key: 'achievements',
 	title: i18n.ts.achievements,
-	icon: 'ph-trophy ph-bold ph-lg',
+	icon: 'ti ti-medal',
 }] : []), ...($i && ($i.id === user.value.id || $i.isAdmin || $i.isModerator)) || user.value.publicReactions ? [{
 	key: 'reactions',
 	title: i18n.ts.reaction,
@@ -103,15 +103,15 @@ const headerTabs = computed(() => user.value ? [{
 }] : [], {
 	key: 'clips',
 	title: i18n.ts.clips,
-	icon: 'ph-paperclip ph-bold ph-lg',
+	icon: 'ti ti-paperclip',
 }, {
 	key: 'lists',
 	title: i18n.ts.lists,
-	icon: 'ph-list ph-bold ph-lg',
+	icon: 'ti ti-list',
 }, {
 	key: 'pages',
 	title: i18n.ts.pages,
-	icon: 'ph-newspaper ph-bold ph-lg',
+	icon: 'ti ti-news',
 }, {
 	key: 'flashs',
 	title: 'Play',
@@ -128,7 +128,7 @@ const headerTabs = computed(() => user.value ? [{
 
 definePageMetadata(() => ({
 	title: i18n.ts.user,
-	icon: 'ph-user ph-bold ph-lg',
+	icon: 'ti ti-user',
 	...user.value ? {
 		title: user.value.name ? ` (@${user.value.username})` : `@${user.value.username}`,
 		subtitle: `@${getAcct(user.value)}`,

@@ -59,7 +59,7 @@ const headerActions = computed(() => []);
 const headerTabs = computed(() => [{
 	key: 'block',
 	title: i18n.ts.block,
-	icon: 'ph-prohibit ph-bold ph-lg',
+	icon: 'ti ti-ban',
 }, {
 	key: 'silence',
 	title: i18n.ts.silence,
@@ -68,6 +68,6 @@ const headerTabs = computed(() => [{
 
 definePageMetadata(() => ({
 	title: i18n.ts.instanceBlocking,
-	icon: 'ph-prohibit ph-bold ph-lg',
+	icon: 'ti ti-ban',
 }));
 </script>

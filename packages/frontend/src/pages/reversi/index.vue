@@ -36,13 +36,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div :class="$style.gamePreviews">
 						<MkA v-for="g in items" :key="g.id" v-panel :class="[$style.gamePreview, !g.isStarted && !g.isEnded && $style.gamePreviewWaiting, g.isStarted && !g.isEnded && $style.gamePreviewActive]" tabindex="-1" :to="`/reversi/g/${g.id}`">
 							<div :class="$style.gamePreviewPlayers">
-								<span v-if="g.winnerId === g.user1Id" style="margin-right: 0.75em; color: var(--accent); font-weight: bold;"><i class="ph-trophy ph-bold ph-lg"></i></span>
+								<span v-if="g.winnerId === g.user1Id" style="margin-right: 0.75em; color: var(--accent); font-weight: bold;"><i class="ti ti-trophy"></i></span>
 								<span v-if="g.winnerId === g.user2Id" style="margin-right: 0.75em; visibility: hidden;"><i class="ti ti-x"></i></span>
 								<MkAvatar :class="$style.gamePreviewPlayersAvatar" :user="g.user1"/>
 								<span style="margin: 0 1em;">vs</span>
 								<MkAvatar :class="$style.gamePreviewPlayersAvatar" :user="g.user2"/>
 								<span v-if="g.winnerId === g.user1Id" style="margin-left: 0.75em; visibility: hidden;"><i class="ti ti-x"></i></span>
-								<span v-if="g.winnerId === g.user2Id" style="margin-left: 0.75em; color: var(--accent); font-weight: bold;"><i class="ph-trophy ph-bold ph-lg"></i></span>
+								<span v-if="g.winnerId === g.user2Id" style="margin-left: 0.75em; color: var(--accent); font-weight: bold;"><i class="ti ti-trophy"></i></span>
 							</div>
 							<div :class="$style.gamePreviewFooter">
 								<span v-if="g.isStarted && !g.isEnded" :class="$style.gamePreviewStatusActive">{{ i18n.ts._reversi.playing }}</span>
@@ -63,13 +63,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div :class="$style.gamePreviews">
 						<MkA v-for="g in items" :key="g.id" v-panel :class="[$style.gamePreview, !g.isStarted && !g.isEnded && $style.gamePreviewWaiting, g.isStarted && !g.isEnded && $style.gamePreviewActive]" tabindex="-1" :to="`/reversi/g/${g.id}`">
 							<div :class="$style.gamePreviewPlayers">
-								<span v-if="g.winnerId === g.user1Id" style="margin-right: 0.75em; color: var(--accent); font-weight: bold;"><i class="ph-trophy ph-bold ph-lg"></i></span>
+								<span v-if="g.winnerId === g.user1Id" style="margin-right: 0.75em; color: var(--accent); font-weight: bold;"><i class="ti ti-trophy"></i></span>
 								<span v-if="g.winnerId === g.user2Id" style="margin-right: 0.75em; visibility: hidden;"><i class="ti ti-x"></i></span>
 								<MkAvatar :class="$style.gamePreviewPlayersAvatar" :user="g.user1"/>
 								<span style="margin: 0 1em;">vs</span>
 								<MkAvatar :class="$style.gamePreviewPlayersAvatar" :user="g.user2"/>
 								<span v-if="g.winnerId === g.user1Id" style="margin-left: 0.75em; visibility: hidden;"><i class="ti ti-x"></i></span>
-								<span v-if="g.winnerId === g.user2Id" style="margin-left: 0.75em; color: var(--accent); font-weight: bold;"><i class="ph-trophy ph-bold ph-lg"></i></span>
+								<span v-if="g.winnerId === g.user2Id" style="margin-left: 0.75em; color: var(--accent); font-weight: bold;"><i class="ti ti-trophy"></i></span>
 							</div>
 							<div :class="$style.gamePreviewFooter">
 								<span v-if="g.isStarted && !g.isEnded" :class="$style.gamePreviewStatusActive">{{ i18n.ts._reversi.playing }}</span>
@@ -263,7 +263,7 @@ onUnmounted(() => {
 
 definePageMetadata(() => ({
 	title: 'Reversi',
-	icon: 'ph-game-controller ph-bold ph-lg',
+	icon: 'ti ti-device-gamepad',
 }));
 </script>
 

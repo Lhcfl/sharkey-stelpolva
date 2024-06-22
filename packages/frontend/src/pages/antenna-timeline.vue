@@ -93,7 +93,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: antenna.value ? antenna.value.name : i18n.ts.antennas,
-	icon: 'ph-flying-saucer ph-bold ph-lg',
+	icon: 'ti ti-antenna',
 }));
 </script>
 

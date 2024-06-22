@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			{{ i18n.ts.visibility }}
 		</div>
 		<button key="public" :disabled="isSilenced || isReplyVisibilitySpecified" class="_button" :class="[$style.item, { [$style.active]: v === 'public' }]" data-index="1" @click="choose('public')">
-			<div :class="$style.icon"><i class="ph-globe-hemisphere-west ph-bold ph-lg"></i></div>
+			<div :class="$style.icon"><i class="ti ti-world"></i></div>
 			<div :class="$style.body">
 				<span :class="$style.itemTitle">{{ i18n.ts._visibility.public }}</span>
 				<span :class="$style.itemDescription">{{ i18n.ts._visibility.publicDescription }}</span>
@@ -31,7 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</button>
 		<button key="specified" :disabled="localOnly" class="_button" :class="[$style.item, { [$style.active]: v === 'specified' }]" data-index="4" @click="choose('specified')">
-			<div :class="$style.icon"><i class="ph-envelope ph-bold ph-lg"></i></div>
+			<div :class="$style.icon"><i class="ti ti-mail"></i></div>
 			<div :class="$style.body">
 				<span :class="$style.itemTitle">{{ i18n.ts._visibility.specified }}</span>
 				<span :class="$style.itemDescription">{{ i18n.ts._visibility.specifiedDescription }}</span>

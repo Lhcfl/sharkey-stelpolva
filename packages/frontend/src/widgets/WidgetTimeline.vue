@@ -11,8 +11,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="widgetProps.src === 'social'" class="ph-rocket-launch ph-bold ph-lg"></i>
 		<i v-else-if="widgetProps.src === 'bubble'" class="ph-drop ph-bold ph-lg"></i>
 		<i v-else-if="widgetProps.src === 'global'" class="ph-globe-hemisphere-west ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'list'" class="ph-list ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'antenna'" class="ph-flying-saucer ph-bold ph-lg"></i>
+		<i v-else-if="widgetProps.src === 'list'" class="ti ti-list"></i>
+		<i v-else-if="widgetProps.src === 'antenna'" class="ti ti-antenna"></i>
 	</template>
 	<template #header>
 		<button class="_button" @click="choose">
@@ -103,7 +103,7 @@ const choose = async (ev) => {
 	]);
 	const antennaItems = antennas.map(antenna => ({
 		text: antenna.name,
-		icon: 'ph-flying-saucer ph-bold ph-lg',
+		icon: 'ti ti-antenna',
 		action: () => {
 			widgetProps.antenna = antenna;
 			setSrc('antenna');
@@ -111,7 +111,7 @@ const choose = async (ev) => {
 	}));
 	const listItems = lists.map(list => ({
 		text: list.name,
-		icon: 'ph-list ph-bold ph-lg',
+		icon: 'ti ti-list',
 		action: () => {
 			widgetProps.list = list;
 			setSrc('list');

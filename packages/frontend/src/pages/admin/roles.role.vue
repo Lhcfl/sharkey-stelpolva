@@ -172,7 +172,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: `${i18n.ts.role}: ${role.name}`,
-	icon: 'ph-seal-check ph-bold ph-lg',
+	icon: 'ti ti-badge',
 }));
 </script>
 

@@ -117,7 +117,7 @@ const contextmenu = computed(() => ([{
 	text: i18n.ts.showInPage,
 	action: expand,
 }, {
-	icon: 'ph-frame-corners ph-bold ph-lg',
+	icon: 'ti ti-window-maximize',
 	text: i18n.ts.popout,
 	action: popout,
 }, {

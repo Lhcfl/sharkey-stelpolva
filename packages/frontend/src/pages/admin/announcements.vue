@@ -159,6 +159,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.announcements,
-	icon: 'ph-megaphone ph-bold ph-lg',
+	icon: 'ti ti-speakerphone',
 }));
 </script>

@@ -22,12 +22,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<form @submit.prevent="done">
 			<div class="_gaps">
 				<MkInput ref="passwordInput" v-model="password" :placeholder="i18n.ts.password" type="password" autocomplete="current-password webauthn" required :withPasswordToggle="true">
-					<template #prefix><i class="ph-password ph-bold ph-lg"></i></template>
+					<template #prefix><i class="ti ti-password"></i></template>
 				</MkInput>
 
 				<MkInput v-if="$i.twoFactorEnabled" v-model="token" type="text" :pattern="isBackupCode ? '^[A-Z0-9]{32}$' :'^[0-9]{6}$'" autocomplete="one-time-code" required :spellcheck="false" :inputmode="isBackupCode ? undefined : 'numeric'">
 					<template #label>{{ i18n.ts.token }} ({{ i18n.ts['2fa'] }})</template>
-					<template #prefix><i v-if="isBackupCode" class="ph-keyhole ph-bold ph-lg"></i><i v-else class="ph-numpad ph-bold ph-lg"></i></template>
+					<template #prefix><i v-if="isBackupCode" class="ti ti-key"></i><i v-else class="ti ti-123"></i></template>
 					<template #caption><button class="_textButton" type="button" @click="isBackupCode = !isBackupCode">{{ isBackupCode ? i18n.ts.useTotp : i18n.ts.useBackupCode }}</button></template>
 				</MkInput>
 

@@ -93,7 +93,7 @@ const headerActions = computed(() => []);
 const headerTabs = computed(() => [{
 	key: 'my',
 	title: i18n.ts.myClips,
-	icon: 'ph-paperclip ph-bold ph-lg',
+	icon: 'ti ti-paperclip',
 }, {
 	key: 'favorites',
 	title: i18n.ts.favorites,
@@ -102,7 +102,7 @@ const headerTabs = computed(() => [{
 
 definePageMetadata(() => ({
 	title: i18n.ts.clip,
-	icon: 'ph-paperclip ph-bold ph-lg',
+	icon: 'ti ti-paperclip',
 }));
 </script>
 

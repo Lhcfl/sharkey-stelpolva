@@ -34,13 +34,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i v-else-if="notification.type === 'followRequestAccepted'" class="ti ti-check"></i>
 			<i v-else-if="notification.type === 'renote'" class="ti ti-repeat"></i>
 			<i v-else-if="notification.type === 'reply'" class="ti ti-arrow-back-up"></i>
-			<i v-else-if="notification.type === 'mention'" class="ph-at ph-bold ph-lg"></i>
+			<i v-else-if="notification.type === 'mention'" class="ti ti-at"></i>
 			<i v-else-if="notification.type === 'quote'" class="ti ti-quote"></i>
-			<i v-else-if="notification.type === 'pollEnded'" class="ph-chart-bar-horizontal ph-bold ph-lg"></i>
-			<i v-else-if="notification.type === 'achievementEarned'" class="ph-trophy ph-bold ph-lg"></i>
+			<i v-else-if="notification.type === 'pollEnded'" class="ti ti-chart-arrows"></i>
+			<i v-else-if="notification.type === 'achievementEarned'" class="ti ti-medal"></i>
 			<template v-else-if="notification.type === 'roleAssigned'">
 				<img v-if="notification.role.iconUrl" style="height: 1.3em; vertical-align: -22%;" :src="notification.role.iconUrl" alt=""/>
-				<i v-else class="ph-seal-check ph-bold ph-lg"></i>
+				<i v-else class="ti ti-badges"></i>
 			</template>
 			<i v-else-if="notification.type === 'edited'" class="ph-pencil ph-bold ph-lg"></i>
 			<!-- notification.reaction が null になることはまずないが、ここでoptional chaining使うと一部ブラウザで刺さるので念の為 -->

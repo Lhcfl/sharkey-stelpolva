@@ -54,7 +54,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.user,
-	icon: 'ph-user ph-bold ph-lg',
+	icon: 'ti ti-user',
 	...user.value ? {
 		title: user.value.name ? `${user.value.name} (@${user.value.username})` : `@${user.value.username}`,
 		subtitle: i18n.ts.followers,

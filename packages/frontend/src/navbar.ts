@@ -40,7 +40,7 @@ export const navbarItemDef = reactive({
 	},
 	followRequests: {
 		title: i18n.ts.followRequests,
-		icon: 'ph-user-plus ph-bold ph-lg',
+		icon: 'ti ti-user-plus',
 		show: computed(() => $i != null && $i.isLocked),
 		indicated: computed(() => $i != null && $i.hasPendingReceivedFollowRequest),
 		to: '/my/follow-requests',
@@ -52,7 +52,7 @@ export const navbarItemDef = reactive({
 	},
 	announcements: {
 		title: i18n.ts.announcements,
-		icon: 'ph-megaphone ph-bold ph-lg',
+		icon: 'ti ti-speakerphone',
 		indicated: computed(() => $i != null && $i.hasUnreadAnnouncement),
 		to: '/announcements',
 	},
@@ -63,20 +63,20 @@ export const navbarItemDef = reactive({
 	},
 	lookup: {
 		title: i18n.ts.lookup,
-		icon: 'ph-binoculars ph-bold ph-lg',
+		icon: 'ti ti-world-search',
 		action: (ev) => {
 			lookup();
 		},
 	},
 	lists: {
 		title: i18n.ts.lists,
-		icon: 'ph-list ph-bold ph-lg',
+		icon: 'ti ti-list',
 		show: computed(() => $i != null),
 		to: '/my/lists',
 	},
 	antennas: {
 		title: i18n.ts.antennas,
-		icon: 'ph-flying-saucer ph-bold ph-lg',
+		icon: 'ti ti-antenna',
 		show: computed(() => $i != null),
 		to: '/my/antennas',
 	},
@@ -88,7 +88,7 @@ export const navbarItemDef = reactive({
 	},
 	pages: {
 		title: i18n.ts.pages,
-		icon: 'ph-newspaper ph-bold ph-lg',
+		icon: 'ti ti-news',
 		to: '/pages',
 	},
 	play: {
@@ -103,7 +103,7 @@ export const navbarItemDef = reactive({
 	},
 	clips: {
 		title: i18n.ts.clip,
-		icon: 'ph-paperclip ph-bold ph-lg',
+		icon: 'ti ti-paperclip',
 		show: computed(() => $i != null),
 		to: '/my/clips',
 	},
@@ -114,18 +114,18 @@ export const navbarItemDef = reactive({
 	},
 	achievements: {
 		title: i18n.ts.achievements,
-		icon: 'ph-trophy ph-bold ph-lg',
+		icon: 'ti ti-medal',
 		show: computed(() => $i != null && instance.enableAchievements),
 		to: '/my/achievements',
 	},
 	games: {
 		title: 'Games',
-		icon: 'ph-game-controller ph-bold ph-lg',
+		icon: 'ti ti-device-gamepad',
 		to: '/games',
 	},
 	ui: {
 		title: i18n.ts.switchUi,
-		icon: 'ph-devices ph-bold ph-lg',
+		icon: 'ti ti-devices',
 		action: (ev) => {
 			os.popupMenu([{
 				text: i18n.ts.default,
@@ -167,7 +167,7 @@ export const navbarItemDef = reactive({
 	},
 	profile: {
 		title: i18n.ts.profile,
-		icon: 'ph-user ph-bold ph-lg',
+		icon: 'ti ti-user',
 		show: computed(() => $i != null),
 		to: `/@${$i?.username}`,
 	},

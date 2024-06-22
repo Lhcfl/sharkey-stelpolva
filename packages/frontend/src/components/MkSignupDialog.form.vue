@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div>
 	<div :class="$style.banner">
-		<i class="ph-user-list ph-bold ph-lg"></i>
+		<i class="ti ti-user-edit"></i>
 	</div>
 	<MkSpacer :marginMin="20" :marginMax="32">
 		<form class="_gaps_m" autocomplete="new-password" @submit.prevent="onSubmit">
@@ -31,7 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkInput>
 			<MkInput v-if="instance.emailRequiredForSignup" v-model="email" :debounce="true" type="email" :spellcheck="false" required data-cy-signup-email @update:modelValue="onChangeEmail">
 				<template #label>{{ i18n.ts.emailAddress }} <div v-tooltip:dialog="i18n.ts._signup.emailAddressInfo" class="_button _help"><i class="ti ti-help-circle"></i></div></template>
-				<template #prefix><i class="ph-envelope ph-bold ph-lg"></i></template>
+				<template #prefix><i class="ti ti-mail"></i></template>
 				<template #caption>
 					<span v-if="emailState === 'wait'" style="color:#999"><MkLoading :em="true"/> {{ i18n.ts.checking }}</span>
 					<span v-else-if="emailState === 'ok'" style="color: var(--success)"><i class="ti ti-check ti-fw"></i> {{ i18n.ts.available }}</span>

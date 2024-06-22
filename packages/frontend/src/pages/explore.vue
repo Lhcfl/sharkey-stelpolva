@@ -48,7 +48,7 @@ const headerActions = computed(() => []);
 
 const headerTabs = computed(() => [{
 	key: 'featured',
-	icon: 'ph-lightning ph-bold ph-lg',
+	icon: 'ti ti-bolt',
 	title: i18n.ts.featured,
 }, {
 	key: 'users',
@@ -56,7 +56,7 @@ const headerTabs = computed(() => [{
 	title: i18n.ts.users,
 }, {
 	key: 'roles',
-	icon: 'ph-seal-check ph-bold ph-lg',
+	icon: 'ti ti-badges',
 	title: i18n.ts.roles,
 }]);
 

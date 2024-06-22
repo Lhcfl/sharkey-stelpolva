@@ -71,7 +71,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.followRequests,
-	icon: 'ph-user-plus ph-bold ph-lg',
+	icon: 'ti ti-user-plus',
 }));
 </script>
 

@@ -62,7 +62,7 @@ const ro = new ResizeObserver((entries, observer) => {
 const menuDef = computed(() => [{
 	title: i18n.ts.basicSettings,
 	items: [{
-		icon: 'ph-user ph-bold ph-lg',
+		icon: 'ti ti-user',
 		text: i18n.ts.profile,
 		to: '/settings/profile',
 		active: currentPage.value?.route.name === 'profile',
@@ -87,7 +87,7 @@ const menuDef = computed(() => [{
 		to: '/settings/notifications',
 		active: currentPage.value?.route.name === 'notifications',
 	}, {
-		icon: 'ph-envelope ph-bold ph-lg',
+		icon: 'ti ti-mail',
 		text: i18n.ts.email,
 		to: '/settings/email',
 		active: currentPage.value?.route.name === 'email',
@@ -105,12 +105,12 @@ const menuDef = computed(() => [{
 		to: '/settings/general',
 		active: currentPage.value?.route.name === 'general',
 	}, {
-		icon: 'ph-palette ph-bold ph-lg',
+		icon: 'ti ti-palette',
 		text: i18n.ts.theme,
 		to: '/settings/theme',
 		active: currentPage.value?.route.name === 'theme',
 	}, {
-		icon: 'ph-list ph-bold ph-lg-2',
+		icon: 'ti ti-menu-2',
 		text: i18n.ts.navbar,
 		to: '/settings/navbar',
 		active: currentPage.value?.route.name === 'navbar',
@@ -125,7 +125,7 @@ const menuDef = computed(() => [{
 		to: '/settings/sounds',
 		active: currentPage.value?.route.name === 'sounds',
 	}, {
-		icon: 'ph-plug ph-bold ph-lg',
+		icon: 'ti ti-plug',
 		text: i18n.ts.plugins,
 		to: '/settings/plugin',
 		active: currentPage.value?.route.name === 'plugin',
@@ -133,12 +133,12 @@ const menuDef = computed(() => [{
 }, {
 	title: i18n.ts.otherSettings,
 	items: [{
-		icon: 'ph-seal-check ph-bold ph-lg',
+		icon: 'ti ti-badges',
 		text: i18n.ts.roles,
 		to: '/settings/roles',
 		active: currentPage.value?.route.name === 'roles',
 	}, {
-		icon: 'ph-prohibit ph-bold ph-lg',
+		icon: 'ti ti-ban',
 		text: i18n.ts.muteAndBlock,
 		to: '/settings/mute-block',
 		active: currentPage.value?.route.name === 'mute-block',

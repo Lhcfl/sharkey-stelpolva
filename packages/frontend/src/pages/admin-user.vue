@@ -97,7 +97,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkFolder>
 
 						<MkFolder>
-							<template #icon><i class="ph-password ph-bold ph-lg"></i></template>
+							<template #icon><i class="ti ti-password"></i></template>
 							<template #label>IP</template>
 							<MkInfo v-if="!iAmAdmin" warn>{{ i18n.ts.requireAdminForView }}</MkInfo>
 							<MkInfo v-else>The date is the IP address was first acknowledged.</MkInfo>
@@ -110,7 +110,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkFolder>
 
 						<div>
-							<MkButton v-if="iAmModerator" inline danger style="margin-right: 8px;" @click="unsetUserAvatar"><i class="ph-user-circle ph-bold ph-lg"></i> {{ i18n.ts.unsetUserAvatar }}</MkButton>
+							<MkButton v-if="iAmModerator" inline danger style="margin-right: 8px;" @click="unsetUserAvatar"><i class="ti ti-user-circle"></i> {{ i18n.ts.unsetUserAvatar }}</MkButton>
 							<MkButton v-if="iAmModerator" inline danger style="margin-right: 8px;" @click="unsetUserBanner"><i class="ti ti-photo"></i> {{ i18n.ts.unsetUserBanner }}</MkButton>
 							<MkButton v-if="iAmModerator" inline danger @click="deleteAllFiles"><i class="ph-cloud ph-bold ph-lg"></i> {{ i18n.ts.deleteAllFiles }}</MkButton>
 						</div>
@@ -127,7 +127,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkRolePreview :class="$style.role" :role="role" :forModeration="true"/>
 						<button class="_button" @click="toggleRoleItem(role)"><i class="ti ti-chevron-down"></i></button>
 						<button v-if="role.target === 'manual'" class="_button" :class="$style.roleUnassign" @click="unassignRole(role, $event)"><i class="ti ti-x"></i></button>
-						<button v-else class="_button" :class="$style.roleUnassign" disabled><i class="ph-prohibit ph-bold ph-lg"></i></button>
+						<button v-else class="_button" :class="$style.roleUnassign" disabled><i class="ti ti-ban"></i></button>
 					</div>
 					<div v-if="expandedRoles.includes(role.id)" :class="$style.roleItemSub">
 						<div>Assigned: <MkTime :time="info.roleAssigns.find(a => a.roleId === role.id).createdAt" mode="detail"/></div>
@@ -517,11 +517,11 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'roles',
 	title: i18n.ts.roles,
-	icon: 'ph-seal-check ph-bold ph-lg',
+	icon: 'ti ti-badges',
 }, {
 	key: 'announcements',
 	title: i18n.ts.announcements,
-	icon: 'ph-megaphone ph-bold ph-lg',
+	icon: 'ti ti-speakerphone',
 }, {
 	key: 'drive',
 	title: i18n.ts.drive,
