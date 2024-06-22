@@ -8,7 +8,7 @@
 
 ### Server
 - チャート生成時にinstance.suspentionStateに置き換えられたinstance.isSuspendedが参照されてしまう問題を修正
-
+- Fix: notRespondingSinceが実装される前に不通になったインスタンスが自動的に配信停止にならない (#14059)
 
 ## 2024.5.0
 
