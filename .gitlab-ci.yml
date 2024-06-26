@@ -20,7 +20,7 @@ testCommit:
     - pnpm install --frozen-lockfile
     - pnpm run build
     - pnpm run migrate
-    - pnpm run --filter='!megalodon' test
+    - pnpm run --filter='!megalodon' --workspace-concurrency=1 test
     - pnpm run --filter=backend lint
     - pnpm run --filter=frontend eslint
   cache:
