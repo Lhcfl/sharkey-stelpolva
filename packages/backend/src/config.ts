@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import * as yaml from 'js-yaml';
 import { globSync } from 'glob';
+import * as Sentry from '@sentry/node';
 import type { RedisOptions } from 'ioredis';
 
 type RedisOptionsSource = Partial<RedisOptions> & {
@@ -57,6 +58,8 @@ type Source = {
 		index: string;
 		scope?: 'local' | 'global' | string[];
 	};
+	sentryForBackend?: { options: Partial<Sentry.NodeOptions>; enableNodeProfiling: boolean; };
+	sentryForFrontend?: { options: Partial<Sentry.NodeOptions> };
 
 	publishTarballInsteadOfProvideRepositoryUrl?: boolean;
 
@@ -97,6 +100,12 @@ type Source = {
 	perChannelMaxNoteCacheCount?: number;
 	perUserNotificationsMaxCount?: number;
 	deactivateAntennaThreshold?: number;
+
+	import?: {
+		downloadTimeout: number;
+		maxFileSize: number;
+	};
+
 	pidFile: string;
 };
 
@@ -174,9 +183,17 @@ export type Config = {
 	redisForPubsub: RedisOptions & RedisOptionsSource;
 	redisForJobQueue: RedisOptions & RedisOptionsSource;
 	redisForTimelines: RedisOptions & RedisOptionsSource;
+	sentryForBackend: { options: Partial<Sentry.NodeOptions>; enableNodeProfiling: boolean; } | undefined;
+	sentryForFrontend: { options: Partial<Sentry.NodeOptions> } | undefined;
 	perChannelMaxNoteCacheCount: number;
 	perUserNotificationsMaxCount: number;
 	deactivateAntennaThreshold: number;
+
+	import: {
+		downloadTimeout: number;
+		maxFileSize: number;
+	} | undefined;
+
 	pidFile: string;
 };
 
@@ -211,6 +228,8 @@ export function loadConfig(): Config {
 			(acc: Source, cur: Source) => Object.assign(acc, cur),
 			{} as Source,
 		) as Source;
+
+	applyEnvOverrides(config);
 
 	const url = tryCreateUrl(config.url);
 	const version = meta.version;
@@ -249,6 +268,8 @@ export function loadConfig(): Config {
 		redisForPubsub: config.redisForPubsub ? convertRedisOptions(config.redisForPubsub, host) : redis,
 		redisForJobQueue: config.redisForJobQueue ? convertRedisOptions(config.redisForJobQueue, host) : redis,
 		redisForTimelines: config.redisForTimelines ? convertRedisOptions(config.redisForTimelines, host) : redis,
+		sentryForBackend: config.sentryForBackend,
+		sentryForFrontend: config.sentryForFrontend,
 		id: config.id,
 		proxy: config.proxy,
 		proxySmtp: config.proxySmtp,
@@ -282,6 +303,7 @@ export function loadConfig(): Config {
 		perChannelMaxNoteCacheCount: config.perChannelMaxNoteCacheCount ?? 1000,
 		perUserNotificationsMaxCount: config.perUserNotificationsMaxCount ?? 500,
 		deactivateAntennaThreshold: config.deactivateAntennaThreshold ?? (1000 * 60 * 60 * 24 * 7),
+		import: config.import,
 		pidFile: config.pidFile,
 	};
 }
@@ -303,4 +325,129 @@ function convertRedisOptions(options: RedisOptionsSource, host: string): RedisOp
 		keyPrefix: `${options.prefix ?? host}:`,
 		db: options.db ?? 0,
 	};
+}
+
+/*
+	this function allows overriding any string-valued config option with
+	a sensible-named environment variable
+
+	e.g. `MK_CONFIG_MEILISEARCH_APIKEY` sets `config.meilisearch.apikey`
+
+	you can also override a single `dbSlave` value,
+	e.g. `MK_CONFIG_DBSLAVES_1_PASS` sets the password for the 2nd
+	database replica (the first one would be
+	`MK_CONFIG_DBSLAVES_0_PASS`); in this case, `config.dbSlaves` must
+	be set to an array of the right size already in the file
+
+	values can be read from files, too: setting `MK_DB_PASS_FILE` to
+	`/some/file` would set the main database password to the contents of
+	`/some/file` (trimmed of whitespaces)
+ */
+function applyEnvOverrides(config: Source) {
+	// these inner functions recurse through the config structure, using
+	// the given steps, building the env variable name
+
+	function _apply_top(steps: (string | string[] | number | number[])[]) {
+		_walk('', [], steps);
+	}
+
+	function _walk(name: string, path: (string | number)[], steps: (string | string[] | number | number[])[]) {
+		// are there more steps after this one? recurse
+		if (steps.length > 1) {
+			const thisStep = steps.shift();
+			if (thisStep === null || thisStep === undefined) return;
+
+			// if a step is not a simple value, iterate through it
+			if (typeof thisStep === 'object') {
+				for (const thisOneStep of thisStep) {
+					_descend(name, path, thisOneStep, steps);
+				}
+			} else {
+				_descend(name, path, thisStep, steps);
+			}
+
+			// the actual override has happened at the bottom of the
+			// recursion, we're done
+			return;
+		}
+
+		// this is the last step, same thing as above
+		const lastStep = steps[0];
+
+		if (typeof lastStep === 'object') {
+			for (const lastOneStep of lastStep) {
+				_lastBit(name, path, lastOneStep);
+			}
+		} else {
+			_lastBit(name, path, lastStep);
+		}
+	}
+
+	function _step2name(step: string|number): string {
+		return step.toString().replaceAll(/[^a-z0-9]+/gi, '').toUpperCase();
+	}
+
+	// this recurses down, bailing out if there's no config to override
+	function _descend(name: string, path: (string | number)[], thisStep: string | number, steps: (string | string[] | number | number[])[]) {
+		name = `${name}${_step2name(thisStep)}_`;
+		path = [...path, thisStep];
+		_walk(name, path, steps);
+	}
+
+	// this is the bottom of the recursion: look at the environment and
+	// set the value
+	function _lastBit(name: string, path: (string | number)[], lastStep: string | number) {
+		name = `MK_CONFIG_${name}${_step2name(lastStep)}`;
+
+		const val = process.env[name];
+		if (val !== null && val !== undefined) {
+			_assign(path, lastStep, val);
+		}
+
+		const file = process.env[`${name}_FILE`];
+		if (file) {
+			_assign(path, lastStep, fs.readFileSync(file, 'utf-8').trim());
+		}
+	}
+
+	const alwaysStrings = { 'chmodSocket': true } as { [key: string]: boolean };
+
+	function _assign(path: (string | number)[], lastStep: string | number, value: string) {
+		let thisConfig = config as any;
+		for (const step of path) {
+			if (!thisConfig[step]) {
+				thisConfig[step] = {};
+			}
+			thisConfig = thisConfig[step];
+		}
+
+		if (!alwaysStrings[lastStep]) {
+			if (value.match(/^[0-9]+$/)) {
+				thisConfig[lastStep] = parseInt(value);
+				return;
+			} else if (value.match(/^(true|false)$/i)) {
+				thisConfig[lastStep] = !!value.match(/^true$/i);
+				return;
+			}
+		}
+
+		thisConfig[lastStep] = value;
+	}
+
+	// these are all the settings that can be overridden
+
+	_apply_top([['url', 'port', 'socket', 'chmodSocket', 'disableHsts']]);
+	_apply_top(['db', ['host', 'port', 'db', 'user', 'pass']]);
+	_apply_top(['dbSlaves', Array.from((config.dbSlaves ?? []).keys()), ['host', 'port', 'db', 'user', 'pass']]);
+	_apply_top([
+		['redis', 'redisForPubsub', 'redisForJobQueue', 'redisForTimelines'],
+		['host', 'port', 'username', 'pass', 'db', 'prefix'],
+	]);
+	_apply_top(['meilisearch', ['host', 'port', 'apikey', 'ssl', 'index', 'scope']]);
+	_apply_top([['sentryForFrontend', 'sentryForBackend'], 'options', ['dsn', 'profileSampleRate', 'serverName', 'includeLocalVariables', 'proxy', 'keepAlive', 'caCerts']]);
+	_apply_top(['sentryForBackend', 'enableNodeProfiling']);
+	_apply_top([['clusterLimit', 'deliverJobConcurrency', 'inboxJobConcurrency', 'relashionshipJobConcurrency', 'deliverJobPerSec', 'inboxJobPerSec', 'relashionshipJobPerSec', 'deliverJobMaxAttempts', 'inboxJobMaxAttempts']]);
+	_apply_top([['outgoingAddress', 'outgoingAddressFamily', 'proxy', 'proxySmtp', 'mediaProxy', 'videoThumbnailGenerator']]);
+	_apply_top([['maxFileSize', 'maxNoteLength', 'pidFile']]);
+	_apply_top(['import', ['downloadTimeout', 'maxFileSize']]);
 }

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import querystring from 'querystring';
 import { emojiRegexAtStartToEnd } from '@/misc/emoji-regex.js';
 import { convertAttachment, convertPoll, convertStatusSource, MastoConverters } from '../converters.js';

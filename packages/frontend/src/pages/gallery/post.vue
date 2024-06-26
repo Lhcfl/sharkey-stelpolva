@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 					<div class="body">
 						<div class="title">{{ post.title }}</div>
-						<div class="description"><Mfm :text="post.description"/></div>
+						<div class="description"><Mfm :text="post.description" :isBlock="true"/></div>
 						<div class="info">
 							<i class="ph-clock ph-bold ph-lg"></i> <MkTime :time="post.createdAt" mode="detail"/>
 						</div>

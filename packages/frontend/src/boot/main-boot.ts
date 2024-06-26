@@ -21,6 +21,7 @@ import { initializeSw } from '@/scripts/initialize-sw.js';
 import { deckStore } from '@/ui/deck/deck-store.js';
 import { emojiPicker } from '@/scripts/emoji-picker.js';
 import { mainRouter } from '@/router/main.js';
+import { setFavIconDot } from '@/scripts/favicon-dot.js';
 
 export async function mainBoot() {
 	const { isClientUpdated } = await common(() => createApp(
@@ -94,7 +95,7 @@ export async function mainBoot() {
 					}).render();
 				}
 			}
-		}	
+		}
 	} catch (error) {
 		// console.error(error);
 		console.error('Failed to initialise the seasonal screen effect canvas context:', error);
@@ -189,14 +190,26 @@ export async function mainBoot() {
 		if ($i.followersCount >= 500) claimAchievement('followers500');
 		if ($i.followersCount >= 1000) claimAchievement('followers1000');
 
-		if (Date.now() - new Date($i.createdAt).getTime() > 1000 * 60 * 60 * 24 * 365) {
-			claimAchievement('passedSinceAccountCreated1');
-		}
-		if (Date.now() - new Date($i.createdAt).getTime() > 1000 * 60 * 60 * 24 * 365 * 2) {
-			claimAchievement('passedSinceAccountCreated2');
-		}
-		if (Date.now() - new Date($i.createdAt).getTime() > 1000 * 60 * 60 * 24 * 365 * 3) {
+		const createdAt = new Date($i.createdAt);
+		const createdAtThreeYearsLater = new Date($i.createdAt);
+		createdAtThreeYearsLater.setFullYear(createdAtThreeYearsLater.getFullYear() + 3);
+		if (now >= createdAtThreeYearsLater) {
 			claimAchievement('passedSinceAccountCreated3');
+			claimAchievement('passedSinceAccountCreated2');
+			claimAchievement('passedSinceAccountCreated1');
+		} else {
+			const createdAtTwoYearsLater = new Date($i.createdAt);
+			createdAtTwoYearsLater.setFullYear(createdAtTwoYearsLater.getFullYear() + 2);
+			if (now >= createdAtTwoYearsLater) {
+				claimAchievement('passedSinceAccountCreated2');
+				claimAchievement('passedSinceAccountCreated1');
+			} else {
+				const createdAtOneYearLater = new Date($i.createdAt);
+				createdAtOneYearLater.setFullYear(createdAtOneYearLater.getFullYear() + 1);
+				if (now >= createdAtOneYearLater) {
+					claimAchievement('passedSinceAccountCreated1');
+				}
+			}
 		}
 
 		if (claimedAchievements.length >= 30) {
@@ -224,14 +237,14 @@ export async function mainBoot() {
 			if (Date.now() - lastUsedDate > 1000 * 60 * 60 * 2) {
 				toast(i18n.tsx.welcomeBackWithName({
 					name: $i.name || $i.username,
-				}));
+				}), true);
 			}
 		}
 		miLocalStorage.setItem('lastUsed', Date.now().toString());
 
 		const latestDonationInfoShownAt = miLocalStorage.getItem('latestDonationInfoShownAt');
 		const neverShowDonationInfo = miLocalStorage.getItem('neverShowDonationInfo');
-		if (neverShowDonationInfo !== 'true' && (new Date($i.createdAt).getTime() < (Date.now() - (1000 * 60 * 60 * 24 * 3))) && !location.pathname.startsWith('/miauth')) {
+		if (neverShowDonationInfo !== 'true' && (createdAt.getTime() < (Date.now() - (1000 * 60 * 60 * 24 * 3))) && !location.pathname.startsWith('/miauth')) {
 			if (latestDonationInfoShownAt == null || (new Date(latestDonationInfoShownAt).getTime() < (Date.now() - (1000 * 60 * 60 * 24 * 30)))) {
 				popup(defineAsyncComponent(() => import('@/components/MkDonation.vue')), {}, {}, 'closed');
 			}
@@ -249,6 +262,14 @@ export async function mainBoot() {
 			}
 		}
 
+		function attemptShowNotificationDot() {
+			if (defaultStore.state.enableFaviconNotificationDot) {
+				setFavIconDot(true);
+			}
+		}
+
+		if ($i.hasUnreadNotification) attemptShowNotificationDot();
+
 		const main = markRaw(stream.useChannel('main', null, 'System'));
 
 		// 自分の情報が更新されたとき
@@ -257,6 +278,8 @@ export async function mainBoot() {
 		});
 
 		main.on('readAllNotifications', () => {
+			setFavIconDot(false);
+
 			updateAccount({
 				hasUnreadNotification: false,
 				unreadNotificationsCount: 0,
@@ -264,6 +287,8 @@ export async function mainBoot() {
 		});
 
 		main.on('unreadNotification', () => {
+			attemptShowNotificationDot();
+			
 			const unreadNotificationsCount = ($i?.unreadNotificationsCount ?? 0) + 1;
 			updateAccount({
 				hasUnreadNotification: true,

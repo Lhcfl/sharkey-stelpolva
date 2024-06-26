@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Ref, defineAsyncComponent } from 'vue';
 import * as Misskey from 'misskey-js';
 import { i18n } from '@/i18n.js';

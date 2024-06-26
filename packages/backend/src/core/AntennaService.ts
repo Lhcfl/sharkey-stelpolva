@@ -92,7 +92,7 @@ export class AntennaService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async addNoteToAntennas(note: MiNote, noteUser: { id: MiUser['id']; username: string; host: string | null; }): Promise<void> {
+	public async addNoteToAntennas(note: MiNote, noteUser: { id: MiUser['id']; username: string; host: string | null; isBot: boolean; }): Promise<void> {
 		const antennas = await this.getAntennas();
 		const antennasWithMatchResult = await Promise.all(antennas.map(antenna => this.checkHitAntenna(antenna, note, noteUser).then(hit => [antenna, hit] as const)));
 		const matchedAntennas = antennasWithMatchResult.filter(([, hit]) => hit).map(([antenna]) => antenna);
@@ -110,9 +110,11 @@ export class AntennaService implements OnApplicationShutdown {
 	// NOTE: フォローしているユーザーのノート、リストのユーザーのノート、グループのユーザーのノート指定はパフォーマンス上の理由で無効になっている
 
 	@bindThis
-	public async checkHitAntenna(antenna: MiAntenna, note: (MiNote | Packed<'Note'>), noteUser: { id: MiUser['id']; username: string; host: string | null; }): Promise<boolean> {
+	public async checkHitAntenna(antenna: MiAntenna, note: (MiNote | Packed<'Note'>), noteUser: { id: MiUser['id']; username: string; host: string | null; isBot: boolean; }): Promise<boolean> {
 		if (note.visibility === 'specified') return false;
 		if (note.visibility === 'followers') return false;
+
+		if (antenna.excludeBots && noteUser.isBot) return false;
 
 		if (antenna.localOnly && noteUser.host != null) return false;
 
@@ -131,13 +133,17 @@ export class AntennaService implements OnApplicationShutdown {
 				const { username, host } = Acct.parse(x);
 				return this.utilityService.getFullApAccount(username, host).toLowerCase();
 			});
-			if (!accts.includes(this.utilityService.getFullApAccount(noteUser.username, noteUser.host).toLowerCase())) return false;
+			const matchUser = this.utilityService.getFullApAccount(noteUser.username, noteUser.host).toLowerCase();
+			const matchWildcard = this.utilityService.getFullApAccount('*', noteUser.host).toLowerCase();
+			if (!accts.includes(matchUser) && !accts.includes(matchWildcard)) return false;
 		} else if (antenna.src === 'users_blacklist') {
 			const accts = antenna.users.map(x => {
 				const { username, host } = Acct.parse(x);
 				return this.utilityService.getFullApAccount(username, host).toLowerCase();
 			});
-			if (accts.includes(this.utilityService.getFullApAccount(noteUser.username, noteUser.host).toLowerCase())) return false;
+			const matchUser = this.utilityService.getFullApAccount(noteUser.username, noteUser.host).toLowerCase();
+			const matchWildcard = this.utilityService.getFullApAccount('*', noteUser.host).toLowerCase();
+			if (accts.includes(matchUser) || accts.includes(matchWildcard)) return false;
 		}
 
 		const keywords = antenna.keywords

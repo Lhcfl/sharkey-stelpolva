@@ -73,7 +73,6 @@ export class CleanRemoteFilesProcessorService {
 			});
 
 			await job.updateProgress(100 / total * deletedCount);
-
 		}
 
 		this.logger.succ(`All cached remote files processed. Total deleted: ${deletedCount}, Failed: ${errorCount}.`);

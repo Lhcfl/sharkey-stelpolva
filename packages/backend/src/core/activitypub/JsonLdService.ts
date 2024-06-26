@@ -7,14 +7,14 @@ import * as crypto from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
-import { CONTEXT, CONTEXTS } from './misc/contexts.js';
+import { CONTEXT, PRELOADED_CONTEXTS } from './misc/contexts.js';
 import { validateContentTypeSetAsJsonLD } from './misc/validator.js';
 import type { JsonLdDocument } from 'jsonld';
-import type { JsonLd, RemoteDocument } from 'jsonld/jsonld-spec.js';
+import type { JsonLd as JsonLdObject, RemoteDocument } from 'jsonld/jsonld-spec.js';
 
-// RsaSignature2017 based from https://github.com/transmute-industries/RsaSignature2017
+// RsaSignature2017 implementation is based on https://github.com/transmute-industries/RsaSignature2017
 
-class LdSignature {
+class JsonLd {
 	public debug = false;
 	public preLoad = true;
 	public loderTimeout = 5000;
@@ -101,8 +101,6 @@ class LdSignature {
 	@bindThis
 	public async normalize(data: JsonLdDocument): Promise<string> {
 		const customLoader = this.getLoader();
-		// XXX: Importing jsonld dynamically since Jest frequently fails to import it statically
-		// https://github.com/misskey-dev/misskey/pull/9894#discussion_r1103753595
 		return (await import('jsonld')).default.normalize(data, {
 			documentLoader: customLoader,
 		});
@@ -114,11 +112,11 @@ class LdSignature {
 			if (!/^https?:\/\//.test(url)) throw new Error(`Invalid URL ${url}`);
 
 			if (this.preLoad) {
-				if (url in CONTEXTS) {
+				if (url in PRELOADED_CONTEXTS) {
 					if (this.debug) console.debug(`HIT: ${url}`);
 					return {
 						contextUrl: undefined,
-						document: CONTEXTS[url],
+						document: PRELOADED_CONTEXTS[url],
 						documentUrl: url,
 					};
 				}
@@ -135,7 +133,7 @@ class LdSignature {
 	}
 
 	@bindThis
-	private async fetchDocument(url: string): Promise<JsonLd> {
+	private async fetchDocument(url: string): Promise<JsonLdObject> {
 		const json = await this.httpRequestService.send(
 			url,
 			{
@@ -156,7 +154,7 @@ class LdSignature {
 			}
 		});
 
-		return json as JsonLd;
+		return json as JsonLdObject;
 	}
 
 	@bindThis
@@ -168,14 +166,14 @@ class LdSignature {
 }
 
 @Injectable()
-export class LdSignatureService {
+export class JsonLdService {
 	constructor(
 		private httpRequestService: HttpRequestService,
 	) {
 	}
 
 	@bindThis
-	public use(): LdSignature {
-		return new LdSignature(this.httpRequestService);
+	public use(): JsonLd {
+		return new JsonLd(this.httpRequestService);
 	}
 }

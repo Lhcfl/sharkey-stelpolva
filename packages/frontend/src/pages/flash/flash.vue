@@ -15,17 +15,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkAsUi v-if="root" :component="root" :components="components"/>
 						</div>
 						<div class="actions _panel">
-							<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary @click="unlike()"><i class="ph-heart ph-bold ph-lg"></i><span v-if="flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
-							<MkButton v-else v-tooltip="i18n.ts.like" asLike class="button" rounded @click="like()"><i class="ph-heart ph-bold ph-lg"></i><span v-if="flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
-							<MkButton v-tooltip="i18n.ts.shareWithNote" class="button" rounded @click="shareWithNote"><i class="ph-repeat ph-bold ph-lg ti-fw"></i></MkButton>
-							<MkButton v-tooltip="i18n.ts.copyLink" class="button" rounded @click="copyLink"><i class="ph-share-network ph-bold ph-lg ti-fw"></i></MkButton>
-							<MkButton v-if="isSupportShare()" v-tooltip="i18n.ts.share" class="button" rounded @click="share"><i class="ph-share-network ph-bold ph-lg ti-fw"></i></MkButton>
+							<div class="items">
+								<MkButton v-tooltip="i18n.ts.reload" class="button" rounded @click="reset"><i class="ph-arrows-clockwise ph-bold ph-lg"></i></MkButton>
+							</div>
+							<div class="items">
+								<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary @click="unlike()"><i class="ph-heart ph-bold ph-lg"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
+								<MkButton v-else v-tooltip="i18n.ts.like" asLike class="button" rounded @click="like()"><i class="ph-heart ph-bold ph-lg"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
+								<MkButton v-tooltip="i18n.ts.copyLink" class="button" rounded @click="copyLink"><i class="ph-link ph-bold ph-lg ti-fw"></i></MkButton>
+								<MkButton v-tooltip="i18n.ts.share" class="button" rounded @click="share"><i class="ph-share-network ph-bold ph-lg ti-fw"></i></MkButton>
+							</div>
 						</div>
 					</div>
 					<div v-else :class="$style.ready">
 						<div class="_panel main">
 							<div class="title">{{ flash.title }}</div>
-							<div class="summary"><Mfm :text="flash.summary"/></div>
+							<div class="summary"><Mfm :text="flash.summary" :isBlock="true"/></div>
 							<MkButton class="start" gradate rounded large @click="start">Play</MkButton>
 							<div class="info">
 								<span v-tooltip="i18n.ts.numberOfLikes"><i class="ph-heart ph-bold ph-lg"></i> {{ flash.likedCount }}</span>
@@ -49,7 +53,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkA v-if="$i && $i.id === flash.userId" :to="`/play/${flash.id}/edit`" style="color: var(--accent);">{{ i18n.ts._play.editThisPage }}</MkA>
 				<MkAd :prefer="['horizontal', 'horizontal-big']"/>
 			</div>
-			<MkError v-else-if="error" @retry="fetchPage()"/>
+			<MkError v-else-if="error" @retry="fetchFlash()"/>
 			<MkLoading v-else/>
 		</Transition>
 	</MkSpacer>
@@ -94,12 +98,33 @@ function fetchFlash() {
 	});
 }
 
+function share(ev: MouseEvent) {
+	if (!flash.value) return;
+
+	os.popupMenu([
+		{
+			text: i18n.ts.shareWithNote,
+			icon: 'ph-repeat ph-bold ph-lg ti-fw',
+			action: shareWithNote,
+		},
+		...(isSupportShare() ? [{
+			text: i18n.ts.share,
+			icon: 'ph-share-network ph-bold ph-lg ti-fw',
+			action: shareWithNavigator,
+		}] : []),
+	], ev.currentTarget ?? ev.target);
+	}
+
 function copyLink() {
+	if (!flash.value) return;
+
 	copyToClipboard(`${url}/play/${flash.value.id}`);
 	os.success();
 }
 
-function share() {
+function shareWithNavigator() {
+	if (!flash.value) return;
+
 	navigator.share({
 		title: flash.value.title,
 		text: flash.value.summary,
@@ -108,21 +133,28 @@ function share() {
 }
 
 function shareWithNote() {
+	if (!flash.value) return;
+
 	os.post({
-		initialText: `${flash.value.title} ${url}/play/${flash.value.id}`,
+		initialText: `${flash.value.title}\n${url}/play/${flash.value.id}`,
+		instant: true,
 	});
 }
 
 function like() {
+	if (!flash.value) return;
+
 	os.apiWithDialog('flash/like', {
 		flashId: flash.value.id,
 	}).then(() => {
-		flash.value.isLiked = true;
-		flash.value.likedCount++;
+		flash.value!.isLiked = true;
+		flash.value!.likedCount++;
 	});
 }
 
 async function unlike() {
+	if (!flash.value) return;
+
 	const confirm = await os.confirm({
 		type: 'warning',
 		text: i18n.ts.unlikeConfirm,
@@ -131,8 +163,8 @@ async function unlike() {
 	os.apiWithDialog('flash/unlike', {
 		flashId: flash.value.id,
 	}).then(() => {
-		flash.value.isLiked = false;
-		flash.value.likedCount--;
+		flash.value!.isLiked = false;
+		flash.value!.likedCount--;
 	});
 }
 
@@ -152,6 +184,7 @@ function start() {
 
 async function run() {
 	if (aiscript.value) aiscript.value.abort();
+	if (!flash.value) return;
 
 	aiscript.value = new Interpreter({
 		...createAiScriptEnv({
@@ -193,12 +226,17 @@ async function run() {
 	}
 }
 
-onDeactivated(() => {
+function reset() {
 	if (aiscript.value) aiscript.value.abort();
+	started.value = false;
+}
+
+onDeactivated(() => {
+	reset();
 });
 
 onUnmounted(() => {
-	if (aiscript.value) aiscript.value.abort();
+	reset();
 });
 
 const headerActions = computed(() => []);
@@ -265,11 +303,19 @@ definePageMetadata(() => ({
 		}
 
 		> .actions {
-			display: flex;
-			justify-content: center;
-			gap: 12px;
 			margin-top: 16px;
-			padding: 16px;
+
+			> .items {
+				display: flex;
+				justify-content: center;
+				gap: 12px;
+				padding: 16px;
+				border-bottom: 1px solid var(--divider);
+
+				&:last-child {
+					border-bottom: none;
+				}
+			}
 		}
 	}
 }

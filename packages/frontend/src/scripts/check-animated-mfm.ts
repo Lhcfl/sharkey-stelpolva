@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import * as mfm from '@transfem-org/sfm-js';
 
 export function checkAnimationFromMfm(nodes: mfm.MfmNode[]): boolean {
@@ -8,10 +13,12 @@ export function checkAnimationFromMfm(nodes: mfm.MfmNode[]): boolean {
 			node.props.name === 'twitch' ||
 			node.props.name === 'shake' ||
 			node.props.name === 'spin' ||
-			node.props.name === 'jump' || 
-			node.props.name === 'bounce' || 
-			node.props.name === 'rainbow' || 
-			node.props.name === 'sparkle') {
+			node.props.name === 'jump' ||
+			node.props.name === 'bounce' ||
+			node.props.name === 'rainbow' ||
+			node.props.name === 'sparkle' ||
+			node.props.name === 'fade' ||
+			node.props.name === 'followmouse') {
 				return true;
 			} else {
 				return false;
@@ -20,7 +27,7 @@ export function checkAnimationFromMfm(nodes: mfm.MfmNode[]): boolean {
 			return false;
 		}
 	});
-	
+
 	if (animatedNodes.length > 0) {
 		return true;
 	} else {

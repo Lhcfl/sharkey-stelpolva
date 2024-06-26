@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { ref } from 'vue';
 import { Interpreter, Parser, utils, values } from '@syuilo/aiscript';
 import { aiScriptReadline, createAiScriptEnv } from '@/scripts/aiscript/api.js';
 import { inputText } from '@/os.js';
@@ -10,6 +11,7 @@ import { Plugin, noteActions, notePostInterruptors, noteViewInterruptors, postFo
 
 const parser = new Parser();
 const pluginContexts = new Map<string, Interpreter>();
+export const pluginLogs = ref(new Map<string, string[]>());
 
 export async function install(plugin: Plugin): Promise<void> {
 	// 後方互換性のため
@@ -22,21 +24,48 @@ export async function install(plugin: Plugin): Promise<void> {
 		in: aiScriptReadline,
 		out: (value): void => {
 			console.log(value);
+			pluginLogs.value.get(plugin.id).push(utils.reprValue(value));
 		},
 		log: (): void => {
 		},
+		/* dakkar 2024-06-20
+
+			passing an `err` triggers an unwanted side-effect inside the
+			AiScript Interpreter:
+
+			- the plugin code throws an exception of any kind (in the
+			specific case that made us look, it was `note.text.split(...)`
+			on a note with no text)
+
+			- the Interpreter's `handleError` calls `this.abort()` before
+			calling our `err`
+
+			- from that point on, every evaluation of that Interpreter object
+			returns null
+
+			- which, at least inside a noteViewInterruptor, causes all notes
+      to be replaced with a null
+
+			I'm reporting this problem upstream, in the meantime we'll have
+			to do without error logs
+		*/
+		// err: (err): void => {
+		// 	pluginLogs.value.get(plugin.id).push(`${err}`);
+		// 	throw err; // install時のtry-catchに反応させる
+		// },
 	});
 
 	initPlugin({ plugin, aiscript });
 
-	try {
-		await aiscript.exec(parser.parse(plugin.src));
-	} catch (err) {
-		console.error('Plugin install failed:', plugin.name, 'v' + plugin.version);
-		return;
-	}
-
-	console.info('Plugin installed:', plugin.name, 'v' + plugin.version);
+	aiscript.exec(parser.parse(plugin.src)).then(
+		() => {
+			console.info('Plugin installed:', plugin.name, 'v' + plugin.version);
+		},
+		(err) => {
+			console.error('Plugin install failed:', plugin.name, 'v' + plugin.version);
+			throw err;
+		},
+	);
 }
 
 function createPluginEnv(opts: { plugin: Plugin; storageKey: string }): Record<string, values.Value> {
@@ -92,6 +121,7 @@ function createPluginEnv(opts: { plugin: Plugin; storageKey: string }): Record<s
 
 function initPlugin({ plugin, aiscript }): void {
 	pluginContexts.set(plugin.id, aiscript);
+	pluginLogs.value.set(plugin.id, []);
 }
 
 function registerPostFormAction({ pluginId, title, handler }): void {

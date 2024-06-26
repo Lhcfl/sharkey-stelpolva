@@ -307,6 +307,98 @@ export const handlers = [
 
 Don't forget to re-run the `.storybook/generate.js` script after adding, editing, or removing the above files.
 
+## Nest
+
+### Nest Service Circular dependency / Nestでサービスの循環参照でエラーが起きた場合
+
+#### forwardRef
+まずは簡単に`forwardRef`を試してみる
+
+```typescript
+export class FooService {
+	constructor(
+		@Inject(forwardRef(() => BarService))
+		private barService: BarService
+	) {
+	}
+}
+```
+
+#### OnModuleInit
+できなければ`OnModuleInit`を使う
+
+```typescript
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { BarService } from '@/core/BarService';
+
+@Injectable()
+export class FooService implements OnModuleInit {
+	private barService: BarService // constructorから移動してくる
+
+	constructor(
+		private moduleRef: ModuleRef,
+	) {
+	}
+
+	async onModuleInit() {
+		this.barService = this.moduleRef.get(BarService.name);
+	}
+
+	public async niceMethod() {
+		return await this.barService.incredibleMethod({ hoge: 'fuga' });
+	}
+}
+```
+
+##### Service Unit Test
+テストで`onModuleInit`を呼び出す必要がある
+
+```typescript
+// import ...
+
+describe('test', () => {
+	let app: TestingModule;
+	let fooService: FooService; // for test case
+	let barService: BarService; // for test case
+
+	beforeEach(async () => {
+		app = await Test.createTestingModule({
+			imports: ...,
+			providers: [
+				FooService,
+				{ // mockする (mockは必須ではないかもしれない)
+					provide: BarService,
+					useFactory: () => ({
+						incredibleMethod: jest.fn(),
+					}),
+				},
+				{ // Provideにする
+					provide: BarService.name,
+					useExisting: BarService,
+				},
+			],
+		})
+			.useMocker(...
+			.compile();
+	
+		fooService = app.get<FooService>(FooService);
+		barService = app.get<BarService>(BarService) as jest.Mocked<BarService>;
+
+		// onModuleInitを実行する
+		await fooService.onModuleInit();
+	});
+
+	test('nice', () => {
+		await fooService.niceMethod();
+
+		expect(barService.incredibleMethod).toHaveBeenCalled();
+		expect(barService.incredibleMethod.mock.lastCall![0])
+			.toEqual({ hoge: 'fuga' });
+	});
+})
+```
+
 ## Notes
 
 ### Misskeyのドメイン固有の概念は`Mi`をprefixする
@@ -457,7 +549,9 @@ https://github.com/misskey-dev/misskey.git`), then:
 	git checkout -m merge/$(date +%Y-%m-%d)   # or whatever
 	git merge --no-ff misskey/develop
 
-fix conflicts and *commit*!
+fix conflicts and *commit*! (conflicts in `pnpm-lock.yaml` can usually
+be fixed by running `pnpm install`, it detects conflict markers and
+seems to do a decent job)
 
 *after that commit*, do all the extra work, on the same branch:
 
@@ -468,7 +562,23 @@ fix conflicts and *commit*!
   * from `ApNoteService.createNote` to `ApNoteService.updateNote`
   * from `endoints/notes/create.ts` to `endoints/notes/edit.ts`
   * from `MkNote*` to `SkNote*` (if sensible)
+  * from the global timeline to the bubble timeline
+    (`packages/backend/src/server/api/stream/channels/global-timeline.ts`,
+    `packages/backend/src/server/api/stream/channels/bubble-timeline.ts`,
+    `packages/frontend/src/components/MkTimeline.vue`,
+    `packages/frontend/src/pages/timeline.vue`,
+    `packages/frontend/src/ui/deck/tl-column.vue`,
+    `packages/frontend/src/widgets/WidgetTimeline.vue`)
+* make sure there aren't any new `ti-*` classes (Tabler Icons), and
+  replace them with appropriate `ph-*` ones (Phosphor Icons).
+  `git grep '["'\'']ti[ -](?!fw)'` should show you what to change.
+  NOTE: `ti-fw` is a special class that's defined by Misskey, leave it
+  alone
+* re-generate `misskey-js`: `pnpm build-misskey-js-with-types`
 * run tests `pnpm test` and fix as much as you can
+  * right now `megalodon` doesn't pass its tests, you probably need to
+    run `pnpm --filter=backend test` (requires a test database, [see
+    above](#testing)) and `pnpm --filter=frontend test`
 * run lint `pnpm --filter=backend lint` + `pnpm --filter=frontend
   eslint` and fix as much as you can
 
