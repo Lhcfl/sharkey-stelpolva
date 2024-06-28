@@ -35,6 +35,7 @@ export const paramDef = {
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
 		folderId: { type: 'string', format: 'misskey:id', nullable: true, default: null },
+		searchQuery: {type : 'string', default: '' }
 	},
 	required: [],
 } as const;
@@ -58,6 +59,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				query.andWhere('folder.parentId IS NULL');
 			}
 
+			if (ps.searchQuery.length > 0) {
+				query.andWhere('folder.name ILIKE :searchQuery', { searchQuery: `%${ps.searchQuery}%` });
+			}
 			const folders = await query.limit(ps.limit).getMany();
 
 			return await Promise.all(folders.map(folder => this.driveFolderEntityService.pack(folder)));

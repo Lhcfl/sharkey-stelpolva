@@ -30,6 +30,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-if="folder != null" :class="[$style.navPathItem, $style.navSeparator]"><i class="ph-caret-right ph-bold ph-lg"></i></span>
 			<span v-if="folder != null" :class="[$style.navPathItem, $style.navCurrent]">{{ folder.name }}</span>
 		</div>
+		<MkInput :class="$style.navMenu" v-model="searchQuery" :large="true" :autofocus="true" type="search" placeholder="Search drive via alt text or file names" @enter="search">
+			<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+		</MkInput>
+
 		<button class="_button" :class="$style.navMenu" @click="showMenu"><i class="ph-dots-three ph-bold ph-lg"></i></button>
 	</nav>
 	<div
@@ -102,6 +106,7 @@ import type { MenuItem } from '@/types/menu.js';
 import XNavFolder from '@/components/MkDrive.navFolder.vue';
 import XFolder from '@/components/MkDrive.folder.vue';
 import XFile from '@/components/MkDrive.file.vue';
+import MkInput from '@/components/MkInput.vue';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { useStream } from '@/stream.js';
@@ -109,6 +114,8 @@ import { defaultStore } from '@/store.js';
 import { i18n } from '@/i18n.js';
 import { uploadFile, uploads } from '@/scripts/upload.js';
 import { claimAchievement } from '@/scripts/achievements.js';
+
+const searchQuery = ref('');
 
 const props = withDefaults(defineProps<{
 	initialFolder?: Misskey.entities.DriveFolder;
@@ -151,6 +158,12 @@ const draghover = ref(false);
 const isDragSource = ref(false);
 
 const fetching = ref(true);
+
+async function search() {
+	const query = searchQuery.value.toString().trim();
+	fetch();
+	return;
+}
 
 const ilFilesObserver = new IntersectionObserver(
 	(entries) => entries.some((entry) => entry.isIntersecting) && !fetching.value && moreFiles.value && fetchMoreFiles(),
@@ -540,6 +553,7 @@ async function fetch() {
 	const foldersPromise = misskeyApi('drive/folders', {
 		folderId: folder.value ? folder.value.id : null,
 		limit: foldersMax + 1,
+		searchQuery: searchQuery.value.toString().trim(),
 	}).then(fetchedFolders => {
 		if (fetchedFolders.length === foldersMax + 1) {
 			moreFolders.value = true;
@@ -552,6 +566,7 @@ async function fetch() {
 		folderId: folder.value ? folder.value.id : null,
 		type: props.type,
 		limit: filesMax + 1,
+		searchQuery: searchQuery.value.toString().trim(),
 	}).then(fetchedFiles => {
 		if (fetchedFiles.length === filesMax + 1) {
 			moreFiles.value = true;
