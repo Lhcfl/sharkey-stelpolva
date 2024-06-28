@@ -372,7 +372,7 @@ function watchForDraft() {
 }
 
 function MFMWindow() {
-	os.popup(defineAsyncComponent(() => import('@/components/MkMfmWindow.vue')), {}, {}, 'closed');
+	os.popup(defineAsyncComponent(() => import('@/components/SkMfmWindow.vue')), {}, {}, 'closed');
 }
 
 function checkMissingMention() {
