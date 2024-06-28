@@ -31,7 +31,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-if="folder != null" :class="[$style.navPathItem, $style.navCurrent]">{{ folder.name }}</span>
 		</div>
 		<div :class="$style.navMenu">
-			<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" placeholder="Search drive via alt text or file names" @enter="search">
+			<!-- "Search drive via alt text or file names" -->
+			<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" :placeholder="i18n.ts.driveSearchbarPlaceholder" @enter="search">
 				<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
 			</MkInput>
 
