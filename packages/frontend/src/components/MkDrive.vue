@@ -30,11 +30,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-if="folder != null" :class="[$style.navPathItem, $style.navSeparator]"><i class="ph-caret-right ph-bold ph-lg"></i></span>
 			<span v-if="folder != null" :class="[$style.navPathItem, $style.navCurrent]">{{ folder.name }}</span>
 		</div>
-		<MkInput :class="$style.navMenu" v-model="searchQuery" :large="true" :autofocus="true" type="search" placeholder="Search drive via alt text or file names" @enter="search">
-			<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
-		</MkInput>
+		<div :class="$style.navMenu">
+			<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" placeholder="Search drive via alt text or file names" @enter="search">
+				<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+			</MkInput>
 
-		<button class="_button" :class="$style.navMenu" @click="showMenu"><i class="ph-dots-three ph-bold ph-lg"></i></button>
+			<button class="_button" @click="showMenu"><i class="ph-dots-three ph-bold ph-lg"></i></button>
+		</div>
 	</nav>
 	<div
 		ref="main"
@@ -160,9 +162,7 @@ const isDragSource = ref(false);
 const fetching = ref(true);
 
 async function search() {
-	const query = searchQuery.value.toString().trim();
 	fetch();
-	return;
 }
 
 const ilFilesObserver = new IntersectionObserver(
@@ -762,8 +762,12 @@ onBeforeUnmount(() => {
 }
 
 .navMenu {
+	display: flex;
 	margin-left: auto;
-	padding: 0 12px;
+}
+
+.navMenu > *:not(:last-child) {
+	padding-right: 12px;
 }
 
 .main {
