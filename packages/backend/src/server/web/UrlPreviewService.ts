@@ -17,20 +17,32 @@ import { bindThis } from '@/decorators.js';
 import { ApiError } from '@/server/api/error.js';
 import { MiMeta } from '@/models/Meta.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
+import * as Redis from 'ioredis';
+import { RedisKVCache } from '@/misc/cache.js';
 
 @Injectable()
 export class UrlPreviewService {
 	private logger: Logger;
+	private previewCache: RedisKVCache<SummalyResult>;
 
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
+
+		@Inject(DI.redis)
+		private redisClient: Redis.Redis,
 
 		private metaService: MetaService,
 		private httpRequestService: HttpRequestService,
 		private loggerService: LoggerService,
 	) {
 		this.logger = this.loggerService.getLogger('url-preview');
+		this.previewCache = new RedisKVCache<SummalyResult>(this.redisClient, 'summaly', {
+			lifetime: 1000 * 86400,
+			memoryCacheLifetime: 1000 * 10 * 60,
+			toRedisConverter: (value) => JSON.stringify(value),
+			fromRedisConverter: (value) => JSON.parse(value),
+		});
 	}
 
 	@bindThis
@@ -75,9 +87,19 @@ export class UrlPreviewService {
 			};
 		}
 
+		const key = `${url}@${lang}`;
+		const cached = await this.previewCache.get(key);
+		if (cached !== undefined) {
+			this.logger.info(`Returning cache preview of ${key}`);
+			// Cache 7days
+			reply.header('Cache-Control', 'max-age=604800, immutable');
+
+			return cached;
+		}
+
 		this.logger.info(meta.urlPreviewSummaryProxyUrl
-			? `(Proxy) Getting preview of ${url}@${lang} ...`
-			: `Getting preview of ${url}@${lang} ...`);
+			? `(Proxy) Getting preview of ${key} ...`
+			: `Getting preview of ${key} ...`);
 
 		try {
 			const summary = meta.urlPreviewSummaryProxyUrl
@@ -96,6 +118,8 @@ export class UrlPreviewService {
 
 			summary.icon = this.wrap(summary.icon);
 			summary.thumbnail = this.wrap(summary.thumbnail);
+
+			this.previewCache.set(key, summary);
 
 			// Cache 7days
 			reply.header('Cache-Control', 'max-age=604800, immutable');
