@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { convertNotification } from '../converters.js';
 import type { MegalodonInterface, Entity } from 'megalodon';
 import type { FastifyRequest } from 'fastify';

@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: kopper and other Sharkey contributors
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <template>
 <div ref="nekoEl" :class="$style.oneko" aria-hidden="true"></div>
 </template>
@@ -235,6 +240,6 @@ onMounted(init);
 	pointer-events: none;
 	image-rendering: pixelated;
 	z-index: 2147483647;
-	background-image: url(/client-assets/oneko.gif);
+	background-image: var(--oneko-image, url(/client-assets/oneko.gif));
 }
 </style>

@@ -4,21 +4,25 @@ stages:
 
 testCommit:
   stage: test
-  image: node:latest
+  image: node:iron
   services:
     - postgres:15
     - redis
   variables:
     POSTGRES_PASSWORD: ci
   script:
-    - apt-get update && apt-get install -y git wget curl build-essential python3 
+    - apt-get update && apt-get install -y git wget curl build-essential python3 ffmpeg
     - cp .config/ci.yml .config/default.yml
+    - cp .config/ci.yml .config/test.yml
     - corepack enable
     - corepack prepare pnpm@latest --activate
     - git submodule update --init
     - pnpm install --frozen-lockfile
     - pnpm run build
     - pnpm run migrate
+    - pnpm run --filter='!megalodon' --workspace-concurrency=1 test
+    - pnpm run --filter=backend lint
+    - pnpm run --filter=frontend eslint
   cache:
     key: test
     policy: pull-push
@@ -55,6 +59,8 @@ getImageTag:
   only:
     - stable
     - develop
+    - tags
+
 buildDocker:
   stage: deploy
   needs:
@@ -78,6 +84,8 @@ buildDocker:
   only:
     - stable
     - develop
+    - tags
+
 mergeManifests:
   stage: deploy
   needs:
@@ -103,3 +111,4 @@ mergeManifests:
   only:
     - stable
     - develop
+    - tags

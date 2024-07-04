@@ -26,7 +26,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkButton inline @click="setLicenseBulk">Set License</MkButton>
 						<MkButton inline danger @click="delBulk">Delete</MkButton>
 					</div>
-					<MkPagination ref="emojisPaginationComponent" :pagination="pagination">
+					<MkPagination ref="emojisPaginationComponent" :pagination="pagination" :displayLimit="50">
 						<template #empty><span>{{ i18n.ts.noCustomEmojis }}</span></template>
 						<template #default="{items}">
 							<div class="ldhfsamy">
@@ -52,7 +52,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<template #label>{{ i18n.ts.host }}</template>
 						</MkInput>
 					</FormSplit>
-					<MkPagination :pagination="remotePagination">
+					<MkPagination :pagination="remotePagination" :displayLimit="50">
 						<template #empty><span>{{ i18n.ts.noCustomEmojis }}</span></template>
 						<template #default="{items}">
 							<div class="ldhfsamy">
@@ -98,6 +98,9 @@ const selectedEmojis = ref<string[]>([]);
 const pagination = {
 	endpoint: 'admin/emoji/list' as const,
 	limit: 30,
+	offsetMode: computed(() => (
+		(query.value && query.value !== '') ? true : false
+	)),
 	params: computed(() => ({
 		query: (query.value && query.value !== '') ? query.value : null,
 	})),
@@ -352,6 +355,7 @@ definePageMetadata(() => ({
 				> .img {
 					width: 42px;
 					height: 42px;
+					object-fit: contain;
 				}
 
 				> .body {
@@ -398,6 +402,7 @@ definePageMetadata(() => ({
 				> .img {
 					width: 32px;
 					height: 32px;
+					object-fit: contain;
 				}
 
 				> .body {

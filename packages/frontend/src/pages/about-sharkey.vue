@@ -77,16 +77,57 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<FormSection>
 					<template #label>{{ i18n.ts._aboutMisskey.projectMembers }}</template>
 					<div :class="$style.contributors" style="margin-bottom: 8px;">
-						<a href="https://activitypub.software/Marie" target="_blank" :class="$style.contributor">
-							<img src="https://activitypub.software/uploads/-/system/user/avatar/2/avatar.png?width=128" :class="$style.contributorAvatar">
-							<span :class="$style.contributorUsername">@Marie</span>
-						</a>
 						<a href="https://activitypub.software/Amelia" target="_blank" :class="$style.contributor">
 							<img src="https://activitypub.software/uploads/-/system/user/avatar/1/avatar.png?width=128" :class="$style.contributorAvatar">
 							<span :class="$style.contributorUsername">@Amelia</span>
 						</a>
+						<a href="https://activitypub.software/dakkar" target="_blank" :class="$style.contributor">
+							<img src="https://secure.gravatar.com/avatar/c71b315eed7c63ff94c42b1b3e8dbad1?s=192&d=identicon" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@dakkar</span>
+						</a>
+						<a href="https://activitypub.software/esm" target="_blank" :class="$style.contributor">
+							<img src="https://secure.gravatar.com/avatar/00fd054610e2a9dcf97a2aa661b168d0?s=192&d=identicon" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@esm</span>
+						</a>
+						<a href="https://activitypub.software/supakaity" target="_blank" :class="$style.contributor">
+							<img src="https://activitypub.software/uploads/-/system/user/avatar/65/avatar.png?width=40" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@supakaity</span>
+						</a>
+						<a href="https://activitypub.software/julia" target="_blank" :class="$style.contributor">
+							<img src="https://activitypub.software/uploads/-/system/user/avatar/41/avatar.png?width=40" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@julia</span>
+						</a>
+						<a href="https://activitypub.software/Leah" target="_blank" :class="$style.contributor">
+							<img src="https://secure.gravatar.com/avatar/3b35b921b284ccfd1fe348508f6f705b?s=80&d=identicon" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@Leah</span>
+						</a>
+						<a href="https://activitypub.software/fEmber" target="_blank" :class="$style.contributor">
+							<img src="https://secure.gravatar.com/avatar/ea0ea6451fdb74311efad369bdce018e?s=80&d=identicon" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@fEmber</span>
+						</a>
+						<a href="https://activitypub.software/tess" target="_blank" :class="$style.contributor">
+							<img src="https://activitypub.software/uploads/-/system/user/avatar/132/avatar.png?width=128" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@tess</span>
+						</a>
 					</div>
-					<template #caption><MkLink url="https://activitypub.software/TransFem-org/Sharkey/-/graphs/develop">{{ i18n.ts._aboutMisskey.allContributors }}</MkLink></template>
+					<template #description><MkLink url="https://activitypub.software/TransFem-org/Sharkey/-/graphs/develop">{{ i18n.ts._aboutMisskey.allContributors }}</MkLink></template>
+				</FormSection>
+				<FormSection>
+					<template #label>{{ i18n.ts._aboutMisskey.testers }}</template>
+					<div :class="$style.contributors" style="margin-bottom: 8px;">
+						<a href="https://antani.cyou/@lucent" target="_blank" :class="$style.contributor">
+							<img src="https://antani.cyou/proxy/avatar.webp?url=https%3A%2F%2Fantani.cyou%2Ffiles%2Fa2944119-024c-4abd-86e5-64bf0d30b26f&avatar=1" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@lucent</span>
+						</a>
+						<a href="https://karilaa.app/@karilaa" target="_blank" :class="$style.contributor">
+							<img src="https://karilaa.app/proxy/avatar.webp?url=https%3A%2F%2Fkarilaa.app%2Ffiles%2Fc366e6f9-96d8-4d3b-b996-30e0a7cb3c5a&avatar=1" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@karilaa</span>
+						</a>
+						<a href="https://thetransagenda.gay/@phoenix_fairy" target="_blank" :class="$style.contributor">
+							<img src="https://thetransagenda.gay/proxy/avatar.webp?url=https%3A%2F%2Fs3.us-east-005.backblazeb2.com%2Ftranssharkey%2Fnull%2Fd93ac6dc-2020-4b5a-bce7-84b41e97a0ac.png&avatar=1" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@phoenix_fairy</span>
+						</a>
+					</div>
 				</FormSection>
 				<FormSection>
 					<template #label>Misskey Contributors</template>
@@ -195,7 +236,7 @@ function gravity() {
 
 function iLoveMisskey() {
 	os.post({
-		initialText: 'I $[jelly ❤] #Misskey',
+		initialText: 'I $[jelly ❤] #Sharkey',
 		instant: true,
 	});
 }

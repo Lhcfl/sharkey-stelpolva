@@ -66,6 +66,7 @@ export const paramDef = {
 	properties: {
 		query: { type: 'string', nullable: true, default: null },
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+		offset: { type: 'integer', minimum: 1, nullable: true, default: null },
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
 	},
@@ -91,22 +92,23 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				//q.andWhere('emoji.name ILIKE :q', { q: `%${ sqlLikeEscape(ps.query) }%` });
 				//const emojis = await q.limit(ps.limit).getMany();
 
-				emojis = await q.orderBy('length(emoji.name)', 'ASC').getMany();
-				const queryarry = ps.query.match(/\:([a-z0-9_]*)\:/g);
+				emojis = await q.orderBy('length(emoji.name)', 'ASC').addOrderBy('id', 'DESC').getMany();
+				const queryarry = ps.query.match(/:([\p{Letter}\p{Number}\p{Mark}_+-]*):/ug);
 
 				if (queryarry) {
 					emojis = emojis.filter(emoji =>
-						queryarry.includes(`:${emoji.name}:`),
+						queryarry.includes(`:${emoji.name.normalize('NFC')}:`),
 					);
 				} else {
+					const queryNfc = ps.query!.normalize('NFC');
 					emojis = emojis.filter(emoji =>
-						emoji.name.includes(ps.query!) ||
-						emoji.aliases.some(a => a.includes(ps.query!)) ||
-						emoji.category?.includes(ps.query!));
+						emoji.name.includes(queryNfc) ||
+						emoji.aliases.some(a => a.includes(queryNfc)) ||
+						emoji.category?.includes(queryNfc));
 				}
-				emojis.splice(ps.limit + 1);
+				emojis = emojis.slice((ps.offset ?? 0), ((ps.offset ?? 0) + ps.limit));
 			} else {
-				emojis = await q.limit(ps.limit).getMany();
+				emojis = await q.take(ps.limit).skip(ps.offset ?? 0).getMany();
 			}
 
 			return this.emojiEntityService.packDetailedMany(emojis);

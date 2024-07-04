@@ -6,10 +6,11 @@
 import { URL } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
 import * as parse5 from 'parse5';
-import { Window } from 'happy-dom';
+import { Window, XMLSerializer } from 'happy-dom';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { intersperse } from '@/misc/prelude/array.js';
+import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import type { IMentionedRemoteUsers } from '@/models/Note.js';
 import { bindThis } from '@/decorators.js';
 import * as TreeAdapter from '../../node_modules/parse5/dist/tree-adapters/default.js';
@@ -32,6 +33,8 @@ export class MfmService {
 	public fromHtml(html: string, hashtagNames?: string[]): string {
 		// some AP servers like Pixelfed use br tags as well as newlines
 		html = html.replace(/<br\s?\/?>\r?\n/gi, '\n');
+
+		const normalizedHashtagNames = hashtagNames == null ? undefined : new Set<string>(hashtagNames.map(x => normalizeForSearch(x)));
 
 		const dom = parse5.parseFragment(html);
 
@@ -85,7 +88,7 @@ export class MfmService {
 					const href = node.attrs.find(x => x.name === 'href');
 
 					// ハッシュタグ
-					if (hashtagNames && href && hashtagNames.map(x => x.toLowerCase()).includes(txt.toLowerCase())) {
+					if (normalizedHashtagNames && href && normalizedHashtagNames.has(normalizeForSearch(txt))) {
 						text += txt;
 					// メンション
 					} else if (txt.startsWith('@') && !(rel && rel.value.startsWith('me '))) {
@@ -129,9 +132,18 @@ export class MfmService {
 
 				case 'h1':
 				{
-					text += '【';
+					text += '**【';
 					appendChildren(node.childNodes);
-					text += '】\n';
+					text += '】**\n';
+					break;
+				}
+
+				case 'h2':
+				case 'h3':
+				{
+					text += '**';
+					appendChildren(node.childNodes);
+					text += '**\n';
 					break;
 				}
 
@@ -200,8 +212,6 @@ export class MfmService {
 				}
 
 				case 'p':
-				case 'h2':
-				case 'h3':
 				case 'h4':
 				case 'h5':
 				case 'h6':
@@ -243,6 +253,8 @@ export class MfmService {
 		const { window } = new Window();
 
 		const doc = window.document;
+
+		const body = doc.createElement('p');
 
 		function appendChildren(children: mfm.MfmNode[], targetElement: any): void {
 			if (children) {
@@ -454,15 +466,15 @@ export class MfmService {
 			},
 		};
 
-		appendChildren(nodes, doc.body);
+		appendChildren(nodes, body);
 
-		return `<p>${doc.body.innerHTML}</p>`;
+		return new XMLSerializer().serializeToString(body);
 	}
 
-	// the toMastoHtml function was taken from Iceshrimp and written by zotan and modified by marie to work with the current MK version
+	// the toMastoApiHtml function was taken from Iceshrimp and written by zotan and modified by marie to work with the current MK version
 
 	@bindThis
-	public async toMastoHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = [], inline = false, quoteUri: string | null = null) {
+	public async toMastoApiHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = [], inline = false, quoteUri: string | null = null) {
 		if (nodes == null) {
 			return null;
 		}
@@ -478,8 +490,8 @@ export class MfmService {
 		}
 
 		const handlers: {
-            [K in mfm.MfmNode['type']]: (node: mfm.NodeType<K>) => any;
-    } = {
+			[K in mfm.MfmNode['type']]: (node: mfm.NodeType<K>) => any;
+		} = {
 			async bold(node) {
 				const el = doc.createElement('span');
 				el.textContent = '**';
@@ -637,7 +649,7 @@ export class MfmService {
 
 			search: (node) => {
 				const a = doc.createElement('a');
-				a.setAttribute('href', `https"google.com/${node.props.query}`);
+				a.setAttribute('href', `https://www.google.com/search?q=${node.props.query}`);
 				a.textContent = node.props.content;
 				return a;
 			},

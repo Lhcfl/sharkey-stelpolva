@@ -73,7 +73,7 @@ export type Paging<E extends keyof Misskey.Endpoints = keyof Misskey.Endpoints> 
 	 */
 	reversed?: boolean;
 
-	offsetMode?: boolean;
+	offsetMode?: boolean | ComputedRef<boolean>;
 
 	pageEl?: HTMLElement;
 };
@@ -240,10 +240,11 @@ const fetchMore = async (): Promise<void> => {
 	if (!more.value || fetching.value || moreFetching.value || items.value.size === 0) return;
 	moreFetching.value = true;
 	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
+	const offsetMode = props.offsetMode ? isRef(props.offsetMode) ? props.offsetMode.value : props.offsetMode : false;
 	await misskeyApi<MisskeyEntity[]>(props.pagination.endpoint, {
 		...params,
 		limit: SECOND_FETCH_LIMIT,
-		...(props.pagination.offsetMode ? {
+		...(offsetMode ? {
 			offset: offset.value,
 		} : {
 			untilId: Array.from(items.value.keys()).at(-1),
@@ -304,10 +305,11 @@ const fetchMoreAhead = async (): Promise<void> => {
 	if (!more.value || fetching.value || moreFetching.value || items.value.size === 0) return;
 	moreFetching.value = true;
 	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
+	const offsetMode = props.offsetMode ? isRef(props.offsetMode) ? props.offsetMode.value : props.offsetMode : false;
 	await misskeyApi<MisskeyEntity[]>(props.pagination.endpoint, {
 		...params,
 		limit: SECOND_FETCH_LIMIT,
-		...(props.pagination.offsetMode ? {
+		...(offsetMode ? {
 			offset: offset.value,
 		} : {
 			sinceId: Array.from(items.value.keys()).at(-1),
@@ -395,10 +397,10 @@ const prepend = (item: MisskeyEntity): void => {
  * @param newItems 新しいアイテムの配列
  */
 function unshiftItems(newItems: MisskeyEntity[]) {
-	const length = newItems.length + items.value.size;
-	items.value = new Map([...arrayToEntries(newItems), ...items.value].slice(0, props.displayLimit));
-
-	if (length >= props.displayLimit) more.value = true;
+	const prevLength = items.value.size;
+	items.value = new Map([...arrayToEntries(newItems), ...items.value].slice(0, newItems.length + props.displayLimit));
+	// if we truncated, mark that there are more values to fetch
+	if (items.value.size < prevLength) more.value = true;
 }
 
 /**
@@ -406,10 +408,10 @@ function unshiftItems(newItems: MisskeyEntity[]) {
  * @param oldItems 古いアイテムの配列
  */
 function concatItems(oldItems: MisskeyEntity[]) {
-	const length = oldItems.length + items.value.size;
-	items.value = new Map([...items.value, ...arrayToEntries(oldItems)].slice(0, props.displayLimit));
-
-	if (length >= props.displayLimit) more.value = true;
+	const prevLength = items.value.size;
+	items.value = new Map([...items.value, ...arrayToEntries(oldItems)].slice(0, oldItems.length + props.displayLimit));
+	// if we truncated, mark that there are more values to fetch
+	if (items.value.size < prevLength) more.value = true;
 }
 
 function executeQueue() {
@@ -418,7 +420,7 @@ function executeQueue() {
 }
 
 function prependQueue(newItem: MisskeyEntity) {
-	queue.value = new Map([[newItem.id, newItem], ...queue.value].slice(0, props.displayLimit) as [string, MisskeyEntity][]);
+	queue.value = new Map([[newItem.id, newItem], ...queue.value] as [string, MisskeyEntity][]);
 }
 
 /*

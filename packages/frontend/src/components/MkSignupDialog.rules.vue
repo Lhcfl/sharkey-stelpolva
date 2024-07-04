@@ -65,7 +65,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { computed, ref } from 'vue';
 import { instance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
-import sanitizeHtml from 'sanitize-html';
+import sanitizeHtml from '@/scripts/sanitize-html.js';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';

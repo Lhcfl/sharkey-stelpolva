@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { ParsedUrlQuery } from 'querystring';
 import { convertConversation, convertList, MastoConverters } from '../converters.js';
 import { getClient } from '../MastodonApiServerService.js';

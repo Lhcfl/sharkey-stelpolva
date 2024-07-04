@@ -299,7 +299,11 @@ export class NoteEditService implements OnApplicationShutdown {
 			data.visibility = 'home';
 		}
 
-		if (data.renote) {
+		if (this.isRenote(data)) {
+			if (data.renote.id === oldnote.id) {
+				throw new Error("A note can't renote itself");
+			}
+
 			switch (data.renote.visibility) {
 				case 'public':
 					// public noteは無条件にrenote可能
@@ -326,7 +330,7 @@ export class NoteEditService implements OnApplicationShutdown {
 		}
 
 		// Check blocking
-		if (data.renote && !this.isQuote(data)) {
+		if (this.isRenote(data) && !this.isQuote(data)) {
 			if (data.renote.userHost === null) {
 				if (data.renote.userId !== user.id) {
 					const blocked = await this.userBlockingService.checkBlocked(data.renote.userId, user.id);
@@ -343,7 +347,7 @@ export class NoteEditService implements OnApplicationShutdown {
 		}
 
 		// ローカルのみをRenoteしたらローカルのみにする
-		if (data.renote && data.renote.localOnly && data.channel == null) {
+		if (this.isRenote(data) && data.renote.localOnly && data.channel == null) {
 			data.localOnly = true;
 		}
 
@@ -434,11 +438,16 @@ export class NoteEditService implements OnApplicationShutdown {
 			update.lang = data.lang;
 		}
 
+		// technically we should check if the two sets of files are
+		// different, or if their descriptions have changed. In practice
+		// this is good enough.
+		const filesChanged = oldnote.fileIds?.length || data.files?.length;
+
 		const poll = await this.pollsRepository.findOneBy({ noteId: oldnote.id });
 
 		const oldPoll = poll ? { choices: poll.choices, multiple: poll.multiple, expiresAt: poll.expiresAt } : null;
 
-		if (Object.keys(update).length > 0) {
+		if (Object.keys(update).length > 0 || filesChanged) {
 			const exists = await this.noteEditRepository.findOneBy({ noteId: oldnote.id });
 
 			await this.noteEditRepository.insert({
@@ -525,6 +534,7 @@ export class NoteEditService implements OnApplicationShutdown {
 						noteVisibility: note.visibility,
 						userId: user.id,
 						userHost: user.host,
+						channelId: data.channel ? data.channel.id : null,
 					});
 
 					if (!oldnote.hasPoll) {
@@ -690,7 +700,7 @@ export class NoteEditService implements OnApplicationShutdown {
 					}
 
 					// 投稿がRenoteかつ投稿者がローカルユーザーかつRenote元の投稿の投稿者がリモートユーザーなら配送
-					if (data.renote && data.renote.userHost !== null) {
+					if (this.isRenote(data) && data.renote.userHost !== null) {
 						const u = await this.usersRepository.findOneBy({ id: data.renote.userId });
 						if (u && this.userEntityService.isRemoteUser(u)) dm.addDirectRecipe(u);
 					}
@@ -698,6 +708,24 @@ export class NoteEditService implements OnApplicationShutdown {
 					// フォロワーに配送
 					if (['public', 'home', 'followers'].includes(note.visibility)) {
 						dm.addFollowersRecipe();
+					}
+
+					if (['public', 'home'].includes(note.visibility)) {
+						// Send edit event to all users who replied to,
+						// renoted a post or reacted to a note.
+						const noteId = note.id;
+						const users = await this.usersRepository.createQueryBuilder()
+							.where(
+								'id IN (SELECT "userId" FROM note WHERE "replyId" = :noteId OR "renoteId" = :noteId UNION SELECT "userId" FROM note_reaction WHERE "noteId" = :noteId)',
+								{ noteId },
+							)
+							.andWhere('host IS NOT NULL')
+							.getMany();
+						for (const u of users) {
+							// User was verified to be remote by checking
+							// whether host IS NOT NULL in SQL query.
+							dm.addDirectRecipe(u as MiRemoteUser);
+						}
 					}
 
 					if (['public'].includes(note.visibility)) {
@@ -733,9 +761,20 @@ export class NoteEditService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private isQuote(note: Option): note is Option & { renote: MiNote } {
-		// sync with misc/is-quote.ts
-		return !!note.renote && (!!note.text || !!note.cw || (!!note.files && !!note.files.length) || !!note.poll);
+	private isRenote(note: Option): note is Option & { renote: MiNote } {
+		return note.renote != null;
+	}
+
+	@bindThis
+	private isQuote(note: Option & { renote: MiNote }): note is Option & { renote: MiNote } & (
+		{ text: string } | { cw: string } | { reply: MiNote } | { poll: IPoll } | { files: MiDriveFile[] }
+	) {
+		// NOTE: SYNC WITH misc/is-quote.ts
+		return note.text != null ||
+			note.reply != null ||
+			note.cw != null ||
+			note.poll != null ||
+			(note.files != null && note.files.length > 0);
 	}
 
 	@bindThis
@@ -784,7 +823,7 @@ export class NoteEditService implements OnApplicationShutdown {
 		const user = await this.usersRepository.findOneBy({ id: note.userId });
 		if (user == null) throw new Error('user not found');
 
-		const content = data.renote && !this.isQuote(data)
+		const content = this.isRenote(data) && !this.isQuote(data)
 			? this.apRendererService.renderAnnounce(data.renote.uri ? data.renote.uri : `${this.config.url}/notes/${data.renote.id}`, note)
 			: this.apRendererService.renderUpdate(await this.apRendererService.renderUpNote(note, false), user);
 

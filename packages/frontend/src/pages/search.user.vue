@@ -48,7 +48,7 @@ async function search() {
 
 	if (query == null || query === '') return;
 
-	if (query.startsWith('https://')) {
+	if (query.startsWith('http://') || query.startsWith('https://')) {
 		const promise = misskeyApi('ap/show', {
 			uri: query,
 		});

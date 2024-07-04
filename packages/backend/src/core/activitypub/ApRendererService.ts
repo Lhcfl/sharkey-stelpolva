@@ -29,8 +29,9 @@ import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { isNotNull } from '@/misc/is-not-null.js';
 import { IdService } from '@/core/IdService.js';
 import { MetaService } from '../MetaService.js';
-import { LdSignatureService } from './LdSignatureService.js';
+import { JsonLdService } from './JsonLdService.js';
 import { ApMfmService } from './ApMfmService.js';
+import { CONTEXT } from './misc/contexts.js';
 import type { IAccept, IActivity, IAdd, IAnnounce, IApDocument, IApEmoji, IApHashtag, IApImage, IApMention, IBlock, ICreate, IDelete, IFlag, IFollow, IKey, ILike, IMove, IObject, IPost, IQuestion, IReject, IRemove, ITombstone, IUndo, IUpdate } from './type.js';
 
 @Injectable()
@@ -60,7 +61,7 @@ export class ApRendererService {
 		private customEmojiService: CustomEmojiService,
 		private userEntityService: UserEntityService,
 		private driveFileEntityService: DriveFileEntityService,
-		private ldSignatureService: LdSignatureService,
+		private jsonLdService: JsonLdService,
 		private userKeypairService: UserKeypairService,
 		private apMfmService: ApMfmService,
 		private mfmService: MfmService,
@@ -172,6 +173,7 @@ export class ApRendererService {
 			url: this.driveFileEntityService.getPublicUrl(file),
 			name: file.comment,
 			summary: file.comment,
+			sensitive: file.isSensitive,
 		};
 	}
 
@@ -283,6 +285,7 @@ export class ApRendererService {
 				if (instance && instance.softwareName === 'mastodon') isMastodon = true;
 				if (instance && instance.softwareName === 'akkoma')	isMastodon = true;
 				if (instance && instance.softwareName === 'pleroma') isMastodon = true;
+				if (instance && instance.softwareName === 'iceshrimp.net') isMastodon = true;
 			}
 		}
 
@@ -797,57 +800,16 @@ export class ApRendererService {
 			x.id = `${this.config.url}/${randomUUID()}`;
 		}
 
-		return Object.assign({
-			'@context': [
-				'https://www.w3.org/ns/activitystreams',
-				'https://w3id.org/security/v1',
-				{
-					Key: 'sec:Key',
-					// as non-standards
-					manuallyApprovesFollowers: 'as:manuallyApprovesFollowers',
-					sensitive: 'as:sensitive',
-					Hashtag: 'as:Hashtag',
-					quoteUrl: 'as:quoteUrl',
-					fedibird: 'http://fedibird.com/ns#',
-					quoteUri: 'fedibird:quoteUri',
-					// Mastodon
-					toot: 'http://joinmastodon.org/ns#',
-					Emoji: 'toot:Emoji',
-					featured: 'toot:featured',
-					discoverable: 'toot:discoverable',
-					// schema
-					schema: 'http://schema.org#',
-					PropertyValue: 'schema:PropertyValue',
-					value: 'schema:value',
-					// Misskey
-					misskey: 'https://misskey-hub.net/ns#',
-					'_misskey_content': 'misskey:_misskey_content',
-					'_misskey_quote': 'misskey:_misskey_quote',
-					'_misskey_reaction': 'misskey:_misskey_reaction',
-					'_misskey_votes': 'misskey:_misskey_votes',
-					'_misskey_summary': 'misskey:_misskey_summary',
-					'isCat': 'misskey:isCat',
-					// Firefish
-					firefish: 'https://joinfirefish.org/ns#',
-					speakAsCat: 'firefish:speakAsCat',
-					// Sharkey
-					sharkey: 'https://joinsharkey.org/ns#',
-					backgroundUrl: 'sharkey:backgroundUrl',
-					listenbrainz: 'sharkey:listenbrainz',
-					// vcard
-					vcard: 'http://www.w3.org/2006/vcard/ns#',
-				},
-			],
-		}, x as T & { id: string });
+		return Object.assign({ '@context': CONTEXT }, x as T & { id: string });
 	}
 
 	@bindThis
 	public async attachLdSignature(activity: any, user: { id: MiUser['id']; host: null; }): Promise<IActivity> {
 		const keypair = await this.userKeypairService.getUserKeypair(user.id);
 
-		const ldSignature = this.ldSignatureService.use();
-		ldSignature.debug = false;
-		activity = await ldSignature.signRsaSignature2017(activity, keypair.privateKey, `${this.config.url}/users/${user.id}#main-key`);
+		const jsonLd = this.jsonLdService.use();
+		jsonLd.debug = false;
+		activity = await jsonLd.signRsaSignature2017(activity, keypair.privateKey, `${this.config.url}/users/${user.id}#main-key`);
 
 		return activity;
 	}

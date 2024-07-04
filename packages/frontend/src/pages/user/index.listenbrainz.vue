@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: amelia and other Sharkey contributors
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <template>
 	<MkContainer :foldable="true">
 		<template #header

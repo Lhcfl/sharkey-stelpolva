@@ -41,6 +41,13 @@
 	--thread-width: 2px;
 
 	//--ad: rgb(255 169 0 / 10%);
+	--eventFollow: #36aed2;
+	--eventRenote: #36d298;
+	--eventReply: #007aff;
+	--eventReactionHeart: #dd2e44;
+	--eventReaction: #e99a0b;
+	--eventAchievement: #cb9a11;
+	--eventOther: #88a6b7;
 }
 
 html.radius-misskey {
@@ -458,12 +465,13 @@ rt {
 	border-radius: 10px;
 
 	--bg: #F1E8DC;
-	--panel: #fff;
 	--fg: #693410;
-	--switchOffBg: rgba(0, 0, 0, 0.1);
-	--switchOffFg: rgb(255, 255, 255);
-	--switchOnBg: var(--accent);
-	--switchOnFg: rgb(255, 255, 255);
+}
+
+html[data-color-mode=dark] ._woodenFrame {
+	--bg: #1d0c02;
+	--fg: #F1E8DC;
+	--panel: #192320;
 }
 
 ._woodenFrameH {
@@ -556,6 +564,8 @@ rt {
 }
 
 // MFM -----------------------------
+
+bdi.block { display: block }
 
 ._mfm_blur_ {
 	filter: blur(6px);
@@ -697,4 +707,13 @@ rt {
 @keyframes mfm-rainbow {
 	0% { filter: hue-rotate(0deg) contrast(150%) saturate(150%); }
 	100% { filter: hue-rotate(360deg) contrast(150%) saturate(150%); }
+}
+
+@keyframes mfm-fade {
+	0% {
+	  opacity: 0;
+	}
+	100% {
+	  opacity: 1;
+	}
 }

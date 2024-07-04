@@ -58,7 +58,6 @@ export const permissions = [
 	'read:admin:server-info',
 	'read:admin:show-moderation-log',
 	'read:admin:show-user',
-	'read:admin:show-users',
 	'write:admin:suspend-user',
 	'write:admin:approve-user',
 	'write:admin:nsfw-user',

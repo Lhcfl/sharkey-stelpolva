@@ -44,7 +44,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkInput>
 				</div>
 
-				<MkPagination v-slot="{items}" ref="paginationComponent" :pagination="pagination">
+				<MkPagination v-slot="{items}" ref="paginationComponent" :pagination="pagination" :displayLimit="50">
 					<div :class="$style.users">
 						<MkA v-for="user in items" :key="user.id" v-tooltip.mfm="`Last posted: ${dateString(user.updatedAt)}`" :class="$style.user" :to="`/admin/user/${user.id}`">
 							<MkUserCardMini :user="user"/>
@@ -64,7 +64,7 @@ import MkInput from '@/components/MkInput.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import * as os from '@/os.js';
-import { lookupUser } from '@/scripts/lookup-user.js';
+import { lookupUser } from '@/scripts/admin-lookup.js';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';

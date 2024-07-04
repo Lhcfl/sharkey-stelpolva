@@ -238,7 +238,7 @@ function exec() {
 			return;
 		}
 
-		emojis.value = searchEmoji(props.q.toLowerCase(), emojiDb.value);
+		emojis.value = searchEmoji(props.q.normalize('NFC').toLowerCase(), emojiDb.value);
 	} else if (props.type === 'mfmTag') {
 		if (!props.q || props.q === '') {
 			mfmTags.value = MFM_TAGS;

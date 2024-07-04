@@ -1,38 +1,36 @@
 # Contribution guide
-We're glad you're interested in contributing Misskey! In this document you will find the information you need to contribute to the project.
-
-> **Note**
-> This project uses Japanese as its major language, **but you do not need to translate and write the Issues/PRs in Japanese.**
-> Also, you might receive comments on your Issue/PR in Japanese, but you do not need to reply to them in Japanese as well.\
-> The accuracy of machine translation into Japanese is not high, so it will be easier for us to understand if you write it in the original language.
-> It will also allow the reader to use the translation tool of their preference if necessary.
+We're glad you're interested in contributing to Sharkey! In this document you will find the information you need to contribute to the project.
 
 ## Roadmap
-See [ROADMAP.md](./ROADMAP.md)
+See [ROADMAP.md](./ROADMAP.md) for the upstream Misskey roadmap.
 
 ## Issues
 Before creating an issue, please check the following:
 - To avoid duplication, please search for similar issues before creating a new issue.
 - Do not use Issues to ask questions or troubleshooting.
 	- Issues should only be used to feature requests, suggestions, and bug tracking.
-	- Please ask questions or troubleshooting in [GitHub Discussions](https://github.com/misskey-dev/misskey/discussions) or [Discord](https://discord.gg/Wp8gVStHW3).
+	- Please ask questions or troubleshooting in [Discord](https://discord.gg/6VgKmEqHNk).
 
 > **Warning**
 > Do not close issues that are about to be resolved. It should remain open until a commit that actually resolves it is merged.
 
 ## Before implementation
-When you want to add a feature or fix a bug, **first have the design and policy reviewed in an Issue** (if it is not there, please make one). Without this step, there is a high possibility that the PR will not be merged even if it is implemented.
+When you want to add a feature or fix a bug, *please open an issue*,
+don't just start writing code. We may suggest different approaches, or
+show that the "bug" is actually intended behaviour (and offer
+work-arounds), or maybe we won't be able to merge your new feature
+because it would make it too hard to incorporate future changes from
+Misskey. Each of these examples have actually happened!
 
-At this point, you also need to clarify the goals of the PR you will create, and make sure that the other members of the team are aware of them.
-PRs that do not have a clear set of do's and don'ts tend to be bloated and difficult to review.
+On the other hand, it's very likely that we'll tell you "go
+ahead!". We try our best to incorporate improvements from our users!
 
 Also, when you start implementation, assign yourself to the Issue (if you cannot do it yourself, ask another member to assign you). By expressing your intention to work the Issue, you can prevent conflicts in the work.
 
 ## Well-known branches
-- **`master`** branch is tracking the latest release and used for production purposes.
+- **`stable`** branch is tracking the latest release and used for production purposes.
 - **`develop`** branch is where we work for the next release.
 	- When you create a PR, basically target it to this branch.
-- **`l10n_develop`** branch is reserved for localization management.
 
 ## Creating a PR
 Thank you for your PR! Before creating a PR, please check the following:
@@ -40,7 +38,7 @@ Thank you for your PR! Before creating a PR, please check the following:
   - `fix` / `refactor` / `feat` / `enhance` / `perf` / `chore` etc
   - Also, make sure that the granularity of this PR is appropriate. Please do not include more than one type of change or interest in a single PR.
 - If there is an Issue which will be resolved by this PR, please include a reference to the Issue in the text.
-- Please add the summary of the changes to [`CHANGELOG.md`](/CHANGELOG.md). However, this is not necessary for changes that do not affect the users, such as refactoring.
+- Please add the summary of the changes to [`CHANGELOG.md`](CHANGELOG.md). However, this is not necessary for changes that do not affect the users, such as refactoring.
 - Check if there are any documents that need to be created or updated due to this change.
 - If you have added a feature or fixed a bug, please add a test case if possible.
 - Please make sure that tests and Lint are passed in advance.
@@ -66,26 +64,19 @@ Be willing to comment on the good points and not just the things you want fixed 
 	- Are there any omissions or gaps?
 	- Does it check for anomalies?
 
-## Deploy
-The `/deploy` command by issue comment can be used to deploy the contents of a PR to the preview environment.
-```
-/deploy sha=<commit hash>
-```
-An actual domain will be assigned so you can test the federation.
-
 ## Merge
 
 ## Release
 ### Release Instructions
-1. Commit version changes in the `develop` branch ([package.json](https://github.com/misskey-dev/misskey/blob/develop/package.json))
+1. Commit version changes in the `develop` branch ([package.json](https://activitypub.software/TransFem-org/Sharkey/-/blob/develop/package.json))
 2. Create a release PR.
-	- Into `master` from `develop` branch.
+	- Into `stable` from `develop` branch.
 	- The title must be in the format `Release: x.y.z`.
 		- `x.y.z` is the new version you are trying to release.
 3. Deploy and perform a simple QA check. Also verify that the tests passed.
 4. Merge it. (Do not squash commit)
-5. Create a [release of GitHub](https://github.com/misskey-dev/misskey/releases)
-	- The target branch must be `master`
+5. Create a [release](https://activitypub.software/TransFem-org/Sharkey/-/releases)
+	- The target branch must be `stable`
 	- The tag name must be the version
 
 > **Note**
@@ -156,7 +147,7 @@ pnpm dev
 ```
 
 ## Testing
-- Test codes are located in [`/packages/backend/test`](/packages/backend/test).
+- Test codes are located in [`/packages/backend/test`](packages/backend/test).
 
 ### Run test
 Create a config file.
@@ -188,8 +179,8 @@ TODO
 - `MISSKEY_WEBFINGER_USE_HTTP`: If it's set true, WebFinger requests will be http instead of https, useful for testing federation between servers in localhost. NEVER USE IN PRODUCTION.
 
 ## Continuous integration
-Misskey uses GitHub Actions for executing automated tests.
-Configuration files are located in [`/.github/workflows`](/.github/workflows).
+Sharkey uses GitLab CI for executing automated tests.
+Configuration files are located in [`/.gitlab-ci.yml`](.gitlab-ci.yml).
 
 ## Vue
 Misskey uses Vue(v3) as its front-end framework.
@@ -315,6 +306,98 @@ export const handlers = [
 ```
 
 Don't forget to re-run the `.storybook/generate.js` script after adding, editing, or removing the above files.
+
+## Nest
+
+### Nest Service Circular dependency / Nestでサービスの循環参照でエラーが起きた場合
+
+#### forwardRef
+まずは簡単に`forwardRef`を試してみる
+
+```typescript
+export class FooService {
+	constructor(
+		@Inject(forwardRef(() => BarService))
+		private barService: BarService
+	) {
+	}
+}
+```
+
+#### OnModuleInit
+できなければ`OnModuleInit`を使う
+
+```typescript
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { BarService } from '@/core/BarService';
+
+@Injectable()
+export class FooService implements OnModuleInit {
+	private barService: BarService // constructorから移動してくる
+
+	constructor(
+		private moduleRef: ModuleRef,
+	) {
+	}
+
+	async onModuleInit() {
+		this.barService = this.moduleRef.get(BarService.name);
+	}
+
+	public async niceMethod() {
+		return await this.barService.incredibleMethod({ hoge: 'fuga' });
+	}
+}
+```
+
+##### Service Unit Test
+テストで`onModuleInit`を呼び出す必要がある
+
+```typescript
+// import ...
+
+describe('test', () => {
+	let app: TestingModule;
+	let fooService: FooService; // for test case
+	let barService: BarService; // for test case
+
+	beforeEach(async () => {
+		app = await Test.createTestingModule({
+			imports: ...,
+			providers: [
+				FooService,
+				{ // mockする (mockは必須ではないかもしれない)
+					provide: BarService,
+					useFactory: () => ({
+						incredibleMethod: jest.fn(),
+					}),
+				},
+				{ // Provideにする
+					provide: BarService.name,
+					useExisting: BarService,
+				},
+			],
+		})
+			.useMocker(...
+			.compile();
+	
+		fooService = app.get<FooService>(FooService);
+		barService = app.get<BarService>(BarService) as jest.Mocked<BarService>;
+
+		// onModuleInitを実行する
+		await fooService.onModuleInit();
+	});
+
+	test('nice', () => {
+		await fooService.niceMethod();
+
+		expect(barService.incredibleMethod).toHaveBeenCalled();
+		expect(barService.incredibleMethod.mock.lastCall![0])
+			.toEqual({ hoge: 'fuga' });
+	});
+})
+```
 
 ## Notes
 
@@ -455,3 +538,48 @@ marginはそのコンポーネントを使う側が設定する
 
 ### indexというファイル名を使うな
 ESMではディレクトリインポートは廃止されているのと、ディレクトリインポートせずともファイル名が index だと何故か一部のライブラリ？でディレクトリインポートだと見做されてエラーになる
+
+## Merging from Misskey into Sharkey
+
+Make sure you have both remotes in the same clone (`git remote add misskey
+https://github.com/misskey-dev/misskey.git`), then:
+
+	git remote update
+	git checkout develop   # this is Sharkey's develop
+	git checkout -m merge/$(date +%Y-%m-%d)   # or whatever
+	git merge --no-ff misskey/develop
+
+fix conflicts and *commit*! (conflicts in `pnpm-lock.yaml` can usually
+be fixed by running `pnpm install`, it detects conflict markers and
+seems to do a decent job)
+
+*after that commit*, do all the extra work, on the same branch:
+
+* copy all changes:
+  * from `NoteCreateService.create` to `NoteCreateService.import` (and
+    vice versa if `git` got confused!)
+  * from `NoteCreateService` to `NoteEditService`
+  * from `ApNoteService.createNote` to `ApNoteService.updateNote`
+  * from `endoints/notes/create.ts` to `endoints/notes/edit.ts`
+  * from `MkNote*` to `SkNote*` (if sensible)
+  * from the global timeline to the bubble timeline
+    (`packages/backend/src/server/api/stream/channels/global-timeline.ts`,
+    `packages/backend/src/server/api/stream/channels/bubble-timeline.ts`,
+    `packages/frontend/src/components/MkTimeline.vue`,
+    `packages/frontend/src/pages/timeline.vue`,
+    `packages/frontend/src/ui/deck/tl-column.vue`,
+    `packages/frontend/src/widgets/WidgetTimeline.vue`)
+* make sure there aren't any new `ti-*` classes (Tabler Icons), and
+  replace them with appropriate `ph-*` ones (Phosphor Icons).
+  `git grep '["'\'']ti[ -](?!fw)'` should show you what to change.
+  NOTE: `ti-fw` is a special class that's defined by Misskey, leave it
+  alone
+* re-generate `misskey-js`: `pnpm build-misskey-js-with-types`
+* run tests `pnpm test` and fix as much as you can
+  * right now `megalodon` doesn't pass its tests, you probably need to
+    run `pnpm --filter=backend test` (requires a test database, [see
+    above](#testing)) and `pnpm --filter=frontend test`
+* run lint `pnpm --filter=backend lint` + `pnpm --filter=frontend
+  eslint` and fix as much as you can
+
+Then push and open a Merge Request.

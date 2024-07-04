@@ -56,6 +56,7 @@ const { t, ts } = i18n;
 
 const defaultStoreSaveKeys: (keyof typeof defaultStore['state'])[] = [
 	'collapseRenotes',
+	'collapseNotesRepliedTo',
 	'menu',
 	'visibility',
 	'localOnly',
@@ -70,8 +71,10 @@ const defaultStoreSaveKeys: (keyof typeof defaultStore['state'])[] = [
 	'animation',
 	'animatedMfm',
 	'advancedMfm',
+	'showReactionsCount',
 	'loadRawImages',
 	'warnMissingAltText',
+	'enableFaviconNotificationDot',
 	'imageNewTab',
 	'dataSaver',
 	'disableShowingAnimatedImages',
@@ -139,6 +142,7 @@ type Profile = {
 		hot: Record<keyof typeof defaultStoreSaveKeys, unknown>;
 		cold: Record<keyof typeof coldDeviceStorageSaveKeys, unknown>;
 		fontSize: string | null;
+		lang: string | null;
 		cornerRadius: string | null;
 		useSystemFont: 't' | null;
 		wallpaper: string | null;
@@ -197,6 +201,7 @@ function getSettings(): Profile['settings'] {
 		hot,
 		cold,
 		fontSize: miLocalStorage.getItem('fontSize'),
+		lang: miLocalStorage.getItem('lang'),
 		cornerRadius: miLocalStorage.getItem('cornerRadius'),
 		useSystemFont: miLocalStorage.getItem('useSystemFont') as 't' | null,
 		wallpaper: miLocalStorage.getItem('wallpaper'),
@@ -310,6 +315,13 @@ async function applyProfile(id: string): Promise<void> {
 		miLocalStorage.setItem('fontSize', settings.fontSize);
 	} else {
 		miLocalStorage.removeItem('fontSize');
+	}
+
+	// lang
+	if (settings.lang) {
+		miLocalStorage.setItem('lang', settings.lang);
+	} else {
+		miLocalStorage.removeItem('lang');
 	}
 
 	// cornerRadius

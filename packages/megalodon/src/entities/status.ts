@@ -19,6 +19,7 @@ namespace Entity {
     content: string
     plain_content?: string | null
     created_at: string
+    edited_at: string | null
     emojis: Emoji[]
     replies_count: number
     reblogs_count: number
@@ -38,7 +39,7 @@ namespace Entity {
     language: string | null
     pinned: boolean | null
     emoji_reactions: Array<Reaction>
-    quote: Status | boolean
+    quote: Status | boolean | null
     bookmarked: boolean
   }
 

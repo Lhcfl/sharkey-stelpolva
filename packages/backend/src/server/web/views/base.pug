@@ -40,10 +40,9 @@ html
 		link(rel='prefetch' href=infoImageUrl)
 		link(rel='prefetch' href=notFoundImageUrl)
 		//- https://github.com/misskey-dev/misskey/issues/9842
-		link(rel='stylesheet' href='/assets/phosphor-icons/bold/style.css')
-		link(rel='stylesheet' href='/static-assets/fonts/sharkey-icons/style.css')
+		link(rel='stylesheet' href=`/assets/phosphor-icons/bold/style.css?version=${version}`)
+		link(rel='stylesheet' href=`/static-assets/fonts/sharkey-icons/style.css?version=${version}`)
 		link(rel='modulepreload' href=`/vite/${clientEntry.file}`)
-		script(src='/client-assets/libopenmpt.js')
 
 		if !config.clientManifestExists
 				script(type="module" src="/vite/@vite/client")
@@ -55,6 +54,9 @@ html
 		title
 			block title
 				= title || 'Sharkey'
+
+		if noindex
+			meta(name='robots' content='noindex')
 
 		block desc
 			meta(name='description' content= desc || '✨🌎✨ A interplanetary communication platform ✨🚀✨')
@@ -73,7 +75,6 @@ html
 		script.
 			var VERSION = "#{version}";
 			var CLIENT_ENTRY = "#{clientEntry.file}";
-			window.libopenmpt = window.Module;
 
 		script(type='application/json' id='misskey_meta' data-generated-at=now)
 			!= metaJson
