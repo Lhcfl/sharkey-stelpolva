@@ -831,6 +831,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			if (data.reply) {
 				this.globalEventService.publishNoteStream(data.reply.id, 'replied', {
 					id: note.id,
+					userId: user.id,
 				});
 				// 通知
 				if (data.reply.userHost === null) {
