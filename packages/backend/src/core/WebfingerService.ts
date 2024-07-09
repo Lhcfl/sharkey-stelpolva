@@ -5,7 +5,7 @@
 
 import { URL } from 'node:url';
 import { Injectable } from '@nestjs/common';
-import { query as urlQuery } from '@/misc/prelude/url.js';
+import { XMLParser } from 'fast-xml-parser';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
 
@@ -31,25 +31,76 @@ export class WebfingerService {
 
 	@bindThis
 	public async webfinger(query: string): Promise<IWebFinger> {
-		const url = this.genUrl(query);
+		const hostMetaUrl = this.queryToHostMetaUrl(query);
+		const template = await this.fetchHostMeta(hostMetaUrl) ?? this.queryToWebFingerTemplate(query);
+		const url = this.genUrl(query, template);
 
 		return await this.httpRequestService.getJson<IWebFinger>(url, 'application/jrd+json, application/json');
 	}
 
 	@bindThis
-	private genUrl(query: string): string {
+	private genUrl(query: string, template: string): string {
+		if (template.indexOf('{uri}') < 0) throw new Error(`Invalid webFingerUrl: ${template}`);
+
+		if (query.match(/^https?:\/\//)) {
+			return template.replace('{uri}', encodeURIComponent(query));
+		}
+
+		const m = query.match(/^([^@]+)@(.*)/);
+		if (m) {
+			return template.replace('{uri}', encodeURIComponent(`acct:${query}`));
+		}
+
+		throw new Error(`Invalid query (${query})`);
+	}
+
+	@bindThis
+	private queryToWebFingerTemplate(query: string): string {
+		if (query.match(/^https?:\/\//)) {
+			const u = new URL(query);
+			return `${u.protocol}//${u.hostname}/.well-known/webfinger?resource={uri}`;
+		}
+
+		const m = query.match(/^([^@]+)@(.*)/);
+		if (m) {
+			const hostname = m[2];
+			return `https://${hostname}/.well-known/webfinger?resource={uri}`;
+		}
+
+		throw new Error(`Invalid query (${query})`);
+	}
+
+	@bindThis
+	private queryToHostMetaUrl(query: string): string {
 		if (query.match(urlRegex)) {
 			const u = new URL(query);
-			return `${u.protocol}//${u.hostname}/.well-known/webfinger?` + urlQuery({ resource: query });
+			return `${u.protocol}//${u.hostname}/.well-known/host-meta`;
 		}
 
 		const m = query.match(mRegex);
 		if (m) {
 			const hostname = m[2];
-			const useHttp = process.env.MISSKEY_WEBFINGER_USE_HTTP && process.env.MISSKEY_WEBFINGER_USE_HTTP.toLowerCase() === 'true';
-			return `http${useHttp ? '' : 's'}://${hostname}/.well-known/webfinger?${urlQuery({ resource: `acct:${query}` })}`;
+			return `https://${hostname}/.well-known/host-meta`;
 		}
 
 		throw new Error(`Invalid query (${query})`);
+	}
+
+	@bindThis
+	private async fetchHostMeta(url: string): Promise<string | null> {
+		try {
+			const res = await this.httpRequestService.getHtml(url, 'application/xrd+xml');
+			const options = {
+				ignoreAttributes: false,
+				isArray: (_name: string, jpath: string) => jpath === 'XRD.Link',
+			};
+			const parser = new XMLParser(options);
+			const hostMeta = parser.parse(res);
+			const template = (hostMeta['XRD']['Link'] as Array<any>).filter(p => p['@_rel'] === 'lrdd')[0]['@_template'];
+			return template.indexOf('{uri}') < 0 ? null : template;
+		} catch (err) {
+			console.error(`error while request host-meta for ${url}`);
+			return null;
+		}
 	}
 }
