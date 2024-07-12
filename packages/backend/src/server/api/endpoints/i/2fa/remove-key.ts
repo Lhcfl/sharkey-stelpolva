@@ -13,9 +13,16 @@ import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
+import ms from 'ms';
 
 export const meta = {
 	requireCredential: true,
+
+	limit: {
+		duration: ms('1hour'),
+		max: 10,
+		minInterval: ms('1sec'),
+	},
 
 	secure: true,
 
