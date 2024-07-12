@@ -1304,8 +1304,8 @@ alwaysConfirmFollow: "Always confirm when following"
 inquiry: "Contact"
 _delivery:
   status: "Delivery status"
-  stop: "Suspended"
-  resume: "Delivery resume"
+  stop: "Suspend delivery"
+  resume: "Resume delivery"
   _type:
     none: "Publishing"
     manuallySuspended: "Manually suspended"
