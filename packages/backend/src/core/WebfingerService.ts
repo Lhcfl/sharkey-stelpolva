@@ -42,11 +42,11 @@ export class WebfingerService {
 	private genUrl(query: string, template: string): string {
 		if (template.indexOf('{uri}') < 0) throw new Error(`Invalid webFingerUrl: ${template}`);
 
-		if (query.match(/^https?:\/\//)) {
+		if (query.match(urlRegex)) {
 			return template.replace('{uri}', encodeURIComponent(query));
 		}
 
-		const m = query.match(/^([^@]+)@(.*)/);
+		const m = query.match(mRegex);
 		if (m) {
 			return template.replace('{uri}', encodeURIComponent(`acct:${query}`));
 		}
@@ -56,12 +56,13 @@ export class WebfingerService {
 
 	@bindThis
 	private queryToWebFingerTemplate(query: string): string {
-		if (query.match(/^https?:\/\//)) {
+		if (query.match(urlRegex)) {
 			const u = new URL(query);
-			return `${u.protocol}//${u.hostname}/.well-known/webfinger?resource={uri}`;
+			const useHttp = process.env.MISSKEY_WEBFINGER_USE_HTTP && process.env.MISSKEY_WEBFINGER_USE_HTTP.toLowerCase() === 'true';
+			return `${useHttp ? 'http' : u.protocol}//${u.hostname}/.well-known/webfinger?resource={uri}`;
 		}
 
-		const m = query.match(/^([^@]+)@(.*)/);
+		const m = query.match(mRegex);
 		if (m) {
 			const hostname = m[2];
 			return `https://${hostname}/.well-known/webfinger?resource={uri}`;
@@ -74,7 +75,8 @@ export class WebfingerService {
 	private queryToHostMetaUrl(query: string): string {
 		if (query.match(urlRegex)) {
 			const u = new URL(query);
-			return `${u.protocol}//${u.hostname}/.well-known/host-meta`;
+			const useHttp = process.env.MISSKEY_WEBFINGER_USE_HTTP && process.env.MISSKEY_WEBFINGER_USE_HTTP.toLowerCase() === 'true';
+			return `${useHttp ? 'http' : u.protocol}//${u.hostname}/.well-known/host-meta`;
 		}
 
 		const m = query.match(mRegex);
