@@ -56,16 +56,16 @@ export class WebfingerService {
 
 	@bindThis
 	private queryToWebFingerTemplate(query: string): string {
+		const useHttp = process.env.MISSKEY_WEBFINGER_USE_HTTP && process.env.MISSKEY_WEBFINGER_USE_HTTP.toLowerCase() === 'true';
 		if (query.match(urlRegex)) {
 			const u = new URL(query);
-			const useHttp = process.env.MISSKEY_WEBFINGER_USE_HTTP && process.env.MISSKEY_WEBFINGER_USE_HTTP.toLowerCase() === 'true';
 			return `${useHttp ? 'http' : u.protocol}//${u.hostname}/.well-known/webfinger?resource={uri}`;
 		}
 
 		const m = query.match(mRegex);
 		if (m) {
 			const hostname = m[2];
-			return `https://${hostname}/.well-known/webfinger?resource={uri}`;
+			return `http${useHttp ? '' : 's'}//${hostname}/.well-known/webfinger?resource={uri}`;
 		}
 
 		throw new Error(`Invalid query (${query})`);
