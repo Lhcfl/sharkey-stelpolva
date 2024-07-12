@@ -22,6 +22,8 @@ export type IWebFinger = {
 const urlRegex = /^https?:\/\//;
 const mRegex = /^([^@]+)@(.*)/;
 
+const defaultProtocol = process.env.MISSKEY_WEBFINGER_USE_HTTP && process.env.MISSKEY_WEBFINGER_USE_HTTP.toLowerCase() === 'true' ? 'http' : 'https';
+
 @Injectable()
 export class WebfingerService {
 	constructor(
@@ -56,16 +58,15 @@ export class WebfingerService {
 
 	@bindThis
 	private queryToWebFingerTemplate(query: string): string {
-		const useHttp = process.env.MISSKEY_WEBFINGER_USE_HTTP && process.env.MISSKEY_WEBFINGER_USE_HTTP.toLowerCase() === 'true';
 		if (query.match(urlRegex)) {
 			const u = new URL(query);
-			return `${useHttp ? 'http' : u.protocol}//${u.hostname}/.well-known/webfinger?resource={uri}`;
+			return `${u.protocol}//${u.hostname}/.well-known/webfinger?resource={uri}`;
 		}
 
 		const m = query.match(mRegex);
 		if (m) {
 			const hostname = m[2];
-			return `http${useHttp ? '' : 's'}//${hostname}/.well-known/webfinger?resource={uri}`;
+			return `${defaultProtocol}//${hostname}/.well-known/webfinger?resource={uri}`;
 		}
 
 		throw new Error(`Invalid query (${query})`);
@@ -75,14 +76,13 @@ export class WebfingerService {
 	private queryToHostMetaUrl(query: string): string {
 		if (query.match(urlRegex)) {
 			const u = new URL(query);
-			const useHttp = process.env.MISSKEY_WEBFINGER_USE_HTTP && process.env.MISSKEY_WEBFINGER_USE_HTTP.toLowerCase() === 'true';
-			return `${useHttp ? 'http' : u.protocol}//${u.hostname}/.well-known/host-meta`;
+			return `${u.protocol}//${u.hostname}/.well-known/host-meta`;
 		}
 
 		const m = query.match(mRegex);
 		if (m) {
 			const hostname = m[2];
-			return `https://${hostname}/.well-known/host-meta`;
+			return `${defaultProtocol}://${hostname}/.well-known/host-meta`;
 		}
 
 		throw new Error(`Invalid query (${query})`);
