@@ -22,7 +22,7 @@ export type IWebFinger = {
 const urlRegex = /^https?:\/\//;
 const mRegex = /^([^@]+)@(.*)/;
 
-const defaultProtocol = process.env.MISSKEY_WEBFINGER_USE_HTTP && process.env.MISSKEY_WEBFINGER_USE_HTTP.toLowerCase() === 'true' ? 'http' : 'https';
+const defaultProtocol = process.env.MISSKEY_WEBFINGER_USE_HTTP?.toLowerCase() === 'true' ? 'http' : 'https';
 
 @Injectable()
 export class WebfingerService {
