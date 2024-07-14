@@ -34,7 +34,7 @@ export class WebfingerService {
 	@bindThis
 	public async webfinger(query: string): Promise<IWebFinger> {
 		const hostMetaUrl = this.queryToHostMetaUrl(query);
-		const template = await this.fetchHostMeta(hostMetaUrl) ?? this.queryToWebFingerTemplate(query);
+		const template = await this.fetchWebFingerTemplateFromHostMeta(hostMetaUrl) ?? this.queryToWebFingerTemplate(query);
 		const url = this.genUrl(query, template);
 
 		return await this.httpRequestService.getJson<IWebFinger>(url, 'application/jrd+json, application/json');
@@ -89,7 +89,7 @@ export class WebfingerService {
 	}
 
 	@bindThis
-	private async fetchHostMeta(url: string): Promise<string | null> {
+	private async fetchWebFingerTemplateFromHostMeta(url: string): Promise<string | null> {
 		try {
 			const res = await this.httpRequestService.getHtml(url, 'application/xrd+xml');
 			const options = {
