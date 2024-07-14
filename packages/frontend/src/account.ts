@@ -293,7 +293,7 @@ export async function openAccountMenu(opts: {
 			avatar: $i,
 		}, { type: 'divider' as const }, ...(opts.includeCurrentAccount ? [createItem($i)] : []), ...accountItemPromises, {
 			type: 'parent' as const,
-			icon: 'ph-plus ph-bold ph-lg',
+			icon: 'ti ti-plus',
 			text: i18n.ts.addAccount,
 			children: [{
 				text: i18n.ts.existingAccount,
@@ -304,7 +304,7 @@ export async function openAccountMenu(opts: {
 			}],
 		}, {
 			type: 'link' as const,
-			icon: 'ph-users ph-bold ph-lg',
+			icon: 'ti ti-users',
 			text: i18n.ts.manageAccounts,
 			to: '/settings/accounts',
 		}, {

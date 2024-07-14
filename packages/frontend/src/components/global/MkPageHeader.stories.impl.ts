@@ -59,7 +59,7 @@ export const Icon = {
 		tabs: [
 			{
 				...OneTab.args.tabs[0],
-				icon: 'ph-house ph-bold ph-lg',
+				icon: 'ti ti-home',
 			},
 		],
 	},
@@ -86,17 +86,17 @@ export const SomeTabs = {
 			{
 				key: 'princess',
 				title: 'Princess',
-				icon: 'ph-crown ph-bold ph-lg',
+				icon: 'ti ti-crown',
 			},
 			{
 				key: 'fairy',
 				title: 'Fairy',
-				icon: 'ph-snowflake ph-bold ph-lg',
+				icon: 'ti ti-snowflake',
 			},
 			{
 				key: 'angel',
 				title: 'Angel',
-				icon: 'ph-feather ph-bold ph-lg',
+				icon: 'ti ti-feather',
 			},
 		],
 	},

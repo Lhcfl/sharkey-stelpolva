@@ -38,8 +38,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 										<MkA :class="$style.userItemBody" :to="`${userPage(item.user)}`">
 											<MkUserCardMini :user="item.user"/>
 										</MkA>
-										<button class="_button" :class="$style.menu" @click="showMembershipMenu(item, $event)"><i class="ph-dots-three ph-bold ph-lg"></i></button>
-										<button class="_button" :class="$style.remove" @click="removeUser(item, $event)"><i class="ph-x ph-bold ph-lg"></i></button>
+										<button class="_button" :class="$style.menu" @click="showMembershipMenu(item, $event)"><i class="ti ti-dots"></i></button>
+										<button class="_button" :class="$style.remove" @click="removeUser(item, $event)"><i class="ti ti-x"></i></button>
 									</div>
 								</div>
 							</div>
@@ -118,7 +118,7 @@ function addUser() {
 async function removeUser(item, ev) {
 	os.popupMenu([{
 		text: i18n.ts.remove,
-		icon: 'ph-x ph-bold ph-lg',
+		icon: 'ti ti-x',
 		danger: true,
 		action: async () => {
 			if (!list.value) return;
@@ -135,7 +135,7 @@ async function removeUser(item, ev) {
 async function showMembershipMenu(item, ev) {
 	os.popupMenu([{
 		text: item.withReplies ? i18n.ts.hideRepliesToOthersInTimeline : i18n.ts.showRepliesToOthersInTimeline,
-		icon: item.withReplies ? 'ph-envelope-open ph-bold ph-lg' : 'ph-envelope ph-bold ph-lg',
+		icon: item.withReplies ? 'ti ti-messages-off' : 'ti ti-messages',
 		action: async () => {
 			misskeyApi('users/lists/update-membership', {
 				listId: list.value.id,
@@ -188,7 +188,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: list.value ? list.value.name : i18n.ts.lists,
-	icon: 'ph-list ph-bold ph-lg',
+	icon: 'ti ti-list',
 }));
 </script>
 

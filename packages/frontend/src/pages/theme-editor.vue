@@ -47,7 +47,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 
 			<MkFolder :defaultOpen="false">
-				<template #icon><i class="ph-code ph-bold ph-lg"></i></template>
+				<template #icon><i class="ti ti-code"></i></template>
 				<template #label>{{ i18n.ts.editCode }}</template>
 
 				<div class="_gaps_m">
@@ -212,7 +212,7 @@ watch(theme, apply, { deep: true });
 
 const headerActions = computed(() => [{
 	asFullButton: true,
-	icon: 'ph-check ph-bold ph-lg',
+	icon: 'ti ti-check',
 	text: i18n.ts.saveAs,
 	handler: saveAs,
 }]);
@@ -221,7 +221,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.themeEditor,
-	icon: 'ph-palette ph-bold ph-lg',
+	icon: 'ti ti-palette',
 }));
 </script>
 

@@ -5,9 +5,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <MkContainer :showHeader="widgetProps.showHeader" class="mkw-bdayfollowings">
-	<template #icon><i class="ph-cake ph-bold ph-lg"></i></template>
+	<template #icon><i class="ti ti-cake"></i></template>
 	<template #header>{{ i18n.ts._widgets.birthdayFollowings }}</template>
-	<template #func="{ buttonStyleClass }"><button class="_button" :class="buttonStyleClass" @click="actualFetch()"><i class="ph-arrows-clockwise ph-bold ph-lg"></i></button></template>
+	<template #func="{ buttonStyleClass }"><button class="_button" :class="buttonStyleClass" @click="actualFetch()"><i class="ti ti-refresh"></i></button></template>
 
 	<div :class="$style.bdayFRoot">
 		<MkLoading v-if="fetching"/>

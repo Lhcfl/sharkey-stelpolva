@@ -45,7 +45,7 @@ function onClick(ev: MouseEvent) {
 			text: props.emoji,
 		}, {
 			text: i18n.ts.copy,
-			icon: 'ph-copy ph-bold ph-lg',
+			icon: 'ti ti-copy',
 			action: () => {
 				copyToClipboard(props.emoji);
 				os.success();

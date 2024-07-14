@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #label>{{ i18n.ts._role.baseRole }}</template>
 					<div class="_gaps_s">
 						<MkInput v-model="baseRoleQ" type="search">
-							<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+							<template #prefix><i class="ti ti-search"></i></template>
 						</MkInput>
 
 						<MkFolder v-if="matchQuery([i18n.ts._role._options.rateLimitFactor, 'rateLimitFactor'])">
@@ -228,7 +228,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkButton primary rounded @click="updateBaseRole">{{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
-				<MkButton primary rounded @click="create"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts._role.new }}</MkButton>
+				<MkButton primary rounded @click="create"><i class="ti ti-plus"></i> {{ i18n.ts._role.new }}</MkButton>
 				<div class="_gaps_s">
 					<MkFoldableSection>
 						<template #header>{{ i18n.ts._role.manualRoles }}</template>
@@ -299,7 +299,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.roles,
-	icon: 'ph-seal-check ph-bold ph-lg',
+	icon: 'ti ti-badges',
 }));
 </script>
 

@@ -6,24 +6,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <MkContainer :showHeader="widgetProps.showHeader" :style="`height: ${widgetProps.height}px;`" :scrollable="true" data-cy-mkw-timeline class="mkw-timeline">
 	<template #icon>
-		<i v-if="widgetProps.src === 'home'" class="ph-house ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'local'" class="ph-planet ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'social'" class="ph-rocket-launch ph-bold ph-lg"></i>
+		<i v-if="widgetProps.src === 'home'" class="ti ti-home"></i>
+		<i v-else-if="widgetProps.src === 'local'" class="ti ti-planet"></i>
+		<i v-else-if="widgetProps.src === 'social'" class="ti ti-universe"></i>
 		<i v-else-if="widgetProps.src === 'bubble'" class="ph-drop ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'global'" class="ph-globe-hemisphere-west ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'list'" class="ph-list ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'antenna'" class="ph-flying-saucer ph-bold ph-lg"></i>
+		<i v-else-if="widgetProps.src === 'global'" class="ti ti-whirl"></i>
+		<i v-else-if="widgetProps.src === 'list'" class="ti ti-list"></i>
+		<i v-else-if="widgetProps.src === 'antenna'" class="ti ti-antenna"></i>
 	</template>
 	<template #header>
 		<button class="_button" @click="choose">
 			<span>{{ widgetProps.src === 'list' ? widgetProps.list.name : widgetProps.src === 'antenna' ? widgetProps.antenna.name : i18n.ts._timelines[widgetProps.src] }}</span>
-			<i :class="menuOpened ? 'ph-caret-up ph-bold ph-lg' : 'ph-caret-down ph-bold ph-lg'" style="margin-left: 8px;"></i>
+			<i :class="menuOpened ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" style="margin-left: 8px;"></i>
 		</button>
 	</template>
 
 	<div v-if="(((widgetProps.src === 'local' || widgetProps.src === 'social') && !isLocalTimelineAvailable) || (widgetProps.src === 'bubble' && !isBubbleTimelineAvailable) || (widgetProps.src === 'global' && !isGlobalTimelineAvailable))" :class="$style.disabled">
 		<p :class="$style.disabledTitle">
-			<i class="ph-minus ph-bold ph-lg"></i>
+			<i class="ti ti-minus"></i>
 			{{ i18n.ts._disabledTimeline.title }}
 		</p>
 		<p :class="$style.disabledDescription">{{ i18n.ts._disabledTimeline.description }}</p>
@@ -103,7 +103,7 @@ const choose = async (ev) => {
 	]);
 	const antennaItems = antennas.map(antenna => ({
 		text: antenna.name,
-		icon: 'ph-flying-saucer ph-bold ph-lg',
+		icon: 'ti ti-antenna',
 		action: () => {
 			widgetProps.antenna = antenna;
 			setSrc('antenna');
@@ -111,7 +111,7 @@ const choose = async (ev) => {
 	}));
 	const listItems = lists.map(list => ({
 		text: list.name,
-		icon: 'ph-list ph-bold ph-lg',
+		icon: 'ti ti-list',
 		action: () => {
 			widgetProps.list = list;
 			setSrc('list');
@@ -119,15 +119,15 @@ const choose = async (ev) => {
 	}));
 	os.popupMenu([{
 		text: i18n.ts._timelines.home,
-		icon: 'ph-house ph-bold ph-lg',
+		icon: 'ti ti-home',
 		action: () => { setSrc('home'); },
 	}, {
 		text: i18n.ts._timelines.local,
-		icon: 'ph-planet ph-bold ph-lg',
+		icon: 'ti ti-planet',
 		action: () => { setSrc('local'); },
 	}, {
 		text: i18n.ts._timelines.social,
-		icon: 'ph-rocket-launch ph-bold ph-lg',
+		icon: 'ti ti-universe',
 		action: () => { setSrc('social'); },
 	}, {
 		text: 'Bubble',
@@ -135,7 +135,7 @@ const choose = async (ev) => {
 		action: () => { setSrc('bubble'); },
 	}, {
 		text: i18n.ts._timelines.global,
-		icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+		icon: 'ti ti-whirl',
 		action: () => { setSrc('global'); },
 	}, antennaItems.length > 0 ? { type: 'divider' } : undefined, ...antennaItems, listItems.length > 0 ? { type: 'divider' } : undefined, ...listItems], ev.currentTarget ?? ev.target).then(() => {
 		menuOpened.value = false;

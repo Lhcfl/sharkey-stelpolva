@@ -10,14 +10,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="buttons">
 			<slot name="func"></slot>
 			<button v-if="removable" class="_button" @click="remove()">
-				<i class="ph-trash ph-bold ph-lg"></i>
+				<i class="ti ti-trash"></i>
 			</button>
 			<button v-if="draggable" class="drag-handle _button">
-				<i class="ph-list ph-bold ph-lg-2"></i>
+				<i class="ti ti-menu-2"></i>
 			</button>
 			<button class="_button" @click="toggleContent(!showBody)">
-				<template v-if="showBody"><i class="ph-caret-up ph-bold ph-lg"></i></template>
-				<template v-else><i class="ph-caret-down ph-bold ph-lg"></i></template>
+				<template v-if="showBody"><i class="ti ti-chevron-up"></i></template>
+				<template v-else><i class="ti ti-chevron-down"></i></template>
 			</button>
 		</div>
 	</header>

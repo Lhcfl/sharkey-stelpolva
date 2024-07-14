@@ -115,6 +115,6 @@ onUnmounted(() => {
 
 definePageMetadata(() => ({
 	title: 'Reversi',
-	icon: 'ph-game-controller ph-bold ph-lg',
+	icon: 'ti ti-device-gamepad',
 }));
 </script>

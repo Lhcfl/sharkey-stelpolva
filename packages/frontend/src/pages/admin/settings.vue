@@ -29,14 +29,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkInput>
 
 						<MkInput v-model="maintainerEmail" type="email">
-							<template #prefix><i class="ph-envelope ph-bold ph-lg"></i></template>
+							<template #prefix><i class="ti ti-mail"></i></template>
 							<template #label>{{ i18n.ts.maintainerEmail }}</template>
 						</MkInput>
 					</FormSplit>
 
 					<MkInput v-model="repositoryUrl" type="url">
 						<template #label>{{ i18n.ts.repositoryUrl }}</template>
-						<template #prefix><i class="ph-link ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-link"></i></template>
 						<template #caption>{{ i18n.ts.repositoryUrlDescription }}</template>
 					</MkInput>
 
@@ -46,7 +46,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<MkInput v-model="impressumUrl" type="url">
 						<template #label>{{ i18n.ts.impressumUrl }}</template>
-						<template #prefix><i class="ph-link ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-link"></i></template>
 						<template #caption>{{ i18n.ts.impressumDescription }}</template>
 					</MkInput>
 
@@ -89,12 +89,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 							<template v-if="enableServiceWorker">
 								<MkInput v-model="swPublicKey">
-									<template #prefix><i class="ph-key ph-bold ph-lg"></i></template>
+									<template #prefix><i class="ti ti-key"></i></template>
 									<template #label>Public key</template>
 								</MkInput>
 
 								<MkInput v-model="swPrivateKey">
-									<template #prefix><i class="ph-key ph-bold ph-lg"></i></template>
+									<template #prefix><i class="ti ti-key"></i></template>
 									<template #label>Private key</template>
 								</MkInput>
 							</template>
@@ -201,7 +201,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template #footer>
 			<div :class="$style.footer">
 				<MkSpacer :contentMax="700" :marginMin="16" :marginMax="16">
-					<MkButton primary rounded @click="save"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
+					<MkButton primary rounded @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
 				</MkSpacer>
 			</div>
 		</template>
@@ -325,7 +325,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.general,
-	icon: 'ph-gear ph-bold ph-lg',
+	icon: 'ti ti-settings',
 }));
 </script>
 

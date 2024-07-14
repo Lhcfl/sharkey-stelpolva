@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <XColumn :column="column" :isStacked="isStacked" :menu="menu" :refresher="() => notificationsComponent.reload()">
-	<template #header><i class="ph-bell ph-bold ph-lg" style="margin-right: 8px;"></i>{{ column.name }}</template>
+	<template #header><i class="ti ti-bell" style="margin-right: 8px;"></i>{{ column.name }}</template>
 
 	<XNotifications ref="notificationsComponent" :excludeTypes="props.column.excludeTypes"/>
 </XColumn>
@@ -40,7 +40,7 @@ function func() {
 }
 
 const menu = [{
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 	text: i18n.ts.notificationSetting,
 	action: func,
 }];

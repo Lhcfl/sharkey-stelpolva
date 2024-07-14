@@ -10,9 +10,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkLoading v-if="uiPhase === 'fetching'"/>
 		<div v-else-if="uiPhase === 'confirm' && data" class="_gaps_m" :class="$style.extInstallerRoot">
 			<div :class="$style.extInstallerIconWrapper">
-				<i v-if="data.type === 'plugin'" class="ph-plug ph-bold ph-lg"></i>
-				<i v-else-if="data.type === 'theme'" class="ph-palette ph-bold ph-lg"></i>
-				<i v-else class="ph-download ph-bold ph-lg"></i>
+				<i v-if="data.type === 'plugin'" class="ti ti-plug"></i>
+				<i v-else-if="data.type === 'theme'" class="ti ti-palette"></i>
+				<i v-else class="ti ti-download"></i>
 			</div>
 			<h2 :class="$style.extInstallerTitle">{{ i18n.ts._externalResourceInstaller[`_${data.type}`].title }}</h2>
 			<div :class="$style.extInstallerNormDesc">{{ i18n.ts._externalResourceInstaller.checkVendorBeforeInstall }}</div>
@@ -51,7 +51,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #value>{{ i18n.ts[data.meta.base] }}</template>
 					</MkKeyValue>
 					<MkFolder>
-						<template #icon><i class="ph-code ph-bold ph-lg"></i></template>
+						<template #icon><i class="ti ti-code"></i></template>
 						<template #label>{{ i18n.ts._plugin.viewSource }}</template>
 
 						<MkCode :code="data.raw ?? ''"/>
@@ -69,18 +69,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #key>{{ i18n.ts._externalResourceInstaller._vendorInfo.hashVerify }}</template>
 						<template #value>
 							<!--この画面が出ている時点でハッシュの検証には成功している-->
-							<i class="ph-check ph-bold ph-lg" style="color: var(--accent)"></i>
+							<i class="ti ti-check" style="color: var(--accent)"></i>
 						</template>
 					</MkKeyValue>
 				</div>
 			</FormSection>
 			<div class="_buttonsCenter">
-				<MkButton primary @click="install()"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.install }}</MkButton>
+				<MkButton primary @click="install()"><i class="ti ti-check"></i> {{ i18n.ts.install }}</MkButton>
 			</div>
 		</div>
 		<div v-else-if="uiPhase === 'error'" class="_gaps_m" :class="[$style.extInstallerRoot, $style.error]">
 			<div :class="$style.extInstallerIconWrapper">
-				<i class="ph-x-circle ph-bold ph-lg"></i>
+				<i class="ti ti-circle-x"></i>
 			</div>
 			<h2 :class="$style.extInstallerTitle">{{ errorKV?.title }}</h2>
 			<div :class="$style.extInstallerNormDesc">{{ errorKV?.description }}</div>
@@ -314,7 +314,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts._externalResourceInstaller.title,
-	icon: 'ph-download ph-bold ph-lg',
+	icon: 'ti ti-download',
 }));
 </script>
 

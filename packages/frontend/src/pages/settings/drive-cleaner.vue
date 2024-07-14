@@ -119,7 +119,7 @@ function onContextMenu(ev: MouseEvent, file): void {
 
 definePageMetadata(() => ({
 	title: i18n.ts.drivecleaner,
-	icon: 'ph-trash ph-bold ph-lg',
+	icon: 'ti ti-trash',
 }));
 </script>
 

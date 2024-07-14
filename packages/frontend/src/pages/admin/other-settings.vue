@@ -99,7 +99,7 @@ function save() {
 
 const headerActions = computed(() => [{
 	asFullButton: true,
-	icon: 'ph-check ph-bold ph-lg',
+	icon: 'ti ti-check',
 	text: i18n.ts.save,
 	handler: save,
 }]);
@@ -108,6 +108,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.other,
-	icon: 'ph-faders ph-bold ph-lg',
+	icon: 'ti ti-adjustments',
 }));
 </script>

@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		:initialNote="exampleNote"
 		@fileChangeSensitive="doSucceeded"
 	></MkPostForm>
-	<div v-if="onceSucceeded"><b style="color: var(--accent);"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts._initialTutorial.wellDone }}</b> {{ i18n.ts._initialTutorial._howToMakeAttachmentsSensitive.sensitiveSucceeded }}</div>
+	<div v-if="onceSucceeded"><b style="color: var(--accent);"><i class="ti ti-check"></i> {{ i18n.ts._initialTutorial.wellDone }}</b> {{ i18n.ts._initialTutorial._howToMakeAttachmentsSensitive.sensitiveSucceeded }}</div>
 	<MkFolder>
 		<template #label>{{ i18n.ts.previewNoteText }}</template>
 		<MkNote :mock="true" :note="exampleNote" :class="$style.exampleRoot"></MkNote>

@@ -23,10 +23,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 
 						<div style="padding: 16px;">
-							<div v-if="game.map == null"><i class="ph-dice-five ph-bold ph-lg"></i></div>
+							<div v-if="game.map == null"><i class="ti ti-dice"></i></div>
 							<div v-else :class="$style.board" :style="{ 'grid-template-rows': `repeat(${ game.map.length }, 1fr)`, 'grid-template-columns': `repeat(${ game.map[0].length }, 1fr)` }">
 								<div v-for="(x, i) in game.map.join('')" :class="[$style.boardCell, { [$style.boardCellNone]: x == ' ' }]" @click="onMapCellClick(i, x)">
-									<i v-if="x === 'b' || x === 'w'" style="pointer-events: none; user-select: none;" :class="x === 'b' ? 'ph-circle-half ph-bold ph-lg' : 'ph-circle ph-bold ph-lg'"></i>
+									<i v-if="x === 'b' || x === 'w'" style="pointer-events: none; user-select: none;" :class="x === 'b' ? 'ti ti-circle-filled' : 'ti ti-circle'"></i>
 								</div>
 							</div>
 						</div>
