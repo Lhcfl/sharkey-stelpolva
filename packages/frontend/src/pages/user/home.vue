@@ -193,6 +193,7 @@ import { defaultStore } from '@/store.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/scripts/isFfVisibleForMe.js';
 import { useRouter } from '@/router/supplier.js';
+import { getStaticImageUrl } from '@/scripts/media-proxy.js';
 
 function calcAge(birthdate: string): number {
 	const date = new Date(birthdate);
@@ -258,8 +259,14 @@ if (props.user.listenbrainz) {
 
 const background = computed(() => {
 	if (props.user.backgroundUrl == null) return {};
-	return {
-		'--backgroundImageStatic': `url('${props.user.backgroundUrl}')`
+	if (defaultStore.state.disableShowingAnimatedImages) {
+		return {
+			'--backgroundImageStatic': `url('${getStaticImageUrl(props.user.backgroundUrl)}')`
+		};
+	} else {
+		return {
+			'--backgroundImageStatic': `url('${props.user.backgroundUrl}')`
+		};
 	};
 });
 
@@ -289,8 +296,14 @@ const AllPagination = {
 
 const style = computed(() => {
 	if (props.user.bannerUrl == null) return {};
-	return {
-		backgroundImage: `url(${ props.user.bannerUrl })`,
+	if (defaultStore.state.disableShowingAnimatedImages) {
+		return {
+			backgroundImage: `url(${ getStaticImageUrl(props.user.bannerUrl) })`,
+		};
+	} else {
+		return {
+			backgroundImage: `url(${ props.user.bannerUrl })`,
+		};
 	};
 });
 

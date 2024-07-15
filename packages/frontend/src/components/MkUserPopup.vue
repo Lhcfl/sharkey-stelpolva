@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 >
 	<div v-if="showing" :class="$style.root" class="_popup _shadow" :style="{ zIndex, top: top + 'px', left: left + 'px' }" @mouseover="() => { emit('mouseover'); }" @mouseleave="() => { emit('mouseleave'); }">
 		<div v-if="user != null">
-			<div :class="$style.banner" :style="user.bannerUrl ? `background-image: url(${user.bannerUrl})` : ''">
+			<div :class="$style.banner" :style="user.bannerUrl && !defaultStore.state.disableShowingAnimatedImages ? `background-image: url(${user.bannerUrl})` : user.bannerUrl && defaultStore.state.disableShowingAnimatedImages ? `background-image: url(${getStaticImageUrl(user.bannerUrl)})` : ''">
 				<span v-if="$i && $i.id != user.id && user.isFollowed" :class="$style.followed">{{ i18n.ts.followsYou }}</span>
 				<span v-if="user.isLocked && $i && $i.id != user.id && !user.isFollowing" :title="i18n.ts.isLocked" :class="$style.locked"><i class="ph-lock ph-bold ph-lg"></i></span>
 			</div>
@@ -79,6 +79,7 @@ import { i18n } from '@/i18n.js';
 import { defaultStore } from '@/store.js';
 import { $i } from '@/account.js';
 import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/scripts/isFfVisibleForMe.js';
+import { getStaticImageUrl } from '@/scripts/media-proxy.js';
 
 const props = defineProps<{
 	showing: boolean;
