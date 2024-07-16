@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 		<div :class="$style.navMenu">
 			<!-- "Search drive via alt text or file names" -->
-			<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" :placeholder="i18n.ts.driveSearchbarPlaceholder" @enter="search">
+			<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" :placeholder="i18n.ts.driveSearchbarPlaceholder" @enter="fetch">
 				<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
 			</MkInput>
 
@@ -161,10 +161,6 @@ const draghover = ref(false);
 const isDragSource = ref(false);
 
 const fetching = ref(true);
-
-async function search() {
-	fetch();
-}
 
 const ilFilesObserver = new IntersectionObserver(
 	(entries) => entries.some((entry) => entry.isIntersecting) && !fetching.value && moreFiles.value && fetchMoreFiles(),
@@ -594,6 +590,7 @@ function fetchMoreFolders() {
 		type: props.type,
 		untilId: folders.value.at(-1)?.id,
 		limit: max + 1,
+		searchQuery: searchQuery.value.toString().trim(),
 	}).then(folders => {
 		if (folders.length === max + 1) {
 			moreFolders.value = true;
@@ -617,6 +614,7 @@ function fetchMoreFiles() {
 		type: props.type,
 		untilId: files.value.at(-1)?.id,
 		limit: max + 1,
+		searchQuery: searchQuery.value.toString().trim(),
 	}).then(files => {
 		if (files.length === max + 1) {
 			moreFiles.value = true;
