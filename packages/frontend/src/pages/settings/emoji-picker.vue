@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div class="_gaps_m">
 	<MkFolder :defaultOpen="true">
-		<template #icon><i class="ph-pin ph-bold ph-lg"></i></template>
+		<template #icon><i class="ti ti-pin"></i></template>
 		<template #label>{{ i18n.ts.pinned }} ({{ i18n.ts.reaction }})</template>
 		<template #caption>{{ i18n.ts.pinnedEmojisForReactionSettingDescription }}</template>
 
@@ -29,7 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</template>
 						<template #footer>
 							<button class="_button" :class="$style.emojisAdd" @click="chooseReaction">
-								<i class="ph-plus ph-bold ph-lg"></i>
+								<i class="ti ti-plus"></i>
 							</button>
 						</template>
 					</Sortable>
@@ -38,15 +38,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 
 			<div class="_buttons">
-				<MkButton inline @click="previewReaction"><i class="ph-eye ph-bold ph-lg"></i> {{ i18n.ts.preview }}</MkButton>
-				<MkButton inline danger @click="setDefaultReaction"><i class="ph-arrow-counter-clockwise ph-bold ph-lg"></i> {{ i18n.ts.default }}</MkButton>
-				<MkButton inline danger @click="overwriteFromPinnedEmojis"><i class="ph-copy ph-bold ph-lg"></i> {{ i18n.ts.overwriteFromPinnedEmojis }}</MkButton>
+				<MkButton inline @click="previewReaction"><i class="ti ti-eye"></i> {{ i18n.ts.preview }}</MkButton>
+				<MkButton inline danger @click="setDefaultReaction"><i class="ti ti-reload"></i> {{ i18n.ts.default }}</MkButton>
+				<MkButton inline danger @click="overwriteFromPinnedEmojis"><i class="ti ti-copy"></i> {{ i18n.ts.overwriteFromPinnedEmojis }}</MkButton>
 			</div>
 		</div>
 	</MkFolder>
 
 	<MkFolder>
-		<template #icon><i class="ph-pin ph-bold ph-lg"></i></template>
+		<template #icon><i class="ti ti-pin"></i></template>
 		<template #label>{{ i18n.ts.pinned }} ({{ i18n.ts.general }})</template>
 		<template #caption>{{ i18n.ts.pinnedEmojisSettingDescription }}</template>
 
@@ -69,7 +69,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</template>
 						<template #footer>
 							<button class="_button" :class="$style.emojisAdd" @click="chooseEmoji">
-								<i class="ph-plus ph-bold ph-lg"></i>
+								<i class="ti ti-plus"></i>
 							</button>
 						</template>
 					</Sortable>
@@ -78,9 +78,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 
 			<div class="_buttons">
-				<MkButton inline @click="previewEmoji"><i class="ph-eye ph-bold ph-lg"></i> {{ i18n.ts.preview }}</MkButton>
-				<MkButton inline danger @click="setDefaultEmoji"><i class="ph-arrow-counter-clockwise ph-bold ph-lg"></i> {{ i18n.ts.default }}</MkButton>
-				<MkButton inline danger @click="overwriteFromPinnedEmojisForReaction"><i class="ph-copy ph-bold ph-lg"></i> {{ i18n.ts.overwriteFromPinnedEmojisForReaction }}</MkButton>
+				<MkButton inline @click="previewEmoji"><i class="ti ti-eye"></i> {{ i18n.ts.preview }}</MkButton>
+				<MkButton inline danger @click="setDefaultEmoji"><i class="ti ti-reload"></i> {{ i18n.ts.default }}</MkButton>
+				<MkButton inline danger @click="overwriteFromPinnedEmojisForReaction"><i class="ti ti-copy"></i> {{ i18n.ts.overwriteFromPinnedEmojisForReaction }}</MkButton>
 			</div>
 		</div>
 	</MkFolder>
@@ -278,7 +278,7 @@ watch(pinnedEmojis, () => {
 
 definePageMetadata(() => ({
 	title: i18n.ts.emojiPicker,
-	icon: 'ph-smiley ph-bold ph-lg',
+	icon: 'ti ti-mood-happy',
 }));
 </script>
 

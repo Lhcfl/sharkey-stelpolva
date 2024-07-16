@@ -6,17 +6,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <XColumn :menu="menu" :column="column" :isStacked="isStacked" :refresher="() => timeline.reloadTimeline()">
 	<template #header>
-		<i v-if="column.tl === 'home'" class="ph-house ph-bold ph-lg"></i>
-		<i v-else-if="column.tl === 'local'" class="ph-planet ph-bold ph-lg"></i>
-		<i v-else-if="column.tl === 'social'" class="ph-rocket-launch ph-bold ph-lg"></i>
+		<i v-if="column.tl === 'home'" class="ti ti-home"></i>
+		<i v-else-if="column.tl === 'local'" class="ti ti-planet"></i>
+		<i v-else-if="column.tl === 'social'" class="ti ti-universe"></i>
 		<i v-else-if="column.tl === 'bubble'" class="ph-thumb-up ph-bold ph-lg"></i>
-		<i v-else-if="column.tl === 'global'" class="ph-globe-hemisphere-west ph-bold ph-lg"></i>
+		<i v-else-if="column.tl === 'global'" class="ti ti-whirl"></i>
 		<span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
 	<div v-if="(((column.tl === 'local' || column.tl === 'social') && !isLocalTimelineAvailable) || (column.tl === 'bubble' && !isBubbleTimelineAvailable) || (column.tl === 'global' && !isGlobalTimelineAvailable))" :class="$style.disabled">
 		<p :class="$style.disabledTitle">
-			<i class="ph-minus-circle ph-bold ph-lg"></i>
+			<i class="ti ti-circle-minus"></i>
 			{{ i18n.ts._disabledTimeline.title }}
 		</p>
 		<p :class="$style.disabledDescription">{{ i18n.ts._disabledTimeline.description }}</p>
@@ -128,11 +128,11 @@ function onNote() {
 }
 
 const menu: MenuItem[] = [{
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 	text: i18n.ts.timeline,
 	action: setType,
 }, {
-	icon: 'ph-bell-ringing ph-bold ph-lg',
+	icon: 'ti ti-bell',
 	text: i18n.ts._deck.newNoteNotificationSettings,
 	action: () => soundSettingsButton(soundSetting),
 }, {

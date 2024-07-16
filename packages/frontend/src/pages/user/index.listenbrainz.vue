@@ -24,7 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</a>
 				<a :href="listenbrainz.listenbrainzurl">
 					<div class="playicon">
-						<i class="ph-play ph-bold ph-lg-filled"></i>
+						<i class="ph-play ph-bold ph-lg"></i>
 					</div>
 				</a>
 			</div>

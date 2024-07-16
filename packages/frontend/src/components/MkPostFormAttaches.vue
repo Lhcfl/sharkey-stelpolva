@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div :class="$style.file" @click="showFileMenu(element, $event)" @contextmenu.prevent="showFileMenu(element, $event)">
 				<MkDriveFileThumbnail :data-id="element.id" :class="$style.thumbnail" :file="element" fit="cover"/>
 				<div v-if="element.isSensitive" :class="$style.sensitive">
-					<i class="ph-eye-closed ph-bold ph-lg" style="margin: auto;"></i>
+					<i class="ti ti-eye-exclamation" style="margin: auto;"></i>
 				</div>
 			</div>
 		</template>
@@ -137,29 +137,29 @@ function showFileMenu(file: Misskey.entities.DriveFile, ev: MouseEvent): void {
 	const isImage = file.type.startsWith('image/');
 	os.popupMenu([{
 		text: i18n.ts.renameFile,
-		icon: 'ph-textbox ph-bold ph-lg',
+		icon: 'ti ti-forms',
 		action: () => { rename(file); },
 	}, {
 		text: file.isSensitive ? i18n.ts.unmarkAsSensitive : i18n.ts.markAsSensitive,
-		icon: file.isSensitive ? 'ph-eye-closed ph-bold ph-lg' : 'ph-eye ph-bold ph-lg',
+		icon: file.isSensitive ? 'ti ti-eye-exclamation' : 'ti ti-eye',
 		action: () => { toggleSensitive(file); },
 	}, {
 		text: i18n.ts.describeFile,
-		icon: 'ph-text-indent ph-bold ph-lg',
+		icon: 'ti ti-text-caption',
 		action: () => { describe(file); },
 	}, ...isImage ? [{
 		text: i18n.ts.cropImage,
-		icon: 'ph-crop ph-bold ph-lg',
+		icon: 'ti ti-crop',
 		action: () : void => { crop(file); },
 	}] : [], {
 		type: 'divider',
 	}, {
 		text: i18n.ts.attachCancel,
-		icon: 'ph-x-circle ph-bold ph-lg',
+		icon: 'ti ti-circle-x',
 		action: () => { detachMedia(file.id); },
 	}, {
 		text: i18n.ts.deleteFile,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		danger: true,
 		action: () => { detachAndDeleteMedia(file); },
 	}], ev.currentTarget ?? ev.target).then(() => menuShowing = false);

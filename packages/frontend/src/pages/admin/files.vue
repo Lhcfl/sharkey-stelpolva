@@ -75,11 +75,11 @@ function clear() {
 
 const headerActions = computed(() => [{
 	text: i18n.ts.lookup,
-	icon: 'ph-magnifying-glass ph-bold ph-lg',
+	icon: 'ti ti-search',
 	handler: lookupFile,
 }, {
 	text: i18n.ts.clearCachedFiles,
-	icon: 'ph-trash ph-bold ph-lg',
+	icon: 'ti ti-trash',
 	handler: clear,
 }]);
 
@@ -87,6 +87,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.files,
-	icon: 'ph-cloud ph-bold ph-lg',
+	icon: 'ti ti-cloud',
 }));
 </script>

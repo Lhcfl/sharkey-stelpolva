@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <XColumn :menu="menu" :column="column" :isStacked="isStacked" :refresher="() => timeline.reloadTimeline()">
 	<template #header>
-		<i class="ph-seal-check ph-bold ph-lg"></i><span style="margin-left: 8px;">{{ column.name }}</span>
+		<i class="ti ti-badge"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
 	<MkTimeline v-if="column.roleId" ref="timeline" src="role" :role="column.roleId" @note="onNote"/>
@@ -64,11 +64,11 @@ function onNote() {
 }
 
 const menu: MenuItem[] = [{
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 	text: i18n.ts.role,
 	action: setRole,
 }, {
-	icon: 'ph-bell-ringing ph-bold ph-lg',
+	icon: 'ti ti-bell',
 	text: i18n.ts._deck.newNoteNotificationSettings,
 	action: () => soundSettingsButton(soundSetting),
 }];

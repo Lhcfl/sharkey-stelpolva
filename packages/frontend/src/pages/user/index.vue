@@ -83,39 +83,39 @@ const headerActions = computed(() => []);
 const headerTabs = computed(() => user.value ? [{
 	key: 'home',
 	title: i18n.ts.overview,
-	icon: 'ph-house ph-bold ph-lg',
+	icon: 'ti ti-home',
 }, {
 	key: 'notes',
 	title: i18n.ts.notes,
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 }, {
 	key: 'activity',
 	title: i18n.ts.activity,
-	icon: 'ph-chart-line ph-bold ph-lg',
+	icon: 'ti ti-chart-line',
 }, ...(user.value.host == null ? [{
 	key: 'achievements',
 	title: i18n.ts.achievements,
-	icon: 'ph-trophy ph-bold ph-lg',
+	icon: 'ti ti-medal',
 }] : []), ...($i && ($i.id === user.value.id || $i.isAdmin || $i.isModerator)) || user.value.publicReactions ? [{
 	key: 'reactions',
 	title: i18n.ts.reaction,
-	icon: 'ph-smiley ph-bold ph-lg',
+	icon: 'ti ti-mood-happy',
 }] : [], {
 	key: 'clips',
 	title: i18n.ts.clips,
-	icon: 'ph-paperclip ph-bold ph-lg',
+	icon: 'ti ti-paperclip',
 }, {
 	key: 'lists',
 	title: i18n.ts.lists,
-	icon: 'ph-list ph-bold ph-lg',
+	icon: 'ti ti-list',
 }, {
 	key: 'pages',
 	title: i18n.ts.pages,
-	icon: 'ph-newspaper ph-bold ph-lg',
+	icon: 'ti ti-news',
 }, {
 	key: 'flashs',
 	title: 'Play',
-	icon: 'ph-play ph-bold ph-lg',
+	icon: 'ti ti-player-play',
 }, {
 	key: 'gallery',
 	title: i18n.ts.gallery,
@@ -123,12 +123,12 @@ const headerTabs = computed(() => user.value ? [{
 }, {
 	key: 'raw',
 	title: 'Raw',
-	icon: 'ph-code ph-bold ph-lg',
+	icon: 'ti ti-code',
 }] : []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.user,
-	icon: 'ph-user ph-bold ph-lg',
+	icon: 'ti ti-user',
 	...user.value ? {
 		title: user.value.name ? ` (@${user.value.username})` : `@${user.value.username}`,
 		subtitle: `@${getAcct(user.value)}`,

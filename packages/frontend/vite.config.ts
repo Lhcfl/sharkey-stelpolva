@@ -8,6 +8,7 @@ import meta from '../../package.json';
 import packageInfo from './package.json' assert { type: 'json' };
 import pluginUnwindCssModuleClassName from './lib/rollup-plugin-unwind-css-module-class-name.js';
 import pluginJson5 from './vite.json5.js';
+import { pluginReplaceIcons } from './vite.replaceIcons.ts';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue', '.wasm'];
 
@@ -71,6 +72,7 @@ export function getConfig(): UserConfig {
 			pluginVue(),
 			pluginUnwindCssModuleClassName(),
 			pluginJson5(),
+			...pluginReplaceIcons(),
 			...process.env.NODE_ENV === 'production'
 				? [
 					pluginReplace({

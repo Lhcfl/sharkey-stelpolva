@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <XColumn :menu="menu" :column="column" :isStacked="isStacked" :refresher="() => timeline.reloadTimeline()">
 	<template #header>
-		<i class="ph-list ph-bold ph-lg"></i><span style="margin-left: 8px;">{{ column.name }}</span>
+		<i class="ti ti-list"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
 	<MkTimeline v-if="column.listId" ref="timeline" :key="column.listId + column.withRenotes + column.onlyFiles" src="list" :list="column.listId" :withRenotes="withRenotes" :onlyFiles="onlyFiles" @note="onNote"/>
@@ -81,12 +81,12 @@ function onNote() {
 
 const menu: MenuItem[] = [
 	{
-		icon: 'ph-pencil-simple ph-bold ph-lg',
+		icon: 'ti ti-pencil',
 		text: i18n.ts.selectList,
 		action: setList,
 	},
 	{
-		icon: 'ph-gear ph-bold ph-lg',
+		icon: 'ti ti-settings',
 		text: i18n.ts.editList,
 		action: editList,
 	},
@@ -101,7 +101,7 @@ const menu: MenuItem[] = [
 		ref: onlyFiles,
 	},
 	{
-		icon: 'ph-bell-ringing ph-bold ph-lg',
+		icon: 'ti ti-bell',
 		text: i18n.ts._deck.newNoteNotificationSettings,
 		action: () => soundSettingsButton(soundSetting),
 	},

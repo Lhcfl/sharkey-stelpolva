@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<div class="_gaps_m">
 					<MkInput v-model="deeplAuthKey">
-						<template #prefix><i class="ph-key ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-key"></i></template>
 						<template #label>DeepL Auth Key</template>
 					</MkInput>
 					<MkSwitch v-model="deeplIsPro">
@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #footer>
 		<div :class="$style.footer">
 			<MkSpacer :contentMax="700" :marginMin="16" :marginMax="16">
-				<MkButton primary rounded @click="save"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
+				<MkButton primary rounded @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
 			</MkSpacer>
 		</div>
 	</template>

@@ -2490,6 +2490,7 @@ _notification:
     roleAssigned: "ロールが付与された"
     achievementEarned: "実績の獲得"
     app: "連携アプリからの通知"
+    edited: "編集済み"
 
   _actions:
     followBack: "フォローバック"

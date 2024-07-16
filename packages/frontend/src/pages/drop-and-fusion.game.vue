@@ -105,7 +105,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</I18n>
 					</div>
 				</div>
-				<div v-if="replaying" :class="$style.replayIndicator"><span :class="$style.replayIndicatorText"><i class="ph-play ph-bold ph-lg"></i> {{ i18n.ts.replaying }}</span></div>
+				<div v-if="replaying" :class="$style.replayIndicator"><span :class="$style.replayIndicatorText"><i class="ti ti-player-play"></i> {{ i18n.ts.replaying }}</span></div>
 			</div>
 
 			<div v-if="replaying" class="_woodenFrame">
@@ -116,9 +116,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 				<div class="_woodenFrameInner">
 					<div class="_buttonsCenter">
-						<MkButton @click="endReplay"><i class="ph-stop ph-bold ph-lg"></i> {{ i18n.ts.endReplay }}</MkButton>
-						<MkButton :primary="replayPlaybackRate === 4" @click="replayPlaybackRate = replayPlaybackRate === 4 ? 1 : 4"><i class="ph-skip-forward ph-bold ph-lg"></i> x4</MkButton>
-						<MkButton :primary="replayPlaybackRate === 16" @click="replayPlaybackRate = replayPlaybackRate === 16 ? 1 : 16"><i class="ph-skip-forward ph-bold ph-lg"></i> x16</MkButton>
+						<MkButton @click="endReplay"><i class="ti ti-player-stop"></i> {{ i18n.ts.endReplay }}</MkButton>
+						<MkButton :primary="replayPlaybackRate === 4" @click="replayPlaybackRate = replayPlaybackRate === 4 ? 1 : 4"><i class="ti ti-player-track-next"></i> x4</MkButton>
+						<MkButton :primary="replayPlaybackRate === 16" @click="replayPlaybackRate = replayPlaybackRate === 16 ? 1 : 16"><i class="ti ti-player-track-next"></i> x16</MkButton>
 					</div>
 				</div>
 			</div>
@@ -149,7 +149,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 				<div class="_woodenFrame" style="margin-left: auto;">
 					<div class="_woodenFrameInner" style="text-align: center;">
-						<div @click="showConfig = !showConfig"><i class="ph-gear ph-bold ph-lg"></i></div>
+						<div @click="showConfig = !showConfig"><i class="ti ti-settings"></i></div>
 					</div>
 				</div>
 			</div>
@@ -173,7 +173,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div>
 						<div v-for="(mono, i) in game.monoDefinitions.sort((a, b) => a.level - b.level)" :key="mono.id" style="display: inline-block;">
 							<img :src="getTextureImageUrl(mono)" style="width: 32px; vertical-align: bottom;"/>
-							<div v-if="i < game.monoDefinitions.length - 1" style="display: inline-block; margin-left: 4px; vertical-align: bottom;"><i class="ph-arrow-fat-right ph-bold ph-lg"></i></div>
+							<div v-if="i < game.monoDefinitions.length - 1" style="display: inline-block; margin-left: 4px; vertical-align: bottom;"><i class="ti ti-arrow-big-right"></i></div>
 						</div>
 					</div>
 				</div>
@@ -1220,7 +1220,7 @@ onDeactivated(() => {
 
 definePageMetadata(() => ({
 	title: i18n.ts.bubbleGame,
-	icon: 'ph-orange-slice ph-bold ph-lg',
+	icon: 'ti ti-apple',
 }));
 </script>
 

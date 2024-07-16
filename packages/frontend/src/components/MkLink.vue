@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	@click.stop
 >
 	<slot></slot>
-	<i v-if="target === '_blank'" class="ph-arrow-square-out ph-bold ph-lg" :class="$style.icon"></i>
+	<i v-if="target === '_blank'" class="ti ti-external-link" :class="$style.icon"></i>
 </component>
 </template>
 

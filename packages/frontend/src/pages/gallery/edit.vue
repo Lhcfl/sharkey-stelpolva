@@ -19,18 +19,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div class="_gaps_s">
 				<div v-for="file in files" :key="file.id" class="wqugxsfx" :style="{ backgroundImage: file ? `url(${ file.thumbnailUrl })` : null }">
 					<div class="name">{{ file.name }}</div>
-					<button v-tooltip="i18n.ts.remove" class="remove _button" @click="remove(file)"><i class="ph-x ph-bold ph-lg"></i></button>
+					<button v-tooltip="i18n.ts.remove" class="remove _button" @click="remove(file)"><i class="ti ti-x"></i></button>
 				</div>
-				<MkButton primary @click="selectFile"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts.attachFile }}</MkButton>
+				<MkButton primary @click="selectFile"><i class="ti ti-plus"></i> {{ i18n.ts.attachFile }}</MkButton>
 			</div>
 
 			<MkSwitch v-model="isSensitive">{{ i18n.ts.markAsSensitive }}</MkSwitch>
 
 			<div class="_buttons">
-				<MkButton v-if="postId" primary @click="save"><i class="ph-floppy-disk ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
-				<MkButton v-else primary @click="save"><i class="ph-floppy-disk ph-bold ph-lg"></i> {{ i18n.ts.publish }}</MkButton>
+				<MkButton v-if="postId" primary @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
+				<MkButton v-else primary @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.publish }}</MkButton>
 
-				<MkButton v-if="postId" danger @click="del"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
+				<MkButton v-if="postId" danger @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 			</div>
 		</FormSuspense>
 	</MkSpacer>
@@ -124,7 +124,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: props.postId ? i18n.ts.edit : i18n.ts.postToGallery,
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 }));
 </script>
 

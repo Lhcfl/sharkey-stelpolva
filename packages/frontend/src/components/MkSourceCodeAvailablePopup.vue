@@ -35,7 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkButton @click="close">{{ i18n.ts.gotIt }}</MkButton>
 		</div>
 	</div>
-	<button class="_button" :class="$style.close" @click="close"><i class="ph-x ph-bold ph-lg"></i></button>
+	<button class="_button" :class="$style.close" @click="close"><i class="ti ti-x"></i></button>
 </div>
 </template>
 

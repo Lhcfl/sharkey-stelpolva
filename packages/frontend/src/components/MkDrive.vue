@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				@removeFolder="removeFolder"
 			/>
 			<template v-for="f in hierarchyFolders">
-				<span :class="[$style.navPathItem, $style.navSeparator]"><i class="ph-caret-right ph-bold ph-lg"></i></span>
+				<span :class="[$style.navPathItem, $style.navSeparator]"><i class="ti ti-chevron-right"></i></span>
 				<XNavFolder
 					:folder="f"
 					:parentFolder="folder"
@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					@removeFolder="removeFolder"
 				/>
 			</template>
-			<span v-if="folder != null" :class="[$style.navPathItem, $style.navSeparator]"><i class="ph-caret-right ph-bold ph-lg"></i></span>
+			<span v-if="folder != null" :class="[$style.navPathItem, $style.navSeparator]"><i class="ti ti-chevron-right"></i></span>
 			<span v-if="folder != null" :class="[$style.navPathItem, $style.navCurrent]">{{ folder.name }}</span>
 		</div>
 		<div :class="$style.navMenu">
@@ -36,7 +36,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
 			</MkInput>
 
-			<button class="_button" @click="showMenu"><i class="ph-dots-three ph-bold ph-lg"></i></button>
+			<button class="_button" :class="$style.navMenu" @click="showMenu"><i class="ti ti-dots"></i></button>
 		</div>
 	</nav>
 	<div
@@ -637,26 +637,26 @@ function getMenu() {
 		type: 'label',
 	}, {
 		text: i18n.ts.upload,
-		icon: 'ph-upload ph-bold ph-lg',
+		icon: 'ti ti-upload',
 		action: () => { selectLocalFile(); },
 	}, {
 		text: i18n.ts.fromUrl,
-		icon: 'ph-link ph-bold ph-lg',
+		icon: 'ti ti-link',
 		action: () => { urlUpload(); },
 	}, { type: 'divider' }, {
 		text: folder.value ? folder.value.name : i18n.ts.drive,
 		type: 'label',
 	}, folder.value ? {
 		text: i18n.ts.renameFolder,
-		icon: 'ph-textbox ph-bold ph-lg',
+		icon: 'ti ti-forms',
 		action: () => { if (folder.value) renameFolder(folder.value); },
 	} : undefined, folder.value ? {
 		text: i18n.ts.deleteFolder,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		action: () => { deleteFolder(folder.value as Misskey.entities.DriveFolder); },
 	} : undefined, {
 		text: i18n.ts.createFolder,
-		icon: 'ph-folder ph-bold ph-lg-plus',
+		icon: 'ti ti-folder-plus',
 		action: () => { createFolder(); },
 	}];
 

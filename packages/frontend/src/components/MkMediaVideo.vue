@@ -20,8 +20,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 >
 	<button v-if="hide" :class="$style.hidden" @click="hide = false">
 		<div :class="$style.hiddenTextWrapper">
-			<b v-if="video.isSensitive" style="display: block;"><i class="ph-warning ph-bold ph-lg"></i> {{ i18n.ts.sensitive }}{{ defaultStore.state.dataSaver.media ? ` (${i18n.ts.video}${video.size ? ' ' + bytes(video.size) : ''})` : '' }}</b>
-			<b v-else style="display: block;"><i class="ph-film-strip ph-bold ph-lg"></i> {{ defaultStore.state.dataSaver.media && video.size ? bytes(video.size) : i18n.ts.video }}</b>
+			<b v-if="video.isSensitive" style="display: block;"><i class="ti ti-eye-exclamation"></i> {{ i18n.ts.sensitive }}{{ defaultStore.state.dataSaver.media ? ` (${i18n.ts.video}${video.size ? ' ' + bytes(video.size) : ''})` : '' }}</b>
+			<b v-else style="display: block;"><i class="ti ti-movie"></i> {{ defaultStore.state.dataSaver.media && video.size ? bytes(video.size) : i18n.ts.video }}</b>
 			<span style="display: block;">{{ i18n.ts.clickToShow }}</span>
 		</div>
 	</button>
@@ -39,10 +39,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 		>
 			<source :src="video.url">
 		</video>
-		<i class="ph-eye-closed ph-bold ph-lg" :class="$style.hide" @click="hide = true"></i>
+		<i class="ti ti-eye-off" :class="$style.hide" @click="hide = true"></i>
 		<div :class="$style.indicators">
 			<div v-if="video.comment" :class="$style.indicator">ALT</div>
-			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ph-warning ph-bold ph-lg"></i></div>
+			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ti ti-eye-exclamation"></i></div>
 		</div>
 	</div>
 
@@ -60,20 +60,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 		>
 			<source :src="video.url">
 		</video>
-		<button v-if="isReady && !isPlaying" class="_button" :class="$style.videoOverlayPlayButton" @click="togglePlayPause"><i class="ph-play ph-bold ph-lg"></i></button>
+		<button v-if="isReady && !isPlaying" class="_button" :class="$style.videoOverlayPlayButton" @click="togglePlayPause"><i class="ti ti-player-play-filled"></i></button>
 		<div v-else-if="!isActuallyPlaying" :class="$style.videoLoading">
 			<MkLoading/>
 		</div>
-		<i class="ph-eye-closed ph-bold ph-lg" :class="$style.hide" @click="hide = true"></i>
+		<i class="ti ti-eye-off" :class="$style.hide" @click="hide = true"></i>
 		<div :class="$style.indicators">
 			<div v-if="video.comment" :class="$style.indicator">ALT</div>
-			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ph-warning ph-bold ph-lg"></i></div>
+			<div v-if="video.isSensitive" :class="$style.indicator" style="color: var(--warn);" :title="i18n.ts.sensitive"><i class="ti ti-eye-exclamation"></i></div>
 		</div>
 		<div :class="$style.videoControls" @click.self="togglePlayPause">
 			<div :class="[$style.controlsChild, $style.controlsLeft]">
 				<button class="_button" :class="$style.controlButton" @click="togglePlayPause">
-					<i v-if="isPlaying" class="ph-pause ph-bold ph-lg"></i>
-					<i v-else class="ph-play ph-bold ph-lg"></i>
+					<i v-if="isPlaying" class="ti ti-player-pause-filled"></i>
+					<i v-else class="ti ti-player-play-filled"></i>
 				</button>
 			</div>
 			<div :class="[$style.controlsChild, $style.controlsRight]">
@@ -81,18 +81,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<i class="ph-download ph-bold ph-lg"></i>
 				</a>
 				<button class="_button" :class="$style.controlButton" @click="showMenu">
-					<i class="ph-gear ph-bold ph-lg"></i>
+					<i class="ti ti-settings"></i>
 				</button>
 				<button class="_button" :class="$style.controlButton" @click="toggleFullscreen">
-					<i v-if="isFullscreen" class="ph-arrows-in ph-bold ph-lg"></i>
-					<i v-else class="ph-arrows-out ph-bold ph-lg"></i>
+					<i v-if="isFullscreen" class="ti ti-arrows-minimize"></i>
+					<i v-else class="ti ti-arrows-maximize"></i>
 				</button>
 			</div>
 			<div :class="[$style.controlsChild, $style.controlsTime]">{{ hms(elapsedTimeMs) }}</div>
 			<div :class="[$style.controlsChild, $style.controlsVolume]">
 				<button class="_button" :class="$style.controlButton" @click="toggleMute">
-					<i v-if="volume === 0" class="ph-speaker-x ph-bold ph-lg"></i>
-					<i v-else class="ph-speaker-high ph-bold ph-lg"></i>
+					<i v-if="volume === 0" class="ti ti-volume-3"></i>
+					<i v-else class="ti ti-volume"></i>
 				</button>
 				<MkMediaRange
 					v-model="volume"
@@ -177,13 +177,13 @@ function showMenu(ev: MouseEvent) {
 		{
 			type: 'switch',
 			text: i18n.ts._mediaControls.loop,
-			icon: 'ph ph-repeat',
+			icon: 'ti ti-repeat',
 			ref: loop,
 		},
 		{
 			type: 'radio',
 			text: i18n.ts._mediaControls.playbackRate,
-			icon: 'ph ph-gauge',
+			icon: 'ti ti-clock-play',
 			ref: speed,
 			options: {
 				'0.25x': 0.25,
@@ -197,7 +197,7 @@ function showMenu(ev: MouseEvent) {
 		},
 		...(document.pictureInPictureEnabled ? [{
 			text: i18n.ts._mediaControls.pip,
-			icon: 'ph ph-picture-in-picture',
+			icon: 'ti ti-picture-in-picture',
 			action: togglePictureInPicture,
 		}] : []),
 		{
@@ -205,7 +205,7 @@ function showMenu(ev: MouseEvent) {
 		},
 		{
 			text: i18n.ts.hide,
-			icon: 'ph-eye-closed ph-bold ph-lg',
+			icon: 'ti ti-eye-off',
 			action: () => {
 				hide.value = true;
 			},
@@ -215,7 +215,7 @@ function showMenu(ev: MouseEvent) {
 	if (iAmModerator) {
 		menu.push({
 			text: props.video.isSensitive ? i18n.ts.unmarkAsSensitive : i18n.ts.markAsSensitive,
-			icon: props.video.isSensitive ? 'ph-eye ph-bold ph-lg' : 'ph-eye-slash ph-bold ph-lg',
+			icon: props.video.isSensitive ? 'ti ti-eye' : 'ti ti-eye-exclamation',
 			danger: true,
 			action: () => toggleSensitive(props.video),
 		});
@@ -227,7 +227,7 @@ function showMenu(ev: MouseEvent) {
 		}, {
 			type: 'link' as const,
 			text: i18n.ts._fileViewer.title,
-			icon: 'ph ph-info',
+			icon: 'ti ti-info-circle',
 			to: `/my/drive/file/${props.video.id}`,
 		});
 	}

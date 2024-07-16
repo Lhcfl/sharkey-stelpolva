@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-if="tab === 'search'" key="search">
 				<div class="_gaps">
 					<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" @enter="search">
-						<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-search"></i></template>
 					</MkInput>
 					<MkRadios v-model="searchType" @update:modelValue="search()">
 						<option value="nameAndDescription">{{ i18n.ts._channel.nameAndDescription }}</option>
@@ -41,7 +41,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkPagination>
 			</div>
 			<div v-else-if="tab === 'owned'" key="owned">
-				<MkButton class="new" @click="create()"><i class="ph-plus ph-bold ph-lg"></i></MkButton>
+				<MkButton class="new" @click="create()"><i class="ti ti-plus"></i></MkButton>
 				<MkPagination v-slot="{items}" :pagination="ownedPagination">
 					<MkChannelPreview v-for="channel in items" :key="channel.id" class="_margin" :channel="channel"/>
 				</MkPagination>
@@ -125,7 +125,7 @@ function create() {
 }
 
 const headerActions = computed(() => [{
-	icon: 'ph-plus ph-bold ph-lg',
+	icon: 'ti ti-plus',
 	text: i18n.ts.create,
 	handler: create,
 }]);
@@ -133,27 +133,27 @@ const headerActions = computed(() => [{
 const headerTabs = computed(() => [{
 	key: 'search',
 	title: i18n.ts.search,
-	icon: 'ph-magnifying-glass ph-bold ph-lg',
+	icon: 'ti ti-search',
 }, {
 	key: 'featured',
 	title: i18n.ts._channel.featured,
-	icon: 'ph-shooting-star ph-bold ph-lg',
+	icon: 'ti ti-comet',
 }, {
 	key: 'favorites',
 	title: i18n.ts.favorites,
-	icon: 'ph-star ph-bold ph-lg',
+	icon: 'ti ti-star',
 }, {
 	key: 'following',
 	title: i18n.ts._channel.following,
-	icon: 'ph-eye ph-bold ph-lg',
+	icon: 'ti ti-eye',
 }, {
 	key: 'owned',
 	title: i18n.ts._channel.owned,
-	icon: 'ph-pencil-simple-line ph-bold ph-lg',
+	icon: 'ti ti-edit',
 }]);
 
 definePageMetadata(() => ({
 	title: i18n.ts.channel,
-	icon: 'ph-television ph-bold ph-lg',
+	icon: 'ti ti-device-tv',
 }));
 </script>

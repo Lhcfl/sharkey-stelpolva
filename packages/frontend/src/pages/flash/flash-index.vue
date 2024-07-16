@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<div v-else-if="tab === 'my'" key="my">
 				<div class="_gaps">
-					<MkButton gradate rounded style="margin: 0 auto;" @click="create()"><i class="ph-plus ph-bold ph-lg"></i></MkButton>
+					<MkButton gradate rounded style="margin: 0 auto;" @click="create()"><i class="ti ti-plus"></i></MkButton>
 					<MkPagination v-slot="{items}" :pagination="myFlashsPagination">
 						<div class="_gaps_s">
 							<MkFlashPreview v-for="flash in items" :key="flash.id" :flash="flash"/>
@@ -71,7 +71,7 @@ function create() {
 }
 
 const headerActions = computed(() => [{
-	icon: 'ph-plus ph-bold ph-lg',
+	icon: 'ti ti-plus',
 	text: i18n.ts.create,
 	handler: create,
 }]);
@@ -79,19 +79,19 @@ const headerActions = computed(() => [{
 const headerTabs = computed(() => [{
 	key: 'featured',
 	title: i18n.ts._play.featured,
-	icon: 'ph-fire ph-bold ph-lg',
+	icon: 'ti ti-flare',
 }, {
 	key: 'my',
 	title: i18n.ts._play.my,
-	icon: 'ph-pencil-simple-line ph-bold ph-lg',
+	icon: 'ti ti-edit',
 }, {
 	key: 'liked',
 	title: i18n.ts._play.liked,
-	icon: 'ph-heart ph-bold ph-lg',
+	icon: 'ti ti-heart',
 }]);
 
 definePageMetadata(() => ({
 	title: 'Play',
-	icon: 'ph-play ph-bold ph-lg',
+	icon: 'ti ti-player-play',
 }));
 </script>

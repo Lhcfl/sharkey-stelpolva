@@ -32,11 +32,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div v-html="i18n.tsx.poweredByMisskeyDescription({ name: instance.name ?? host })">
 						</div>
 						<FormLink to="/about-sharkey">
-							<template #icon><i class="ph-info ph-bold ph-lg"></i></template>
+							<template #icon><i class="ti ti-info-circle"></i></template>
 							{{ i18n.ts.aboutMisskey }}
 						</FormLink>
 						<FormLink v-if="instance.repositoryUrl || instance.providesTarball" :to="instance.repositoryUrl || `/tarball/sharkey-${version}.tar.gz`" external>
-							<template #icon><i class="ph-code ph-bold ph-lg"></i></template>
+							<template #icon><i class="ti ti-code"></i></template>
 							{{ i18n.ts.sourceCode }}
 						</FormLink>
 						<MkInfo v-else warn>
@@ -58,13 +58,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</MkKeyValue>
 						</FormSplit>
 						<FormLink v-if="instance.impressumUrl" :to="instance.impressumUrl" external>
-							<template #icon><i class="ph-newspaper-clipping ph-bold ph-lg"></i></template>
+							<template #icon><i class="ti ti-user-shield"></i></template>
 							{{ i18n.ts.impressum }}
 						</FormLink>
 						<div class="_gaps_s">
 							<MkFolder v-if="instance.serverRules.length > 0">
 								<template #label>
-									<i class="ph-list-checks ph-bold ph-lg"></i>
+									<i class="ti ti-checkup-list"></i>
 									{{ i18n.ts.serverRules }}
 								</template>
 
@@ -73,15 +73,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 								</ol>
 							</MkFolder>
 							<FormLink v-if="instance.tosUrl" :to="instance.tosUrl" external>
-								<template #icon><i class="ph-notebook ph-bold ph-lg"></i></template>
+								<template #icon><i class="ti ti-license"></i></template>
 								{{ i18n.ts.termsOfService }}
 							</FormLink>
 							<FormLink v-if="instance.privacyPolicyUrl" :to="instance.privacyPolicyUrl" external>
-								<template #icon><i class="ph-shield ph-bold ph-lg"></i></template>
+								<template #icon><i class="ti ti-shield-lock"></i></template>
 								{{ i18n.ts.privacyPolicy }}
 							</FormLink>
 							<FormLink v-if="instance.feedbackUrl" :to="instance.feedbackUrl" external>
-								<template #icon><i class="ph-envelope ph-bold ph-lg"></i></template>
+								<template #icon><i class="ti ti-message"></i></template>
 								{{ i18n.ts.feedback }}
 							</FormLink>
 						</div>
@@ -184,16 +184,16 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'federation',
 	title: i18n.ts.federation,
-	icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+	icon: 'ti ti-whirl',
 }, {
 	key: 'charts',
 	title: i18n.ts.charts,
-	icon: 'ph-chart-line ph-bold ph-lg',
+	icon: 'ti ti-chart-line',
 }]);
 
 definePageMetadata(() => ({
 	title: i18n.ts.instanceInfo,
-	icon: 'ph-info ph-bold ph-lg',
+	icon: 'ti ti-info-circle',
 }));
 </script>
 

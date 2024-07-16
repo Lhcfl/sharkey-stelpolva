@@ -80,11 +80,11 @@ watch(() => props.antennaId, async () => {
 }, { immediate: true });
 
 const headerActions = computed(() => antenna.value ? [{
-	icon: 'ph-calendar ph-bold ph-lg',
+	icon: 'ti ti-calendar-time',
 	text: i18n.ts.jumpToSpecifiedDate,
 	handler: timetravel,
 }, {
-	icon: 'ph-gear ph-bold ph-lg',
+	icon: 'ti ti-settings',
 	text: i18n.ts.settings,
 	handler: settings,
 }] : []);
@@ -93,7 +93,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: antenna.value ? antenna.value.name : i18n.ts.antennas,
-	icon: 'ph-flying-saucer ph-bold ph-lg',
+	icon: 'ti ti-antenna',
 }));
 </script>
 

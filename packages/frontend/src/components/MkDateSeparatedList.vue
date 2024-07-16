@@ -76,7 +76,7 @@ export default defineComponent({
 						class: $style['date-1'],
 					}, [
 						h('i', {
-							class: `ph-caret-up ph-bold ph-lg ${$style['date-1-icon']}`,
+							class: `ti ti-chevron-up ${$style['date-1-icon']}`,
 						}),
 						getDateText(item.createdAt),
 					]),
@@ -85,7 +85,7 @@ export default defineComponent({
 					}, [
 						getDateText(props.items[i + 1].createdAt),
 						h('i', {
-							class: `ph-caret-down ph-bold ph-lg ${$style['date-2-icon']}`,
+							class: `ti ti-chevron-down ${$style['date-2-icon']}`,
 						}),
 					]),
 				]));

@@ -48,20 +48,20 @@ const headerActions = computed(() => []);
 
 const headerTabs = computed(() => [{
 	key: 'featured',
-	icon: 'ph-lightning ph-bold ph-lg',
+	icon: 'ti ti-bolt',
 	title: i18n.ts.featured,
 }, {
 	key: 'users',
-	icon: 'ph-users ph-bold ph-lg',
+	icon: 'ti ti-users',
 	title: i18n.ts.users,
 }, {
 	key: 'roles',
-	icon: 'ph-seal-check ph-bold ph-lg',
+	icon: 'ti ti-badges',
 	title: i18n.ts.roles,
 }]);
 
 definePageMetadata(() => ({
 	title: i18n.ts.explore,
-	icon: 'ph-hash ph-bold ph-lg',
+	icon: 'ti ti-hash',
 }));
 </script>

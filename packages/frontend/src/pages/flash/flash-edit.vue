@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkTextarea v-model="summary" :mfmAutocomplete="true" :mfmPreview="true">
 				<template #label>{{ i18n.ts._play.summary }}</template>
 			</MkTextarea>
-			<MkButton primary @click="selectPreset">{{ i18n.ts.selectFromPresets }}<i class="ph-caret-down ph-bold ph-lg"></i></MkButton>
+			<MkButton primary @click="selectPreset">{{ i18n.ts.selectFromPresets }}<i class="ti ti-chevron-down"></i></MkButton>
 			<MkCodeEditor v-model="script" lang="is">
 				<template #label>{{ i18n.ts._play.script }}</template>
 			</MkCodeEditor>
@@ -25,9 +25,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<option :key="'private'" :value="'private'">{{ i18n.ts.private }}</option>
 			</MkSelect>
 			<div class="_buttons">
-				<MkButton primary @click="save"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
-				<MkButton @click="show"><i class="ph-eye ph-bold ph-lg"></i> {{ i18n.ts.show }}</MkButton>
-				<MkButton v-if="flash" danger @click="del"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
+				<MkButton primary @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
+				<MkButton @click="show"><i class="ti ti-eye"></i> {{ i18n.ts.show }}</MkButton>
+				<MkButton v-if="flash" danger @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 			</div>
 		</div>
 	</MkSpacer>

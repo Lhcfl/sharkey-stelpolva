@@ -25,12 +25,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<FormLink to="/admin/server-rules">{{ i18n.ts.serverRules }}</FormLink>
 
 					<MkInput v-model="tosUrl" type="url">
-						<template #prefix><i class="ph-link ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-link"></i></template>
 						<template #label>{{ i18n.ts.tosUrl }}</template>
 					</MkInput>
 
 					<MkInput v-model="privacyPolicyUrl" type="url">
-						<template #prefix><i class="ph-link ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-link"></i></template>
 						<template #label>{{ i18n.ts.privacyPolicyUrl }}</template>
 					</MkInput>
 
@@ -40,7 +40,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkTextarea>
 
 					<MkInput v-model="inquiryUrl" type="url">
-						<template #prefix><i class="ph-link ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-link"></i></template>
 						<template #label>{{ i18n.ts._serverSettings.inquiryUrl }}</template>
 						<template #caption>{{ i18n.ts._serverSettings.inquiryUrlDescription }}</template>
 					</MkInput>
@@ -70,7 +70,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template #footer>
 			<div :class="$style.footer">
 				<MkSpacer :contentMax="700" :marginMin="16" :marginMax="16">
-					<MkButton primary rounded @click="save"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
+					<MkButton primary rounded @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
 				</MkSpacer>
 			</div>
 		</template>
@@ -144,7 +144,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.moderation,
-	icon: 'ph-shield ph-bold ph-lg',
+	icon: 'ti ti-shield',
 }));
 </script>
 

@@ -14,26 +14,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.fileQuickActionsRoot">
 			<button class="_button" :class="$style.fileNameEditBtn" @click="rename()">
 				<h2 class="_nowrap" :class="$style.fileName">{{ file.name }}</h2>
-				<i class="ph-pencil-simple ph-bold ph-lg" :class="$style.fileNameEditIcon"></i>
+				<i class="ti ti-pencil" :class="$style.fileNameEditIcon"></i>
 			</button>
 			<div :class="$style.fileQuickActionsOthers">
 				<button v-tooltip="i18n.ts.createNoteFromTheFile" class="_button" :class="$style.fileQuickActionsOthersButton" @click="postThis()">
-					<i class="ph-pencil-simple ph-bold ph-lg"></i>
+					<i class="ti ti-pencil"></i>
 				</button>
 				<button v-if="isImage" v-tooltip="i18n.ts.cropImage" class="_button" :class="$style.fileQuickActionsOthersButton" @click="crop()">
-					<i class="ph-crop ph-bold ph-lg"></i>
+					<i class="ti ti-crop"></i>
 				</button>
 				<button v-if="file.isSensitive" v-tooltip="i18n.ts.unmarkAsSensitive" class="_button" :class="$style.fileQuickActionsOthersButton" @click="toggleSensitive()">
-					<i class="ph-eye ph-bold ph-lg"></i>
+					<i class="ti ti-eye"></i>
 				</button>
 				<button v-else v-tooltip="i18n.ts.markAsSensitive" class="_button" :class="$style.fileQuickActionsOthersButton" @click="toggleSensitive()">
-					<i class="ph-eye-slash ph-bold ph-lg"></i>
+					<i class="ti ti-eye-exclamation"></i>
 				</button>
 				<a v-tooltip="i18n.ts.download" :href="file.url" :download="file.name" class="_button" :class="$style.fileQuickActionsOthersButton">
-					<i class="ph-download ph-bold ph-lg"></i>
+					<i class="ti ti-download"></i>
 				</a>
 				<button v-tooltip="i18n.ts.delete" class="_button" :class="[$style.fileQuickActionsOthersButton, $style.danger]" @click="deleteFile()">
-					<i class="ph-trash ph-bold ph-lg"></i>
+					<i class="ti ti-trash"></i>
 				</button>
 			</div>
 		</div>
@@ -41,7 +41,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<button class="_button" :class="$style.fileAltEditBtn" @click="describe()">
 				<MkKeyValue>
 					<template #key>{{ i18n.ts.description }}</template>
-					<template #value>{{ file.comment ? file.comment : `(${i18n.ts.none})` }}<i class="ph-pencil-simple ph-bold ph-lg" :class="$style.fileAltEditIcon"></i></template>
+					<template #value>{{ file.comment ? file.comment : `(${i18n.ts.none})` }}<i class="ti ti-pencil" :class="$style.fileAltEditIcon"></i></template>
 				</MkKeyValue>
 			</button>
 			<MkKeyValue :class="$style.fileMetaDataChildren">

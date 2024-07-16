@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</FormSection>
 
-	<MkButton danger @click="reset()"><i class="ph-arrow-clockwise ph-bold ph-lg"></i> {{ i18n.ts.default }}</MkButton>
+	<MkButton danger @click="reset()"><i class="ti ti-reload"></i> {{ i18n.ts.default }}</MkButton>
 </div>
 </template>
 
@@ -96,6 +96,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.sounds,
-	icon: 'ph-music-notes ph-bold ph-lg',
+	icon: 'ti ti-music',
 }));
 </script>

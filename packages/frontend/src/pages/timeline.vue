@@ -151,7 +151,7 @@ async function chooseList(ev: MouseEvent): Promise<void> {
 		(lists.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link' as const,
-			icon: 'ph-plus ph-bold ph-lg',
+			icon: 'ti ti-plus',
 			text: i18n.ts.createNew,
 			to: '/my/lists',
 		},
@@ -171,7 +171,7 @@ async function chooseAntenna(ev: MouseEvent): Promise<void> {
 		(antennas.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link' as const,
-			icon: 'ph-plus ph-bold ph-lg',
+			icon: 'ti ti-plus',
 			text: i18n.ts.createNew,
 			to: '/my/antennas',
 		},
@@ -196,7 +196,7 @@ async function chooseChannel(ev: MouseEvent): Promise<void> {
 		(channels.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link' as const,
-			icon: 'ph-plus ph-bold ph-lg',
+			icon: 'ti ti-plus',
 			text: i18n.ts.createNew,
 			to: '/channels',
 		},
@@ -248,7 +248,7 @@ function closeTutorial(): void {
 const headerActions = computed(() => {
 	const tmp = [
 		{
-			icon: 'ph-dots-three ph-bold ph-lg',
+			icon: 'ti ti-dots',
 			text: i18n.ts.options,
 			handler: (ev) => {
 				os.popupMenu([{
@@ -275,7 +275,7 @@ const headerActions = computed(() => {
 	];
 	if (deviceKind === 'desktop') {
 		tmp.unshift({
-			icon: 'ph-arrows-counter-clockwise ph-bold ph-lg',
+			icon: 'ti ti-refresh',
 			text: i18n.ts.reload,
 			handler: (ev: Event) => {
 				tlComponent.value?.reloadTimeline();
@@ -288,22 +288,22 @@ const headerActions = computed(() => {
 const headerTabs = computed(() => [...(defaultStore.reactiveState.pinnedUserLists.value.map(l => ({
 	key: 'list:' + l.id,
 	title: l.name,
-	icon: 'ph-star ph-bold ph-lg',
+	icon: 'ti ti-star',
 	iconOnly: true,
 }))), {
 	key: 'home',
 	title: i18n.ts._timelines.home,
-	icon: 'ph-house ph-bold ph-lg',
+	icon: 'ti ti-home',
 	iconOnly: true,
 }, ...(isLocalTimelineAvailable ? [{
 	key: 'local',
 	title: i18n.ts._timelines.local,
-	icon: 'ph-planet ph-bold ph-lg',
+	icon: 'ti ti-planet',
 	iconOnly: true,
 }, {
 	key: 'social',
 	title: i18n.ts._timelines.social,
-	icon: 'ph-rocket-launch ph-bold ph-lg',
+	icon: 'ti ti-universe',
 	iconOnly: true,
 }] : []), ...(isBubbleTimelineAvailable ? [{
 	key: 'bubble',
@@ -313,20 +313,20 @@ const headerTabs = computed(() => [...(defaultStore.reactiveState.pinnedUserList
 }] : []), ...(isGlobalTimelineAvailable ? [{
 	key: 'global',
 	title: i18n.ts._timelines.global,
-	icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+	icon: 'ti ti-whirl',
 	iconOnly: true,
 }] : []), {
-	icon: 'ph-list ph-bold ph-lg',
+	icon: 'ti ti-list',
 	title: i18n.ts.lists,
 	iconOnly: true,
 	onClick: chooseList,
 }, {
-	icon: 'ph-flying-saucer ph-bold ph-lg',
+	icon: 'ti ti-antenna',
 	title: i18n.ts.antennas,
 	iconOnly: true,
 	onClick: chooseAntenna,
 }, {
-	icon: 'ph-television ph-bold ph-lg',
+	icon: 'ti ti-device-tv',
 	title: i18n.ts.channel,
 	iconOnly: true,
 	onClick: chooseChannel,
@@ -336,20 +336,20 @@ const headerTabsWhenNotLogin = computed(() => [
 	...(isLocalTimelineAvailable ? [{
 		key: 'local',
 		title: i18n.ts._timelines.local,
-		icon: 'ph-planet ph-bold ph-lg',
+		icon: 'ti ti-planet',
 		iconOnly: true,
 	}] : []),
 	...(isGlobalTimelineAvailable ? [{
 		key: 'global',
 		title: i18n.ts._timelines.global,
-		icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+		icon: 'ti ti-whirl',
 		iconOnly: true,
 	}] : []),
 ] as Tab[]);
 
 definePageMetadata(() => ({
 	title: i18n.ts.timeline,
-	icon: src.value === 'local' ? 'ph-planet ph-bold ph-lg' : src.value === 'social' ? 'ph-rocket-launch ph-bold ph-lg' : src.value === 'global' ? 'ph-globe-hemisphere-west ph-bold ph-lg' : src.value === 'bubble' ? 'ph-drop ph-bold ph-lg' : 'ph-house ph-bold ph-lg',
+	icon: src.value === 'local' ? 'ti ti-planet' : src.value === 'social' ? 'ti ti-universe' : src.value === 'global' ? 'ti ti-whirl' : src.value === 'bubble' ? 'ph-drop ph-bold ph-lg' : 'ti ti-home',
 }));
 </script>
 
