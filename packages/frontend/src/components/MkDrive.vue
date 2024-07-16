@@ -763,6 +763,7 @@ onBeforeUnmount(() => {
 .navMenu {
 	display: flex;
 	margin-left: auto;
+	align-items: center;
 }
 
 .navMenu > *:not(:last-child) {
