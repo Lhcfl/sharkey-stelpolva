@@ -267,7 +267,7 @@ const background = computed(() => {
 		return {
 			'--backgroundImageStatic': `url('${props.user.backgroundUrl}')`
 		};
-	};
+	}
 });
 
 watch(moderationNote, async () => {
@@ -304,7 +304,7 @@ const style = computed(() => {
 		return {
 			backgroundImage: `url(${ props.user.bannerUrl })`,
 		};
-	};
+	}
 });
 
 const age = computed(() => {
