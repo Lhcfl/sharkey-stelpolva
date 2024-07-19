@@ -10,6 +10,7 @@ import { QueryService } from '@/core/QueryService.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
+import { Brackets } from 'typeorm';
 
 export const meta = {
 	tags: ['drive'],
@@ -63,7 +64,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.searchQuery.length > 0) {
-				query.andWhere('file.name ILIKE :searchQuery OR file.comment ILIKE :searchQuery', { searchQuery: `%${sqlLikeEscape(ps.searchQuery)}%` });
+				const args = { searchQuery: `%${sqlLikeEscape(ps.searchQuery)}%` };
+				query.andWhere(new Brackets((qb) => {
+					qb
+						.where('file.name ILIKE :searchQuery', args)
+						.orWhere('file.comment ILIKE :searchQuery', args);
+				}));
 			}
 
 			if (ps.type) {
