@@ -30,7 +30,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-if="folder != null" :class="[$style.navPathItem, $style.navSeparator]"><i class="ti ti-chevron-right"></i></span>
 			<span v-if="folder != null" :class="[$style.navPathItem, $style.navCurrent]">{{ folder.name }}</span>
 		</div>
-		<button class="_button" :class="$style.navMenu" @click="showMenu"><i class="ti ti-dots"></i></button>
+		<div :class="$style.navMenu">
+			<!-- "Search drive via alt text or file names" -->
+			<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" :placeholder="i18n.ts.driveSearchbarPlaceholder" @enter="fetch">
+				<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+			</MkInput>
+
+			<button class="_button" :class="$style.navMenu" @click="showMenu"><i class="ti ti-dots"></i></button>
+		</div>
 	</nav>
 	<div
 		ref="main"
@@ -102,6 +109,7 @@ import type { MenuItem } from '@/types/menu.js';
 import XNavFolder from '@/components/MkDrive.navFolder.vue';
 import XFolder from '@/components/MkDrive.folder.vue';
 import XFile from '@/components/MkDrive.file.vue';
+import MkInput from '@/components/MkInput.vue';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { useStream } from '@/stream.js';
@@ -109,6 +117,8 @@ import { defaultStore } from '@/store.js';
 import { i18n } from '@/i18n.js';
 import { uploadFile, uploads } from '@/scripts/upload.js';
 import { claimAchievement } from '@/scripts/achievements.js';
+
+const searchQuery = ref('');
 
 const props = withDefaults(defineProps<{
 	initialFolder?: Misskey.entities.DriveFolder;
@@ -540,6 +550,7 @@ async function fetch() {
 	const foldersPromise = misskeyApi('drive/folders', {
 		folderId: folder.value ? folder.value.id : null,
 		limit: foldersMax + 1,
+		searchQuery: searchQuery.value.toString().trim(),
 	}).then(fetchedFolders => {
 		if (fetchedFolders.length === foldersMax + 1) {
 			moreFolders.value = true;
@@ -552,6 +563,7 @@ async function fetch() {
 		folderId: folder.value ? folder.value.id : null,
 		type: props.type,
 		limit: filesMax + 1,
+		searchQuery: searchQuery.value.toString().trim(),
 	}).then(fetchedFiles => {
 		if (fetchedFiles.length === filesMax + 1) {
 			moreFiles.value = true;
@@ -578,6 +590,7 @@ function fetchMoreFolders() {
 		type: props.type,
 		untilId: folders.value.at(-1)?.id,
 		limit: max + 1,
+		searchQuery: searchQuery.value.toString().trim(),
 	}).then(folders => {
 		if (folders.length === max + 1) {
 			moreFolders.value = true;
@@ -601,6 +614,7 @@ function fetchMoreFiles() {
 		type: props.type,
 		untilId: files.value.at(-1)?.id,
 		limit: max + 1,
+		searchQuery: searchQuery.value.toString().trim(),
 	}).then(files => {
 		if (files.length === max + 1) {
 			moreFiles.value = true;
@@ -747,8 +761,13 @@ onBeforeUnmount(() => {
 }
 
 .navMenu {
+	display: flex;
 	margin-left: auto;
-	padding: 0 12px;
+	align-items: center;
+}
+
+.navMenu > *:not(:last-child) {
+	padding-right: 12px;
 }
 
 .main {
