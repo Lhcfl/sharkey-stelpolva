@@ -112,6 +112,11 @@ export async function masterMain() {
 			await server();
 		}
 
+		if (config.clusterLimit === 0) {
+			bootLogger.error("Configuration error: we can't create workers, `config.clusterLimit` is 0 (if you don't want to use clustering, set the environment variable `MK_DISABLE_CLUSTERING` to a non-empty value instead)", null, true);
+			process.exit(1);
+		}
+
 		await spawnWorkers(config.clusterLimit);
 	}
 
@@ -181,14 +186,8 @@ async function connectDb(): Promise<void> {
 
 async function spawnWorkers(limit = 1) {
 	const cpuCount = os.cpus().length;
-	const workers = Math.min(limit, cpuCount);
-	if (workers === 0) {
-		const cause = cpuCount === 0
-			? 'you seem to have no CPUs (this may be caused by some "hardening" system)'
-			: "`config.clusterLimit` is 0 (if you don't want to use clustering, set the environment variable `MK_DISABLE_CLUSTERING` to a non-empty value instead)";
-		bootLogger.error(`Configuration error: we can't create workers, ${cause}`, null, true);
-		process.exit(1);
-	}
+	// in some weird environments, node can't count the CPUs; we trust the config in those cases
+	const workers = cpuCount === 0 ? limit : Math.min(limit, cpuCount);
 
 	bootLogger.info(`Starting ${workers} worker${workers === 1 ? '' : 's'}...`);
 	await Promise.all([...Array(workers)].map(spawnWorker));
