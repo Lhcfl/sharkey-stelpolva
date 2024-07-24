@@ -5,10 +5,9 @@ function iconsReplace(opts: RollupReplaceOptions) {
 	return pluginReplace({
 		...opts,
 		preventAssignment: false,
-		// only replace these strings at the start of strings, remove a
-		// `ti-fw` it if happens to be just after, and make sure they're
-		// followed by a word-boundary that's not a dash
-		delimiters: ['(?<=["\'`])', '(?: ti-fw)?\\b(?!-)'],
+		// only replace these strings at the start of strings, and make
+		// sure they're followed by a word-boundary that's not a dash
+		delimiters: ['(?<=["\'`])', '\\b(?!-)'],
 	});
 }
 
