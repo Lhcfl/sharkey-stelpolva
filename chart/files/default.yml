@@ -208,8 +208,10 @@ id: "aidx"
 # Media Proxy
 #mediaProxy: https://example.com/proxy
 
-# Sign to ActivityPub GET request (default: true)
+# Sign outgoing ActivityPub GET request (default: true)
 signToActivityPubGet: true
+# Sign outgoing ActivityPub Activities (default: true)
+attachLdSignatureForRelays: true
 # check that inbound ActivityPub GET requests are signed ("authorized fetch")
 checkActivityPubGetSignature: false
 

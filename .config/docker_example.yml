@@ -270,8 +270,10 @@ proxyRemoteFiles: true
 #   https://example.com/thumbnail.webp?thumbnail=1&url=https%3A%2F%2Fstorage.example.com%2Fpath%2Fto%2Fvideo.mp4
 #videoThumbnailGenerator: https://example.com
 
-# Sign to ActivityPub GET request (default: true)
+# Sign outgoing ActivityPub GET request (default: true)
 signToActivityPubGet: true
+# Sign outgoing ActivityPub Activities (default: true)
+attachLdSignatureForRelays: true
 # check that inbound ActivityPub GET requests are signed ("authorized fetch")
 checkActivityPubGetSignature: false
 

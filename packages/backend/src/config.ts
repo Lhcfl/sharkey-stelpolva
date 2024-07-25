@@ -4,12 +4,12 @@
  */
 
 import * as fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {dirname, resolve} from 'node:path';
 import * as yaml from 'js-yaml';
-import { globSync } from 'glob';
+import {globSync} from 'glob';
 import * as Sentry from '@sentry/node';
-import type { RedisOptions } from 'ioredis';
+import type {RedisOptions} from 'ioredis';
 
 type RedisOptionsSource = Partial<RedisOptions> & {
 	host: string;
@@ -95,6 +95,7 @@ type Source = {
 	customMOTD?: string[];
 
 	signToActivityPubGet?: boolean;
+	attachLdSignatureForRelays?: boolean;
 	checkActivityPubGetSignature?: boolean;
 
 	perChannelMaxNoteCacheCount?: number;
@@ -161,6 +162,7 @@ export type Config = {
 	proxyRemoteFiles: boolean | undefined;
 	customMOTD: string[] | undefined;
 	signToActivityPubGet: boolean;
+	attachLdSignatureForRelays: boolean;
 	checkActivityPubGetSignature: boolean | undefined;
 
 	version: string;
@@ -291,6 +293,7 @@ export function loadConfig(): Config {
 		proxyRemoteFiles: config.proxyRemoteFiles,
 		customMOTD: config.customMOTD,
 		signToActivityPubGet: config.signToActivityPubGet ?? true,
+		attachLdSignatureForRelays: config.attachLdSignatureForRelays ?? true,
 		checkActivityPubGetSignature: config.checkActivityPubGetSignature,
 		mediaProxy: externalMediaProxy ?? internalMediaProxy,
 		externalMediaProxyEnabled: externalMediaProxy !== null && externalMediaProxy !== internalMediaProxy,
