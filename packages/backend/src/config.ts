@@ -4,12 +4,12 @@
  */
 
 import * as fs from 'node:fs';
-import {fileURLToPath} from 'node:url';
-import {dirname, resolve} from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import * as yaml from 'js-yaml';
-import {globSync} from 'glob';
+import { globSync } from 'glob';
 import * as Sentry from '@sentry/node';
-import type {RedisOptions} from 'ioredis';
+import type { RedisOptions } from 'ioredis';
 
 type RedisOptionsSource = Partial<RedisOptions> & {
 	host: string;
