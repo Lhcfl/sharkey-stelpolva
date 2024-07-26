@@ -3,69 +3,36 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import {createPublicKey, randomUUID} from 'node:crypto';
-import {Inject, Injectable} from '@nestjs/common';
-import {In} from 'typeorm';
+import { createPublicKey, randomUUID } from 'node:crypto';
+import { Inject, Injectable } from '@nestjs/common';
+import { In } from 'typeorm';
 import * as mfm from '@transfem-org/sfm-js';
-import {DI} from '@/di-symbols.js';
-import type {Config} from '@/config.js';
-import type {MiLocalUser, MiPartialLocalUser, MiPartialRemoteUser, MiRemoteUser, MiUser} from '@/models/User.js';
-import type {IMentionedRemoteUsers, MiNote} from '@/models/Note.js';
-import type {MiBlocking} from '@/models/Blocking.js';
-import type {MiRelay} from '@/models/Relay.js';
-import type {MiDriveFile} from '@/models/DriveFile.js';
-import type {MiNoteReaction} from '@/models/NoteReaction.js';
-import type {MiEmoji} from '@/models/Emoji.js';
-import type {MiPoll} from '@/models/Poll.js';
-import type {MiPollVote} from '@/models/PollVote.js';
-import {UserKeypairService} from '@/core/UserKeypairService.js';
-import {MfmService} from '@/core/MfmService.js';
-import {UserEntityService} from '@/core/entities/UserEntityService.js';
-import {DriveFileEntityService} from '@/core/entities/DriveFileEntityService.js';
-import type {MiUserKeypair} from '@/models/UserKeypair.js';
-import type {
-	DriveFilesRepository,
-	InstancesRepository,
-	NotesRepository,
-	PollsRepository,
-	UserProfilesRepository,
-	UsersRepository
-} from '@/models/_.js';
-import {bindThis} from '@/decorators.js';
-import {CustomEmojiService} from '@/core/CustomEmojiService.js';
-import {isNotNull} from '@/misc/is-not-null.js';
-import {IdService} from '@/core/IdService.js';
-import {MetaService} from '../MetaService.js';
-import {JsonLdService} from './JsonLdService.js';
-import {ApMfmService} from './ApMfmService.js';
-import {CONTEXT} from './misc/contexts.js';
-import type {
-	IAccept,
-	IActivity,
-	IAdd,
-	IAnnounce,
-	IApDocument,
-	IApEmoji,
-	IApHashtag,
-	IApImage,
-	IApMention,
-	IBlock,
-	ICreate,
-	IDelete,
-	IFlag,
-	IFollow,
-	IKey,
-	ILike,
-	IMove,
-	IObject,
-	IPost,
-	IQuestion,
-	IReject,
-	IRemove,
-	ITombstone,
-	IUndo,
-	IUpdate
-} from './type.js';
+import { DI } from '@/di-symbols.js';
+import type { Config } from '@/config.js';
+import type { MiPartialLocalUser, MiLocalUser, MiPartialRemoteUser, MiRemoteUser, MiUser } from '@/models/User.js';
+import type { IMentionedRemoteUsers, MiNote } from '@/models/Note.js';
+import type { MiBlocking } from '@/models/Blocking.js';
+import type { MiRelay } from '@/models/Relay.js';
+import type { MiDriveFile } from '@/models/DriveFile.js';
+import type { MiNoteReaction } from '@/models/NoteReaction.js';
+import type { MiEmoji } from '@/models/Emoji.js';
+import type { MiPoll } from '@/models/Poll.js';
+import type { MiPollVote } from '@/models/PollVote.js';
+import { UserKeypairService } from '@/core/UserKeypairService.js';
+import { MfmService } from '@/core/MfmService.js';
+import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
+import type { MiUserKeypair } from '@/models/UserKeypair.js';
+import type { UsersRepository, UserProfilesRepository, NotesRepository, DriveFilesRepository, PollsRepository, InstancesRepository } from '@/models/_.js';
+import { bindThis } from '@/decorators.js';
+import { CustomEmojiService } from '@/core/CustomEmojiService.js';
+import { isNotNull } from '@/misc/is-not-null.js';
+import { IdService } from '@/core/IdService.js';
+import { MetaService } from '../MetaService.js';
+import { JsonLdService } from './JsonLdService.js';
+import { ApMfmService } from './ApMfmService.js';
+import { CONTEXT } from './misc/contexts.js';
+import type { IAccept, IActivity, IAdd, IAnnounce, IApDocument, IApEmoji, IApHashtag, IApImage, IApMention, IBlock, ICreate, IDelete, IFlag, IFollow, IKey, ILike, IMove, IObject, IPost, IQuestion, IReject, IRemove, ITombstone, IUndo, IUpdate } from './type.js';
 
 @Injectable()
 export class ApRendererService {
