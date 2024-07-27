@@ -793,8 +793,9 @@ export class ApRendererService {
 
 	@bindThis
 	public async attachLdSignature(activity: any, user: { id: MiUser['id']; host: null; }): Promise<IActivity> {
-		// When using authorized fetch, Linked Data signatures are often undesired (as it can allow blocked instances to bypass the check).
-		// We allow admins to disable LD signatures for increased privacy, at the expense of increased incoming fetch (GET) requests.
+		// Linked Data signatures are cryptographic signatures attached to each activity to provide proof of authenticity.
+		// When using authorized fetch, this is often undesired as any signed activity can be forwarded to a blocked instance by relays and other instances.
+		// This setting allows admins to disable LD signatures for increased privacy, at the expense of fewer relayed activities and additional inbound fetch (GET) requests.
 		if (!this.config.attachLdSignatureForRelays) {
 			return activity;
 		}
