@@ -11,9 +11,16 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DeleteAccountService } from '@/core/DeleteAccountService.js';
 import { DI } from '@/di-symbols.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
+import ms from 'ms';
 
 export const meta = {
 	requireCredential: true,
+
+	limit: {
+		duration: ms('1hour'),
+		max: 10,
+		minInterval: ms('1sec'),
+	},
 
 	secure: true,
 } as const;
