@@ -120,11 +120,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 
 			<div class="contents _gaps">
-				<div v-if="user.pinnedNotes.length > 0 && defaultStore.state.noteDesign === 'misskey'" class="_gaps">
+				<div v-if="user.pinnedNotes.length > 0" class="_gaps">
 					<MkNote v-for="note in user.pinnedNotes" :key="note.id" class="note _panel" :note="note" :pinned="true"/>
-				</div>
-				<div v-else-if="user.pinnedNotes.length > 0 && defaultStore.state.noteDesign === 'sharkey'" class="_gaps">
-					<SkNote v-for="note in user.pinnedNotes" :key="note.id" class="note _panel" :note="note" :pinned="true"/>
 				</div>
 				<MkInfo v-else-if="$i && $i.id === user.id">{{ i18n.ts.userPagePinTip }}</MkInfo>
 				<template v-if="narrow">
@@ -171,9 +168,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { defineAsyncComponent, computed, onMounted, onUnmounted, nextTick, watch, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkTab from '@/components/MkTab.vue';
-import MkNote from '@/components/MkNote.vue';
 import MkNotes from '@/components/MkNotes.vue';
-import SkNote from '@/components/SkNote.vue';
 import MkFollowButton from '@/components/MkFollowButton.vue';
 import MkAccountMoved from '@/components/MkAccountMoved.vue';
 import MkRemoteCaution from '@/components/MkRemoteCaution.vue';
@@ -194,6 +189,12 @@ import { misskeyApi } from '@/scripts/misskey-api.js';
 import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/scripts/isFfVisibleForMe.js';
 import { useRouter } from '@/router/supplier.js';
 import { getStaticImageUrl } from '@/scripts/media-proxy.js';
+
+const MkNote = defineAsyncComponent(() =>
+	(defaultStore.state.noteDesign === 'misskey') ? import('@/components/MkNote.vue') :
+	(defaultStore.state.noteDesign === 'sharkey') ? import('@/components/SkNote.vue') :
+	null
+);
 
 function calcAge(birthdate: string): number {
 	const date = new Date(birthdate);
