@@ -1238,7 +1238,8 @@ keepOriginalFilename: "Mantieni il nome file originale"
 keepOriginalFilenameDescription: "Disattivandola, i file verranno caricati usando nomi casuali."
 noDescription: "Manca la descrizione"
 _delivery:
-  stop: "Sospensione"
+  stop: "Sospendi la distribuzione di attività"
+  resume: "Riprendi la distribuzione di attività"
   _type:
     none: "Pubblicazione"
 _bubbleGame:
