@@ -777,7 +777,9 @@ async function post(ev?: MouseEvent) {
 	if (defaultStore.state.warnMissingAltText) {
 		const filesData = toRaw(files.value);
 
-		const isMissingAltText = filesData.some(file => !file.comment);
+		const isMissingAltText = filesData.filter(
+			file => file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/')
+		).some(file => !file.comment);
 
 		if (isMissingAltText) {
 			const { canceled, result } = await os.actions({
