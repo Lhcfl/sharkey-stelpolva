@@ -12,9 +12,10 @@ import * as Sentry from '@sentry/node';
 import type { RedisOptions } from 'ioredis';
 
 type RedisOptionsSource = Partial<RedisOptions> & {
-	host: string;
-	port: number;
+	host?: string;
+	port?: number;
 	family?: number;
+	path?: string,
 	pass: string;
 	db?: number;
 	prefix?: string;
