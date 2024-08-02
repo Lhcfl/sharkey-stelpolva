@@ -580,7 +580,7 @@ seems to do a decent job)
 
 *after that commit*, do all the extra work, on the same branch:
 
-* copy all changes:
+* copy all changes (commit after each step):
   * in `packages/backend/src/core/NoteCreateService.ts`, from `create` to
     `import` (and vice versa if `git` got confused!)
   * from `packages/backend/src/core/NoteCreateService.ts` to
@@ -599,12 +599,18 @@ seems to do a decent job)
     `packages/frontend/src/pages/timeline.vue`,
     `packages/frontend/src/ui/deck/tl-column.vue`,
     `packages/frontend/src/widgets/WidgetTimeline.vue`)
+* re-generate `misskey-js` (`pnpm build-misskey-js-with-types`) and commit
+* build the frontend: `rm -rf built/; NODE_ENV=development pnpm --filter=frontend
+  build` (the `development` tells it to keep some of the original
+  filenames in the built files)
 * make sure there aren't any new `ti-*` classes (Tabler Icons), and
-  replace them with appropriate `ph-*` ones (Phosphor Icons).
-  `git grep '["'\'']ti[ -](?!fw)'` should show you what to change.
+  replace them with appropriate `ph-*` ones (Phosphor Icons):
+  `grep -rP '["'\'']ti[ -](?!fw)' -- built/` should show you what to change.
   NOTE: `ti-fw` is a special class that's defined by Misskey, leave it
   alone
-* re-generate `misskey-js`: `pnpm build-misskey-js-with-types`
+
+	after every change, re-build the frontend and check again, until
+  there are no more `ti-*` classes in the built files
 * run tests `pnpm test` and fix as much as you can
   * right now `megalodon` doesn't pass its tests, you probably need to
     run `pnpm --filter=backend test` (requires a test database, [see
