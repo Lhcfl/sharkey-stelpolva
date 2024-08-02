@@ -49,6 +49,22 @@ export class MetaEntityService {
 			}))
 			.getMany();
 
+		// クライアントの手間を減らすためあらかじめJSONに変換しておく
+		let defaultLightTheme = null;
+		let defaultDarkTheme = null;
+		if (instance.defaultLightTheme) {
+			try {
+				defaultLightTheme = JSON.stringify(JSON5.parse(instance.defaultLightTheme));
+			} catch (e) {
+			}
+		}
+		if (instance.defaultDarkTheme) {
+			try {
+				defaultDarkTheme = JSON.stringify(JSON5.parse(instance.defaultDarkTheme));
+			} catch (e) {
+			}
+		}
+
 		const packed: Packed<'MetaLite'> = {
 			maintainerName: instance.maintainerName,
 			maintainerEmail: instance.maintainerEmail,
@@ -92,9 +108,8 @@ export class MetaEntityService {
 			backgroundImageUrl: instance.backgroundImageUrl,
 			logoImageUrl: instance.logoImageUrl,
 			maxNoteTextLength: this.config.maxNoteLength,
-			// クライアントの手間を減らすためあらかじめJSONに変換しておく
-			defaultLightTheme: instance.defaultLightTheme ? JSON.stringify(JSON5.parse(instance.defaultLightTheme)) : null,
-			defaultDarkTheme: instance.defaultDarkTheme ? JSON.stringify(JSON5.parse(instance.defaultDarkTheme)) : null,
+			defaultLightTheme,
+			defaultDarkTheme,
 			defaultLike: instance.defaultLike,
 			ads: ads.map(ad => ({
 				id: ad.id,
@@ -116,6 +131,7 @@ export class MetaEntityService {
 
 			mediaProxy: this.config.mediaProxy,
 			enableUrlPreview: instance.urlPreviewEnabled,
+			noteSearchableScope: (this.config.meilisearch == null || this.config.meilisearch.scope !== 'local') ? 'global' : 'local',
 		};
 
 		return packed;
@@ -156,4 +172,3 @@ export class MetaEntityService {
 		return packDetailed;
 	}
 }
-

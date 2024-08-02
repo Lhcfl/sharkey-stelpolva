@@ -41,6 +41,7 @@ import XModPlayer from '@/components/SkModPlayer.vue';
 import * as os from '@/os.js';
 import { FILE_TYPE_BROWSERSAFE, FILE_EXT_TRACKER_MODULES, FILE_TYPE_TRACKER_MODULES } from '@/const.js';
 import { defaultStore } from '@/store.js';
+import { focusParent } from '@/scripts/focus.js';
 
 const props = defineProps<{
 	mediaList: Misskey.entities.DriveFile[];
@@ -51,7 +52,9 @@ const gallery = shallowRef<HTMLDivElement>();
 const pswpZIndex = os.claimZIndex('middle');
 document.documentElement.style.setProperty('--mk-pswp-root-z-index', pswpZIndex.toString());
 const count = computed(() => props.mediaList.filter(media => previewable(media)).length);
-let lightbox: PhotoSwipeLightbox | null;
+let lightbox: PhotoSwipeLightbox | null = null;
+
+let activeEl: HTMLElement | null = null;
 
 const popstateHandler = (): void => {
 	if (lightbox?.pswp && lightbox.pswp.isOpen === true) {
@@ -62,7 +65,7 @@ const popstateHandler = (): void => {
 async function calcAspectRatio() {
 	if (!gallery.value) return;
 
-	let img = props.mediaList[0];
+	const img = props.mediaList[0];
 
 	if (props.mediaList.length !== 1 || !(img.properties.width && img.properties.height)) {
 		gallery.value.style.aspectRatio = '';
@@ -139,18 +142,17 @@ onMounted(() => {
 		bgOpacity: 1,
 		showAnimationDuration: 100,
 		hideAnimationDuration: 100,
+		returnFocus: false,
 		pswpModule: PhotoSwipe,
 	});
 
-	lightbox.on('itemData', (ev) => {
-		const { itemData } = ev;
-
+	lightbox.addFilter('itemData', (itemData) => {
 		// element is children
 		const { element } = itemData;
 
 		const id = element?.dataset.id;
 		const file = props.mediaList.find(media => media.id === id);
-		if (!file) return;
+		if (!file) return itemData;
 
 		itemData.src = file.url;
 		itemData.w = Number(file.properties.width);
@@ -162,19 +164,21 @@ onMounted(() => {
 		itemData.alt = file.comment ?? undefined;
 		itemData.comment = file.comment;
 		itemData.thumbCropped = true;
+
+		return itemData;
 	});
 
 	lightbox.on('uiRegister', () => {
 		lightbox?.pswp?.ui?.registerElement({
 			name: 'altText',
-			className: 'pwsp__alt-text-container',
+			className: 'pswp__alt-text-container',
 			appendTo: 'wrapper',
-			onInit: (el, pwsp) => {
-				let textBox = document.createElement('p');
-				textBox.className = 'pwsp__alt-text _acrylic';
+			onInit: (el, pswp) => {
+				const textBox = document.createElement('p');
+				textBox.className = 'pswp__alt-text _acrylic';
 				el.appendChild(textBox);
 
-				pwsp.on('change', (a) => {
+				pwsp.on('change', () => {
 					if (pwsp.currSlide?.data.comment) {
 						textBox.style.display = '';
 					} else {
@@ -187,25 +191,33 @@ onMounted(() => {
 		});
 	});
 
-	lightbox.init();
-
-	window.addEventListener('popstate', popstateHandler);
-
-	lightbox.on('beforeOpen', () => {
+	lightbox.on('afterInit', () => {
+		activeEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+		focusParent(activeEl, true, true);
+		lightbox?.pswp?.element?.focus({
+			preventScroll: true,
+		});
 		history.pushState(null, '', '#pswp');
 	});
 
-	lightbox.on('close', () => {
+	lightbox.on('destroy', () => {
+		focusParent(activeEl, true, false);
+		activeEl = null;
 		if (window.location.hash === '#pswp') {
 			history.back();
 		}
 	});
+
+	window.addEventListener('popstate', popstateHandler);
+
+	lightbox.init();
 });
 
 onUnmounted(() => {
 	window.removeEventListener('popstate', popstateHandler);
 	lightbox?.destroy();
 	lightbox = null;
+	activeEl = null;
 });
 
 const previewable = (file: Misskey.entities.DriveFile): boolean => {
@@ -214,6 +226,16 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 	if (isModule(file)) return true;
 	return (file.type.startsWith('video') || file.type.startsWith('image')) && FILE_TYPE_BROWSERSAFE.includes(file.type);
 };
+
+const openGallery = () => {
+	if (props.mediaList.filter(media => previewable(media)).length > 0) {
+		lightbox?.loadAndOpen(0);
+	}
+};
+
+defineExpose({
+	openGallery,
+});
 </script>
 
 <style lang="scss" module>
@@ -317,7 +339,7 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 	backdrop-filter: var(--modalBgFilter);
 }
 
-.pwsp__alt-text-container {
+.pswp__alt-text-container {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -331,7 +353,7 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 	max-width: 800px;
 }
 
-.pwsp__alt-text {
+.pswp__alt-text {
 	color: var(--fg);
 	margin: 0 auto;
 	text-align: center;

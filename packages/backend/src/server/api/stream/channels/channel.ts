@@ -8,6 +8,7 @@ import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
+import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type MiChannelService } from '../channel.js';
 
 class ChannelChannel extends Channel {
@@ -30,9 +31,10 @@ class ChannelChannel extends Channel {
 
 	@bindThis
 	public async init(params: any) {
-		this.channelId = params.channelId as string;
-		this.withFiles = params.withFiles ?? false;
-		this.withRenotes = params.withRenotes ?? true;
+		if (typeof params.channelId !== 'string') return;
+		this.channelId = params.channelId;
+		this.withFiles = !!(params.withFiles ?? false);
+		this.withRenotes = !!(params.withRenotes ?? true);
 
 		// Subscribe stream
 		this.subscriber.on('notesStream', this.onNote);
