@@ -11,6 +11,7 @@ import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import type { MiMeta } from '@/models/Meta.js';
 import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
+import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { MiChannelService } from '../channel.js';
 
 class BubbleTimelineChannel extends Channel {
@@ -35,13 +36,13 @@ class BubbleTimelineChannel extends Channel {
 	}
 
 	@bindThis
-	public async init(params: any) {
+	public async init(params: JsonObject) {
 		const policies = await this.roleService.getUserPolicies(this.user ? this.user.id : null);
 		if (!policies.btlAvailable) return;
 
-		this.withRenotes = params.withRenotes ?? true;
-		this.withFiles = params.withFiles ?? false;
-		this.withBots = params.withBots ?? true;
+		this.withRenotes = !!(params.withRenotes ?? true);
+		this.withFiles = !!(params.withFiles ?? false);
+		this.withBots = !!(params.withBots ?? true);
 		this.instance = await this.metaService.fetch();
 
 		// Subscribe events
