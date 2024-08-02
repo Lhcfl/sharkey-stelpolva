@@ -585,12 +585,16 @@ seems to do a decent job)
     `import` (and vice versa if `git` got confused!)
   * from `packages/backend/src/core/NoteCreateService.ts` to
     `packages/backend/src/core/NoteEditService.vue`
-  * from `ApNoteService.createNote` to `ApNoteService.updateNote`
-  * from `endoints/notes/create.ts` to `endoints/notes/edit.ts`
-  * from `MkNote*` to `SkNote*` (if sensible)
+  * in `packages/backend/src/core/activitypub/models/ApNoteService.ts`,
+    from `createNote` to `updateNote`
+  * from `packages/backend/src/server/api/endpoints/notes/create.ts`
+    to `packages/backend/src/server/api/endpoints/notes/edit.ts`
+  * from `packages/frontend/src/components/MkNote*.vue` to
+    `packages/frontend/src/components/SkNote*.vue` (if sensible)
   * from the global timeline to the bubble timeline
     (`packages/backend/src/server/api/stream/channels/global-timeline.ts`,
     `packages/backend/src/server/api/stream/channels/bubble-timeline.ts`,
+    `packages/frontend/src/timelines.ts`,
     `packages/frontend/src/components/MkTimeline.vue`,
     `packages/frontend/src/pages/timeline.vue`,
     `packages/frontend/src/ui/deck/tl-column.vue`,
