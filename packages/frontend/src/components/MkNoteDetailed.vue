@@ -458,12 +458,14 @@ useTooltip(quoteButton, async (showing) => {
 
 	if (users.length < 1) return;
 
-	os.popup(MkUsersTooltip, {
+	const { dispose } = os.popup(MkUsersTooltip, {
 		showing,
 		users,
 		count: appearNote.value.renoteCount,
 		targetElement: quoteButton.value,
-	}, {}, 'closed');
+	}, {
+		closed: () => dispose(),
+	});
 });
 
 function boostVisibility() {
@@ -512,7 +514,9 @@ function renote(visibility: Visibility, localOnly: boolean = false) {
 			const rect = el.getBoundingClientRect();
 			const x = rect.left + (el.offsetWidth / 2);
 			const y = rect.top + (el.offsetHeight / 2);
-			os.popup(MkRippleEffect, { x, y }, {}, 'end');
+			const { dispose } = os.popup(MkRippleEffect, { x, y }, {
+				end: () => dispose(),
+			});
 		}
 
 		misskeyApi('notes/create', {
@@ -528,7 +532,9 @@ function renote(visibility: Visibility, localOnly: boolean = false) {
 			const rect = el.getBoundingClientRect();
 			const x = rect.left + (el.offsetWidth / 2);
 			const y = rect.top + (el.offsetHeight / 2);
-			os.popup(MkRippleEffect, { x, y }, {}, 'end');
+			const { dispose } = os.popup(MkRippleEffect, { x, y }, {
+				end: () => dispose(),
+			});
 		}
 
 		misskeyApi('notes/create', {
@@ -543,7 +549,7 @@ function renote(visibility: Visibility, localOnly: boolean = false) {
 }
 
 function quote() {
-	pleaseLogin();
+	pleaseLogin(undefined, pleaseLoginContext.value);
 	showMovedDialog();
 
 	if (appearNote.value.channel) {
@@ -563,7 +569,9 @@ function quote() {
 					const rect = el.getBoundingClientRect();
 					const x = rect.left + (el.offsetWidth / 2);
 					const y = rect.top + (el.offsetHeight / 2);
-					os.popup(MkRippleEffect, { x, y }, {}, 'end');
+					const { dispose } = os.popup(MkRippleEffect, { x, y }, {
+						end: () => dispose(),
+					});
 				}
 
 				os.toast(i18n.ts.quoted);
@@ -585,7 +593,9 @@ function quote() {
 					const rect = el.getBoundingClientRect();
 					const x = rect.left + (el.offsetWidth / 2);
 					const y = rect.top + (el.offsetHeight / 2);
-					os.popup(MkRippleEffect, { x, y }, {}, 'end');
+					const { dispose } = os.popup(MkRippleEffect, { x, y }, {
+						end: () => dispose(),
+					});
 				}
 
 				os.toast(i18n.ts.quoted);
@@ -643,7 +653,7 @@ function react(): void {
 }
 
 function like(): void {
-	pleaseLogin();
+	pleaseLogin(undefined, pleaseLoginContext.value);
 	showMovedDialog();
 	sound.playMisskeySfx('reaction');
 	misskeyApi('notes/like', {
@@ -655,7 +665,9 @@ function like(): void {
 		const rect = el.getBoundingClientRect();
 		const x = rect.left + (el.offsetWidth / 2);
 		const y = rect.top + (el.offsetHeight / 2);
-		os.popup(MkRippleEffect, { x, y }, {}, 'end');
+		const { dispose } = os.popup(MkRippleEffect, { x, y }, {
+			end: () => dispose(),
+		});
 	}
 }
 
@@ -680,7 +692,9 @@ function undoRenote() : void {
 		const rect = el.getBoundingClientRect();
 		const x = rect.left + (el.offsetWidth / 2);
 		const y = rect.top + (el.offsetHeight / 2);
-		os.popup(MkRippleEffect, { x, y }, {}, 'end');
+		const { dispose } = os.popup(MkRippleEffect, { x, y }, {
+			end: () => dispose(),
+		});
 	}
 }
 
@@ -718,11 +732,9 @@ function showMenu(): void {
 	os.popupMenu(menu, menuButton.value).then(focus).finally(cleanup);
 }
 
-async function menuVersions(viaKeyboard = false): Promise<void> {
+async function menuVersions(): Promise<void> {
 	const { menu, cleanup } = await getNoteVersionsMenu({ note: note.value, menuVersionsButton });
-	os.popupMenu(menu, menuVersionsButton.value, {
-		viaKeyboard,
-	}).then(focus).finally(cleanup);
+	os.popupMenu(menu, menuVersionsButton.value).then(focus).finally(cleanup);
 }
 
 async function clip(): Promise<void> {
