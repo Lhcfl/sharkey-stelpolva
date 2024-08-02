@@ -347,9 +347,6 @@ type AdminSilenceUserRequest = operations['admin___silence-user']['requestBody']
 type AdminSuspendUserRequest = operations['admin___suspend-user']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type AdminUnnsfwUserRequest = operations['admin___unnsfw-user']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
 type AdminSystemWebhookCreateRequest = operations['admin___system-webhook___create']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -375,6 +372,9 @@ type AdminSystemWebhookUpdateRequest = operations['admin___system-webhook___upda
 
 // @public (undocumented)
 type AdminSystemWebhookUpdateResponse = operations['admin___system-webhook___update']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminUnnsfwUserRequest = operations['admin___unnsfw-user']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type AdminUnsetUserAvatarRequest = operations['admin___unset-user-avatar']['requestBody']['content']['application/json'];
@@ -3306,8 +3306,8 @@ type UsersUpdateMemoRequest = operations['users___update-memo']['requestBody']['
 // Warnings were encountered during analysis:
 //
 // src/entities.ts:35:2 - (ae-forgotten-export) The symbol "ModerationLogPayloads" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:220:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:230:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:236:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:246:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
