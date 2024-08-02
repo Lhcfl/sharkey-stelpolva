@@ -609,12 +609,16 @@ seems to do a decent job)
   NOTE: `ti-fw` is a special class that's defined by Misskey, leave it
   alone
 
-	after every change, re-build the frontend and check again, until
+  after every change, re-build the frontend and check again, until
   there are no more `ti-*` classes in the built files
-* run tests `pnpm test` and fix as much as you can
-  * right now `megalodon` doesn't pass its tests, you probably need to
-    run `pnpm --filter=backend test` (requires a test database, [see
-    above](#testing)) and `pnpm --filter=frontend test`
+
+  commit!
+* double-check the new migration, that they won't conflict with our db
+  changes: `git diff develop -- packages/backend/migration/`
+* `pnpm clean; pnpm build`
+* run tests `pnpm --filter='!megalodon' test` (requires a test
+  database, [see above](#testing)) and fix as much as you can
+  * right now `megalodon` doesn't pass its tests, so we skip them
 * run lint `pnpm --filter=backend lint` + `pnpm --filter=frontend
   eslint` and fix as much as you can
 
