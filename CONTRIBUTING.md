@@ -581,9 +581,10 @@ seems to do a decent job)
 *after that commit*, do all the extra work, on the same branch:
 
 * copy all changes:
-  * from `NoteCreateService.create` to `NoteCreateService.import` (and
-    vice versa if `git` got confused!)
-  * from `NoteCreateService` to `NoteEditService`
+  * in `packages/backend/src/core/NoteCreateService.ts`, from `create` to
+    `import` (and vice versa if `git` got confused!)
+  * from `packages/backend/src/core/NoteCreateService.ts` to
+    `packages/backend/src/core/NoteEditService.vue`
   * from `ApNoteService.createNote` to `ApNoteService.updateNote`
   * from `endoints/notes/create.ts` to `endoints/notes/edit.ts`
   * from `MkNote*` to `SkNote*` (if sensible)
