@@ -897,11 +897,11 @@ export interface Locale extends ILocale {
      */
     "stopActivityDelivery": string;
     /**
-     * このインスタンスをブロック
+     * このサーバーをブロック
      */
     "blockThisInstance": string;
     /**
-     * インスタンスをサイレンス
+     * サーバーをサイレンス
      */
     "silenceThisInstance": string;
     /**
@@ -9090,6 +9090,10 @@ export interface Locale extends ILocale {
          * グローバル
          */
         "global": string;
+        /**
+         * バッッブル
+         */
+        "bubble": string;
     };
     "_play": {
         /**

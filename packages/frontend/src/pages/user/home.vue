@@ -185,7 +185,6 @@ import { defaultStore } from '@/store.js';
 import { $i, iAmModerator } from '@/account.js';
 import { dateString } from '@/filters/date.js';
 import { confetti } from '@/scripts/confetti.js';
-import { defaultStore } from '@/store.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/scripts/isFfVisibleForMe.js';
 import { useRouter } from '@/router/supplier.js';
