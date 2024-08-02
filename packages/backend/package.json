@@ -114,6 +114,7 @@
 		"deep-email-validator": "0.1.21",
 		"fast-xml-parser": "^4.4.0",
 		"fastify": "4.28.1",
+		"fastify-multer": "^2.0.3",
 		"fastify-raw-body": "4.3.0",
 		"feed": "4.2.2",
 		"file-type": "19.3.0",
