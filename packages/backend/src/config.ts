@@ -222,8 +222,15 @@ export function loadConfig(): Config {
 		JSON.parse(fs.readFileSync(`${_dirname}/../../../built/_vite_/manifest.json`, 'utf-8'))
 		: { 'src/_boot_.ts': { file: 'src/_boot_.ts' } };
 
-	const config = globSync(path).sort()
-		.map(path => fs.readFileSync(path, 'utf-8'))
+	const configFiles = globSync(path).sort();
+
+	if (configFiles.length === 0
+			&& !process.env['MK_WARNED_ABOUT_CONFIG']) {
+		console.log('No config files loaded, check if this is intentional');
+		process.env['MK_WARNED_ABOUT_CONFIG'] = true;
+	}
+
+	const config = configFiles.map(path => fs.readFileSync(path, 'utf-8'))
 		.map(contents => yaml.load(contents) as Source)
 		.reduce(
 			(acc: Source, cur: Source) => Object.assign(acc, cur),
