@@ -29,3 +29,7 @@
 .sk-icons.sk-misskey:before {
   content: "\62";
 }
+
+.sk-icons.sk-foldermove:before {
+  content: "\63";
+}
