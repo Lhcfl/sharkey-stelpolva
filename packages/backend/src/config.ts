@@ -256,7 +256,7 @@ export function loadConfig(): Config {
 		version,
 		publishTarballInsteadOfProvideRepositoryUrl: !!config.publishTarballInsteadOfProvideRepositoryUrl,
 		url: url.origin,
-		port: config.port ?? parseInt(process.env.PORT ?? '', 10),
+		port: config.port ?? parseInt(process.env.PORT ?? '3000', 10),
 		socket: config.socket,
 		chmodSocket: config.chmodSocket,
 		disableHsts: config.disableHsts,
