@@ -38,8 +38,8 @@ export class UrlPreviewService {
 	) {
 		this.logger = this.loggerService.getLogger('url-preview');
 		this.previewCache = new RedisKVCache<SummalyResult>(this.redisClient, 'summaly', {
-			lifetime: 1000 * 86400,
-			memoryCacheLifetime: 1000 * 10 * 60,
+			lifetime: 1000 * 60 * 60 * 24, // 1d
+			memoryCacheLifetime: 1000 * 60 * 10, // 10m
 			fetcher: (key: string) => { throw new Error('the UrlPreview cache should never fetch'); },
 			toRedisConverter: (value) => JSON.stringify(value),
 			fromRedisConverter: (value) => JSON.parse(value),
