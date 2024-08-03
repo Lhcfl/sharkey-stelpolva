@@ -437,7 +437,7 @@ function applyEnvOverrides(config: Source) {
 
 	// these are all the settings that can be overridden
 
-	_apply_top([['url', 'port', 'socket', 'chmodSocket', 'disableHsts']]);
+	_apply_top([['url', 'port', 'socket', 'chmodSocket', 'disableHsts', 'id', 'dbReplications']]);
 	_apply_top(['db', ['host', 'port', 'db', 'user', 'pass']]);
 	_apply_top(['dbSlaves', Array.from((config.dbSlaves ?? []).keys()), ['host', 'port', 'db', 'user', 'pass']]);
 	_apply_top([
@@ -448,7 +448,8 @@ function applyEnvOverrides(config: Source) {
 	_apply_top([['sentryForFrontend', 'sentryForBackend'], 'options', ['dsn', 'profileSampleRate', 'serverName', 'includeLocalVariables', 'proxy', 'keepAlive', 'caCerts']]);
 	_apply_top(['sentryForBackend', 'enableNodeProfiling']);
 	_apply_top([['clusterLimit', 'deliverJobConcurrency', 'inboxJobConcurrency', 'relashionshipJobConcurrency', 'deliverJobPerSec', 'inboxJobPerSec', 'relashionshipJobPerSec', 'deliverJobMaxAttempts', 'inboxJobMaxAttempts']]);
-	_apply_top([['outgoingAddress', 'outgoingAddressFamily', 'proxy', 'proxySmtp', 'mediaProxy', 'videoThumbnailGenerator']]);
+	_apply_top([['outgoingAddress', 'outgoingAddressFamily', 'proxy', 'proxySmtp', 'mediaProxy', 'proxyRemoteFiles','videoThumbnailGenerator']]);
 	_apply_top([['maxFileSize', 'maxNoteLength', 'pidFile']]);
 	_apply_top(['import', ['downloadTimeout', 'maxFileSize']]);
+	_apply_top([['signToActivityPubGet', 'checkActivityPubGetSignature']]);
 }
