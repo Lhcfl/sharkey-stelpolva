@@ -142,6 +142,13 @@ export class CustomEmojiService implements OnApplicationShutdown {
 
 		this.localEmojisCache.refresh();
 
+		if (data.driveFile != null) {
+			const file = await this.driveFilesRepository.findOneBy({ url: emoji.originalUrl, userHost: emoji.host ? emoji.host : IsNull() });
+			if (file && file.id != data.driveFile.id) {
+				await this.driveService.deleteFile(file, false, moderator ? moderator : undefined);
+			}
+		}
+
 		const packed = await this.emojiEntityService.packDetailed(emoji.id);
 
 		if (emoji.name === data.name) {
