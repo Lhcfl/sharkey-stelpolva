@@ -50,7 +50,16 @@ export class VideoProcessingService {
 
 	@bindThis
 	public getExternalVideoThumbnailUrl(url: string): string | null {
-		if (this.config.videoThumbnailGenerator == null) return null;
+		if (this.config.videoThumbnailGenerator == null) {
+			if (this.config.enableBuiltinVideoThumbnailGenerator) {
+				return appendQuery(
+					`${this.config.url}/proxy/thumbnail.webp`,
+					query({ url }),
+				);
+			}
+
+			return null;
+		}
 
 		return appendQuery(
 			`${this.config.videoThumbnailGenerator}/thumbnail.webp`,

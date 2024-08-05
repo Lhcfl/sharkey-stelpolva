@@ -4,6 +4,7 @@
  */
 
 import * as fs from 'node:fs';
+import * as crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { Inject, Injectable } from '@nestjs/common';
@@ -34,6 +35,7 @@ const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
 
 const assets = `${_dirname}/../../server/file/assets/`;
+const cacheDir = `${_dirname}/../../../../cache/`;
 
 @Injectable()
 export class FileServerService {
@@ -84,6 +86,15 @@ export class FileServerService {
 			});
 			done();
 		});
+
+		if (this.config.enableBuiltinVideoThumbnailGenerator) {
+			fastify.get<{
+				Querystring: { url: string; };
+			}>('/proxy/thumbnail.webp', async (request, reply) => {
+				return await this.videoThumbnailHandler(request, reply)
+					.catch(err => this.errorHandler(request, reply, err));
+			});
+		}
 
 		fastify.get<{
 			Params: { url: string; };
@@ -463,6 +474,61 @@ export class FileServerService {
 					correctFilename(file.filename, image.ext),
 				),
 			);
+			return image.data;
+		} catch (e) {
+			if ('cleanup' in file) file.cleanup();
+			throw e;
+		}
+	}
+
+	@bindThis
+	private async videoThumbnailHandler(request: FastifyRequest<{ Querystring: { url: string; }; }>, reply: FastifyReply) {
+		const cacheKey = crypto.createHash('md5').update(request.query.url).digest('base64url');
+		const cacheFile = `videoThumbnail-${cacheKey}.webp`;
+		if (this.internalStorageService.existsCache(cacheFile)) {
+			reply.header('Content-Type', 'image/webp');
+			reply.header('Cache-Control', 'max-age=31536000, immutable');
+			return reply.sendFile(cacheFile, cacheDir);
+		}
+
+		const file = await this.getStreamAndTypeFromUrl(request.query.url);
+
+		if (file === '404') {
+			reply.code(404);
+			reply.header('Cache-Control', 'max-age=86400');
+			return reply.sendFile('/dummy.png', assets);
+		}
+
+		if (file === '204') {
+			reply.code(204);
+			reply.header('Cache-Control', 'max-age=86400');
+			return;
+		}
+
+		if (file.file?.thumbnailUrl) {
+			return await reply.redirect(301, file.file.thumbnailUrl);
+		}
+
+		if (!file.mime.startsWith('video/')) {
+			if ('cleanup' in file) {
+				file.cleanup();
+			}
+
+			reply.code(400);
+			return;
+		}
+
+		try {
+			const image = await this.videoProcessingService.generateVideoThumbnail(file.path);
+
+			if ('cleanup' in file) {
+				file.cleanup();
+			}
+
+			this.internalStorageService.saveCacheFromBuffer(cacheFile, image.data);
+
+			reply.header('Content-Type', image.type);
+			reply.header('Cache-Control', 'max-age=31536000, immutable');
 			return image.data;
 		} catch (e) {
 			if ('cleanup' in file) file.cleanup();
