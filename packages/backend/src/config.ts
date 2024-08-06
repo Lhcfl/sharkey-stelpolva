@@ -227,7 +227,7 @@ export function loadConfig(): Config {
 	if (configFiles.length === 0
 			&& !process.env['MK_WARNED_ABOUT_CONFIG']) {
 		console.log('No config files loaded, check if this is intentional');
-		process.env['MK_WARNED_ABOUT_CONFIG'] = true;
+		process.env['MK_WARNED_ABOUT_CONFIG'] = '1';
 	}
 
 	const config = configFiles.map(path => fs.readFileSync(path, 'utf-8'))
