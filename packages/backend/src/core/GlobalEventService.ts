@@ -135,6 +135,7 @@ export interface NoteEventTypes {
 	};
 	replied: {
 		id: MiNote['id'];
+		userId: MiUser['id'];
 	};
 }
 type NoteStreamEventTypes = {
