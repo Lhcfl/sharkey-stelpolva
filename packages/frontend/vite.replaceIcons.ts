@@ -129,7 +129,7 @@ export function pluginReplaceIcons() {
 			iconsReplace({
 				values: {
 					'icon ti ti-brand-youtube': 'icon ph-youtube-logo ph-bold ph-lg',
-					'ti ti ti-folder-symlink': 'ph-folder-dashed ph-bold ph-lg',
+					'ti ti ti-folder-symlink': 'sk-icons sk-foldermove sk-icons-lg',
 					'ti ti-123': 'ph-numpad ph-bold ph-lg',
 					'ti ti-access-point': 'ph-broadcast ph-bold ph-lg',
 					'ti ti-activity': 'ph-pulse ph-bold ph-lg',
@@ -238,7 +238,7 @@ export function pluginReplaceIcons() {
 					'ti ti-flask': 'ph-flask ph-bold ph-lg',
 					'ti ti-folder': 'ph-folder ph-bold ph-lg',
 					'ti ti-folder-plus': 'ph-folder-plus ph-bold ph-lg',
-					'ti ti-folder-symlink': 'ph-folder-dashed ph-bold ph-lg',
+					'ti ti-folder-symlink': 'sk-icons sk-foldermove sk-icons-lg',
 					'ti ti-forms': 'ph-textbox ph-bold ph-lg',
 					'ti ti-ghost': 'ph-ghost ph-bold ph-lg',
 					'ti ti-grid-dots': 'ph-dots-nine ph-bold ph-lg',

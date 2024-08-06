@@ -98,8 +98,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkRadios>
 				<MkRadios v-model="noteDesign">
 					<template #label>Note Design</template>
-					<option value="sharkey"><i class="sk-icons sk-shark ph-bold" style="top: 2px;position: relative;"></i> Sharkey</option>
-					<option value="misskey"><i class="sk-icons sk-misskey ph-bold" style="top: 2px;position: relative;"></i> Misskey</option>
+					<option value="sharkey"><i class="sk-icons sk-shark sk-icons-lg" style="top: 2px;position: relative;"></i> Sharkey</option>
+					<option value="misskey"><i class="sk-icons sk-misskey sk-icons-lg" style="top: 2px;position: relative;"></i> Misskey</option>
 				</MkRadios>
 				<MkSwitch v-model="limitWidthOfReaction">{{ i18n.ts.limitWidthOfReaction }}</MkSwitch>
 			</div>
@@ -213,8 +213,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<MkRadios v-model="cornerRadius">
 				<template #label>{{ i18n.ts.cornerRadius }}</template>
-				<option :value="null"><i class="sk-icons sk-shark ph-bold" style="top: 2px;position: relative;"></i> Sharkey</option>
-				<option value="misskey"><i class="sk-icons sk-misskey ph-bold" style="top: 2px;position: relative;"></i> Misskey</option>
+				<option :value="null"><i class="sk-icons sk-shark sk-icons-lg" style="top: 2px;position: relative;"></i> Sharkey</option>
+				<option value="misskey"><i class="sk-icons sk-misskey sk-icons-lg" style="top: 2px;position: relative;"></i> Misskey</option>
 			</MkRadios>
 		</div>
 	</FormSection>
@@ -590,7 +590,7 @@ function testNotification(): void {
 
 async function testNotificationDot() {
 	const success = await worksOnInstance();
-	
+
 	if (success) {
 		os.toast(i18n.ts.notificationDotWorking);
 	} else {
