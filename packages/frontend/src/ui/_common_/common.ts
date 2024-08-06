@@ -108,7 +108,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 		icon: 'ph-hand-coins ph-bold ph-lg',
 		href: instance.donationUrl,
 		target: '_blank',
-	}: undefined, (!instance.impressumUrl && !instance.tosUrl && !instance.privacyPolicyUrl && !instance.donationUrl) ? undefined : { type: 'divider' }, {
+	} : undefined, (!instance.impressumUrl && !instance.tosUrl && !instance.privacyPolicyUrl && !instance.donationUrl) ? undefined : { type: 'divider' }, {
 		type: 'a',
 		text: i18n.ts.document,
 		icon: 'ti ti-bulb',
