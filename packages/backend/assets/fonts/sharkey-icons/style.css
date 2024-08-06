@@ -1,31 +1,114 @@
-@charset "UTF-8";
-
 @font-face {
-  font-family: "custom-sharkey-icons";
-  src: url("./custom-sharkey-icons.woff") format("woff"),
-    url("./custom-sharkey-icons.ttf") format("truetype"),
-    url("./custom-sharkey-icons.svg#custom-sharkey-icons") format("svg");
-  font-weight: normal;
+  font-display: auto;
+  font-family: "shark-font";
   font-style: normal;
-  font-display: block;
+  font-weight: normal;
+  
+  src: url("./shark-font.woff?1722899913909") format("woff"), url("./shark-font.ttf?1722899913909") format("truetype"), url("./shark-font.svg?1722899913909#shark-font") format("svg");
 }
 
 .sk-icons {
-  font-family: "custom-sharkey-icons" !important;
-  font-style: normal;
+  display: inline-block;
+  font-family: "shark-font";
   font-weight: normal;
+  font-style: normal;
   font-variant: normal;
-  text-transform: none;
+  text-rendering: auto;
   line-height: 1;
-  speak: none;
-  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
 }
 
-.sk-icons.sk-shark:before {
-  content: "\61";
+.sk-icons-lg {
+  font-size: 1.33333em;
+  line-height: 0.75em;
+  vertical-align: -0.0667em;
 }
 
-.sk-icons.sk-misskey:before {
-  content: "\62";
+.sk-icons-xs {
+  font-size: 0.75em;
+}
+
+.sk-icons-sm {
+  font-size: 0.875em;
+}
+
+.sk-icons-1x {
+  font-size: 1em;
+}
+
+.sk-icons-2x {
+  font-size: 2em;
+}
+
+.sk-icons-3x {
+  font-size: 3em;
+}
+
+.sk-icons-4x {
+  font-size: 4em;
+}
+
+.sk-icons-5x {
+  font-size: 5em;
+}
+
+.sk-icons-6x {
+  font-size: 6em;
+}
+
+.sk-icons-7x {
+  font-size: 7em;
+}
+
+.sk-icons-8x {
+  font-size: 8em;
+}
+
+.sk-icons-9x {
+  font-size: 9em;
+}
+
+.sk-icons-10x {
+  font-size: 10em;
+}
+
+.sk-icons-fw {
+  text-align: center;
+  width: 1.25em;
+}
+
+.sk-icons-border {
+  border: solid 0.08em #eee;
+  border-radius: 0.1em;
+  padding: 0.2em 0.25em 0.15em;
+}
+
+.sk-icons-pull-left {
+  float: left;
+}
+
+.sk-icons-pull-right {
+  float: right;
+}
+
+.sk-icons.sk-icons-pull-left {
+  margin-right: 0.3em;
+}
+
+.sk-icons.sk-icons-pull-right {
+  margin-left: 0.3em;
+}
+
+
+.sk-icons.sk-foldermove::before {
+  content: "\ea01";
+}
+
+.sk-icons.sk-misskey::before {
+  content: "\ea02";
+}
+
+.sk-icons.sk-shark::before {
+  content: "\ea03";
 }

@@ -6,7 +6,7 @@
 import { URL } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
 import * as parse5 from 'parse5';
-import { Window, XMLSerializer } from 'happy-dom';
+import { Window, DocumentFragment, XMLSerializer } from 'happy-dom';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { intersperse } from '@/misc/prelude/array.js';
@@ -478,6 +478,8 @@ export class MfmService {
 
 		const doc = window.document;
 
+		const body = doc.createElement('p');
+
 		async function appendChildren(children: mfm.MfmNode[], targetElement: any): Promise<void> {
 			if (children) {
 				for (const child of await Promise.all(children.map(async (x) => await (handlers as any)[x.type](x)))) targetElement.appendChild(child);
@@ -656,7 +658,7 @@ export class MfmService {
 			},
 		};
 
-		await appendChildren(nodes, doc.body);
+		await appendChildren(nodes, body);
 
 		if (quoteUri !== null) {
 			const a = doc.createElement('a');
@@ -670,9 +672,15 @@ export class MfmService {
 			quote.innerHTML += 'RE: ';
 			quote.appendChild(a);
 
-			doc.body.appendChild(quote);
+			body.appendChild(quote);
 		}
 
-		return inline ? doc.body.innerHTML : `<p>${doc.body.innerHTML}</p>`;
+		let result = new XMLSerializer().serializeToString(body);
+
+		if (inline) {
+			result = result.replace(/^<p>/,'').replace(/<\/p>$/,'');
+		}
+
+		return result;
 	}
 }
