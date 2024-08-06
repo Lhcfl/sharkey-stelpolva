@@ -93,6 +93,17 @@ export class AbuseReportService {
 			id: In(params.map(it => it.reportId)),
 		});
 
+		const targetUserMap = new Map();
+		for (const report of reports) {
+			const shouldForward = paramsMap.get(report.id)!.forward;
+
+			if (shouldForward && report.targetUserHost != null) {
+				return targetUserMap.set(report.id, await this.usersRepository.findOneByOrFail({ id: report.targetUserId }));
+			} else {
+				return targetUserMap.set(report.id, null);
+			}
+		}
+
 		for (const report of reports) {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const ps = paramsMap.get(report.id)!;
@@ -103,9 +114,9 @@ export class AbuseReportService {
 				forwarded: ps.forward && report.targetUserHost !== null,
 			});
 
-			if (ps.forward && report.targetUserHost != null) {
+			const targetUser = targetUserMap.get(report.id)!;
+			if (targetUser != null) {
 				const actor = await this.instanceActorService.getInstanceActor();
-				const targetUser = await this.usersRepository.findOneByOrFail({ id: report.targetUserId });
 
 				// eslint-disable-next-line
 				const flag = this.apRendererService.renderFlag(actor, targetUser.uri!, report.comment);
