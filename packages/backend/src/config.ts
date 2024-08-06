@@ -229,7 +229,7 @@ export function loadConfig(): Config {
 	if (configFiles.length === 0
 			&& !process.env['MK_WARNED_ABOUT_CONFIG']) {
 		console.log('No config files loaded, check if this is intentional');
-		process.env['MK_WARNED_ABOUT_CONFIG'] = true;
+		process.env['MK_WARNED_ABOUT_CONFIG'] = '1';
 	}
 
 	const config = configFiles.map(path => fs.readFileSync(path, 'utf-8'))
@@ -458,7 +458,7 @@ function applyEnvOverrides(config: Source) {
 	_apply_top([['sentryForFrontend', 'sentryForBackend'], 'options', ['dsn', 'profileSampleRate', 'serverName', 'includeLocalVariables', 'proxy', 'keepAlive', 'caCerts']]);
 	_apply_top(['sentryForBackend', 'enableNodeProfiling']);
 	_apply_top([['clusterLimit', 'deliverJobConcurrency', 'inboxJobConcurrency', 'relashionshipJobConcurrency', 'deliverJobPerSec', 'inboxJobPerSec', 'relashionshipJobPerSec', 'deliverJobMaxAttempts', 'inboxJobMaxAttempts']]);
-	_apply_top([['outgoingAddress', 'outgoingAddressFamily', 'proxy', 'proxySmtp', 'mediaProxy', 'proxyRemoteFiles','videoThumbnailGenerator']]);
+	_apply_top([['outgoingAddress', 'outgoingAddressFamily', 'proxy', 'proxySmtp', 'mediaProxy', 'proxyRemoteFiles', 'videoThumbnailGenerator']]);
 	_apply_top([['maxFileSize', 'maxNoteLength', 'pidFile']]);
 	_apply_top(['import', ['downloadTimeout', 'maxFileSize']]);
 	_apply_top([['signToActivityPubGet', 'checkActivityPubGetSignature']]);
