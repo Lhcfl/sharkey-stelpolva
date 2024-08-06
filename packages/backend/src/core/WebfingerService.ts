@@ -22,7 +22,9 @@ export type IWebFinger = {
 const urlRegex = /^https?:\/\//;
 const mRegex = /^([^@]+)@(.*)/;
 
-const defaultProtocol = process.env.MISSKEY_WEBFINGER_USE_HTTP?.toLowerCase() === 'true' ? 'http' : 'https';
+// we have the colons here, because URL.protocol does as well, so it's
+// more uniform in the places we use both
+const defaultProtocol = process.env.MISSKEY_WEBFINGER_USE_HTTP?.toLowerCase() === 'true' ? 'http:' : 'https:';
 
 @Injectable()
 export class WebfingerService {
@@ -82,7 +84,7 @@ export class WebfingerService {
 		const m = query.match(mRegex);
 		if (m) {
 			const hostname = m[2];
-			return `${defaultProtocol}://${hostname}/.well-known/host-meta`;
+			return `${defaultProtocol}//${hostname}/.well-known/host-meta`;
 		}
 
 		throw new Error(`Invalid query (${query})`);
@@ -101,7 +103,7 @@ export class WebfingerService {
 			const template = (hostMeta['XRD']['Link'] as Array<any>).filter(p => p['@_rel'] === 'lrdd')[0]['@_template'];
 			return template.indexOf('{uri}') < 0 ? null : template;
 		} catch (err) {
-			console.error(`error while request host-meta for ${url}`);
+			console.error(`error while request host-meta for ${url}: ${err}`);
 			return null;
 		}
 	}
