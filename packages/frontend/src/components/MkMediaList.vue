@@ -178,14 +178,14 @@ onMounted(() => {
 				textBox.className = 'pswp__alt-text _acrylic';
 				el.appendChild(textBox);
 
-				pwsp.on('change', () => {
-					if (pwsp.currSlide?.data.comment) {
+				pswp.on('change', () => {
+					if (pswp.currSlide?.data.comment) {
 						textBox.style.display = '';
 					} else {
 						textBox.style.display = 'none';
 					}
 
-					textBox.textContent = pwsp.currSlide?.data.comment;
+					textBox.textContent = pswp.currSlide?.data.comment;
 				});
 			},
 		});
