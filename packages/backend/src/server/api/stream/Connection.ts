@@ -205,6 +205,18 @@ export default class Connection {
 
 	@bindThis
 	private async onNoteStreamMessage(data: GlobalEvents['note']['payload']) {
+		// we must not send to the frontend information about notes from
+		// users who blocked the logged-in user, even when they're replies
+		// to notes the logged-in user can see
+		if (data.type === 'replied') {
+			const noteUserId = data.body.body.userId;
+			if (noteUserId !== null) {
+				if (this.userIdsWhoBlockingMe.has(noteUserId)) {
+					return;
+				}
+			}
+		}
+
 		this.sendMessageToWs('noteUpdated', {
 			id: data.body.id,
 			type: data.type,
