@@ -102,6 +102,10 @@ Build Instructions can all be found over there in the `README`.
 
 If you have an Icon Suggestion or want to add an Icon please open an issue/merge request over at that repo.
 
+When Updating the Font make sure to copy **all generated files** from the `dest` folder into `packages/backend/assets/fonts/sharkey-icons`
+
+For the CSS simply copy the file content and replace the old content in `style.css` and for the WOFF, TTF and SVG simply replace them.
+
 ## Development
 During development, it is useful to use the
 
