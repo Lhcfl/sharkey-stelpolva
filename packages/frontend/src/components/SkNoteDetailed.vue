@@ -370,7 +370,7 @@ const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({
 const keymap = {
 	'r': () => reply(),
 	'e|a|plus': () => react(),
-	'q': () =>  { if (canRenote.value && !renoted.value && !renoting) renote(defaultStore.state.visibilityOnBoost); },
+	'q': () => { if (canRenote.value && !renoted.value && !renoting) renote(defaultStore.state.visibilityOnBoost); },
 	'm': () => showMenu(),
 	'c': () => {
 		if (!defaultStore.state.showClipButtonInNoteFooter) return;
