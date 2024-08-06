@@ -1245,7 +1245,7 @@ _announcement:
   end: "Archiver l'annonce"
   tooManyActiveAnnouncementDescription: "Un grand nombre d'annonces actives peut baisser l'expérience utilisateur. Considérez d'archiver les annonces obsolètes."
   readConfirmTitle: "Marquer comme lu ?"
-  readConfirmText: "Cela marquera le contenu de  « {title} » comme lu."
+  readConfirmText: "Cela marquera le contenu de « {title} » comme lu."
   shouldNotBeUsedToPresentPermanentInfo: "Puisque cela pourrait nuire considérablement à l'expérience utilisateur pour les nouveaux utilisateurs, il est recommandé d'utiliser les annonces pour afficher des informations temporaires plutôt que des informations persistantes."
   dialogAnnouncementUxWarn: "Avoir deux ou plus annonces de style dialogue en même temps pourrait nuire considérablement à l'expérience utilisateur. Veuillez les utiliser avec caution."
   silence: "Ne pas me notifier"

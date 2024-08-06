@@ -1783,7 +1783,7 @@ _ad:
 _forgotPassword:
   enterEmail: "Inserisci l'indirizzo di posta elettronica che hai registrato nel tuo profilo. Il collegamento necessario per ripristinare la password verrà inviato a questo indirizzo."
   ifNoEmail: "Se il tuo indirizzo email non risulta registrato, contatta l'amministrazione dell'istanza."
-  contactAdmin: "Poiché questa istanza non permette di impostare l'indirizzo mail, contatta l'amministrazione per  ripristinare la password.\n"
+  contactAdmin: "Poiché questa istanza non permette di impostare l'indirizzo mail, contatta l'amministrazione per ripristinare la password.\n"
 _gallery:
   my: "Le mie pubblicazioni"
   liked: "Pubblicazioni che mi piacciono"
@@ -2405,7 +2405,7 @@ _deck:
     roleTimeline: "Timeline Ruolo"
 _dialog:
   charactersExceeded: "Hai superato il limite di {max} caratteri! ({current})"
-  charactersBelow: "Sei al di sotto del minimo di {min} caratteri!  ({current})"
+  charactersBelow: "Sei al di sotto del minimo di {min} caratteri! ({current})"
 _disabledTimeline:
   title: "Timeline disabilitata"
   description: "Il ruolo in cui sei non ti permette di leggere questa timeline"

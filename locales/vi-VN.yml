@@ -1288,7 +1288,7 @@ _achievements:
     _iLoveMisskey:
       title: "Tôi Yêu Misskey"
       description: "Đăng lời nói \"I ❤ #Misskey\""
-      flavor: "Xin chân thành cảm ơn bạn đã sử dụng Misskey!!  by Đội ngũ phát triển"
+      flavor: "Xin chân thành cảm ơn bạn đã sử dụng Misskey!! by Đội ngũ phát triển"
     _foundTreasure:
       title: "Tìm kiếm kho báu"
       description: "Tìm thấy được những kho báu cất giấu"
@@ -1329,7 +1329,7 @@ _achievements:
       description: "Bấm chỗ này"
     _justPlainLucky:
       title: "Chỉ là một cuộc máy mắn"
-      description: "Mỗi 10 giây thu nhận được với tỷ lệ  0.005%"
+      description: "Mỗi 10 giây thu nhận được với tỷ lệ 0.005%"
     _setNameToSyuilo:
       title: "Ngưỡng mộ với vị thần"
       description: "Đạt tên là syuilo"
@@ -1483,7 +1483,7 @@ _wordMute:
   muteWordsDescription: "Separate with spaces for an AND condition or with line breaks for an OR condition."
   muteWordsDescription2: "Bao quanh các từ khóa bằng dấu gạch chéo để sử dụng cụm từ thông dụng."
 _instanceMute:
-  instanceMuteDescription: "Thao tác này sẽ ẩn mọi tút/lượt đăng lại từ các máy chủ được liệt kê, bao gồm cả những tút  dạng trả lời từ máy chủ bị ẩn."
+  instanceMuteDescription: "Thao tác này sẽ ẩn mọi tút/lượt đăng lại từ các máy chủ được liệt kê, bao gồm cả những tút dạng trả lời từ máy chủ bị ẩn."
   instanceMuteDescription2: "Tách bằng cách xuống dòng"
   title: "Ẩn tút từ những máy chủ đã liệt kê."
   heading: "Danh sách những máy chủ bị ẩn"

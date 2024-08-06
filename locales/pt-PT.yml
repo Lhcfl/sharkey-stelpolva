@@ -225,7 +225,7 @@ done: "Concluído"
 processing: "Em Progresso"
 preview: "Pré-visualizar"
 default: "Predefinição"
-defaultValueIs: "Predefinição:  {value}"
+defaultValueIs: "Predefinição: {value}"
 noCustomEmojis: "Não há emojis"
 noJobs: "Não há tarefas"
 federating: "Federando"
@@ -1418,7 +1418,7 @@ _charts:
 _timelines:
   home: "Início"
 _play:
-  new: "Criar  Play"
+  new: "Criar Play"
   edit: "Editar Play"
   created: "Play criado"
   updated: "Play editado"
