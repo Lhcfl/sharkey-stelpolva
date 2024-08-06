@@ -4,7 +4,7 @@
   font-style: normal;
   font-weight: normal;
   
-  src: url("./shark-font.woff") format("woff"), url("./shark-font.ttf") format("truetype"), url("./shark-font.svg#shark-font") format("svg");
+  src: url("./shark-font.woff?1722899913909") format("woff"), url("./shark-font.ttf?1722899913909") format("truetype"), url("./shark-font.svg?1722899913909#shark-font") format("svg");
 }
 
 .sk-icons {
