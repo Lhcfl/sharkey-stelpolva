@@ -82,7 +82,7 @@ export class ApImageService {
 			url: image.url,
 			user: actor,
 			uri: image.url,
-			sensitive: image.sensitive,
+			sensitive: !!(image.sensitive),
 			isLink: !shouldBeCached,
 			comment: truncate(image.name ?? undefined, DB_MAX_IMAGE_COMMENT_LENGTH),
 		});
