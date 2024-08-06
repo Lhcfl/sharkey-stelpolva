@@ -129,8 +129,7 @@ export class AbuseReportService {
 					reportId: report.id,
 					report: report,
 					forwarded: ps.forward && report.targetUserHost !== null,
-				})
-				.then();
+				});
 		}
 
 		return this.abuseUserReportsRepository.findBy({ id: In(reports.map(it => it.id)) })
