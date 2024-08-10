@@ -532,6 +532,7 @@ mediaListWithOneImageAppearance: "画像が1枚のみのメディアリストの
 limitTo: "{x}を上限に"
 noFollowRequests: "フォロー申請はありません"
 openImageInNewTab: "画像を新しいタブで開く"
+warnForMissingAltText: "代替テキストを入れ忘れたときに警告する"
 dashboard: "ダッシュボード"
 local: "ローカル"
 remote: "リモート"
