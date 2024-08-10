@@ -3193,7 +3193,7 @@ export interface Locale extends ILocale {
      */
     "reloadToApplySetting": string;
     /**
-     * 設定の反映にはリロードが必要です。
+     * 反映には再起動が必要です。
      */
     "needReloadToApply": string;
     /**
