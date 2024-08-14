@@ -27,12 +27,13 @@ export async function getNoteVersionsMenu(props: {
 	const cleanups = [] as (() => void)[];
 
 	function openVersion(info): void {
-		os.popup(defineAsyncComponent(() => import('@/components/SkOldNoteWindow.vue')), {
+		const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/SkOldNoteWindow.vue')), {
 			note: appearNote,
 			oldText: info.text,
 			updatedAt: info.oldDate ? info.oldDate : info.updatedAt,
 		}, {
-		}, 'closed');
+			closed: () => dispose(),
+		});
 	}
 
 	const menu: MenuItem[] = [];
