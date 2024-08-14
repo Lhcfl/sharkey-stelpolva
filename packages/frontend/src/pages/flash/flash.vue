@@ -114,7 +114,7 @@ function share(ev: MouseEvent) {
 			action: shareWithNavigator,
 		}] : []),
 	], ev.currentTarget ?? ev.target);
-	}
+}
 
 function copyLink() {
 	if (!flash.value) return;
