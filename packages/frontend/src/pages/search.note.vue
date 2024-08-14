@@ -90,12 +90,12 @@ const props = withDefaults(defineProps<{
 	host: '',
 });
 
+const router = useRouter();
+const key = ref(0);
 const searchQuery = ref(toRef(props, 'query').value);
 const notePagination = ref<Paging>();
 const user = ref<UserDetailed | null>(null);
 const hostInput = ref(toRef(props, 'host').value);
-const router = useRouter();
-const key = ref(0);
 const order = ref(false);
 const filetype = ref(null);
 
