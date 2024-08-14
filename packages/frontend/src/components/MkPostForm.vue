@@ -374,7 +374,12 @@ function watchForDraft() {
 }
 
 function MFMWindow() {
-	os.popup(defineAsyncComponent(() => import('@/components/SkMfmWindow.vue')), {}, {}, 'closed');
+	const { dispose } = os.popup(
+		defineAsyncComponent(() => import('@/components/SkMfmWindow.vue')),
+		{},
+		{
+			closed: () => dispose(),
+		});
 }
 
 function checkMissingMention() {
