@@ -25,6 +25,7 @@ import type Channel from './channel.js';
 export default class Connection {
 	public user?: MiUser;
 	public token?: MiAccessToken;
+	private rateLimiter?: () => Promise<boolean>;
 	private wsConnection: WebSocket.WebSocket;
 	public subscriber: StreamEventEmitter;
 	private channels: Channel[] = [];
@@ -48,9 +49,11 @@ export default class Connection {
 
 		user: MiUser | null | undefined,
 		token: MiAccessToken | null | undefined,
+		rateLimiter: () => Promise<boolean>,
 	) {
 		if (user) this.user = user;
 		if (token) this.token = token;
+		if (rateLimiter) this.rateLimiter = rateLimiter;
 	}
 
 	@bindThis
@@ -102,6 +105,10 @@ export default class Connection {
 	@bindThis
 	private async onWsConnectionMessage(data: WebSocket.RawData) {
 		let obj: Record<string, any>;
+
+		if (this.rateLimiter && await this.rateLimiter()) {
+			return;
+		}
 
 		try {
 			obj = JSON.parse(data.toString());

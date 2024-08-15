@@ -19,7 +19,12 @@ import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
 import { AuthenticateService, AuthenticationError } from './AuthenticateService.js';
 import MainStreamConnection from './stream/Connection.js';
 import { ChannelsService } from './stream/ChannelsService.js';
+import { RateLimiterService } from './RateLimiterService.js';
+import { RoleService } from '@/core/RoleService.js';
+import { getIpHash } from '@/misc/get-ip-hash.js';
+import ms from 'ms';
 import type * as http from 'node:http';
+import type { IEndpointMeta } from './endpoints.js';
 
 @Injectable()
 export class StreamingApiServerService {
@@ -41,7 +46,30 @@ export class StreamingApiServerService {
 		private notificationService: NotificationService,
 		private usersService: UserService,
 		private channelFollowingService: ChannelFollowingService,
+		private rateLimiterService: RateLimiterService,
+		private roleService: RoleService,
 	) {
+	}
+
+	@bindThis
+	private async rateLimitThis(
+		user: MiLocalUser | null | undefined,
+		requestIp: string | undefined,
+		limit: IEndpointMeta['limit'] & { key: NonNullable<string> },
+	) : Promise<boolean> {
+		let limitActor: string;
+		if (user) {
+			limitActor = user.id;
+		} else {
+			limitActor = getIpHash(requestIp || 'wtf');
+		}
+
+		const factor = user ? (await this.roleService.getUserPolicies(user.id)).rateLimitFactor : 1;
+
+		if (factor <= 0) return false;
+
+		// Rate limit
+		return await this.rateLimiterService.limit(limit, limitActor, factor).then(() => { return false }).catch(err => { return true });
 	}
 
 	@bindThis
@@ -53,6 +81,17 @@ export class StreamingApiServerService {
 		server.on('upgrade', async (request, socket, head) => {
 			if (request.url == null) {
 				socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
+				socket.destroy();
+				return;
+			}
+
+			if (await this.rateLimitThis(null, request.socket.remoteAddress, {
+				key: 'wsconnect',
+				duration: ms('1min'),
+				max: 20,
+				minInterval: ms('1sec'),
+			})) {
+				socket.write('HTTP/1.1 429 Rate Limit Exceeded\r\n\r\n');
 				socket.destroy();
 				return;
 			}
@@ -94,6 +133,14 @@ export class StreamingApiServerService {
 				return;
 			}
 
+			const rateLimiter = () => {
+				return this.rateLimitThis(user, request.socket.remoteAddress, {
+					key: 'wsmessage',
+					duration: ms('1sec'),
+					max: 100,
+				});
+			};
+
 			const stream = new MainStreamConnection(
 				this.channelsService,
 				this.noteReadService,
@@ -101,6 +148,7 @@ export class StreamingApiServerService {
 				this.cacheService,
 				this.channelFollowingService,
 				user, app,
+				rateLimiter,
 			);
 
 			await stream.init();
