@@ -22,6 +22,7 @@ import { ChannelsService } from './stream/ChannelsService.js';
 import { RateLimiterService } from './RateLimiterService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { getIpHash } from '@/misc/get-ip-hash.js';
+import proxyAddr from 'proxy-addr';
 import ms from 'ms';
 import type * as http from 'node:http';
 import type { IEndpointMeta } from './endpoints.js';
@@ -69,7 +70,9 @@ export class StreamingApiServerService {
 		if (factor <= 0) return false;
 
 		// Rate limit
-		return await this.rateLimiterService.limit(limit, limitActor, factor).then(() => { return false }).catch(err => { return true });
+		return await this.rateLimiterService.limit(limit, limitActor, factor)
+			.then(() => { return false; })
+			.catch(err => { return true; });
 	}
 
 	@bindThis
@@ -85,7 +88,12 @@ export class StreamingApiServerService {
 				return;
 			}
 
-			if (await this.rateLimitThis(null, request.socket.remoteAddress, {
+			// ServerServices sets `trustProxy: true`, which inside
+			// fastify/request.js ends up calling `proxyAddr` in this way,
+			// so we do the same
+			const requestIp = proxyAddr(request, () => { return true; } );
+
+			if (await this.rateLimitThis(null, requestIp, {
 				key: 'wsconnect',
 				duration: ms('1min'),
 				max: 20,
@@ -134,7 +142,7 @@ export class StreamingApiServerService {
 			}
 
 			const rateLimiter = () => {
-				return this.rateLimitThis(user, request.socket.remoteAddress, {
+				return this.rateLimitThis(user, requestIp, {
 					key: 'wsmessage',
 					duration: ms('1sec'),
 					max: 100,
