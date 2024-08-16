@@ -170,7 +170,7 @@ export function pluginReplaceIcons() {
 					'ti ti-bolt': 'ph-lightning ph-bold ph-lg',
 					'ti ti-bookmark': 'ph-bookmark ph-bold ph-lg',
 					'ti ti-brand-x': 'ph-twitter-logo ph-bold ph-lg',
-					'ti ti-bulb': 'ph-libghtbulb ph-bold ph-lg',
+					'ti ti-bulb': 'ph-lightbulb ph-bold ph-lg',
 					'ti ti-cake': 'ph-cake ph-bold ph-lg',
 					'ti ti-calendar': 'ph-calendar ph-bold ph-lg',
 					'ti ti-calendar-time': 'ph-calendar ph-bold ph-lg',
