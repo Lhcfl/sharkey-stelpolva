@@ -26,12 +26,15 @@ import proxyAddr from 'proxy-addr';
 import ms from 'ms';
 import type * as http from 'node:http';
 import type { IEndpointMeta } from './endpoints.js';
+import { LoggerService } from '@/core/LoggerService.js';
+import type Logger from '@/logger.js';
 
 @Injectable()
 export class StreamingApiServerService {
 	#wss: WebSocket.WebSocketServer;
 	#connections = new Map<WebSocket.WebSocket, number>();
 	#cleanConnectionsIntervalId: NodeJS.Timeout | null = null;
+	#logger: Logger;
 
 	constructor(
 		@Inject(DI.redisForSub)
@@ -49,6 +52,7 @@ export class StreamingApiServerService {
 		private channelFollowingService: ChannelFollowingService,
 		private rateLimiterService: RateLimiterService,
 		private roleService: RoleService,
+		private loggerService: LoggerService,
 	) {
 	}
 
@@ -155,6 +159,7 @@ export class StreamingApiServerService {
 				this.notificationService,
 				this.cacheService,
 				this.channelFollowingService,
+				this.loggerService,
 				user, app,
 				rateLimiter,
 			);

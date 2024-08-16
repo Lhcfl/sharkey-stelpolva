@@ -17,6 +17,8 @@ import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
 import type { ChannelsService } from './ChannelsService.js';
 import type { EventEmitter } from 'events';
 import type Channel from './channel.js';
+import { LoggerService } from '@/core/LoggerService.js';
+import type Logger from '@/logger.js';
 
 /**
  * Main stream connection
@@ -39,6 +41,9 @@ export default class Connection {
 	public userIdsWhoMeMutingRenotes: Set<string> = new Set();
 	public userMutedInstances: Set<string> = new Set();
 	private fetchIntervalId: NodeJS.Timeout | null = null;
+	private activeRateLimitRequests: number = 0;
+	private closingConnection: boolean = false;
+	private logger: Logger;
 
 	constructor(
 		private channelsService: ChannelsService,
@@ -46,6 +51,7 @@ export default class Connection {
 		private notificationService: NotificationService,
 		private cacheService: CacheService,
 		private channelFollowingService: ChannelFollowingService,
+		private loggerService: LoggerService,
 
 		user: MiUser | null | undefined,
 		token: MiAccessToken | null | undefined,
@@ -54,6 +60,8 @@ export default class Connection {
 		if (user) this.user = user;
 		if (token) this.token = token;
 		if (rateLimiter) this.rateLimiter = rateLimiter;
+
+		this.logger = loggerService.getLogger('streaming', 'coral', false);
 	}
 
 	@bindThis
@@ -106,8 +114,22 @@ export default class Connection {
 	private async onWsConnectionMessage(data: WebSocket.RawData) {
 		let obj: Record<string, any>;
 
-		if (this.rateLimiter && await this.rateLimiter()) {
-			return;
+		if (this.closingConnection) return;
+
+		if (this.rateLimiter) {
+			if (this.activeRateLimitRequests <= 128) {
+				this.activeRateLimitRequests++;
+				const shouldRateLimit = await this.rateLimiter();
+				this.activeRateLimitRequests--;
+
+				if (shouldRateLimit) return;
+				if (this.closingConnection) return;
+			} else {
+				this.logger.warn('Closing a connection due to an excessive influx of messages.');
+				this.closingConnection = true;
+				this.wsConnection.close(1008, 'Please stop spamming the streaming API.');
+				return;
+			}
 		}
 
 		try {
