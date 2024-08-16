@@ -2145,6 +2145,10 @@ export interface Locale extends ILocale {
      */
     "openImageInNewTab": string;
     /**
+     * 代替テキストを入れ忘れたときに警告する
+     */
+    "warnForMissingAltText": string;
+    /**
      * ダッシュボード
      */
     "dashboard": string;
