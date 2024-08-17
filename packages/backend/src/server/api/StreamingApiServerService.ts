@@ -159,7 +159,7 @@ export class StreamingApiServerService {
 				this.cacheService,
 				this.channelFollowingService,
 				this.loggerService,
-				user, app,
+				user, app, requestIp,
 				rateLimiter,
 			);
 

@@ -57,6 +57,7 @@ export default class Connection {
 
 		user: MiUser | null | undefined,
 		token: MiAccessToken | null | undefined,
+		private ip: string,
 		rateLimiter: () => Promise<boolean>,
 	) {
 		if (user) this.user = user;
@@ -127,7 +128,10 @@ export default class Connection {
 				if (shouldRateLimit) return;
 				if (this.closingConnection) return;
 			} else {
-				this.logger.warn('Closing a connection due to an excessive influx of messages.');
+				let connectionInfo = `IP ${this.ip}`;
+				if (this.user) connectionInfo += `, user ID ${this.user.id}`;
+
+				this.logger.warn(`Closing a connection (${connectionInfo}) due to an excessive influx of messages.`);
 				this.closingConnection = true;
 				this.wsConnection.close(1008, 'Please stop spamming the streaming API.');
 				return;
