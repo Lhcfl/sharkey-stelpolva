@@ -53,7 +53,7 @@ export default class Connection {
 		private notificationService: NotificationService,
 		private cacheService: CacheService,
 		private channelFollowingService: ChannelFollowingService,
-		private loggerService: LoggerService,
+		loggerService: LoggerService,
 
 		user: MiUser | null | undefined,
 		token: MiAccessToken | null | undefined,

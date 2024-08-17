@@ -34,7 +34,6 @@ export class StreamingApiServerService {
 	#wss: WebSocket.WebSocketServer;
 	#connections = new Map<WebSocket.WebSocket, number>();
 	#cleanConnectionsIntervalId: NodeJS.Timeout | null = null;
-	#logger: Logger;
 
 	constructor(
 		@Inject(DI.redisForSub)
