@@ -98,8 +98,8 @@ export class StreamingApiServerService {
 
 			if (await this.rateLimitThis(null, requestIp, {
 				key: 'wsconnect',
-				duration: ms('1min'),
-				max: 20,
+				duration: ms('5min'),
+				max: 32,
 				minInterval: ms('1sec'),
 			})) {
 				socket.write('HTTP/1.1 429 Rate Limit Exceeded\r\n\r\n');
@@ -147,8 +147,8 @@ export class StreamingApiServerService {
 			const rateLimiter = () => {
 				return this.rateLimitThis(user, requestIp, {
 					key: 'wsmessage',
-					duration: ms('1sec'),
-					max: 100,
+					duration: ms('5sec'),
+					max: 256,
 				});
 			};
 
