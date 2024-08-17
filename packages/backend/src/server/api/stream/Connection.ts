@@ -20,6 +20,8 @@ import type Channel from './channel.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 
+const MAX_CHANNELS_PER_CONNECTION = 32;
+
 /**
  * Main stream connection
  */
@@ -283,6 +285,10 @@ export default class Connection {
 	 */
 	@bindThis
 	public connectChannel(id: string, params: any, channel: string, pong = false) {
+		if (this.channels.length >= MAX_CHANNELS_PER_CONNECTION) {
+			return;
+		}
+
 		const channelService = this.channelsService.getChannelService(channel);
 
 		if (channelService.requireCredential && this.user == null) {
