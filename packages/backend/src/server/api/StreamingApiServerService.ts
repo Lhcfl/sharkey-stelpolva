@@ -100,7 +100,6 @@ export class StreamingApiServerService {
 				key: 'wsconnect',
 				duration: ms('5min'),
 				max: 32,
-				minInterval: ms('1sec'),
 			})) {
 				socket.write('HTTP/1.1 429 Rate Limit Exceeded\r\n\r\n');
 				socket.destroy();
@@ -145,10 +144,14 @@ export class StreamingApiServerService {
 			}
 
 			const rateLimiter = () => {
+				// rather high limit, because when catching up at the top of a
+				// timeline, the frontend may render many many notes, each of
+				// which causes a message via `useNoteCapture` to ask for
+				// realtime updates of that note
 				return this.rateLimitThis(user, requestIp, {
 					key: 'wsmessage',
-					duration: ms('5sec'),
-					max: 256,
+					duration: ms('2sec'),
+					max: 4090,
 				});
 			};
 
