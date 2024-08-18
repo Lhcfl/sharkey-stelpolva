@@ -120,7 +120,9 @@ export default class Connection {
 		if (this.closingConnection) return;
 
 		if (this.rateLimiter) {
-			if (this.activeRateLimitRequests <= 128) {
+			// this 4096 should match the `max` of the `rateLimiter`, see
+			// StreamingApiServerService
+			if (this.activeRateLimitRequests <= 4096) {
 				this.activeRateLimitRequests++;
 				const shouldRateLimit = await this.rateLimiter();
 				this.activeRateLimitRequests--;

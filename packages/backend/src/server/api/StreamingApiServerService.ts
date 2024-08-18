@@ -151,7 +151,7 @@ export class StreamingApiServerService {
 				return this.rateLimitThis(user, requestIp, {
 					key: 'wsmessage',
 					duration: ms('2sec'),
-					max: 4090,
+					max: 4096,
 				});
 			};
 
