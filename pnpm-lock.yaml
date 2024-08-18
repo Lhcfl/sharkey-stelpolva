@@ -352,6 +352,9 @@ importers:
       promise-limit:
         specifier: 2.7.0
         version: 2.7.0
+      proxy-addr:
+        specifier: ^2.0.7
+        version: 2.0.7
       pug:
         specifier: 3.0.2
         version: 3.0.2
@@ -609,6 +612,9 @@ importers:
       '@types/pg':
         specifier: 8.11.5
         version: 8.11.5
+      '@types/proxy-addr':
+        specifier: ^2.0.3
+        version: 2.0.3
       '@types/pug':
         specifier: 2.0.10
         version: 2.0.10
@@ -4727,6 +4733,9 @@ packages:
 
   '@types/prop-types@15.7.5':
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
+
+  '@types/proxy-addr@2.0.3':
+    resolution: {integrity: sha512-TgAHHO4tNG3HgLTUhB+hM4iwW6JUNeQHCLnF1DjaDA9c69PN+IasoFu2MYDhubFc+ZIw5c5t9DMtjvrD6R3Egg==}
 
   '@types/pug@2.0.10':
     resolution: {integrity: sha512-Sk/uYFOBAB7mb74XcpizmH0KOR2Pv3D2Hmrh1Dmy5BmK3MpdSa5kqZcg6EKBdklU0bFXX9gCfzvpnyUehrPIuA==}
@@ -11112,8 +11121,8 @@ packages:
   vue-component-type-helpers@2.0.16:
     resolution: {integrity: sha512-qisL/iAfdO++7w+SsfYQJVPj6QKvxp4i1MMxvsNO41z/8zu3KuAw9LkhKUfP/kcOWGDxESp+pQObWppXusejCA==}
 
-  vue-component-type-helpers@2.0.26:
-    resolution: {integrity: sha512-sO9qQ8oC520SW6kqlls0iqDak53gsTVSrYylajgjmkt1c0vcgjsGSy1KzlDrbEx8pm02IEYhlUkU5hCYf8rwtg==}
+  vue-component-type-helpers@2.0.29:
+    resolution: {integrity: sha512-58i+ZhUAUpwQ+9h5Hck0D+jr1qbYl4voRt5KffBx8qzELViQ4XdT/Tuo+mzq8u63teAG8K0lLaOiL5ofqW38rg==}
 
   vue-demi@0.14.7:
     resolution: {integrity: sha512-EOG8KXDQNwkJILkx/gPcoL/7vH+hORoBaKgGe+6W7VFMvCYJfmF2dGbvgDroVnI8LU7/kTu8mbjRZGBU1z9NTA==}
@@ -15456,7 +15465,7 @@ snapshots:
       ts-dedent: 2.2.0
       type-fest: 2.19.0
       vue: 3.4.26(typescript@5.4.5)
-      vue-component-type-helpers: 2.0.26
+      vue-component-type-helpers: 2.0.29
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -15970,6 +15979,10 @@ snapshots:
   '@types/pretty-hrtime@1.0.1': {}
 
   '@types/prop-types@15.7.5': {}
+
+  '@types/proxy-addr@2.0.3':
+    dependencies:
+      '@types/node': 20.12.7
 
   '@types/pug@2.0.10': {}
 
@@ -23655,7 +23668,7 @@ snapshots:
 
   vue-component-type-helpers@2.0.16: {}
 
-  vue-component-type-helpers@2.0.26: {}
+  vue-component-type-helpers@2.0.29: {}
 
   vue-demi@0.14.7(vue@3.4.26(typescript@5.4.5)):
     dependencies:
