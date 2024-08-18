@@ -865,7 +865,7 @@ whatIsNew: "Pokaż zmiany"
 translate: "Przetłumacz"
 translatedFrom: "Przetłumaczone z {x}"
 accountDeletionInProgress: "Trwa usuwanie konta"
-usernameInfo: "Nazwa, która identyfikuje Twoje konto spośród innych na tym serwerze.  Możesz użyć alfabetu (a~z, A~Z), cyfr (0~9) lub podkreślników (_). Nazwy użytkownika nie mogą być później zmieniane."
+usernameInfo: "Nazwa, która identyfikuje Twoje konto spośród innych na tym serwerze. Możesz użyć alfabetu (a~z, A~Z), cyfr (0~9) lub podkreślników (_). Nazwy użytkownika nie mogą być później zmieniane."
 aiChanMode: "Tryb Ai"
 devMode: "Tryb programisty"
 keepCw: "Zostaw ostrzeżenia o zawartości"
@@ -1221,8 +1221,6 @@ _sfx:
   note: "Wpisy"
   noteMy: "Mój wpis"
   notification: "Powiadomienia"
-  antenna: "Anteny"
-  channel: "Powiadomienia kanału"
 _ago:
   future: "W przyszłości"
   justNow: "Przed chwilą"
@@ -1546,7 +1544,6 @@ _webhookSettings:
   createWebhook: "Stwórz Webhook"
   name: "Nazwa"
   secret: "Sekret"
-  events: "Uruchomienie Webhooka"
   active: "Właczono"
   _events:
     follow: "Po zaobserwowaniu użytkownika"
@@ -1556,6 +1553,10 @@ _webhookSettings:
     renote: "Po udostępnieniu wpisu"
     reaction: "Po otrzymaniu reakcji"
     mention: "Po zostaniu wspomnianym"
+_abuseReport:
+  _notificationRecipient:
+    _recipientType:
+      mail: "Adres e-mail"
 _moderationLogTypes:
   suspend: "Zawieś"
   resetPassword: "Zresetuj hasło"

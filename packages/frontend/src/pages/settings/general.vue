@@ -98,8 +98,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkRadios>
 				<MkRadios v-model="noteDesign">
 					<template #label>Note Design</template>
-					<option value="sharkey"><i class="sk-icons sk-shark ph-bold" style="top: 2px;position: relative;"></i> Sharkey</option>
-					<option value="misskey"><i class="sk-icons sk-misskey ph-bold" style="top: 2px;position: relative;"></i> Misskey</option>
+					<option value="sharkey"><i class="sk-icons sk-shark sk-icons-lg" style="top: 2px;position: relative;"></i> Sharkey</option>
+					<option value="misskey"><i class="sk-icons sk-misskey sk-icons-lg" style="top: 2px;position: relative;"></i> Misskey</option>
 				</MkRadios>
 				<MkSwitch v-model="limitWidthOfReaction">{{ i18n.ts.limitWidthOfReaction }}</MkSwitch>
 			</div>
@@ -213,8 +213,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<MkRadios v-model="cornerRadius">
 				<template #label>{{ i18n.ts.cornerRadius }}</template>
-				<option :value="null"><i class="sk-icons sk-shark ph-bold" style="top: 2px;position: relative;"></i> Sharkey</option>
-				<option value="misskey"><i class="sk-icons sk-misskey ph-bold" style="top: 2px;position: relative;"></i> Misskey</option>
+				<option :value="null"><i class="sk-icons sk-shark sk-icons-lg" style="top: 2px;position: relative;"></i> Sharkey</option>
+				<option value="misskey"><i class="sk-icons sk-misskey sk-icons-lg" style="top: 2px;position: relative;"></i> Misskey</option>
 			</MkRadios>
 		</div>
 	</FormSection>
@@ -234,12 +234,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkSwitch v-model="disableStreamingTimeline">{{ i18n.ts.disableStreamingTimeline }}</MkSwitch>
 				<MkSwitch v-model="enableHorizontalSwipe">{{ i18n.ts.enableHorizontalSwipe }}</MkSwitch>
 				<MkSwitch v-model="alwaysConfirmFollow">{{ i18n.ts.alwaysConfirmFollow }}</MkSwitch>
+				<MkSwitch v-model="confirmWhenRevealingSensitiveMedia">{{ i18n.ts.confirmWhenRevealingSensitiveMedia }}</MkSwitch>
 			</div>
 			<MkSelect v-model="serverDisconnectedBehavior">
 				<template #label>{{ i18n.ts.whenServerDisconnected }}</template>
 				<option value="dialog">{{ i18n.ts._serverDisconnectedBehavior.dialog }}</option>
 				<option value="quiet">{{ i18n.ts._serverDisconnectedBehavior.quiet }}</option>
 				<option value="disabled">{{ i18n.ts._serverDisconnectedBehavior.disabled }}</option>
+			</MkSelect>
+			<MkSelect v-model="contextMenu">
+				<template #label>{{ i18n.ts._contextMenu.title }}</template>
+				<option value="app">{{ i18n.ts._contextMenu.app }}</option>
+				<option value="appWithShift">{{ i18n.ts._contextMenu.appWithShift }}</option>
+				<option value="native">{{ i18n.ts._contextMenu.native }}</option>
 			</MkSelect>
 			<MkRange v-model="numberOfPageCache" :min="1" :max="10" :step="1" easing>
 				<template #label>{{ i18n.ts.numberOfPageCache }}</template>
@@ -426,6 +433,8 @@ const visibilityOnBoost = computed(defaultStore.makeGetterSetter('visibilityOnBo
 const enableHorizontalSwipe = computed(defaultStore.makeGetterSetter('enableHorizontalSwipe'));
 const useNativeUIForVideoAudioPlayer = computed(defaultStore.makeGetterSetter('useNativeUIForVideoAudioPlayer'));
 const alwaysConfirmFollow = computed(defaultStore.makeGetterSetter('alwaysConfirmFollow'));
+const confirmWhenRevealingSensitiveMedia = computed(defaultStore.makeGetterSetter('confirmWhenRevealingSensitiveMedia'));
+const contextMenu = computed(defaultStore.makeGetterSetter('contextMenu'));
 
 watch(lang, () => {
 	miLocalStorage.setItem('lang', lang.value as string);
@@ -485,6 +494,8 @@ watch([
 	showVisibilitySelectorOnBoost,
 	visibilityOnBoost,
 	alwaysConfirmFollow,
+	confirmWhenRevealingSensitiveMedia,
+	contextMenu,
 ], async () => {
 	await reloadAsk();
 });
@@ -579,7 +590,7 @@ function testNotification(): void {
 
 async function testNotificationDot() {
 	const success = await worksOnInstance();
-	
+
 	if (success) {
 		os.toast(i18n.ts.notificationDotWorking);
 	} else {

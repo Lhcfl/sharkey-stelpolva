@@ -49,7 +49,6 @@ import { IdService } from '@/core/IdService.js';
 import type { AnnouncementService } from '@/core/AnnouncementService.js';
 import type { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
-import { isNotNull } from '@/misc/is-not-null.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { NoteEntityService } from './NoteEntityService.js';
 import type { DriveFileEntityService } from './DriveFileEntityService.js';
@@ -548,11 +547,15 @@ export class UserEntityService implements OnModuleInit {
 			emojis: this.customEmojiService.populateEmojis(user.emojis, checkHost),
 			onlineStatus: this.getOnlineStatus(user),
 			// パフォーマンス上の理由でローカルユーザーのみ
-			badgeRoles: user.host == null ? this.roleService.getUserBadgeRoles(user.id).then(rs => rs.sort((a, b) => b.displayOrder - a.displayOrder).map(r => ({
-				name: r.name,
-				iconUrl: r.iconUrl,
-				displayOrder: r.displayOrder,
-			}))) : undefined,
+			badgeRoles: user.host == null ? this.roleService.getUserBadgeRoles(user.id).then((rs) => rs
+				.filter((r) => r.isPublic || iAmModerator)
+				.sort((a, b) => b.displayOrder - a.displayOrder)
+				.map((r) => ({
+					name: r.name,
+					iconUrl: r.iconUrl,
+					displayOrder: r.displayOrder,
+				}))
+			) : undefined,
 
 			...(isDetailed ? {
 				url: profile!.url,
@@ -560,7 +563,7 @@ export class UserEntityService implements OnModuleInit {
 				movedTo: user.movedToUri ? this.apPersonService.resolvePerson(user.movedToUri).then(user => user.id).catch(() => null) : null,
 				alsoKnownAs: user.alsoKnownAs
 					? Promise.all(user.alsoKnownAs.map(uri => this.apPersonService.fetchPerson(uri).then(user => user?.id).catch(() => null)))
-						.then(xs => xs.length === 0 ? null : xs.filter(isNotNull))
+						.then(xs => xs.length === 0 ? null : xs.filter(x => x != null))
 					: null,
 				updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null,
 				lastFetchedAt: user.lastFetchedAt ? user.lastFetchedAt.toISOString() : null,

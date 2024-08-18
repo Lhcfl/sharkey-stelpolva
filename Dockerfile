@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1.4
 
-ARG NODE_VERSION=20.12.2-alpine3.19
+ARG NODE_VERSION=20.16.0-alpine3.20
 
 FROM node:${NODE_VERSION} as build
 
@@ -45,6 +45,10 @@ RUN apk add ffmpeg tini jemalloc \
 USER sharkey
 WORKDIR /sharkey
 
+# add package.json to add pnpm
+COPY --chown=sharkey:sharkey ./package.json ./package.json
+RUN corepack install
+
 COPY --chown=sharkey:sharkey --from=build /sharkey/node_modules ./node_modules
 COPY --chown=sharkey:sharkey --from=build /sharkey/packages/backend/node_modules ./packages/backend/node_modules
 COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-js/node_modules ./packages/misskey-js/node_modules
@@ -61,7 +65,6 @@ COPY --chown=sharkey:sharkey --from=build /sharkey/fluent-emojis ./fluent-emojis
 COPY --chown=sharkey:sharkey --from=build /sharkey/tossface-emojis/dist ./tossface-emojis/dist
 COPY --chown=sharkey:sharkey --from=build /sharkey/sharkey-assets ./packages/frontend/assets
 
-COPY --chown=sharkey:sharkey package.json ./package.json
 COPY --chown=sharkey:sharkey pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --chown=sharkey:sharkey packages/backend/package.json ./packages/backend/package.json
 COPY --chown=sharkey:sharkey packages/backend/scripts/check_connect.js ./packages/backend/scripts/check_connect.js
