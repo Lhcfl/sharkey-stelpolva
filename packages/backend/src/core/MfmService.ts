@@ -683,7 +683,7 @@ export class MfmService {
 		let result = new XMLSerializer().serializeToString(body);
 
 		if (inline) {
-			result = result.replace(/^<p>/,'').replace(/<\/p>$/,'');
+			result = result.replace(/^<p>/, '').replace(/<\/p>$/, '');
 		}
 
 		return result;

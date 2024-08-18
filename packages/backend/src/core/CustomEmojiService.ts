@@ -144,7 +144,7 @@ export class CustomEmojiService implements OnApplicationShutdown {
 
 		if (data.driveFile != null) {
 			const file = await this.driveFilesRepository.findOneBy({ url: emoji.originalUrl, userHost: emoji.host ? emoji.host : IsNull() });
-			if (file && file.id != data.driveFile.id) {
+			if (file && file.id !== data.driveFile.id) {
 				await this.driveService.deleteFile(file, false, moderator ? moderator : undefined);
 			}
 		}
