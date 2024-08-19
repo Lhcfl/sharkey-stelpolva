@@ -174,6 +174,7 @@
 		"slacc": "0.0.10",
 		"strict-event-emitter-types": "2.0.0",
 		"stringz": "2.1.0",
+		"stripe": "^16.8.0",
 		"systeminformation": "5.22.11",
 		"tinycolor2": "1.6.0",
 		"tmp": "0.2.3",
