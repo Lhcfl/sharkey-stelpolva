@@ -38,7 +38,7 @@ export class RateLimiterService {
 			}
 
 			// Short-term limit
-			const min = new Promise<void>((ok, reject) => {
+			const minP = () => { return new Promise<void>((ok, reject) => {
 				const minIntervalLimiter = new Limiter({
 					id: `${actor}:${limitation.key}:min`,
 					duration: limitation.minInterval! * factor,
@@ -57,16 +57,16 @@ export class RateLimiterService {
 						return reject({ code: 'BRIEF_REQUEST_INTERVAL', info });
 					} else {
 						if (hasLongTermLimit) {
-							return max.then(ok, reject);
+							return maxP().then(ok, reject);
 						} else {
 							return ok();
 						}
 					}
 				});
-			});
+			}) };
 
 			// Long term limit
-			const max = new Promise<void>((ok, reject) => {
+			const maxP = () => { return new Promise<void>((ok, reject) => {
 				const limiter = new Limiter({
 					id: `${actor}:${limitation.key}`,
 					duration: limitation.duration! * factor,
@@ -87,7 +87,7 @@ export class RateLimiterService {
 						return ok();
 					}
 				});
-			});
+			}) };
 
 			const hasShortTermLimit = typeof limitation.minInterval === 'number';
 
@@ -96,9 +96,9 @@ export class RateLimiterService {
 				typeof limitation.max === 'number';
 
 			if (hasShortTermLimit) {
-				return min;
+				return minP();
 			} else if (hasLongTermLimit) {
-				return max;
+				return maxP();
 			} else {
 				return Promise.resolve();
 			}
