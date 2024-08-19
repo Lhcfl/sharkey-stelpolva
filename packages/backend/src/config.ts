@@ -108,6 +108,8 @@ type Source = {
 		maxFileSize: number;
 	};
 
+	stripeverify?: boolean;
+
 	pidFile: string;
 };
 
@@ -196,6 +198,8 @@ export type Config = {
 		downloadTimeout: number;
 		maxFileSize: number;
 	} | undefined;
+
+	stripeverify: boolean | undefined;
 
 	pidFile: string;
 };
@@ -319,6 +323,7 @@ export function loadConfig(): Config {
 		perUserNotificationsMaxCount: config.perUserNotificationsMaxCount ?? 500,
 		deactivateAntennaThreshold: config.deactivateAntennaThreshold ?? (1000 * 60 * 60 * 24 * 7),
 		import: config.import,
+		stripeverify: config.stripeverify ?? false,
 		pidFile: config.pidFile,
 	};
 }
