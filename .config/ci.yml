@@ -217,5 +217,13 @@ checkActivityPubGetSignature: false
 
 #customMOTD: ['Hello World', 'The sharks rule all', 'Shonks']
 
+# timeout and maximum size for imports (e.g. note imports)
+#import:
+#  downloadTimeout: 30
+#  maxFileSize: 262144000
+
+# enable stripe identity for ID verification
+#stripeverify: true
+
 # Upload or download file size limits (bytes)
 #maxFileSize: 262144000

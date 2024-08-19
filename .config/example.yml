@@ -312,5 +312,8 @@ checkActivityPubGetSignature: false
 #  downloadTimeout: 30
 #  maxFileSize: 262144000
 
+# enable stripe identity for ID verification
+#stripeverify: true
+
 # PID File of master process
 #pidFile: /tmp/misskey.pid
