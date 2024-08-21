@@ -1405,6 +1405,7 @@ _initialTutorial:
     home: "You can view notes from accounts you follow."
     local: "You can view notes from all users on this server."
     social: "Notes from the Home and Local timelines will be displayed."
+    bubble: "???"
     global: "You can view notes from all connected servers."
     description2: "You can switch between timelines at the top of the screen at any time."
     description3: "Additionally, there are list timelines and channel timelines. For more details, please refer to {link}."
@@ -1443,6 +1444,7 @@ _timelineDescription:
   home: "In the Home timeline, you can see notes from accounts you follow."
   local: "In the Local timeline, you can see notes from all users on this server."
   social: "The Social timeline displays notes from both the Home and Local timelines."
+  bubble: "????"
   global: "In the Global timeline, you can see notes from all connected servers."
 _serverRules:
   description: "A set of rules to be displayed before registration. Setting a summary of the Terms of Service is recommended."

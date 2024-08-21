@@ -5616,6 +5616,10 @@ export interface Locale extends ILocale {
              */
             "global": string;
             /**
+             * ????
+             */
+            "bubble": string;
+            /**
              * それぞれのタイムラインは、画面上部でいつでも切り替えられます。
              */
             "description2": string;
@@ -5748,6 +5752,10 @@ export interface Locale extends ILocale {
          * ソーシャルタイムラインには、ホームタイムラインとローカルタイムラインの投稿が両方表示されます。
          */
         "social": string;
+        /**
+         * ????
+         */
+        "bubble": string;
         /**
          * グローバルタイムラインでは、接続している他のすべてのサーバーからの投稿を見られます。
          */
