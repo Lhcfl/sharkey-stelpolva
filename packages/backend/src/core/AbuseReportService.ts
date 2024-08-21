@@ -98,9 +98,9 @@ export class AbuseReportService {
 			const shouldForward = paramsMap.get(report.id)!.forward;
 
 			if (shouldForward && report.targetUserHost != null) {
-				return targetUserMap.set(report.id, await this.usersRepository.findOneByOrFail({ id: report.targetUserId }));
+				targetUserMap.set(report.id, await this.usersRepository.findOneByOrFail({ id: report.targetUserId }));
 			} else {
-				return targetUserMap.set(report.id, null);
+				targetUserMap.set(report.id, null);
 			}
 		}
 
