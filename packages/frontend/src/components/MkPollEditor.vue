@@ -6,14 +6,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div class="zmdxowus">
 	<p v-if="choices.length < 2" class="caution">
-		<i class="ph-warning ph-bold ph-lg"></i>{{ i18n.ts._poll.noOnlyOneChoice }}
+		<i class="ti ti-alert-triangle"></i>{{ i18n.ts._poll.noOnlyOneChoice }}
 	</p>
 	<ul>
 		<li v-for="(choice, i) in choices" :key="i">
 			<MkInput class="input" small :modelValue="choice" :placeholder="i18n.tsx._poll.choiceN({ n: i + 1 })" @update:modelValue="onInput(i, $event)">
 			</MkInput>
 			<button class="_button" @click="remove(i)">
-				<i class="ph-x ph-bold ph-lg"></i>
+				<i class="ti ti-x"></i>
 			</button>
 		</li>
 	</ul>
@@ -37,7 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkInput>
 			</section>
 			<section v-else-if="expiration === 'after'">
-				<MkInput v-model="after" small type="number" class="input">
+				<MkInput v-model="after" small type="number" min="1" class="input">
 					<template #label>{{ i18n.ts._poll.duration }}</template>
 				</MkInput>
 				<MkSelect v-model="unit" small>

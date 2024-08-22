@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 
 			<div v-else-if="tab === 'my'" key="my" class="_gaps">
-				<MkButton class="new" @click="create()"><i class="ph-plus ph-bold ph-lg"></i></MkButton>
+				<MkButton class="new" @click="create()"><i class="ti ti-plus"></i></MkButton>
 				<MkPagination v-slot="{items}" :pagination="myPagesPagination">
 					<div class="_gaps">
 						<MkPagePreview v-for="page in items" :key="page.id" :page="page"/>
@@ -69,7 +69,7 @@ function create() {
 }
 
 const headerActions = computed(() => [{
-	icon: 'ph-plus ph-bold ph-lg',
+	icon: 'ti ti-plus',
 	text: i18n.ts.create,
 	handler: create,
 }]);
@@ -77,19 +77,19 @@ const headerActions = computed(() => [{
 const headerTabs = computed(() => [{
 	key: 'featured',
 	title: i18n.ts._pages.featured,
-	icon: 'ph-fire ph-bold ph-lg',
+	icon: 'ti ti-flare',
 }, {
 	key: 'my',
 	title: i18n.ts._pages.my,
-	icon: 'ph-pencil-simple-line ph-bold ph-lg',
+	icon: 'ti ti-edit',
 }, {
 	key: 'liked',
 	title: i18n.ts._pages.liked,
-	icon: 'ph-heart ph-bold ph-lg',
+	icon: 'ti ti-heart',
 }]);
 
 definePageMetadata(() => ({
 	title: i18n.ts.pages,
-	icon: 'ph-note ph-bold ph-lg',
+	icon: 'ti ti-note',
 }));
 </script>

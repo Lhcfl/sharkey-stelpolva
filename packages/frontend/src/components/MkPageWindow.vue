@@ -33,7 +33,7 @@ import { computed, onMounted, onUnmounted, provide, ref, shallowRef } from 'vue'
 import RouterView from '@/components/global/RouterView.vue';
 import MkWindow from '@/components/MkWindow.vue';
 import { popout as _popout } from '@/scripts/popout.js';
-import copyToClipboard from '@/scripts/copy-to-clipboard.js';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 import { url } from '@/config.js';
 import { useScrollPositionManager } from '@/nirax.js';
 import { i18n } from '@/i18n.js';
@@ -68,7 +68,7 @@ const buttonsLeft = computed(() => {
 
 	if (history.value.length > 1) {
 		buttons.push({
-			icon: 'ph-arrow-left ph-bold ph-lg',
+			icon: 'ti ti-arrow-left',
 			onClick: back,
 		});
 	}
@@ -77,11 +77,11 @@ const buttonsLeft = computed(() => {
 });
 const buttonsRight = computed(() => {
 	const buttons = [{
-		icon: 'ph-arrows-clockwise ph-bold ph-lg',
+		icon: 'ti ti-reload',
 		title: i18n.ts.reload,
 		onClick: reload,
 	}, {
-		icon: 'ph-eject ph-bold ph-lg',
+		icon: 'ti ti-player-eject',
 		title: i18n.ts.showInPage,
 		onClick: expand,
 	}];
@@ -113,22 +113,22 @@ provide('forceSpacerMin', true);
 provide('shouldBackButton', false);
 
 const contextmenu = computed(() => ([{
-	icon: 'ph-eject ph-bold ph-lg',
+	icon: 'ti ti-player-eject',
 	text: i18n.ts.showInPage,
 	action: expand,
 }, {
-	icon: 'ph-frame-corners ph-bold ph-lg',
+	icon: 'ti ti-window-maximize',
 	text: i18n.ts.popout,
 	action: popout,
 }, {
-	icon: 'ph-arrow-square-out ph-bold ph-lg',
+	icon: 'ti ti-external-link',
 	text: i18n.ts.openInNewTab,
 	action: () => {
 		window.open(url + windowRouter.getCurrentPath(), '_blank', 'noopener');
 		windowEl.value?.close();
 	},
 }, {
-	icon: 'ph-link ph-bold ph-lg',
+	icon: 'ti ti-link',
 	text: i18n.ts.copyLink,
 	action: () => {
 		copyToClipboard(url + windowRouter.getCurrentPath());

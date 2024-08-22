@@ -50,7 +50,7 @@ onDeactivated(() => {
 
 definePageMetadata(() => ({
 	title: i18n.ts.achievements,
-	icon: 'ph-trophy ph-bold ph-lg',
+	icon: 'ti ti-medal',
 }));
 </script>
 

@@ -16,7 +16,7 @@ export type MkABehavior = 'window' | 'browser' | null;
 <script lang="ts" setup>
 import { computed, inject, shallowRef } from 'vue';
 import * as os from '@/os.js';
-import copyToClipboard from '@/scripts/copy-to-clipboard.js';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 import { url } from '@/config.js';
 import { i18n } from '@/i18n.js';
 import { useRouter } from '@/router/supplier.js';
@@ -55,25 +55,25 @@ function onContextmenu(ev) {
 		type: 'label',
 		text: props.to,
 	}, {
-		icon: 'ph-app-window ph-bold ph-lg',
+		icon: 'ti ti-app-window',
 		text: i18n.ts.openInWindow,
 		action: () => {
 			os.pageWindow(props.to);
 		},
 	}, {
-		icon: 'ph-eject ph-bold ph-lg',
+		icon: 'ti ti-player-eject',
 		text: i18n.ts.showInPage,
 		action: () => {
 			router.push(props.to, 'forcePage');
 		},
 	}, { type: 'divider' }, {
-		icon: 'ph-arrow-square-out ph-bold ph-lg',
+		icon: 'ti ti-external-link',
 		text: i18n.ts.openInNewTab,
 		action: () => {
 			window.open(props.to, '_blank', 'noopener');
 		},
 	}, {
-		icon: 'ph-link ph-bold ph-lg',
+		icon: 'ti ti-link',
 		text: i18n.ts.copyLink,
 		action: () => {
 			copyToClipboard(`${url}${props.to}`);

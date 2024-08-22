@@ -35,7 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<FormLink to="" @click="chooseUploadFolder()">
 				{{ i18n.ts.uploadFolder }}
 				<template #suffix>{{ uploadFolder ? uploadFolder.name : '-' }}</template>
-				<template #suffixIcon><i class="ph-folder ph-bold ph-lg"></i></template>
+				<template #suffixIcon><i class="ti ti-folder"></i></template>
 			</FormLink>
 			<FormLink to="/settings/drive/cleaner">
 				{{ i18n.ts.drivecleaner }}
@@ -90,7 +90,7 @@ const meterStyle = computed(() => {
 			h: 180 - (usage.value / capacity.value * 180),
 			s: 0.7,
 			l: 0.5,
-		}),
+		}).toHslString(),
 	};
 });
 
@@ -144,7 +144,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.drive,
-	icon: 'ph-cloud ph-bold ph-lg',
+	icon: 'ti ti-cloud',
 }));
 </script>
 

@@ -540,7 +540,7 @@ objectStorageRegion: "Regió "
 objectStorageRegionDesc: "Especifica una regió com 'xx-east-1'. Si el teu servei no diferència regions has de posar 'us-east-1'. Deixa'l buit si fas servir variables d'entorn o un arxiu de configuració d'AWS."
 objectStorageUseSSL: "Fes servir SSL"
 objectStorageUseSSLDesc: "Desactiva'l si no tens pensat fer servir HTTPS per les connexions de l'API"
-objectStorageUseProxy: "Connectar-se  mitjançant un Proxy"
+objectStorageUseProxy: "Connectar-se mitjançant un Proxy"
 objectStorageUseProxyDesc: "Desactiva'l si no faràs servir un Proxy per les connexions de l'API"
 objectStorageSetPublicRead: "Configurar les pujades com públiques "
 s3ForcePathStyleDesc: "Si s3ForcePathStyle es troba activat el nom del dipòsit s'ha d'incloure a l'adreça URL en comtes del nom del host. Potser que necessitis activar-ho quan facis servir, per exemple, Minio a un servidor propi."
@@ -1739,7 +1739,7 @@ _email:
   _follow:
     title: "t'ha seguit"
   _receiveFollowRequest:
-    title: "Has rebut una sol·licitud  de seguiment"
+    title: "Has rebut una sol·licitud de seguiment"
 _plugin:
   install: "Instal·lar un afegit "
   installWarn: "Si us plau, no instal·lis afegits que no siguin de confiança."
@@ -1893,8 +1893,6 @@ _sfx:
   note: "Notes"
   noteMy: "Nota (per mi)"
   notification: "Notificacions"
-  antenna: "Antenes"
-  channel: "Notificacions dels canals"
   reaction: "Quan se selecciona una reacció "
 _soundSettings:
   driveFile: "Fer servir un fitxer d'àudio del disc"
@@ -2225,6 +2223,10 @@ _deck:
 _webhookSettings:
   name: "Nom"
   active: "Activat"
+_abuseReport:
+  _notificationRecipient:
+    _recipientType:
+      mail: "Correu electrònic"
 _moderationLogTypes:
   suspend: "Suspèn"
   resetPassword: "Restableix la contrasenya"

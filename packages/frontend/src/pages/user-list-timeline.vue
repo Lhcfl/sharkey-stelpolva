@@ -98,7 +98,7 @@ const headerActions = computed(() => list.value ? [{
 		}], ev.currentTarget ?? ev.target);
 	},
 }, {
-	icon: 'ph-gear ph-bold ph-lg',
+	icon: 'ti ti-settings',
 	text: i18n.ts.settings,
 	handler: settings,
 }] : []);
@@ -107,7 +107,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: list.value ? list.value.name : i18n.ts.lists,
-	icon: 'ph-list ph-bold ph-lg',
+	icon: 'ti ti-list',
 }));
 </script>
 

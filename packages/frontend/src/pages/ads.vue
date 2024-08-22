@@ -22,7 +22,7 @@ import { instance } from '@/instance.js';
 
 definePageMetadata(() => ({
 	title: i18n.ts.ads,
-	icon: 'ph-flag ph-bold ph-lg',
+	icon: 'ti ti-ad',
 }));
 </script>
 

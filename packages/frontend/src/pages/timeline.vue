@@ -8,8 +8,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #header><MkPageHeader v-model:tab="src" :actions="headerActions" :tabs="$i ? headerTabs : headerTabsWhenNotLogin" :displayMyAvatar="true"/></template>
 	<MkSpacer :contentMax="800">
 		<MkHorizontalSwipe v-model:tab="src" :tabs="$i ? headerTabs : headerTabsWhenNotLogin">
-			<div :key="src" ref="rootEl" v-hotkey.global="keymap">
-				<MkInfo v-if="['home', 'local', 'social', 'global'].includes(src) && !defaultStore.reactiveState.timelineTutorials.value[src]" style="margin-bottom: var(--margin);" closable @close="closeTutorial()">
+			<div :key="src" ref="rootEl">
+				<MkInfo v-if="isBasicTimeline(src) && !defaultStore.reactiveState.timelineTutorials.value[src]" style="margin-bottom: var(--margin);" closable @close="closeTutorial()">
 					{{ i18n.ts._timelineDescription[src] }}
 				</MkInfo>
 				<MkPostForm v-if="defaultStore.reactiveState.showFixedPostForm.value" :class="$style.postForm" class="post-form _panel" fixed style="margin-bottom: var(--margin);"/>
@@ -46,7 +46,6 @@ import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { defaultStore } from '@/store.js';
 import { i18n } from '@/i18n.js';
-import { instance } from '@/instance.js';
 import { $i } from '@/account.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { antennasCache, userListsCache, favoritedChannelsCache } from '@/cache.js';
@@ -54,21 +53,15 @@ import { deviceKind } from '@/scripts/device-kind.js';
 import { deepMerge } from '@/scripts/merge.js';
 import { MenuItem } from '@/types/menu.js';
 import { miLocalStorage } from '@/local-storage.js';
+import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
 
 provide('shouldOmitHeaderTitle', true);
-
-const isLocalTimelineAvailable = ($i == null && instance.policies.ltlAvailable) || ($i != null && $i.policies.ltlAvailable);
-const isGlobalTimelineAvailable = ($i == null && instance.policies.gtlAvailable) || ($i != null && $i.policies.gtlAvailable);
-const isBubbleTimelineAvailable = ($i == null && instance.policies.btlAvailable) || ($i != null && $i.policies.btlAvailable);
-const keymap = {
-	't': focus,
-};
 
 const tlComponent = shallowRef<InstanceType<typeof MkTimeline>>();
 const rootEl = shallowRef<HTMLElement>();
 
 const queue = ref(0);
-const srcWhenNotSignin = ref<'local' | 'global'>(isLocalTimelineAvailable ? 'local' : 'global');
+const srcWhenNotSignin = ref<'local' | 'global'>(isAvailableBasicTimeline('local') ? 'local' : 'global');
 const src = computed<'home' | 'local' | 'social' | 'global' | 'bubble' | `list:${string}`>({
 	get: () => ($i ? defaultStore.reactiveState.tl.value.src : srcWhenNotSignin.value),
 	set: (x) => saveSrc(x),
@@ -79,7 +72,11 @@ const withRenotes = computed<boolean>({
 });
 
 // computed内での無限ループを防ぐためのフラグ
-const localSocialTLFilterSwitchStore = ref<'withReplies' | 'onlyFiles' | false>('withReplies');
+const localSocialTLFilterSwitchStore = ref<'withReplies' | 'onlyFiles' | false>(
+	defaultStore.reactiveState.tl.value.filter.withReplies ? 'withReplies' :
+	defaultStore.reactiveState.tl.value.filter.onlyFiles ? 'onlyFiles' :
+	false,
+);
 
 const withReplies = computed<boolean>({
 	get: () => {
@@ -151,7 +148,7 @@ async function chooseList(ev: MouseEvent): Promise<void> {
 		(lists.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link' as const,
-			icon: 'ph-plus ph-bold ph-lg',
+			icon: 'ti ti-plus',
 			text: i18n.ts.createNew,
 			to: '/my/lists',
 		},
@@ -171,7 +168,7 @@ async function chooseAntenna(ev: MouseEvent): Promise<void> {
 		(antennas.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link' as const,
-			icon: 'ph-plus ph-bold ph-lg',
+			icon: 'ti ti-plus',
 			text: i18n.ts.createNew,
 			to: '/my/antennas',
 		},
@@ -196,7 +193,7 @@ async function chooseChannel(ev: MouseEvent): Promise<void> {
 		(channels.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link' as const,
-			icon: 'ph-plus ph-bold ph-lg',
+			icon: 'ti ti-plus',
 			text: i18n.ts.createNew,
 			to: '/channels',
 		},
@@ -239,7 +236,7 @@ function focus(): void {
 }
 
 function closeTutorial(): void {
-	if (!['home', 'local', 'social', 'global'].includes(src.value)) return;
+	if (!isBasicTimeline(src.value)) return;
 	const before = defaultStore.state.timelineTutorials;
 	before[src.value] = true;
 	defaultStore.set('timelineTutorials', before);
@@ -248,14 +245,14 @@ function closeTutorial(): void {
 const headerActions = computed(() => {
 	const tmp = [
 		{
-			icon: 'ph-dots-three ph-bold ph-lg',
+			icon: 'ti ti-dots',
 			text: i18n.ts.options,
 			handler: (ev) => {
 				os.popupMenu([{
 					type: 'switch',
 					text: i18n.ts.showRenotes,
 					ref: withRenotes,
-				}, src.value === 'local' || src.value === 'social' ? {
+				}, isBasicTimeline(src.value) && hasWithReplies(src.value) ? {
 					type: 'switch',
 					text: i18n.ts.showRepliesToOthersInTimeline,
 					ref: withReplies,
@@ -268,14 +265,14 @@ const headerActions = computed(() => {
 					type: 'switch',
 					text: i18n.ts.fileAttachedOnly,
 					ref: onlyFiles,
-					disabled: src.value === 'local' || src.value === 'social' ? withReplies : false,
+					disabled: isBasicTimeline(src.value) && hasWithReplies(src.value) ? withReplies : false,
 				}], ev.currentTarget ?? ev.target);
 			},
 		},
 	];
 	if (deviceKind === 'desktop') {
 		tmp.unshift({
-			icon: 'ph-arrows-counter-clockwise ph-bold ph-lg',
+			icon: 'ti ti-refresh',
 			text: i18n.ts.reload,
 			handler: (ev: Event) => {
 				tlComponent.value?.reloadTimeline();
@@ -288,68 +285,40 @@ const headerActions = computed(() => {
 const headerTabs = computed(() => [...(defaultStore.reactiveState.pinnedUserLists.value.map(l => ({
 	key: 'list:' + l.id,
 	title: l.name,
-	icon: 'ph-star ph-bold ph-lg',
+	icon: 'ti ti-star',
 	iconOnly: true,
-}))), {
-	key: 'home',
-	title: i18n.ts._timelines.home,
-	icon: 'ph-house ph-bold ph-lg',
+}))), ...availableBasicTimelines().map(tl => ({
+	key: tl,
+	title: i18n.ts._timelines[tl],
+	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
-}, ...(isLocalTimelineAvailable ? [{
-	key: 'local',
-	title: i18n.ts._timelines.local,
-	icon: 'ph-planet ph-bold ph-lg',
-	iconOnly: true,
-}, {
-	key: 'social',
-	title: i18n.ts._timelines.social,
-	icon: 'ph-rocket-launch ph-bold ph-lg',
-	iconOnly: true,
-}] : []), ...(isBubbleTimelineAvailable ? [{
-	key: 'bubble',
-	title: 'Bubble',
-	icon: 'ph-drop ph-bold ph-lg',
-	iconOnly: true,
-}] : []), ...(isGlobalTimelineAvailable ? [{
-	key: 'global',
-	title: i18n.ts._timelines.global,
-	icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
-	iconOnly: true,
-}] : []), {
-	icon: 'ph-list ph-bold ph-lg',
+})), {
+	icon: 'ti ti-list',
 	title: i18n.ts.lists,
 	iconOnly: true,
 	onClick: chooseList,
 }, {
-	icon: 'ph-flying-saucer ph-bold ph-lg',
+	icon: 'ti ti-antenna',
 	title: i18n.ts.antennas,
 	iconOnly: true,
 	onClick: chooseAntenna,
 }, {
-	icon: 'ph-television ph-bold ph-lg',
+	icon: 'ti ti-device-tv',
 	title: i18n.ts.channel,
 	iconOnly: true,
 	onClick: chooseChannel,
 }] as Tab[]);
 
-const headerTabsWhenNotLogin = computed(() => [
-	...(isLocalTimelineAvailable ? [{
-		key: 'local',
-		title: i18n.ts._timelines.local,
-		icon: 'ph-planet ph-bold ph-lg',
-		iconOnly: true,
-	}] : []),
-	...(isGlobalTimelineAvailable ? [{
-		key: 'global',
-		title: i18n.ts._timelines.global,
-		icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
-		iconOnly: true,
-	}] : []),
-] as Tab[]);
+const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(tl => ({
+	key: tl,
+	title: i18n.ts._timelines[tl],
+	icon: basicTimelineIconClass(tl),
+	iconOnly: true,
+}))] as Tab[]);
 
 definePageMetadata(() => ({
 	title: i18n.ts.timeline,
-	icon: src.value === 'local' ? 'ph-planet ph-bold ph-lg' : src.value === 'social' ? 'ph-rocket-launch ph-bold ph-lg' : src.value === 'global' ? 'ph-globe-hemisphere-west ph-bold ph-lg' : src.value === 'bubble' ? 'ph-drop ph-bold ph-lg' : 'ph-house ph-bold ph-lg',
+	icon: isBasicTimeline(src.value) ? basicTimelineIconClass(src.value) : 'ti ti-home',
 }));
 </script>
 

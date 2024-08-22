@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 		<div :class="$style.middle">
 			<MkA v-tooltip.noDelay.right="i18n.ts.timeline" :class="$style.item" :activeClass="$style.active" to="/" exact>
-				<i :class="$style.itemIcon" class="ph-house ph-bold ph-lg ti-fw"></i><span :class="$style.itemText">{{ i18n.ts.timeline }}</span>
+				<i :class="$style.itemIcon" class="ti ti-home ti-fw"></i><span :class="$style.itemText">{{ i18n.ts.timeline }}</span>
 			</MkA>
 			<template v-for="item in menu">
 				<div v-if="item === '-'" :class="$style.divider"></div>
@@ -37,19 +37,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 			<div :class="$style.divider"></div>
 			<MkA v-if="$i.isAdmin || $i.isModerator" v-tooltip.noDelay.right="i18n.ts.controlPanel" :class="$style.item" :activeClass="$style.active" to="/admin">
-				<i :class="$style.itemIcon" class="ph-gauge ph-bold ph-lg ti-fw"></i><span :class="$style.itemText">{{ i18n.ts.controlPanel }}</span>
+				<i :class="$style.itemIcon" class="ti ti-dashboard ti-fw"></i><span :class="$style.itemText">{{ i18n.ts.controlPanel }}</span>
 			</MkA>
 			<button class="_button" :class="$style.item" @click="more">
-				<i :class="$style.itemIcon" class="ph-dots-nine ph-bold ph-lg ti-fw"></i><span :class="$style.itemText">{{ i18n.ts.more }}</span>
+				<i :class="$style.itemIcon" class="ti ti-grid-dots ti-fw"></i><span :class="$style.itemText">{{ i18n.ts.more }}</span>
 				<span v-if="otherMenuItemIndicated" :class="$style.itemIndicator"><i class="_indicatorCircle"></i></span>
 			</button>
 			<MkA v-tooltip.noDelay.right="i18n.ts.settings" :class="$style.item" :activeClass="$style.active" to="/settings">
-				<i :class="$style.itemIcon" class="ph-gear ph-bold ph-lg ti-fw"></i><span :class="$style.itemText">{{ i18n.ts.settings }}</span>
+				<i :class="$style.itemIcon" class="ti ti-settings ti-fw"></i><span :class="$style.itemText">{{ i18n.ts.settings }}</span>
 			</MkA>
 		</div>
 		<div :class="$style.bottom">
 			<button v-tooltip.noDelay.right="i18n.ts.note" class="_button" :class="[$style.post]" data-cy-open-post-form @click="os.post">
-				<i class="ph-pencil-simple ph-bold ph-lg ti-fw" :class="$style.postIcon"></i><span :class="$style.postText">{{ i18n.ts.note }}</span>
+				<i class="ti ti-pencil ti-fw" :class="$style.postIcon"></i><span :class="$style.postText">{{ i18n.ts.note }}</span>
 			</button>
 			<button v-tooltip.noDelay.right="`${i18n.ts.account}: @${$i.username}`" class="_button" :class="[$style.account]" @click="openAccountMenu">
 				<MkAvatar :user="$i" :class="$style.avatar"/><MkAcct class="_nowrap" :class="$style.acct" :user="$i"/>
@@ -99,10 +99,11 @@ function openAccountMenu(ev: MouseEvent) {
 }
 
 function more(ev: MouseEvent) {
-	os.popup(defineAsyncComponent(() => import('@/components/MkLaunchPad.vue')), {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkLaunchPad.vue')), {
 		src: ev.currentTarget ?? ev.target,
 	}, {
-	}, 'closed');
+		closed: () => dispose(),
+	});
 }
 </script>
 
@@ -165,6 +166,15 @@ function more(ev: MouseEvent) {
 		display: block;
 		text-align: center;
 		width: 100%;
+
+		&:focus-visible {
+			outline: none;
+
+			> .instanceIcon {
+				outline: 2px solid var(--focus);
+				outline-offset: 2px;
+			}
+		}
 	}
 
 	.instanceIcon {
@@ -191,7 +201,7 @@ function more(ev: MouseEvent) {
 		font-weight: bold;
 		text-align: left;
 
-		&:before {
+		&::before {
 			content: "";
 			display: block;
 			width: calc(100% - 38px);
@@ -206,8 +216,17 @@ function more(ev: MouseEvent) {
 			background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
 		}
 
+		&:focus-visible {
+			outline: none;
+
+			&::before {
+				outline: 2px solid var(--fgOnAccent);
+				outline-offset: -4px;
+			}
+		}
+
 		&:hover, &.active {
-			&:before {
+			&::before {
 				background: var(--accentLighten);
 			}
 		}
@@ -233,6 +252,14 @@ function more(ev: MouseEvent) {
 		text-align: left;
 		box-sizing: border-box;
 		overflow: clip;
+
+		&:focus-visible {
+			outline: none;
+
+			> .avatar {
+				box-shadow: 0 0 0 4px var(--focus);
+			}
+		}
 	}
 
 	.avatar {
@@ -281,10 +308,19 @@ function more(ev: MouseEvent) {
 			color: var(--navActive);
 		}
 
-		&:hover, &.active {
+		&:focus-visible {
+			outline: none;
+
+			&::before {
+				outline: 2px solid var(--focus);
+				outline-offset: -2px;
+			}
+		}
+
+		&:hover, &.active, &:focus {
 			color: var(--accent);
 
-			&:before {
+			&::before {
 				content: "";
 				display: block;
 				width: calc(100% - 34px);
@@ -351,6 +387,15 @@ function more(ev: MouseEvent) {
 		display: block;
 		text-align: center;
 		width: 100%;
+
+		&:focus-visible {
+			outline: none;
+
+			> .instanceIcon {
+				outline: 2px solid var(--focus);
+				outline-offset: 2px;
+			}
+		}
 	}
 
 	.instanceIcon {
@@ -375,7 +420,7 @@ function more(ev: MouseEvent) {
 		height: 52px;
 		text-align: center;
 
-		&:before {
+		&::before {
 			content: "";
 			display: block;
 			position: absolute;
@@ -390,8 +435,17 @@ function more(ev: MouseEvent) {
 			background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
 		}
 
+		&:focus-visible {
+			outline: none;
+
+			&::before {
+				outline: 2px solid var(--fgOnAccent);
+				outline-offset: -4px;
+			}
+		}
+
 		&:hover, &.active {
-			&:before {
+			&::before {
 				background: var(--accentLighten);
 			}
 		}
@@ -412,6 +466,14 @@ function more(ev: MouseEvent) {
 		padding: 20px 0;
 		width: 100%;
 		overflow: clip;
+
+		&:focus-visible {
+			outline: none;
+
+			> .avatar {
+				box-shadow: 0 0 0 4px var(--focus);
+			}
+		}
 	}
 
 	.avatar {
@@ -441,11 +503,20 @@ function more(ev: MouseEvent) {
 		width: 100%;
 		text-align: center;
 
-		&:hover, &.active {
+		&:focus-visible {
+			outline: none;
+
+			&::before {
+				outline: 2px solid var(--focus);
+				outline-offset: -2px;
+			}
+		}
+
+		&:hover, &.active, &:focus {
 			text-decoration: none;
 			color: var(--accent);
 
-			&:before {
+			&::before {
 				content: "";
 				display: block;
 				height: 100%;

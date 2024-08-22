@@ -48,7 +48,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkSwitch v-model="isBlocked" :disabled="!meta || !instance" @update:modelValue="toggleBlock">{{ i18n.ts.blockThisInstance }}</MkSwitch>
 						<MkSwitch v-model="isSilenced" :disabled="!meta || !instance" @update:modelValue="toggleSilenced">{{ i18n.ts.silenceThisInstance }}</MkSwitch>
 						<MkSwitch v-model="isNSFW" :disabled="!instance" @update:modelValue="toggleNSFW">Mark as NSFW</MkSwitch>
-						<MkButton @click="refreshMetadata"><i class="ph-arrows-clockwise ph-bold ph-lg"></i> Refresh metadata</MkButton>
+						<MkSwitch v-model="isMediaSilenced" :disabled="!meta || !instance" @update:modelValue="toggleMediaSilenced">{{ i18n.ts.mediaSilenceThisInstance }}</MkSwitch>
+						<MkButton @click="refreshMetadata"><i class="ti ti-refresh"></i> Refresh metadata</MkButton>
 						<MkTextarea v-model="moderationNote" manualSave>
 							<template #label>{{ i18n.ts.moderationNote }}</template>
 						</MkTextarea>
@@ -169,6 +170,7 @@ const suspensionState = ref<'none' | 'manuallySuspended' | 'goneSuspended' | 'au
 const isBlocked = ref(false);
 const isSilenced = ref(false);
 const isNSFW = ref(false);
+const isMediaSilenced = ref(false);
 const faviconUrl = ref<string | null>(null);
 const moderationNote = ref('');
 
@@ -198,8 +200,9 @@ async function fetch(): Promise<void> {
 	isBlocked.value = instance.value?.isBlocked ?? false;
 	isSilenced.value = instance.value?.isSilenced ?? false;
 	isNSFW.value = instance.value?.isNSFW ?? false;
+	isMediaSilenced.value = instance.value?.isMediaSilenced ?? false;
 	faviconUrl.value = getProxiedImageUrlNullable(instance.value?.faviconUrl, 'preview') ?? getProxiedImageUrlNullable(instance.value?.iconUrl, 'preview');
-	moderationNote.value = instance.value?.moderationNote;
+	moderationNote.value = instance.value?.moderationNote ?? '';
 }
 
 async function toggleBlock(): Promise<void> {
@@ -218,6 +221,16 @@ async function toggleSilenced(): Promise<void> {
 	const silencedHosts = meta.value.silencedHosts ?? [];
 	await misskeyApi('admin/update-meta', {
 		silencedHosts: isSilenced.value ? silencedHosts.concat([host]) : silencedHosts.filter(x => x !== host),
+	});
+}
+
+async function toggleMediaSilenced(): Promise<void> {
+	if (!meta.value) throw new Error('No meta?');
+	if (!instance.value) throw new Error('No instance?');
+	const { host } = instance.value;
+	const mediaSilencedHosts = meta.value.mediaSilencedHosts ?? [];
+	await misskeyApi('admin/update-meta', {
+		mediaSilencedHosts: isMediaSilenced.value ? mediaSilencedHosts.concat([host]) : mediaSilencedHosts.filter(x => x !== host),
 	});
 }
 
@@ -261,7 +274,7 @@ fetch();
 
 const headerActions = computed(() => [{
 	text: `https://${props.host}`,
-	icon: 'ph-arrow-square-out ph-bold ph-lg',
+	icon: 'ti ti-external-link',
 	handler: () => {
 		window.open(`https://${props.host}`, '_blank', 'noopener');
 	},
@@ -270,24 +283,24 @@ const headerActions = computed(() => [{
 const headerTabs = computed(() => [{
 	key: 'overview',
 	title: i18n.ts.overview,
-	icon: 'ph-info ph-bold ph-lg',
+	icon: 'ti ti-info-circle',
 }, {
 	key: 'chart',
 	title: i18n.ts.charts,
-	icon: 'ph-chart-line ph-bold ph-lg',
+	icon: 'ti ti-chart-line',
 }, {
 	key: 'users',
 	title: i18n.ts.users,
-	icon: 'ph-users ph-bold ph-lg',
+	icon: 'ti ti-users',
 }, {
 	key: 'raw',
 	title: 'Raw',
-	icon: 'ph-code ph-bold ph-lg',
+	icon: 'ti ti-code',
 }]);
 
 definePageMetadata(() => ({
 	title: props.host,
-	icon: 'ph-hard-drives ph-bold ph-lg',
+	icon: 'ti ti-server',
 }));
 </script>
 

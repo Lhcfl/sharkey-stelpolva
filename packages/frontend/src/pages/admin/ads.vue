@@ -68,16 +68,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div class="buttons">
 					<MkButton class="button" inline primary style="margin-right: 12px;" @click="save(ad)">
 						<i
-							class="ph-floppy-disk ph-bold ph-lg"
+							class="ti ti-device-floppy"
 						></i> {{ i18n.ts.save }}
 					</MkButton>
 					<MkButton class="button" inline danger @click="remove(ad)">
-						<i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.remove }}
+						<i class="ti ti-trash"></i> {{ i18n.ts.remove }}
 					</MkButton>
 				</div>
 			</div>
 			<MkButton class="button" @click="more()">
-				<i class="ph-arrow-clockwise ph-bold ph-lg"></i>{{ i18n.ts.more }}
+				<i class="ti ti-reload"></i>{{ i18n.ts.more }}
 			</MkButton>
 		</div>
 	</MkSpacer>
@@ -248,7 +248,7 @@ refresh();
 
 const headerActions = computed(() => [{
 	asFullButton: true,
-	icon: 'ph-plus ph-bold ph-lg',
+	icon: 'ti ti-plus',
 	text: i18n.ts.add,
 	handler: add,
 }]);
@@ -257,7 +257,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.ads,
-	icon: 'ph-flag ph-bold ph-lg',
+	icon: 'ti ti-ad',
 }));
 </script>
 

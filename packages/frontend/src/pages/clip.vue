@@ -15,8 +15,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 					<div v-else>({{ i18n.ts.noDescription }})</div>
 					<div>
-						<MkButton v-if="favorited" v-tooltip="i18n.ts.unfavorite" asLike rounded primary @click="unfavorite()"><i class="ph-heart ph-bold pd-lg"></i><span v-if="clip.favoritedCount > 0" style="margin-left: 6px;">{{ clip.favoritedCount }}</span></MkButton>
-						<MkButton v-else v-tooltip="i18n.ts.favorite" asLike rounded @click="favorite()"><i class="ph-heart ph-bold pd-lg"></i><span v-if="clip.favoritedCount > 0" style="margin-left: 6px;">{{ clip.favoritedCount }}</span></MkButton>
+						<MkButton v-if="favorited" v-tooltip="i18n.ts.unfavorite" asLike rounded primary @click="unfavorite()"><i class="ti ti-heart"></i><span v-if="clip.favoritedCount > 0" style="margin-left: 6px;">{{ clip.favoritedCount }}</span></MkButton>
+						<MkButton v-else v-tooltip="i18n.ts.favorite" asLike rounded @click="favorite()"><i class="ti ti-heart"></i><span v-if="clip.favoritedCount > 0" style="margin-left: 6px;">{{ clip.favoritedCount }}</span></MkButton>
 					</div>
 				</div>
 				<div :class="$style.user">
@@ -43,7 +43,7 @@ import { url } from '@/config.js';
 import MkButton from '@/components/MkButton.vue';
 import { clipsCache } from '@/cache.js';
 import { isSupportShare } from '@/scripts/navigator.js';
-import copyToClipboard from '@/scripts/copy-to-clipboard.js';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 
 const props = defineProps<{
 	clipId: string,
@@ -94,7 +94,7 @@ async function unfavorite() {
 }
 
 const headerActions = computed(() => clip.value && isOwned.value ? [{
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 	text: i18n.ts.edit,
 	handler: async (): Promise<void> => {
 		const { canceled, result } = await os.form(clip.value.name, {
@@ -127,14 +127,14 @@ const headerActions = computed(() => clip.value && isOwned.value ? [{
 		clipsCache.delete();
 	},
 }, ...(clip.value.isPublic ? [{
-	icon: 'ph-share-network ph-bold ph-lg',
+	icon: 'ti ti-link',
 	text: i18n.ts.copyUrl,
 	handler: async (): Promise<void> => {
 		copyToClipboard(`${url}/clips/${clip.value.id}`);
 		os.success();
 	},
 }] : []), ...(clip.value.isPublic && isSupportShare() ? [{
-	icon: 'ph-share-network ph-bold ph-lg',
+	icon: 'ti ti-share',
 	text: i18n.ts.share,
 	handler: async (): Promise<void> => {
 		navigator.share({
@@ -144,7 +144,7 @@ const headerActions = computed(() => clip.value && isOwned.value ? [{
 		});
 	},
 }] : []), {
-	icon: 'ph-trash ph-bold ph-lg',
+	icon: 'ti ti-trash',
 	text: i18n.ts.delete,
 	danger: true,
 	handler: async (): Promise<void> => {
@@ -164,7 +164,7 @@ const headerActions = computed(() => clip.value && isOwned.value ? [{
 
 definePageMetadata(() => ({
 	title: clip.value ? clip.value.name : i18n.ts.clip,
-	icon: 'ph-paperclip ph-bold ph-lg',
+	icon: 'ti ti-paperclip',
 }));
 </script>
 

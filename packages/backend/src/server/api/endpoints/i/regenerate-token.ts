@@ -11,9 +11,16 @@ import type { UsersRepository, UserProfilesRepository } from '@/models/_.js';
 import generateUserToken from '@/misc/generate-native-user-token.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
+import ms from 'ms';
 
 export const meta = {
 	requireCredential: true,
+
+	limit: {
+		duration: ms('1hour'),
+		max: 10,
+		minInterval: ms('1sec'),
+	},
 
 	secure: true,
 } as const;

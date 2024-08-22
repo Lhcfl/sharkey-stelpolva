@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkModal ref="modal" :preferType="'dialog'" :zPriority="'high'" @click="done(true)" @closed="emit('closed')">
+<MkModal ref="modal" :preferType="'dialog'" :zPriority="'high'" @click="done(true)" @closed="emit('closed')" @esc="cancel()">
 	<div :class="$style.root">
 		<div v-if="icon" :class="$style.icon">
 			<i :class="icon"></i>
@@ -18,17 +18,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 				[$style.type_info]: type === 'info',
 			}]"
 		>
-			<i v-if="type === 'success'" :class="$style.iconInner" class="ph-check ph-bold ph-lg"></i>
-			<i v-else-if="type === 'error'" :class="$style.iconInner" class="ph-x-circle ph-bold ph-lg"></i>
-			<i v-else-if="type === 'warning'" :class="$style.iconInner" class="ph-warning ph-bold ph-lg"></i>
-			<i v-else-if="type === 'info'" :class="$style.iconInner" class="ph-info ph-bold ph-lg"></i>
-			<i v-else-if="type === 'question'" :class="$style.iconInner" class="ph-question ph-bold ph-lg"></i>
+			<i v-if="type === 'success'" :class="$style.iconInner" class="ti ti-check"></i>
+			<i v-else-if="type === 'error'" :class="$style.iconInner" class="ti ti-circle-x"></i>
+			<i v-else-if="type === 'warning'" :class="$style.iconInner" class="ti ti-alert-triangle"></i>
+			<i v-else-if="type === 'info'" :class="$style.iconInner" class="ti ti-info-circle"></i>
+			<i v-else-if="type === 'question'" :class="$style.iconInner" class="ti ti-help-circle"></i>
 			<MkLoading v-else-if="type === 'waiting'" :class="$style.iconInner" :em="true"/>
 		</div>
 		<header v-if="title" :class="$style.title"><Mfm :text="title"/></header>
 		<div v-if="text" :class="$style.text"><Mfm :text="text" :isBlock="true" /></div>
 		<MkInput v-if="input" v-model="inputValue" autofocus :type="input.type || 'text'" :placeholder="input.placeholder || undefined" :autocomplete="input.autocomplete" @keydown="onInputKeydown">
-			<template v-if="input.type === 'password'" #prefix><i class="ph-lock ph-bold ph-lg"></i></template>
+			<template v-if="input.type === 'password'" #prefix><i class="ti ti-lock"></i></template>
 			<template #caption>
 				<span v-if="okButtonDisabledReason === 'charactersExceeded'" v-text="i18n.tsx._dialog.charactersExceeded({ current: (inputValue as string)?.length ?? 0, max: input.maxLength ?? 'NaN' })"/>
 				<span v-else-if="okButtonDisabledReason === 'charactersBelow'" v-text="i18n.tsx._dialog.charactersBelow({ current: (inputValue as string)?.length ?? 0, min: input.minLength ?? 'NaN' })"/>
@@ -36,7 +36,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</MkInput>
 		<MkSelect v-if="select" v-model="selectedValue" autofocus>
 			<template v-if="select.items">
-				<option v-for="item in select.items" :value="item.value">{{ item.text }}</option>
+				<template v-for="item in select.items">
+					<optgroup v-if="'sectionTitle' in item" :label="item.sectionTitle">
+						<option v-for="subItem in item.items" :value="subItem.value">{{ subItem.text }}</option>
+					</optgroup>
+					<option v-else :value="item.value">{{ item.text }}</option>
+				</template>
 			</template>
 		</MkSelect>
 		<div v-if="(showOkButton || showCancelButton) && !actions" :class="$style.buttons">
@@ -51,7 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, ref, shallowRef, computed } from 'vue';
+import { ref, shallowRef, computed } from 'vue';
 import MkModal from '@/components/MkModal.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
@@ -67,11 +72,16 @@ type Input = {
 	maxLength?: number;
 };
 
+type SelectItem = {
+	value: any;
+	text: string;
+};
+
 type Select = {
-	items: {
-		value: any;
-		text: string;
-	}[];
+	items: (SelectItem | {
+		sectionTitle: string;
+		items: SelectItem[];
+	})[];
 	default: string | null;
 };
 
@@ -156,10 +166,6 @@ function onBgClick() {
 	if (props.cancelableByBgClick) cancel();
 }
 */
-function onKeydown(evt: KeyboardEvent) {
-	if (evt.key === 'Escape') cancel();
-}
-
 function onInputKeydown(evt: KeyboardEvent) {
 	if (evt.key === 'Enter' && okButtonDisabledReason.value === null) {
 		evt.preventDefault();
@@ -167,14 +173,6 @@ function onInputKeydown(evt: KeyboardEvent) {
 		ok();
 	}
 }
-
-onMounted(() => {
-	document.addEventListener('keydown', onKeydown);
-});
-
-onBeforeUnmount(() => {
-	document.removeEventListener('keydown', onKeydown);
-});
 </script>
 
 <style lang="scss" module>

@@ -15,7 +15,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #default="{ items: notes }">
 		<div :class="[$style.root, { [$style.noGap]: noGap }]">
 			<MkDateSeparatedList
-				v-if="defaultStore.state.noteDesign === 'misskey'"
 				ref="notes"
 				v-slot="{ item: note }"
 				:items="notes"
@@ -27,33 +26,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 			>
 				<MkNote :key="note._featuredId_ || note._prId_ || note.id" :class="$style.note" :note="note" :withHardMute="true"/>
 			</MkDateSeparatedList>
-			<MkDateSeparatedList
-				v-else-if="defaultStore.state.noteDesign === 'sharkey'"
-				ref="notes" 
-				v-slot="{ item: note }"
-				:items="notes"
-				:direction="pagination.reversed ? 'up' : 'down'"
-				:reversed="pagination.reversed"
-				:noGap="noGap"
-				:ad="true"
-				:class="$style.notes"
-			>
-				<SkNote :key="note._featuredId_ || note._prId_ || note.id" :class="$style.note" :note="note" :withHardMute="true"/>
-			</MkDateSeparatedList>
 		</div>
 	</template>
 </MkPagination>
 </template>
 
 <script lang="ts" setup>
-import { shallowRef, ref } from 'vue';
-import MkNote from '@/components/MkNote.vue';
-import SkNote from '@/components/SkNote.vue';
+import { defineAsyncComponent, shallowRef, ref } from 'vue';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 import MkPagination, { Paging } from '@/components/MkPagination.vue';
 import { i18n } from '@/i18n.js';
 import { infoImageUrl } from '@/instance.js';
 import { defaultStore } from '@/store.js';
+
+const MkNote = defineAsyncComponent(() =>
+	(defaultStore.state.noteDesign === 'misskey') ? import('@/components/MkNote.vue') :
+	(defaultStore.state.noteDesign === 'sharkey') ? import('@/components/SkNote.vue') :
+	null
+);
 
 const props = defineProps<{
 	pagination: Paging;

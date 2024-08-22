@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div class="_gaps">
 	<div>
 		<MkInput v-model="host" :debounce="true" class="">
-			<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+			<template #prefix><i class="ti ti-search"></i></template>
 			<template #label>{{ i18n.ts.host }}</template>
 		</MkInput>
 		<FormSplit style="margin-top: var(--margin);">
@@ -74,9 +74,9 @@ const pagination = {
 		sort: sort.value,
 		host: host.value !== '' ? host.value : null,
 		...(
-			state.value === 'federating' ? { federating: true } :
-			state.value === 'subscribing' ? { subscribing: true } :
-			state.value === 'publishing' ? { publishing: true } :
+			state.value === 'federating' ? { federating: true, suspended: false, blocked: false } :
+			state.value === 'subscribing' ? { subscribing: true, suspended: false, blocked: false } :
+			state.value === 'publishing' ? { publishing: true, suspended: false, blocked: false } :
 			state.value === 'suspended' ? { suspended: true } :
 			state.value === 'blocked' ? { blocked: true } :
 			state.value === 'silenced' ? { silenced: true } :

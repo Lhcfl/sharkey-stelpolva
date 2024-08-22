@@ -50,7 +50,7 @@ const router = useRouter();
 
 const indexInfo = {
 	title: i18n.ts.controlPanel,
-	icon: 'ph-gear ph-bold ph-lg',
+	icon: 'ti ti-settings',
 	hideHeader: true,
 };
 
@@ -95,29 +95,29 @@ const menuDef = computed(() => [{
 	title: i18n.ts.quickAction,
 	items: [{
 		type: 'button',
-		icon: 'ph-magnifying-glass ph-bold ph-lg',
+		icon: 'ti ti-search',
 		text: i18n.ts.lookup,
 		action: adminLookup,
 	}, ...(instance.disableRegistration ? [{
 		type: 'button',
-		icon: 'ph-user-plus ph-bold ph-lg',
+		icon: 'ti ti-user-plus',
 		text: i18n.ts.createInviteCode,
 		action: invite,
 	}] : [])],
 }, {
 	title: i18n.ts.administration,
 	items: [{
-		icon: 'ph-gauge ph-bold ph-lg',
+		icon: 'ti ti-dashboard',
 		text: i18n.ts.dashboard,
 		to: '/admin/overview',
 		active: currentPage.value?.route.name === 'overview',
 	}, {
-		icon: 'ph-users ph-bold ph-lg',
+		icon: 'ti ti-users',
 		text: i18n.ts.users,
 		to: '/admin/users',
 		active: currentPage.value?.route.name === 'users',
 	}, {
-		icon: 'ph-user-plus ph-bold ph-lg',
+		icon: 'ti ti-user-plus',
 		text: i18n.ts.invite,
 		to: '/admin/invites',
 		active: currentPage.value?.route.name === 'invites',
@@ -127,7 +127,7 @@ const menuDef = computed(() => [{
 		to: '/admin/approvals',
 		active: currentPage.value?.route.name === 'approvals',
 	}, {
-		icon: 'ph-seal-check ph-bold ph-lg',
+		icon: 'ti ti-badges',
 		text: i18n.ts.roles,
 		to: '/admin/roles',
 		active: currentPage.value?.route.name === 'roles',
@@ -137,42 +137,42 @@ const menuDef = computed(() => [{
 		to: '/admin/emojis',
 		active: currentPage.value?.route.name === 'emojis',
 	}, {
-		icon: 'ph-sparkle ph-bold ph-lg',
+		icon: 'ti ti-sparkles',
 		text: i18n.ts.avatarDecorations,
 		to: '/admin/avatar-decorations',
 		active: currentPage.value?.route.name === 'avatarDecorations',
 	}, {
-		icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
+		icon: 'ti ti-whirl',
 		text: i18n.ts.federation,
 		to: '/admin/federation',
 		active: currentPage.value?.route.name === 'federation',
 	}, {
-		icon: 'ph-clock ph-bold ph-lg-play',
+		icon: 'ti ti-clock-play',
 		text: i18n.ts.jobQueue,
 		to: '/admin/queue',
 		active: currentPage.value?.route.name === 'queue',
 	}, {
-		icon: 'ph-cloud ph-bold ph-lg',
+		icon: 'ti ti-cloud',
 		text: i18n.ts.files,
 		to: '/admin/files',
 		active: currentPage.value?.route.name === 'files',
 	}, {
-		icon: 'ph-megaphone ph-bold ph-lg',
+		icon: 'ti ti-speakerphone',
 		text: i18n.ts.announcements,
 		to: '/admin/announcements',
 		active: currentPage.value?.route.name === 'announcements',
 	}, {
-		icon: 'ph-flag ph-bold ph-lg',
+		icon: 'ti ti-ad',
 		text: i18n.ts.ads,
 		to: '/admin/ads',
 		active: currentPage.value?.route.name === 'ads',
 	}, {
-		icon: 'ph-warning-circle ph-bold ph-lg',
+		icon: 'ti ti-exclamation-circle',
 		text: i18n.ts.abuseReports,
 		to: '/admin/abuses',
 		active: currentPage.value?.route.name === 'abuses',
 	}, {
-		icon: 'ph-list ph-bold ph-lg-search',
+		icon: 'ti ti-list-search',
 		text: i18n.ts.moderationLogs,
 		to: '/admin/modlog',
 		active: currentPage.value?.route.name === 'modlog',
@@ -180,47 +180,47 @@ const menuDef = computed(() => [{
 }, {
 	title: i18n.ts.settings,
 	items: [{
-		icon: 'ph-gear ph-bold ph-lg',
+		icon: 'ti ti-settings',
 		text: i18n.ts.general,
 		to: '/admin/settings',
 		active: currentPage.value?.route.name === 'settings',
 	}, {
-		icon: 'ph-paint-roller ph-bold ph-lg',
+		icon: 'ti ti-paint',
 		text: i18n.ts.branding,
 		to: '/admin/branding',
 		active: currentPage.value?.route.name === 'branding',
 	}, {
-		icon: 'ph-shield ph-bold ph-lg',
+		icon: 'ti ti-shield',
 		text: i18n.ts.moderation,
 		to: '/admin/moderation',
 		active: currentPage.value?.route.name === 'moderation',
 	}, {
-		icon: 'ph-envelope ph-bold ph-lg',
+		icon: 'ti ti-mail',
 		text: i18n.ts.emailServer,
 		to: '/admin/email-settings',
 		active: currentPage.value?.route.name === 'email-settings',
 	}, {
-		icon: 'ph-cloud ph-bold ph-lg',
+		icon: 'ti ti-cloud',
 		text: i18n.ts.objectStorage,
 		to: '/admin/object-storage',
 		active: currentPage.value?.route.name === 'object-storage',
 	}, {
-		icon: 'ph-lock ph-bold ph-lg',
+		icon: 'ti ti-lock',
 		text: i18n.ts.security,
 		to: '/admin/security',
 		active: currentPage.value?.route.name === 'security',
 	}, {
-		icon: 'ph-planet ph-bold ph-lg',
+		icon: 'ti ti-planet',
 		text: i18n.ts.relays,
 		to: '/admin/relays',
 		active: currentPage.value?.route.name === 'relays',
 	}, {
-		icon: 'ph-prohibit ph-bold ph-lg',
+		icon: 'ti ti-ban',
 		text: i18n.ts.instanceBlocking,
 		to: '/admin/instance-block',
 		active: currentPage.value?.route.name === 'instance-block',
 	}, {
-		icon: 'ph-ghost ph-bold ph-lg',
+		icon: 'ti ti-ghost',
 		text: i18n.ts.proxyAccount,
 		to: '/admin/proxy-account',
 		active: currentPage.value?.route.name === 'proxy-account',
@@ -230,7 +230,12 @@ const menuDef = computed(() => [{
 		to: '/admin/external-services',
 		active: currentPage.value?.route.name === 'external-services',
 	}, {
-		icon: 'ph-faders ph-bold ph-lg',
+		icon: 'ti ti-webhook',
+		text: 'Webhook',
+		to: '/admin/system-webhook',
+		active: currentPage.value?.route.name === 'system-webhook',
+	}, {
+		icon: 'ti ti-adjustments',
 		text: i18n.ts.other,
 		to: '/admin/other-settings',
 		active: currentPage.value?.route.name === 'other-settings',
@@ -238,7 +243,7 @@ const menuDef = computed(() => [{
 }, {
 	title: i18n.ts.info,
 	items: [{
-		icon: 'ph-database ph-bold ph-lg',
+		icon: 'ti ti-database',
 		text: i18n.ts.database,
 		to: '/admin/database',
 		active: currentPage.value?.route.name === 'database',
@@ -305,25 +310,25 @@ function invite() {
 function adminLookup(ev: MouseEvent) {
 	os.popupMenu([{
 		text: i18n.ts.user,
-		icon: 'ph-user ph-bold ph-lg',
+		icon: 'ti ti-user',
 		action: () => {
 			lookupUser();
 		},
 	}, {
 		text: `${i18n.ts.user} (${i18n.ts.email})`,
-		icon: 'ph-user ph-bold ph-lg',
+		icon: 'ti ti-user',
 		action: () => {
 			lookupUserByEmail();
 		},
 	}, {
 		text: i18n.ts.file,
-		icon: 'ph-cloud ph-bold ph-lg',
+		icon: 'ti ti-cloud',
 		action: () => {
 			lookupFile();
 		},
 	}, {
 		text: i18n.ts.lookup,
-		icon: 'ph-planet ph-bold ph-lg',
+		icon: 'ti ti-world-search',
 		action: () => {
 			lookup();
 		},

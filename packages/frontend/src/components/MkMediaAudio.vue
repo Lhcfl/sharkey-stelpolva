@@ -15,10 +15,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 	@contextmenu.stop
 	@keydown.stop
 >
-	<button v-if="hide" :class="$style.hidden" @click="hide = false">
+	<button v-if="hide" :class="$style.hidden" @click="show">
 		<div :class="$style.hiddenTextWrapper">
-			<b v-if="audio.isSensitive" style="display: block;"><i class="ph-eye-slash ph-bold ph-lg"></i> {{ i18n.ts.sensitive }}{{ defaultStore.state.dataSaver.media ? ` (${i18n.ts.audio}${audio.size ? ' ' + bytes(audio.size) : ''})` : '' }}</b>
-			<b v-else style="display: block;"><i class="ph-music-notes ph-bold ph-lg"></i> {{ defaultStore.state.dataSaver.media && audio.size ? bytes(audio.size) : i18n.ts.audio }}</b>
+			<b v-if="audio.isSensitive" style="display: block;"><i class="ti ti-eye-exclamation"></i> {{ i18n.ts.sensitive }}{{ defaultStore.state.dataSaver.media ? ` (${i18n.ts.audio}${audio.size ? ' ' + bytes(audio.size) : ''})` : '' }}</b>
+			<b v-else style="display: block;"><i class="ti ti-music"></i> {{ defaultStore.state.dataSaver.media && audio.size ? bytes(audio.size) : i18n.ts.audio }}</b>
 			<span style="display: block;">{{ i18n.ts.clickToShow }}</span>
 		</div>
 	</button>
@@ -39,28 +39,42 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<audio
 			ref="audioEl"
 			preload="metadata"
+			@keydown.prevent="() => {}"
 		>
 			<source :src="audio.url">
 		</audio>
 		<div :class="[$style.controlsChild, $style.controlsLeft]">
-			<button class="_button" :class="$style.controlButton" @click="togglePlayPause">
-				<i v-if="isPlaying" class="ph-pause ph-bold ph-lg"></i>
-				<i v-else class="ph-play ph-bold ph-lg"></i>
+			<button
+				:class="['_button', $style.controlButton]"
+				tabindex="-1"
+				@click.stop="togglePlayPause"
+			>
+				<i v-if="isPlaying" class="ti ti-player-pause-filled"></i>
+				<i v-else class="ti ti-player-play-filled"></i>
 			</button>
 		</div>
 		<div :class="[$style.controlsChild, $style.controlsRight]">
 			<a class="_button" :class="$style.controlButton" :href="audio.url" :download="audio.name" target="_blank">
 				<i class="ph-download ph-bold ph-lg"></i>
 			</a>
-			<button class="_button" :class="$style.controlButton" @click="showMenu">
-				<i class="ph-gear ph-bold ph-lg"></i>
+			<button
+				:class="['_button', $style.controlButton]"
+				tabindex="-1"
+				@click.stop="() => {}"
+				@mousedown.prevent.stop="showMenu"
+			>
+				<i class="ti ti-settings"></i>
 			</button>
 		</div>
 		<div :class="[$style.controlsChild, $style.controlsTime]">{{ hms(elapsedTimeMs) }}</div>
 		<div :class="[$style.controlsChild, $style.controlsVolume]">
-			<button class="_button" :class="$style.controlButton" @click="toggleMute">
-				<i v-if="volume === 0" class="ph-speaker-x ph-bold ph-lg"></i>
-				<i v-else class="ph-speaker-high ph-bold ph-lg"></i>
+			<button
+				:class="['_button', $style.controlButton]"
+				tabindex="-1"
+				@click.stop="toggleMute"
+			>
+				<i v-if="volume === 0" class="ti ti-volume-3"></i>
+				<i v-else class="ti ti-volume"></i>
 			</button>
 			<MkMediaRange
 				v-model="volume"
@@ -83,6 +97,7 @@ import type { MenuItem } from '@/types/menu.js';
 import { defaultStore } from '@/store.js';
 import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
+import { type Keymap } from '@/scripts/hotkey.js';
 import bytes from '@/filters/bytes.js';
 import { hms } from '@/filters/hms.js';
 import MkMediaRange from '@/components/MkMediaRange.vue';
@@ -93,32 +108,44 @@ const props = defineProps<{
 }>();
 
 const keymap = {
-	'up': () => {
-		if (hasFocus() && audioEl.value) {
-			volume.value = Math.min(volume.value + 0.1, 1);
-		}
+	'up': {
+		allowRepeat: true,
+		callback: () => {
+			if (hasFocus() && audioEl.value) {
+				volume.value = Math.min(volume.value + 0.1, 1);
+			}
+		},
 	},
-	'down': () => {
-		if (hasFocus() && audioEl.value) {
-			volume.value = Math.max(volume.value - 0.1, 0);
-		}
+	'down': {
+		allowRepeat: true,
+		callback: () => {
+			if (hasFocus() && audioEl.value) {
+				volume.value = Math.max(volume.value - 0.1, 0);
+			}
+		},
 	},
-	'left': () => {
-		if (hasFocus() && audioEl.value) {
-			audioEl.value.currentTime = Math.max(audioEl.value.currentTime - 5, 0);
-		}
+	'left': {
+		allowRepeat: true,
+		callback: () => {
+			if (hasFocus() && audioEl.value) {
+				audioEl.value.currentTime = Math.max(audioEl.value.currentTime - 5, 0);
+			}
+		},
 	},
-	'right': () => {
-		if (hasFocus() && audioEl.value) {
-			audioEl.value.currentTime = Math.min(audioEl.value.currentTime + 5, audioEl.value.duration);
-		}
+	'right': {
+		allowRepeat: true,
+		callback: () => {
+			if (hasFocus() && audioEl.value) {
+				audioEl.value.currentTime = Math.min(audioEl.value.currentTime + 5, audioEl.value.duration);
+			}
+		},
 	},
 	'space': () => {
 		if (hasFocus()) {
 			togglePlayPause();
 		}
 	},
-};
+} as const satisfies Keymap;
 
 // PlayerElもしくはその子要素にフォーカスがあるかどうか
 function hasFocus() {
@@ -129,8 +156,20 @@ function hasFocus() {
 const playerEl = shallowRef<HTMLDivElement>();
 const audioEl = shallowRef<HTMLAudioElement>();
 
-// eslint-disable-next-line vue/no-setup-props-destructure
+// eslint-disable-next-line vue/no-setup-props-reactivity-loss
 const hide = ref((defaultStore.state.nsfw === 'force' || defaultStore.state.dataSaver.media) ? true : (props.audio.isSensitive && defaultStore.state.nsfw !== 'ignore'));
+
+async function show() {
+	if (props.audio.isSensitive && defaultStore.state.confirmWhenRevealingSensitiveMedia) {
+		const { canceled } = await os.confirm({
+			type: 'question',
+			text: i18n.ts.sensitiveMediaRevealConfirm,
+		});
+		if (canceled) return;
+	}
+
+	hide.value = false;
+}
 
 // Menu
 const menuShowing = ref(false);
@@ -143,13 +182,13 @@ function showMenu(ev: MouseEvent) {
 		{
 			type: 'switch',
 			text: i18n.ts._mediaControls.loop,
-			icon: 'ph ph-repeat',
+			icon: 'ti ti-repeat',
 			ref: loop,
 		},
 		{
 			type: 'radio',
 			text: i18n.ts._mediaControls.playbackRate,
-			icon: 'ph ph-gauge',
+			icon: 'ti ti-clock-play',
 			ref: speed,
 			options: {
 				'0.25x': 0.25,
@@ -166,7 +205,7 @@ function showMenu(ev: MouseEvent) {
 		},
 		{
 			text: i18n.ts.hide,
-			icon: 'ph-eye-closed ph-bold ph-lg',
+			icon: 'ti ti-eye-off',
 			action: () => {
 				hide.value = true;
 			},
@@ -176,7 +215,7 @@ function showMenu(ev: MouseEvent) {
 	if (iAmModerator) {
 		menu.push({
 			text: props.audio.isSensitive ? i18n.ts.unmarkAsSensitive : i18n.ts.markAsSensitive,
-			icon: props.audio.isSensitive ? 'ph-eye ph-bold ph-lg' : 'ph-eye-slash ph-bold ph-lg',
+			icon: props.audio.isSensitive ? 'ti ti-eye' : 'ti ti-eye-exclamation',
 			danger: true,
 			action: () => toggleSensitive(props.audio),
 		});
@@ -188,7 +227,7 @@ function showMenu(ev: MouseEvent) {
 		}, {
 			type: 'link' as const,
 			text: i18n.ts._fileViewer.title,
-			icon: 'ph ph-info',
+			icon: 'ti ti-info-circle',
 			to: `/my/drive/file/${props.audio.id}`,
 		});
 	}
@@ -361,7 +400,7 @@ onDeactivated(() => {
 	border-radius: var(--radius);
 	overflow: clip;
 
-	&:focus {
+	&:focus-visible {
 		outline: none;
 	}
 }
@@ -426,6 +465,10 @@ onDeactivated(() => {
 		&:hover {
 			color: var(--accent);
 			background-color: var(--accentedBg);
+		}
+
+		&:focus-visible {
+			outline: none;
 		}
 	}
 }

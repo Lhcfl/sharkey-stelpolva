@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div class="ogwlenmc">
 				<div v-if="tab === 'local'" class="local">
 					<MkInput v-model="query" :debounce="true" type="search" autocapitalize="off">
-						<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+						<template #prefix><i class="ti ti-search"></i></template>
 						<template #label>{{ i18n.ts.search }}</template>
 					</MkInput>
 					<MkSwitch v-model="selectMode" style="margin: 8px 0;">
@@ -45,7 +45,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div v-else-if="tab === 'remote'" class="remote">
 					<FormSplit>
 						<MkInput v-model="queryRemote" :debounce="true" type="search" autocapitalize="off">
-							<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+							<template #prefix><i class="ti ti-search"></i></template>
 							<template #label>{{ i18n.ts.search }}</template>
 						</MkInput>
 						<MkInput v-model="host" :debounce="true">
@@ -132,18 +132,19 @@ const toggleSelect = (emoji) => {
 };
 
 const add = async (ev: MouseEvent) => {
-	os.popup(defineAsyncComponent(() => import('./emoji-edit-dialog.vue')), {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('./emoji-edit-dialog.vue')), {
 	}, {
 		done: result => {
 			if (result.created) {
 				emojisPaginationComponent.value.prepend(result.created);
 			}
 		},
-	}, 'closed');
+		closed: () => dispose(),
+	});
 };
 
 const edit = (emoji) => {
-	os.popup(defineAsyncComponent(() => import('./emoji-edit-dialog.vue')), {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('./emoji-edit-dialog.vue')), {
 		emoji: emoji,
 	}, {
 		done: result => {
@@ -156,7 +157,8 @@ const edit = (emoji) => {
 				emojisPaginationComponent.value.removeItem(emoji.id);
 			}
 		},
-	}, 'closed');
+		closed: () => dispose(),
+	});
 };
 
 const importEmoji = (emoji) => {
@@ -172,7 +174,7 @@ const remoteMenu = (emoji, ev: MouseEvent) => {
 	},
 	{
 		text: i18n.ts.import,
-		icon: 'ph-plus ph-bold ph-lg',
+		icon: 'ti ti-plus',
 		action: () => { importEmoji(emoji); },
 	},
 	{
@@ -188,7 +190,7 @@ const remoteMenu = (emoji, ev: MouseEvent) => {
 
 const menu = (ev: MouseEvent) => {
 	os.popupMenu([{
-		icon: 'ph-download ph-bold ph-lg',
+		icon: 'ti ti-download',
 		text: i18n.ts.export,
 		action: async () => {
 			misskeyApi('export-custom-emojis', {
@@ -206,7 +208,7 @@ const menu = (ev: MouseEvent) => {
 				});
 		},
 	}, {
-		icon: 'ph-upload ph-bold ph-lg',
+		icon: 'ti ti-upload',
 		text: i18n.ts.import,
 		action: async () => {
 			const file = await selectFile(ev.currentTarget ?? ev.target);
@@ -302,11 +304,11 @@ const delBulk = async () => {
 
 const headerActions = computed(() => [{
 	asFullButton: true,
-	icon: 'ph-plus ph-bold ph-lg',
+	icon: 'ti ti-plus',
 	text: i18n.ts.addEmoji,
 	handler: add,
 }, {
-	icon: 'ph-dots-three ph-bold ph-lg',
+	icon: 'ti ti-dots',
 	handler: menu,
 }]);
 

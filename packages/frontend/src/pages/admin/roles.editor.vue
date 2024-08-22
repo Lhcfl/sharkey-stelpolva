@@ -31,7 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</MkInput>
 
 	<MkSelect v-model="rolePermission" :readonly="readonly">
-		<template #label><i class="ph-shield ph-bold ph-lg-lock"></i> {{ i18n.ts._role.permission }}</template>
+		<template #label><i class="ti ti-shield-lock"></i> {{ i18n.ts._role.permission }}</template>
 		<template #caption><div v-html="i18n.ts._role.descriptionOfPermission.replaceAll('\n', '<br>')"></div></template>
 		<option value="normal">{{ i18n.ts.normalUser }}</option>
 		<option value="moderator">{{ i18n.ts.moderator }}</option>
@@ -39,7 +39,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</MkSelect>
 
 	<MkSelect v-model="role.target" :readonly="readonly">
-		<template #label><i class="ph-users ph-bold ph-lg"></i> {{ i18n.ts._role.assignTarget }}</template>
+		<template #label><i class="ti ti-users"></i> {{ i18n.ts._role.assignTarget }}</template>
 		<template #caption><div v-html="i18n.ts._role.descriptionOfAssignTarget.replaceAll('\n', '<br>')"></div></template>
 		<option value="manual">{{ i18n.ts._role.manual }}</option>
 		<option value="conditional">{{ i18n.ts._role.conditional }}</option>
@@ -76,7 +76,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template #label><i class="ph-scroll ph-bold ph-lg"></i> {{ i18n.ts._role.policies }}</template>
 		<div class="_gaps_s">
 			<MkInput v-model="q" type="search">
-				<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+				<template #prefix><i class="ti ti-search"></i></template>
 			</MkInput>
 
 			<MkFolder v-if="matchQuery([i18n.ts._role._options.rateLimitFactor, 'rateLimitFactor'])">
@@ -418,6 +418,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</MkFolder>
 
+			<MkFolder v-if="matchQuery([i18n.ts._role._options.canUpdateBioMedia, 'canUpdateBioMedia'])">
+				<template #label>{{ i18n.ts._role._options.canUpdateBioMedia }}</template>
+				<template #suffix>
+					<span v-if="role.policies.canUpdateBioMedia.useDefault" :class="$style.useDefaultLabel">{{ i18n.ts._role.useBaseValue }}</span>
+					<span v-else>{{ role.policies.canUpdateBioMedia.value ? i18n.ts.yes : i18n.ts.no }}</span>
+					<span :class="$style.priorityIndicator"><i :class="getPriorityIcon(role.policies.canUpdateBioMedia)"></i></span>
+				</template>
+				<div class="_gaps">
+					<MkSwitch v-model="role.policies.canUpdateBioMedia.useDefault" :readonly="readonly">
+						<template #label>{{ i18n.ts._role.useBaseValue }}</template>
+					</MkSwitch>
+					<MkSwitch v-model="role.policies.canUpdateBioMedia.value" :disabled="role.policies.canUpdateBioMedia.useDefault" :readonly="readonly">
+						<template #label>{{ i18n.ts.enable }}</template>
+					</MkSwitch>
+					<MkRange v-model="role.policies.canUpdateBioMedia.priority" :min="0" :max="2" :step="1" easing :textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
+						<template #label>{{ i18n.ts._role.priority }}</template>
+					</MkRange>
+				</div>
+			</MkFolder>
+
 			<MkFolder v-if="matchQuery([i18n.ts._role._options.pinMax, 'pinLimit'])">
 				<template #label>{{ i18n.ts._role._options.pinMax }}</template>
 				<template #suffix>
@@ -665,9 +685,9 @@ const rolePermission = computed({
 const q = ref('');
 
 function getPriorityIcon(option) {
-	if (option.priority === 2) return 'ph-arrow-up ph-bold ph-lg';
-	if (option.priority === 1) return 'ph-arrow-up ph-bold ph-lg';
-	return 'ph-circle ph-bold ph-lg';
+	if (option.priority === 2) return 'ti ti-arrows-up';
+	if (option.priority === 1) return 'ti ti-arrow-narrow-up';
+	return 'ti ti-point';
 }
 
 function matchQuery(keywords: string[]): boolean {

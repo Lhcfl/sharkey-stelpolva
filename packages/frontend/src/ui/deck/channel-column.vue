@@ -4,14 +4,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<XColumn :menu="menu" :column="column" :isStacked="isStacked" :refresher="() => timeline.reloadTimeline()">
+<XColumn :menu="menu" :column="column" :isStacked="isStacked" :refresher="async () => { await timeline?.reloadTimeline() }">
 	<template #header>
-		<i class="ph-television ph-bold ph-lg"></i><span style="margin-left: 8px;">{{ column.name }}</span>
+		<i class="ti ti-device-tv"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
 	<template v-if="column.channelId">
 		<div style="padding: 8px; text-align: center;">
-			<MkButton primary gradate rounded inline small @click="post"><i class="ph-pencil-simple ph-bold ph-lg"></i></MkButton>
+			<MkButton primary gradate rounded inline small @click="post"><i class="ti ti-pencil"></i></MkButton>
 		</div>
 		<MkTimeline ref="timeline" :key="column.channelId + column.withRenotes + column.onlyFiles" src="channel" :channel="column.channelId" :withRenotes="withRenotes" :onlyFiles="onlyFiles" @note="onNote"/>
 	</template>
@@ -83,6 +83,7 @@ async function setChannel() {
 }
 
 async function post() {
+	if (props.column.channelId == null) return;
 	if (!channel.value || channel.value.id !== props.column.channelId) {
 		channel.value = await misskeyApi('channels/show', {
 			channelId: props.column.channelId,
@@ -99,7 +100,7 @@ function onNote() {
 }
 
 const menu: MenuItem[] = [{
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 	text: i18n.ts.selectChannel,
 	action: setChannel,
 }, {
@@ -111,7 +112,7 @@ const menu: MenuItem[] = [{
 	text: i18n.ts.fileAttachedOnly,
 	ref: onlyFiles,
 }, {
-	icon: 'ph-bell-ringing ph-bold ph-lg',
+	icon: 'ti ti-bell',
 	text: i18n.ts._deck.newNoteNotificationSettings,
 	action: () => soundSettingsButton(soundSetting),
 }];

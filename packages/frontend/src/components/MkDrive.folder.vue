@@ -20,14 +20,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 	@dragend="onDragend"
 >
 	<p :class="$style.name">
-		<template v-if="hover"><i :class="$style.icon" class="ph-folder ph-bold ph-lg ti-fw"></i></template>
-		<template v-if="!hover"><i :class="$style.icon" class="ph-folder ph-bold ph-lg ti-fw"></i></template>
+		<template v-if="hover"><i :class="$style.icon" class="ti ti-folder ti-fw"></i></template>
+		<template v-if="!hover"><i :class="$style.icon" class="ti ti-folder ti-fw"></i></template>
 		{{ folder.name }}
 	</p>
 	<p v-if="defaultStore.state.uploadFolder == folder.id" :class="$style.upload">
 		{{ i18n.ts.uploadFolder }}
 	</p>
-	<button v-if="selectMode" class="_button" :class="[$style.checkbox, { [$style.checked]: isSelected }]" @click.prevent.stop="checkboxClicked"></button>
+	<button v-if="selectMode" class="_button" :class="$style.checkboxWrapper" @click.prevent.stop="checkboxClicked">
+		<div :class="[$style.checkbox, { [$style.checked]: isSelected }]"></div>
+	</button>
 </div>
 </template>
 
@@ -39,7 +41,7 @@ import { misskeyApi } from '@/scripts/misskey-api.js';
 import { i18n } from '@/i18n.js';
 import { defaultStore } from '@/store.js';
 import { claimAchievement } from '@/scripts/achievements.js';
-import copyToClipboard from '@/scripts/copy-to-clipboard.js';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 import { MenuItem } from '@/types/menu.js';
 
 const props = withDefaults(defineProps<{
@@ -53,6 +55,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
 	(ev: 'chosen', v: Misskey.entities.DriveFolder): void;
+	(ev: 'unchose', v: Misskey.entities.DriveFolder): void;
 	(ev: 'move', v: Misskey.entities.DriveFolder): void;
 	(ev: 'upload', file: File, folder: Misskey.entities.DriveFolder);
 	(ev: 'removeFile', v: Misskey.entities.DriveFile['id']): void;
@@ -68,7 +71,11 @@ const isDragging = ref(false);
 const title = computed(() => props.folder.name);
 
 function checkboxClicked() {
-	emit('chosen', props.folder);
+	if (props.isSelected) {
+		emit('unchose', props.folder);
+	} else {
+		emit('chosen', props.folder);
+	}
 }
 
 function onClick() {
@@ -222,6 +229,17 @@ function rename() {
 	});
 }
 
+function move() {
+	os.selectDriveFolder(false).then(folder => {
+		if (folder[0] && folder[0].id === props.folder.id) return;
+
+		misskeyApi('drive/folders/update', {
+			folderId: props.folder.id,
+			parentId: folder[0] ? folder[0].id : null,
+		});
+	});
+}
+
 function deleteFolder() {
 	misskeyApi('drive/folders/delete', {
 		folderId: props.folder.id,
@@ -255,26 +273,31 @@ function onContextmenu(ev: MouseEvent) {
 	let menu: MenuItem[];
 	menu = [{
 		text: i18n.ts.openInWindow,
-		icon: 'ph-app-window ph-bold ph-lg',
+		icon: 'ti ti-app-window',
 		action: () => {
-			os.popup(defineAsyncComponent(() => import('@/components/MkDriveWindow.vue')), {
+			const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkDriveWindow.vue')), {
 				initialFolder: props.folder,
 			}, {
-			}, 'closed');
+				closed: () => dispose(),
+			});
 		},
 	}, { type: 'divider' }, {
 		text: i18n.ts.rename,
-		icon: 'ph-textbox ph-bold ph-lg',
+		icon: 'ti ti-forms',
 		action: rename,
+	}, {
+		text: i18n.ts.move,
+		icon: 'ti ti ti-folder-symlink',
+		action: move,
 	}, { type: 'divider' }, {
 		text: i18n.ts.delete,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		danger: true,
 		action: deleteFolder,
 	}];
 	if (defaultStore.state.devMode) {
 		menu = menu.concat([{ type: 'divider' }, {
-			icon: 'ph-identification-card ph-bold ph-lg',
+			icon: 'ti ti-id',
 			text: i18n.ts.copyFolderId,
 			action: () => {
 				copyToClipboard(props.folder.id);
@@ -295,7 +318,7 @@ function onContextmenu(ev: MouseEvent) {
 	cursor: pointer;
 
 	&.draghover {
-		&:after {
+		&::after {
 			content: "";
 			pointer-events: none;
 			position: absolute;
@@ -309,17 +332,43 @@ function onContextmenu(ev: MouseEvent) {
 	}
 }
 
-.checkbox {
+.checkboxWrapper {
 	position: absolute;
-	bottom: 8px;
-	right: 8px;
-	width: 16px;
-	height: 16px;
-	background: #fff;
-	border: solid 1px #000;
+	border-radius: 50%;
+	bottom: 2px;
+	right: 2px;
+	padding: 8px;
+	box-sizing: border-box;
 
-	&.checked {
-		background: var(--accent);
+	> .checkbox {
+		position: relative;
+		width: 18px;
+		height: 18px;
+		background: #fff;
+		border: solid 2px var(--divider);
+		border-radius: 4px;
+		box-sizing: border-box;
+
+		&.checked {
+			border-color: var(--accent);
+			background: var(--accent);
+
+			&::after {
+				content: "\ea5e";
+				font-family: 'tabler-icons';
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				color: #fff;
+				font-size: 12px;
+				line-height: 22px;
+			}
+		}
+	}
+
+	&:hover {
+		background: var(--accentedBg);
 	}
 }
 

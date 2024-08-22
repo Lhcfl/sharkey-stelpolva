@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #label>{{ i18n.ts._role.baseRole }}</template>
 					<div class="_gaps_s">
 						<MkInput v-model="baseRoleQ" type="search">
-							<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+							<template #prefix><i class="ti ti-search"></i></template>
 						</MkInput>
 
 						<MkFolder v-if="matchQuery([i18n.ts._role._options.rateLimitFactor, 'rateLimitFactor'])">
@@ -153,6 +153,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</MkSwitch>
 						</MkFolder>
 
+						<MkFolder v-if="matchQuery([i18n.ts._role._options.canUpdateBioMedia, 'canUpdateBioMedia'])">
+							<template #label>{{ i18n.ts._role._options.canUpdateBioMedia }}</template>
+							<template #suffix>{{ policies.canUpdateBioMedia ? i18n.ts.yes : i18n.ts.no }}</template>
+							<MkSwitch v-model="policies.canUpdateBioMedia">
+								<template #label>{{ i18n.ts.enable }}</template>
+							</MkSwitch>
+						</MkFolder>
+
 						<MkFolder v-if="matchQuery([i18n.ts._role._options.pinMax, 'pinLimit'])">
 							<template #label>{{ i18n.ts._role._options.pinMax }}</template>
 							<template #suffix>{{ policies.pinLimit }}</template>
@@ -228,7 +236,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkButton primary rounded @click="updateBaseRole">{{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
-				<MkButton primary rounded @click="create"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts._role.new }}</MkButton>
+				<MkButton primary rounded @click="create"><i class="ti ti-plus"></i> {{ i18n.ts._role.new }}</MkButton>
 				<div class="_gaps_s">
 					<MkFoldableSection>
 						<template #header>{{ i18n.ts._role.manualRoles }}</template>
@@ -263,7 +271,7 @@ import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
-import { instance } from '@/instance.js';
+import { instance, fetchInstance } from '@/instance.js';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
 import { ROLE_POLICIES } from '@/const.js';
 import { useRouter } from '@/router/supplier.js';
@@ -287,6 +295,7 @@ async function updateBaseRole() {
 	await os.apiWithDialog('admin/roles/update-default-policies', {
 		policies,
 	});
+	fetchInstance(true);
 }
 
 function create() {
@@ -299,7 +308,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.roles,
-	icon: 'ph-seal-check ph-bold ph-lg',
+	icon: 'ti ti-badges',
 }));
 </script>
 

@@ -69,7 +69,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 	const validTime = (t: string | boolean | null | undefined) => {
 		if (t == null) return null;
 		if (typeof t === 'boolean') return null;
-		return t.match(/^[0-9.]+s$/) ? t : null;
+		return t.match(/^\-?[0-9.]+s$/) ? t : null;
 	};
 
 	const useAnim = defaultStore.state.advancedMfm && defaultStore.state.animatedMfm ? true : props.isAnim ? true : false;
@@ -81,7 +81,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 
 	const isBlock = props.isBlock ?? false;
 
-	const MkFormula = defineAsyncComponent(() => import('@/components/MkFormula.vue'));
+	const SkFormula = defineAsyncComponent(() => import('@/components/SkFormula.vue'));
 
 	/**
 	 * Gen Vue Elements from MFM AST
@@ -361,7 +361,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 							style: 'display: inline-block; font-size: 90%; border: solid 1px var(--divider); border-radius: var(--radius-ellipse); padding: 4px 10px 4px 6px;',
 						}, [
 							h('i', {
-								class: 'ph-clock ph-bold ph-lg',
+								class: 'ti ti-clock',
 								style: 'margin-right: 0.25em;',
 							}),
 							h(MkTime, {
@@ -500,14 +500,14 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'mathInline': {
-				return [h('bdi', h(MkFormula, {
+				return [h('bdi', h(SkFormula, {
 					formula: token.props.formula,
 					block: false,
 				}))];
 			}
 
 			case 'mathBlock': {
-				return [h('bdi', { class: 'block' }, h(MkFormula, {
+				return [h('bdi', { class: 'block' }, h(SkFormula, {
 					formula: token.props.formula,
 					block: true,
 				}))];

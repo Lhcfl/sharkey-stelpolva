@@ -6,7 +6,7 @@
 import * as Misskey from 'misskey-js';
 import { defineAsyncComponent } from 'vue';
 import { i18n } from '@/i18n.js';
-import copyToClipboard from '@/scripts/copy-to-clipboard.js';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { MenuItem } from '@/types/menu.js';
@@ -27,7 +27,7 @@ function rename(file: Misskey.entities.DriveFile) {
 }
 
 function describe(file: Misskey.entities.DriveFile) {
-	os.popup(defineAsyncComponent(() => import('@/components/MkFileCaptionEditWindow.vue')), {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkFileCaptionEditWindow.vue')), {
 		default: file.comment ?? '',
 		file: file,
 	}, {
@@ -37,7 +37,17 @@ function describe(file: Misskey.entities.DriveFile) {
 				comment: caption.length === 0 ? null : caption,
 			});
 		},
-	}, 'closed');
+		closed: () => dispose(),
+	});
+}
+
+function move(file: Misskey.entities.DriveFile) {
+	os.selectDriveFolder(false).then(folder => {
+		misskeyApi('drive/files/update', {
+			fileId: file.id,
+			folderId: folder[0] ? folder[0].id : null,
+		});
+	});
 }
 
 function toggleSensitive(file: Misskey.entities.DriveFile) {
@@ -82,53 +92,57 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 		type: 'link',
 		to: `/my/drive/file/${file.id}`,
 		text: i18n.ts._fileViewer.title,
-		icon: 'ph-file-text ph-bold ph-lg',
+		icon: 'ti ti-info-circle',
 	}, { type: 'divider' }, {
 		text: i18n.ts.rename,
-		icon: 'ph-textbox ph-bold ph-lg',
+		icon: 'ti ti-forms',
 		action: () => rename(file),
 	}, {
+		text: i18n.ts.move,
+		icon: 'ti ti-folder-symlink',
+		action: () => move(file),
+	}, {
 		text: file.isSensitive ? i18n.ts.unmarkAsSensitive : i18n.ts.markAsSensitive,
-		icon: file.isSensitive ? 'ph-eye ph-bold ph-lg' : 'ph-eye-closed ph-bold ph-lg',
+		icon: file.isSensitive ? 'ti ti-eye' : 'ti ti-eye-exclamation',
 		action: () => toggleSensitive(file),
 	}, {
 		text: i18n.ts.describeFile,
-		icon: 'ph-text-indent ph-bold ph-lg',
+		icon: 'ti ti-text-caption',
 		action: () => describe(file),
 	}, ...isImage ? [{
 		text: i18n.ts.cropImage,
-		icon: 'ph-crop ph-bold ph-lg',
+		icon: 'ti ti-crop',
 		action: () => os.cropImage(file, {
 			aspectRatio: NaN,
 			uploadFolder: folder ? folder.id : folder,
 		}),
 	}] : [], { type: 'divider' }, {
 		text: i18n.ts.createNoteFromTheFile,
-		icon: 'ph-pencil-simple ph-bold ph-lg',
+		icon: 'ti ti-pencil',
 		action: () => os.post({
 			initialFiles: [file],
 		}),
 	}, {
 		text: i18n.ts.copyUrl,
-		icon: 'ph-link ph-bold ph-lg',
+		icon: 'ti ti-link',
 		action: () => copyUrl(file),
 	}, {
 		type: 'a',
 		href: file.url,
 		target: '_blank',
 		text: i18n.ts.download,
-		icon: 'ph-download ph-bold ph-lg',
+		icon: 'ti ti-download',
 		download: file.name,
 	}, { type: 'divider' }, {
 		text: i18n.ts.delete,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		danger: true,
 		action: () => deleteFile(file),
 	}];
 
 	if (defaultStore.state.devMode) {
 		menu = menu.concat([{ type: 'divider' }, {
-			icon: 'ph-identification-card ph-bold ph-lg',
+			icon: 'ti ti-id',
 			text: i18n.ts.copyFileId,
 			action: () => {
 				copyToClipboard(file.id);

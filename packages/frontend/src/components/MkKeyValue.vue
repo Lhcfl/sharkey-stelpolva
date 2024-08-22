@@ -10,14 +10,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div :class="$style.value">
 		<slot name="value"></slot>
-		<button v-if="copy" v-tooltip="i18n.ts.copy" class="_textButton" style="margin-left: 0.5em;" @click="copy_"><i class="ph-copy ph-bold ph-lg"></i></button>
+		<button v-if="copy" v-tooltip="i18n.ts.copy" class="_textButton" style="margin-left: 0.5em;" @click="copy_"><i class="ti ti-copy"></i></button>
 	</div>
 </div>
 </template>
 
 <script lang="ts" setup>
 import { } from 'vue';
-import copyToClipboard from '@/scripts/copy-to-clipboard.js';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 

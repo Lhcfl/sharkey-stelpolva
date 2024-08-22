@@ -11,12 +11,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-if="channel && tab === 'overview'" key="overview" class="_gaps">
 				<div class="_panel" :class="$style.bannerContainer">
 					<XChannelFollowButton :channel="channel" :full="true" :class="$style.subscribe"/>
-					<MkButton v-if="favorited" v-tooltip="i18n.ts.unfavorite" asLike class="button" rounded primary :class="$style.favorite" @click="unfavorite()"><i class="ph-star ph-bold ph-lg"></i></MkButton>
-					<MkButton v-else v-tooltip="i18n.ts.favorite" asLike class="button" rounded :class="$style.favorite" @click="favorite()"><i class="ph-star ph-bold ph-lg"></i></MkButton>
+					<MkButton v-if="favorited" v-tooltip="i18n.ts.unfavorite" asLike class="button" rounded primary :class="$style.favorite" @click="unfavorite()"><i class="ti ti-star"></i></MkButton>
+					<MkButton v-else v-tooltip="i18n.ts.favorite" asLike class="button" rounded :class="$style.favorite" @click="favorite()"><i class="ti ti-star"></i></MkButton>
 					<div :style="{ backgroundImage: channel.bannerUrl ? `url(${channel.bannerUrl})` : undefined }" :class="$style.banner">
 						<div :class="$style.bannerStatus">
-							<div><i class="ph-users ph-bold ph-lg"></i><I18n :src="i18n.ts._channel.usersCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.usersCount }}</b></template></I18n></div>
-							<div><i class="ph-pencil-simple ph-bold ph-lg"></i><I18n :src="i18n.ts._channel.notesCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.notesCount }}</b></template></I18n></div>
+							<div><i class="ti ti-users ti-fw"></i><I18n :src="i18n.ts._channel.usersCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.usersCount }}</b></template></I18n></div>
+							<div><i class="ti ti-pencil ti-fw"></i><I18n :src="i18n.ts._channel.notesCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.notesCount }}</b></template></I18n></div>
 						</div>
 						<div v-if="channel.isSensitive" :class="$style.sensitiveIndicator">{{ i18n.ts.sensitive }}</div>
 						<div :class="$style.bannerFade"></div>
@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 
 				<MkFoldableSection>
-					<template #header><i class="ph-push-pin ph-bold ph-lg" style="margin-right: 0.5em;"></i>{{ i18n.ts.pinnedNotes }}</template>
+					<template #header><i class="ti ti-pin ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.pinnedNotes }}</template>
 					<div v-if="channel.pinnedNotes && channel.pinnedNotes.length > 0" class="_gaps">
 						<MkNote v-for="note in channel.pinnedNotes" :key="note.id" class="_panel" :note="note"/>
 					</div>
@@ -48,7 +48,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div class="_gaps">
 					<div>
 						<MkInput v-model="searchQuery" @enter="search()">
-							<template #prefix><i class="ph-magnifying-glass ph-bold ph-lg"></i></template>
+							<template #prefix><i class="ti ti-search"></i></template>
 						</MkInput>
 						<MkButton primary rounded style="margin-top: 8px;" @click="search()">{{ i18n.ts.search }}</MkButton>
 					</div>
@@ -61,7 +61,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.footer">
 			<MkSpacer :contentMax="700" :marginMin="16" :marginMax="16">
 				<div class="_buttonsCenter">
-					<MkButton inline rounded primary gradate @click="openPostForm()"><i class="ph-pencil-simple ph-bold ph-lg"></i> {{ i18n.ts.postToTheChannel }}</MkButton>
+					<MkButton inline rounded primary gradate @click="openPostForm()"><i class="ti ti-pencil"></i> {{ i18n.ts.postToTheChannel }}</MkButton>
 				</div>
 			</MkSpacer>
 		</div>
@@ -93,7 +93,7 @@ import MkFoldableSection from '@/components/MkFoldableSection.vue';
 import MkHorizontalSwipe from '@/components/MkHorizontalSwipe.vue';
 import { PageHeaderItem } from '@/types/page-header.js';
 import { isSupportShare } from '@/scripts/navigator.js';
-import copyToClipboard from '@/scripts/copy-to-clipboard.js';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { useRouter } from '@/router/supplier.js';
 import { deepMerge } from '@/scripts/merge.js';
@@ -229,7 +229,7 @@ const headerActions = computed(() => {
 		}];
 
 		headerItems.push({
-			icon: 'ph-share-network ph-bold ph-lg',
+			icon: 'ti ti-link',
 			text: i18n.ts.copyUrl,
 			handler: async (): Promise<void> => {
 				if (!channel.value) {
@@ -243,7 +243,7 @@ const headerActions = computed(() => {
 
 		if (isSupportShare()) {
 			headerItems.push({
-				icon: 'ph-share-network ph-bold ph-lg',
+				icon: 'ti ti-share',
 				text: i18n.ts.share,
 				handler: async (): Promise<void> => {
 					if (!channel.value) {
@@ -262,7 +262,7 @@ const headerActions = computed(() => {
 
 		if (($i && $i.id === channel.value.userId) || iAmModerator) {
 			headerItems.push({
-				icon: 'ph-gear ph-bold ph-lg',
+				icon: 'ti ti-settings',
 				text: i18n.ts.edit,
 				handler: edit,
 			});
@@ -277,24 +277,24 @@ const headerActions = computed(() => {
 const headerTabs = computed(() => [{
 	key: 'overview',
 	title: i18n.ts.overview,
-	icon: 'ph-info ph-bold ph-lg',
+	icon: 'ti ti-info-circle',
 }, {
 	key: 'timeline',
 	title: i18n.ts.timeline,
-	icon: 'ph-house ph-bold ph-lg',
+	icon: 'ti ti-home',
 }, {
 	key: 'featured',
 	title: i18n.ts.featured,
-	icon: 'ph-lightning ph-bold ph-lg',
+	icon: 'ti ti-bolt',
 }, {
 	key: 'search',
 	title: i18n.ts.search,
-	icon: 'ph-magnifying-glass ph-bold ph-lg',
+	icon: 'ti ti-search',
 }]);
 
 definePageMetadata(() => ({
 	title: channel.value ? channel.value.name : i18n.ts.channel,
-	icon: 'ph-television ph-bold ph-lg',
+	icon: 'ti ti-device-tv',
 }));
 </script>
 

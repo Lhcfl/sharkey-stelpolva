@@ -119,6 +119,7 @@ export const notificationTypes = [
 	'roleAssigned',
 	'achievementEarned',
 	'app',
+	'edited'
 ] as const;
 export const obsoleteNotificationTypes = ['pollVote', 'groupInvited'] as const;
 
@@ -140,6 +141,7 @@ export const ROLE_POLICIES = [
 	'canHideAds',
 	'driveCapacityMb',
 	'alwaysMarkNsfw',
+	'canUpdateBioMedia',
 	'pinLimit',
 	'antennaLimit',
 	'wordMuteLimit',

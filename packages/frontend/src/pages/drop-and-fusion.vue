@@ -35,7 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 					<div class="_woodenFrameInner">
 						<div class="_gaps" style="padding: 16px;">
-							<div style="font-size: 90%;"><i class="ph-music-notes ph-bold ph-lg"></i> {{ i18n.ts.soundWillBePlayed }}</div>
+							<div style="font-size: 90%;"><i class="ti ti-music"></i> {{ i18n.ts.soundWillBePlayed }}</div>
 							<MkSwitch v-model="mute">
 								<template #label>{{ i18n.ts.mute }}</template>
 							</MkSwitch>
@@ -123,7 +123,7 @@ function onGameEnd() {
 
 definePageMetadata(() => ({
 	title: i18n.ts.bubbleGame,
-	icon: 'ph-game-controller ph-bold ph-lg',
+	icon: 'ti ti-device-gamepad',
 }));
 </script>
 

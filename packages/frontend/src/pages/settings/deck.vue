@@ -38,6 +38,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.deck,
-	icon: 'ph-text-columns ph-bold ph-lg',
+	icon: 'ti ti-columns',
 }));
 </script>

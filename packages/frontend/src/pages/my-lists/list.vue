@@ -38,8 +38,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 										<MkA :class="$style.userItemBody" :to="`${userPage(item.user)}`">
 											<MkUserCardMini :user="item.user"/>
 										</MkA>
-										<button class="_button" :class="$style.menu" @click="showMembershipMenu(item, $event)"><i class="ph-dots-three ph-bold ph-lg"></i></button>
-										<button class="_button" :class="$style.remove" @click="removeUser(item, $event)"><i class="ph-x ph-bold ph-lg"></i></button>
+										<button class="_button" :class="$style.menu" @click="showMembershipMenu(item, $event)"><i class="ti ti-dots"></i></button>
+										<button class="_button" :class="$style.remove" @click="removeUser(item, $event)"><i class="ti ti-x"></i></button>
 									</div>
 								</div>
 							</div>
@@ -118,7 +118,7 @@ function addUser() {
 async function removeUser(item, ev) {
 	os.popupMenu([{
 		text: i18n.ts.remove,
-		icon: 'ph-x ph-bold ph-lg',
+		icon: 'ti ti-x',
 		danger: true,
 		action: async () => {
 			if (!list.value) return;
@@ -133,22 +133,25 @@ async function removeUser(item, ev) {
 }
 
 async function showMembershipMenu(item, ev) {
+	const withRepliesRef = ref(item.withReplies);
 	os.popupMenu([{
-		text: item.withReplies ? i18n.ts.hideRepliesToOthersInTimeline : i18n.ts.showRepliesToOthersInTimeline,
-		icon: item.withReplies ? 'ph-envelope-open ph-bold ph-lg' : 'ph-envelope ph-bold ph-lg',
-		action: async () => {
-			misskeyApi('users/lists/update-membership', {
-				listId: list.value.id,
-				userId: item.userId,
-				withReplies: !item.withReplies,
-			}).then(() => {
-				paginationEl.value.updateItem(item.id, (old) => ({
-					...old,
-					withReplies: !item.withReplies,
-				}));
-			});
-		},
+		type: 'switch',
+		text: i18n.ts.showRepliesToOthersInTimeline,
+		icon: 'ti ti-messages',
+		ref: withRepliesRef,
 	}], ev.currentTarget ?? ev.target);
+	watch(withRepliesRef, withReplies => {
+		misskeyApi('users/lists/update-membership', {
+			listId: list.value!.id,
+			userId: item.userId,
+			withReplies,
+		}).then(() => {
+			paginationEl.value!.updateItem(item.id, (old) => ({
+				...old,
+				withReplies,
+			}));
+		});
+	});
 }
 
 async function deleteList() {
@@ -188,7 +191,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: list.value ? list.value.name : i18n.ts.lists,
-	icon: 'ph-list ph-bold ph-lg',
+	icon: 'ti ti-list',
 }));
 </script>
 

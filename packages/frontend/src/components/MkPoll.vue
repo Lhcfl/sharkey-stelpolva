@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<li v-for="(choice, i) in poll.choices" :key="i" :class="$style.choice" @click="vote(i)">
 			<div :class="$style.bg" :style="{ 'width': `${showResult ? (choice.votes / total * 100) : 0}%` }"></div>
 			<span :class="$style.fg">
-				<template v-if="choice.isVoted"><i class="ph-check ph-bold ph-lg" style="margin-right: 4px; color: var(--accent);"></i></template>
+				<template v-if="choice.isVoted"><i class="ti ti-check" style="margin-right: 4px; color: var(--accent);"></i></template>
 				<Mfm :text="choice.text" :plain="true"/>
 				<span v-if="showResult" style="margin-left: 4px; opacity: 0.7;">({{ i18n.tsx._poll.votesCount({ n: choice.votes }) }})</span>
 			</span>
@@ -36,7 +36,9 @@ import { pleaseLogin } from '@/scripts/please-login.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { i18n } from '@/i18n.js';
+import { host } from '@/config.js';
 import { useInterval } from '@/scripts/use-interval.js';
+import type { OpenOnRemoteOptions } from '@/scripts/please-login.js';
 
 const props = defineProps<{
 	noteId: string;
@@ -62,6 +64,11 @@ const timer = computed(() => i18n.tsx._poll[
 
 const showResult = ref(props.readOnly || isVoted.value);
 
+const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({
+	type: 'lookup',
+	url: `https://${host}/notes/${props.noteId}`,
+}));
+
 // 期限付きアンケート
 if (props.poll.expiresAt) {
 	const tick = () => {
@@ -78,7 +85,7 @@ if (props.poll.expiresAt) {
 }
 
 const vote = async (id) => {
-	pleaseLogin();
+	pleaseLogin(undefined, pleaseLoginContext.value);
 
 	if (props.readOnly || closed.value || isVoted.value) return;
 	if (!props.poll.multiple) {

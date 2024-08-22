@@ -98,6 +98,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.registry,
-	icon: 'ph-faders ph-bold ph-lg',
+	icon: 'ti ti-adjustments',
 }));
 </script>

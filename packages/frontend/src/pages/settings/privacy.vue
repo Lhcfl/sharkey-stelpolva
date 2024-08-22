@@ -120,6 +120,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.privacy,
-	icon: 'ph-lock ph-bold ph-lg-open',
+	icon: 'ti ti-lock-open',
 }));
 </script>
