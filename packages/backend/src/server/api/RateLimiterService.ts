@@ -37,7 +37,12 @@ export class RateLimiterService {
 				return Promise.resolve();
 			}
 
+			// those lines with the "wrong" brace style / indentation are
+			// done that way so that the *other* lines stay identical to
+			// Misskey, simplifying merges
+
 			// Short-term limit
+			// eslint-disable-next-line brace-style
 			const minP = () => { return new Promise<void>((ok, reject) => {
 				const minIntervalLimiter = new Limiter({
 					id: `${actor}:${limitation.key}:min`,
@@ -63,9 +68,11 @@ export class RateLimiterService {
 						}
 					}
 				});
-			}) };
+			// eslint-disable-next-line brace-style
+			}); };
 
 			// Long term limit
+			// eslint-disable-next-line brace-style
 			const maxP = () => { return new Promise<void>((ok, reject) => {
 				const limiter = new Limiter({
 					id: `${actor}:${limitation.key}`,
@@ -87,7 +94,8 @@ export class RateLimiterService {
 						return ok();
 					}
 				});
-			}) };
+			// eslint-disable-next-line brace-style
+			}); };
 
 			const hasShortTermLimit = typeof limitation.minInterval === 'number';
 
