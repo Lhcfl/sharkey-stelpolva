@@ -9,7 +9,7 @@ import { ApiError } from '../../error.js';
 import type { UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import Stripe from 'stripe';
-import { loadConfig } from '@/config.js';
+import type { Config } from '@/config.js';
 
 export const meta = {
 	tags: ['account'],
@@ -43,6 +43,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
+
+		@Inject(DI.config)
+		private config: Config,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const userProfile = await this.usersRepository.findOne({
@@ -50,8 +53,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					id: me.id,
 				}
 			});
-
-			const config = await loadConfig();
 
 			const stripe = new Stripe(config.stripekey);
 
