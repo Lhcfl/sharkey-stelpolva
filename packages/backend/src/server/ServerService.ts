@@ -112,7 +112,7 @@ export class ServerService implements OnApplicationShutdown {
 		fastify.register(this.fileServerService.createServer);
 		fastify.register(this.activityPubServerService.createServer);
 		// only enable stripe webhook if verification is enabled
-		if (this.config.stripeVerify) fastify.register(this.stripeHookServerService.createServer, { prefix: '/stripe' });
+		if (this.config.stripeAgeCheck?.enabled) fastify.register(this.stripeHookServerService.createServer, { prefix: '/stripe' });
 		fastify.register(this.nodeinfoServerService.createServer);
 		fastify.register(this.wellKnownServerService.createServer);
 		fastify.register(this.oauth2ProviderService.createServer, { prefix: '/oauth' });

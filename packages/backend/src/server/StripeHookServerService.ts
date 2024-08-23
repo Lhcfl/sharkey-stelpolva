@@ -41,7 +41,9 @@ export class StripeHookServerService {
 		request: FastifyRequest,
 		reply: FastifyReply,
 	) {
-		const stripe = new Stripe(this.config.stripeKey);
+		if (!this.config.stripeAgeCheck) return reply.code(400);
+
+		const stripe = new Stripe(this.config.stripeAgeCheck.key);
 
 		if (request.rawBody == null) {
 			// Bad request
@@ -63,7 +65,7 @@ export class StripeHookServerService {
 		// Verify the event came from Stripe
 		try {
 			const sig = headers['stripe-signature']!;
-			event = stripe.webhooks.constructEvent(body, sig, this.config.stripeHookKey);
+			event = stripe.webhooks.constructEvent(body, sig, this.config.stripeAgeCheck.hookKey);
 		} catch (err: any) {
 			// On error, log and return the error message
 			console.log(`❌ Error message: ${err.message}`);

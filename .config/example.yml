@@ -313,9 +313,10 @@ checkActivityPubGetSignature: false
 #  maxFileSize: 262144000
 
 # enable stripe identity for ID verification
-# stripeVerify: true
-# stripeKey: sk_
-# stripeHookKey: whsec_
+#stripeAgeCheck:
+#  enabled: true
+#  key: sk_
+#  hookKey: whsec_
 
 # PID File of master process
 #pidFile: /tmp/misskey.pid

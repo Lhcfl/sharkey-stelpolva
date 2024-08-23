@@ -53,7 +53,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private config: Config,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			if (!this.config.stripeVerify) throw new ApiError(meta.errors.stripeIsDisabled);
+			if (!this.config.stripeAgeCheck?.enabled) throw new ApiError(meta.errors.stripeIsDisabled);
 			
 			const userProfile = await this.usersRepository.findOne({
 				where: {
@@ -61,7 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}
 			});
 
-			const stripe = new Stripe(this.config.stripeKey);
+			const stripe = new Stripe(this.config.stripeAgeCheck.key);
 
 			if (userProfile == null) {
 				throw new ApiError(meta.errors.userIsDeleted);
