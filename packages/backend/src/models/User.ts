@@ -315,11 +315,6 @@ export class MiUser {
 	})
 	public idVerified: boolean;
 
-	@Column('varchar', {
-		length: 1024, nullable: true,
-	})
-	public idSession: string | null;
-
 	constructor(data: Partial<MiUser>) {
 		if (data == null) return;
 

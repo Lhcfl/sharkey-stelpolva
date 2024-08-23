@@ -74,10 +74,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				},
 			});
 
-			await this.usersRepository.update(me.id, {
-				idSession: verificationSession.client_reference_id,
-			});
-
 			return { 'url': verificationSession.url };
 		});
 	}
