@@ -109,6 +109,7 @@ type Source = {
 	};
 
 	stripeverify?: boolean;
+	stripekey?: string;
 
 	pidFile: string;
 };
@@ -200,6 +201,7 @@ export type Config = {
 	} | undefined;
 
 	stripeverify: boolean | undefined;
+	stripekey: string;
 
 	pidFile: string;
 };
@@ -324,6 +326,7 @@ export function loadConfig(): Config {
 		deactivateAntennaThreshold: config.deactivateAntennaThreshold ?? (1000 * 60 * 60 * 24 * 7),
 		import: config.import,
 		stripeverify: config.stripeverify ?? false,
+		stripekey: config.stripekey ?? '',
 		pidFile: config.pidFile,
 	};
 }

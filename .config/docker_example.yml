@@ -299,6 +299,7 @@ checkActivityPubGetSignature: false
 
 # enable stripe identity for ID verification
 #stripeverify: true
+#stripekey: productionkey
 
 # Upload or download file size limits (bytes)
 #maxFileSize: 262144000

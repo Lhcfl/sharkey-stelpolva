@@ -314,6 +314,7 @@ checkActivityPubGetSignature: false
 
 # enable stripe identity for ID verification
 #stripeverify: true
+#stripekey: productionkey
 
 # PID File of master process
 #pidFile: /tmp/misskey.pid

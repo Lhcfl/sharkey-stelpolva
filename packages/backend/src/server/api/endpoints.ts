@@ -404,6 +404,7 @@ import * as ep___reversi_invitations from './endpoints/reversi/invitations.js';
 import * as ep___reversi_showGame from './endpoints/reversi/show-game.js';
 import * as ep___reversi_surrender from './endpoints/reversi/surrender.js';
 import * as ep___reversi_verify from './endpoints/reversi/verify.js';
+import * as ep___stripe_createVerifySession from './endpoints/stripe/create-verify-session.js';
 
 const eps = [
 	['admin/meta', ep___admin_meta],
@@ -798,6 +799,7 @@ const eps = [
 	['reversi/show-game', ep___reversi_showGame],
 	['reversi/surrender', ep___reversi_surrender],
 	['reversi/verify', ep___reversi_verify],
+	['stripe/create-verify-session', ep___stripe_createVerifySession],
 ];
 
 interface IEndpointMetaBase {
