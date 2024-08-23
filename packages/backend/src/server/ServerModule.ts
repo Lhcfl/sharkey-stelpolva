@@ -49,7 +49,7 @@ import { MastodonApiServerService } from './api/mastodon/MastodonApiServerServic
 import { RoleTimelineChannelService } from './api/stream/channels/role-timeline.js';
 import { ReversiChannelService } from './api/stream/channels/reversi.js';
 import { ReversiGameChannelService } from './api/stream/channels/reversi-game.js';
-import { StripeHookApiService } from './api/StripeHookApiService.js';
+import { StripeHookServerService } from './StripeHookServerService.js';
 
 @Module({
 	imports: [
@@ -99,7 +99,7 @@ import { StripeHookApiService } from './api/StripeHookApiService.js';
 		MastodonApiServerService,
 		OAuth2ProviderService,
 		MastoConverters,
-		StripeHookApiService,
+		StripeHookServerService,
 	],
 	exports: [
 		ServerService,

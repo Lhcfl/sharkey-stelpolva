@@ -108,8 +108,9 @@ type Source = {
 		maxFileSize: number;
 	};
 
-	stripeverify?: boolean;
-	stripekey?: string;
+	stripeVerify?: boolean;
+	stripeKey?: string;
+	stripeHookKey?: string;
 
 	pidFile: string;
 };
@@ -200,8 +201,9 @@ export type Config = {
 		maxFileSize: number;
 	} | undefined;
 
-	stripeverify: boolean | undefined;
-	stripekey: string;
+	stripeVerify: boolean | undefined;
+	stripeKey: string;
+	stripeHookKey: string;
 
 	pidFile: string;
 };
@@ -325,8 +327,9 @@ export function loadConfig(): Config {
 		perUserNotificationsMaxCount: config.perUserNotificationsMaxCount ?? 500,
 		deactivateAntennaThreshold: config.deactivateAntennaThreshold ?? (1000 * 60 * 60 * 24 * 7),
 		import: config.import,
-		stripeverify: config.stripeverify ?? false,
-		stripekey: config.stripekey ?? '',
+		stripeVerify: config.stripeVerify ?? false,
+		stripeKey: config.stripeKey ?? '',
+		stripeHookKey: config.stripeHookKey ?? '',
 		pidFile: config.pidFile,
 	};
 }

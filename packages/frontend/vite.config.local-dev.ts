@@ -63,6 +63,7 @@ const devConfig: UserConfig = {
 			'/bios': httpUrl,
 			'/cli': httpUrl,
 			'/inbox': httpUrl,
+			'/stripe': httpUrl,
 			'/emoji/': httpUrl,
 			'/notes': {
 				target: httpUrl,

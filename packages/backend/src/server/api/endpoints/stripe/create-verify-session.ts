@@ -29,6 +29,11 @@ export const meta = {
 			id: 'e5b3b9f0-2b8f-4b9f-9c1f-8c5c1b2e1b1a',
 			kind: 'permission',
 		},
+		stripeIsDisabled: {
+			message: 'Stripe is disabled.',
+			code: 'STRIPE_IS_DISABLED',
+			id: 'e5b3b9f0-2b8f-4b9f-9c1f-8c5c1b2e1b1b',
+		},
 	},
 } as const;
 
@@ -48,13 +53,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private config: Config,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			if (!this.config.stripeVerify) throw new ApiError(meta.errors.stripeIsDisabled);
+			
 			const userProfile = await this.usersRepository.findOne({
 				where: {
 					id: me.id,
 				}
 			});
 
-			const stripe = new Stripe(config.stripekey);
+			const stripe = new Stripe(this.config.stripeKey);
 
 			if (userProfile == null) {
 				throw new ApiError(meta.errors.userIsDeleted);

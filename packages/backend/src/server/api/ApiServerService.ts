@@ -17,7 +17,6 @@ import endpoints from './endpoints.js';
 import { ApiCallService } from './ApiCallService.js';
 import { SignupApiService } from './SignupApiService.js';
 import { SigninApiService } from './SigninApiService.js';
-import { StripeHookApiService } from './StripeHookApiService.js';
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
 
 @Injectable()
@@ -38,7 +37,6 @@ export class ApiServerService {
 		private apiCallService: ApiCallService,
 		private signupApiService: SignupApiService,
 		private signinApiService: SigninApiService,
-		private stripeHookApiService: StripeHookApiService,
 	) {
 		//this.createServer = this.createServer.bind(this);
 	}
@@ -132,13 +130,6 @@ export class ApiServerService {
 				challengeId?: string;
 			};
 		}>('/signin', (request, reply) => this.signinApiService.signin(request, reply));
-
-		if (this.config.stripeverify) {
-			fastify.post<{
-				Headers: any;
-				Body: any;
-			}>('/stripe/hook', { config: { rawBody: true }, bodyLimit: 1024 * 64 }, (request, reply) => this.stripeHookApiService.stripehook(request, reply));
-		}
 
 		fastify.post<{ Body: { code: string; } }>('/signup-pending', (request, reply) => this.signupApiService.signupPending(request, reply));
 
