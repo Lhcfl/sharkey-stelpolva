@@ -5616,7 +5616,7 @@ export interface Locale extends ILocale {
              */
             "global": string;
             /**
-             * ????
+             * 管理者が選択した他の接続サーバーの投稿を見ることができます。
              */
             "bubble": string;
             /**
@@ -5753,7 +5753,7 @@ export interface Locale extends ILocale {
          */
         "social": string;
         /**
-         * ????
+         * バッッブルタイムラインでは、管理者が選択した接続サーバーからのメモを表示できます。
          */
         "bubble": string;
         /**
