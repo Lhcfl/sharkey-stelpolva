@@ -55,7 +55,6 @@ function onKeydown(ev: KeyboardEvent) {
 	}
 }
 
-
 async function ok() {
 	emit('done', caption.value);
 	dialog.value?.close();
