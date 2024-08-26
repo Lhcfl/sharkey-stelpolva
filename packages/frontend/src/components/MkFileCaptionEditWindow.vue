@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #header>{{ i18n.ts.describeFile }}</template>
 	<MkSpacer :marginMin="20" :marginMax="28">
 		<MkDriveFileThumbnail :file="file" fit="contain" style="height: 193px; margin-bottom: 16px;"/>
-		<MkTextarea v-model="caption" autofocus :placeholder="i18n.ts.inputNewDescription">
+		<MkTextarea v-model="caption" autofocus :placeholder="i18n.ts.inputNewDescription" @keydown="onKeydown($event)">
 			<template #label>{{ i18n.ts.caption }}</template>
 		</MkTextarea>
 	</MkSpacer>
@@ -45,6 +45,16 @@ const emit = defineEmits<{
 const dialog = shallowRef<InstanceType<typeof MkModalWindow>>();
 
 const caption = ref(props.default);
+
+function onKeydown(ev: KeyboardEvent) {
+	if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) ok();
+
+	if (ev.key === 'Escape') {
+		emit('closed');
+		dialog.value?.close();
+	}
+}
+
 
 async function ok() {
 	emit('done', caption.value);
