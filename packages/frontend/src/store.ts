@@ -288,6 +288,10 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'device',
 		default: window.matchMedia('(prefers-reduced-motion)').matches,
 	},
+	disableCatSpeak: {
+		where: 'device',
+		default: false,
+	},
 	emojiStyle: {
 		where: 'device',
 		default: 'twemoji', // twemoji / fluentEmoji / native

@@ -4430,6 +4430,10 @@ export interface Locale extends ILocale {
      */
     "disableFederationOk": string;
     /**
+     * 猫の話し方を無効にする
+     */
+    "disableCatSpeak": string;
+    /**
      * 現在このサーバーは招待制です。招待コードをお持ちの方のみ登録できます。
      */
     "invitationRequiredToRegister": string;
