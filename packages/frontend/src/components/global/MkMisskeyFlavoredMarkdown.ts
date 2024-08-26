@@ -89,6 +89,8 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 	 * @param disableNyaize Whether nyaize is disabled or not
 	 */
 	const genEl = (ast: mfm.MfmNode[], scale: number, disableNyaize = false) => ast.map((token): VNode | string | (VNode | string)[] => {
+		if (defaultStore.state.disableCatSpeak)
+			disableNyaize = true
 		switch (token.type) {
 			case 'text': {
 				let text = token.props.text.replace(/(\r\n|\n|\r)/g, '\n');
