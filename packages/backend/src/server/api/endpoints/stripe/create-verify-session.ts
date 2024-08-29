@@ -53,7 +53,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private config: Config,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			if (!this.config.stripeAgeCheck?.enabled) throw new ApiError(meta.errors.stripeIsDisabled);
+			if (!this.config.stripeAgeCheck.enabled) throw new ApiError(meta.errors.stripeIsDisabled);
 			
 			const userProfile = await this.usersRepository.findOne({
 				where: {

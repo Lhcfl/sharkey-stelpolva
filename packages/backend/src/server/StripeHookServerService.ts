@@ -41,7 +41,7 @@ export class StripeHookServerService {
 		request: FastifyRequest,
 		reply: FastifyReply,
 	) {
-		if (!this.config.stripeAgeCheck) return reply.code(400);
+		if (!this.config.stripeAgeCheck.enabled) return reply.code(400);
 
 		const stripe = new Stripe(this.config.stripeAgeCheck.key);
 

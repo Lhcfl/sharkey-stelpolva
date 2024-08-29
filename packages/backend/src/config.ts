@@ -108,7 +108,7 @@ type Source = {
 		maxFileSize: number;
 	};
 
-	stripeAgeCheck?: {
+	stripeAgeCheck: {
 		enabled: boolean;
 		key: string;
 		hookKey: string;
@@ -207,7 +207,7 @@ export type Config = {
 		enabled: boolean | undefined;
 		key: string;
 		hookKey: string;
-	} | undefined;
+	};
 
 	pidFile: string;
 };
