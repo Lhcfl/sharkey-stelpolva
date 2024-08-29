@@ -58,8 +58,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 	provide('linkNavigationBehavior', props.linkNavigationBehavior);
 
 	const isNote = props.isNote ?? true;
-	const shouldNyaize = props.nyaize ? props.nyaize === 'respect' ? props.author?.isCat ? props.author.speakAsCat : false : false : false;
-
+	const shouldNyaize = props.nyaize === 'respect' && props.author?.speakAsCat && !defaultStore.state.disableCatSpeak;
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (props.text == null || props.text === '') return;
 
@@ -89,8 +88,6 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 	 * @param disableNyaize Whether nyaize is disabled or not
 	 */
 	const genEl = (ast: mfm.MfmNode[], scale: number, disableNyaize = false) => ast.map((token): VNode | string | (VNode | string)[] => {
-		if (defaultStore.state.disableCatSpeak)
-			disableNyaize = true
 		switch (token.type) {
 			case 'text': {
 				let text = token.props.text.replace(/(\r\n|\n|\r)/g, '\n');
