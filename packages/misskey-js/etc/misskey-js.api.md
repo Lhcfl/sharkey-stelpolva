@@ -1807,6 +1807,7 @@ declare namespace entities {
         ReversiSurrenderRequest,
         ReversiVerifyRequest,
         ReversiVerifyResponse,
+        StripeCreateVerifySessionResponse,
         Error_2 as Error,
         UserLite,
         UserDetailedNotMeOnly,
@@ -3076,6 +3077,9 @@ export class Stream extends EventEmitter<StreamEvents> {
     // (undocumented)
     useChannel<C extends keyof Channels>(channel: C, params?: Channels[C]['params'], name?: string): ChannelConnection<Channels[C]>;
 }
+
+// @public (undocumented)
+type StripeCreateVerifySessionResponse = operations['stripe___create-verify-session']['responses']['200']['content']['application/json'];
 
 // Warning: (ae-forgotten-export) The symbol "SwitchCase" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "IsCaseMatched" needs to be exported by the entry point index.d.ts
