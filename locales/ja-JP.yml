@@ -2886,3 +2886,12 @@ _contextMenu:
   app: "アプリケーション"
   appWithShift: "Shiftキーでアプリケーション"
   native: "ブラウザのUI"
+
+_stripeAgeCheck:
+  startText: ご本人様確認をさせていただきますので、スタートボタンを押して手続きを開始してください。
+  beginProcess: 新しいタブでStripeを開くボタンを押すと、Stripeでの本人確認が開始されます。
+  endProcess: Stripeでの本人確認手続きが完了した場合は、数秒待ってから完了をクリックしてください。
+  _buttons:
+    start: 検証を開始する
+    openInNewTab: 新しいタブでStripeを開く
+    confirmFinish: 完成を確認する

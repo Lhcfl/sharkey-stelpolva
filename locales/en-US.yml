@@ -2810,3 +2810,12 @@ _contextMenu:
   app: "Application"
   appWithShift: "Application with shift key"
   native: "Native"
+
+_stripeAgeCheck:
+  startText: We require you to confirm your identity, Please press the start button to begin the process
+  beginProcess: Press the open Stripe in new tab button to begin Identification through Stripe
+  endProcess: If you have completed the Stripe verification process, wait a few seconds and then click Confirm completion.
+  _buttons:
+    start: Start Verification
+    openInNewTab: Open Stripe in new tab
+    confirmFinish: Confirm completion

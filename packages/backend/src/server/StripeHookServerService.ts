@@ -96,7 +96,7 @@ export class StripeHookServerService {
 					});
 				}
 
-				this.logger.succ(`${user.username} has succesfully approved their ID via Session ${verificationSession.client_reference_id}`);
+				this.logger.succ(`${user.username} has succesfully approved their ID via Session ${verificationSession.id}`);
 
 				await this.usersRepository.update(user.id, { idCheckRequired: false, idVerified: true });
 
