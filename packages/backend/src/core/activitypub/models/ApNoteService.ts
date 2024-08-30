@@ -358,7 +358,7 @@ export class ApNoteService {
 				value,
 				object,
 			});
-			throw new Error('invalid note');
+			throw err;
 		}
 
 		const note = object as IPost;
@@ -471,19 +471,19 @@ export class ApNoteService {
 				| { status: 'ok'; res: MiNote }
 				| { status: 'permerror' | 'temperror' }
 			> => {
-				if (!/^https?:/.test(uri)) return { status: 'permerror' };
+				if (typeof uri !== 'string' || !/^https?:/.test(uri)) return { status: 'permerror' };
 				try {
 					const res = await this.resolveNote(uri, { resolver });
 					if (res == null) return { status: 'permerror' };
 					return { status: 'ok', res };
 				} catch (e) {
 					return {
-						status: (e instanceof StatusError && e.isClientError) ? 'permerror' : 'temperror',
+						status: (e instanceof StatusError && !e.isRetryable) ? 'permerror' : 'temperror',
 					};
 				}
 			};
 
-			const uris = unique([note._misskey_quote, note.quoteUrl, note.quoteUri].filter((x): x is string => typeof x === 'string'));
+			const uris = unique([note._misskey_quote, note.quoteUrl, note.quoteUri].filter(x => x !== null));
 			const results = await Promise.all(uris.map(tryResolveNote));
 
 			quote = results.filter((x): x is { status: 'ok', res: MiNote } => x.status === 'ok').map(x => x.res).at(0);
@@ -496,10 +496,10 @@ export class ApNoteService {
 
 		// vote
 		if (reply && reply.hasPoll) {
-			const replyPoll = await this.pollsRepository.findOneByOrFail({ noteId: reply.id });
+			const poll = await this.pollsRepository.findOneByOrFail({ noteId: reply.id });
 
 			const tryCreateVote = async (name: string, index: number): Promise<null> => {
-				if (replyPoll.expiresAt && Date.now() > new Date(replyPoll.expiresAt).getTime()) {
+				if (poll.expiresAt && Date.now() > new Date(poll.expiresAt).getTime()) {
 					this.logger.warn(`vote to expired poll from AP: actor=${actor.username}@${actor.host}, note=${note.id}, choice=${name}`);
 				} else if (index >= 0) {
 					this.logger.info(`vote from AP: actor=${actor.username}@${actor.host}, note=${note.id}, choice=${name}`);
@@ -512,7 +512,7 @@ export class ApNoteService {
 			};
 
 			if (note.name) {
-				return await tryCreateVote(note.name, replyPoll.choices.findIndex(x => x === note.name));
+				return await tryCreateVote(note.name, poll.choices.findIndex(x => x === note.name));
 			}
 		}
 

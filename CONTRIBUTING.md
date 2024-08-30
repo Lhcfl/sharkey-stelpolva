@@ -592,6 +592,9 @@ seems to do a decent job)
 * copy all changes (commit after each step):
   * in `packages/backend/src/core/NoteCreateService.ts`, from `create` to
     `import` (and vice versa if `git` got confused!)
+  * in
+    `packages/backend/src/core/activitypub/models/ApNoteService.ts`,
+    from `createNote` to `updateNote`
   * from `packages/backend/src/core/NoteCreateService.ts` to
     `packages/backend/src/core/NoteEditService.vue`
   * in `packages/backend/src/core/activitypub/models/ApNoteService.ts`,
