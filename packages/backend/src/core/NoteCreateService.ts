@@ -281,7 +281,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			data.visibility = 'home';
 		}
 
-		if (this.isRenote(data)) {
+		if (data.renote) {
 			switch (data.renote.visibility) {
 				case 'public':
 					// public noteは無条件にrenote可能
@@ -366,6 +366,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 			mentionedUsers = data.apMentions ?? await this.extractMentionedUsers(user, combinedTokens);
 		}
+
+		// if the host is media-silenced, custom emojis are not allowed
+		if (this.utilityService.isMediaSilencedHost(meta.mediaSilencedHosts, user.host)) emojis = [];
 
 		tags = tags.filter(tag => Array.from(tag).length <= 128).splice(0, 32);
 
@@ -1018,11 +1021,13 @@ export class NoteCreateService implements OnApplicationShutdown {
 				followeeId: user.id,
 				notify: 'normal',
 			}).then(followings => {
-				for (const following of followings) {
-					// TODO: ワードミュート考慮
-					this.notificationService.createNotification(following.followerId, 'note', {
-						noteId: note.id,
-					}, user.id);
+				if (note.visibility !== 'specified') {
+					for (const following of followings) {
+						// TODO: ワードミュート考慮
+						this.notificationService.createNotification(following.followerId, 'note', {
+							noteId: note.id,
+						}, user.id);
+					}
 				}
 			});
 		}
