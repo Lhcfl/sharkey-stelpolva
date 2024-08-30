@@ -122,6 +122,7 @@ type Option = {
 	createdAt?: Date | null;
 	name?: string | null;
 	text?: string | null;
+	lang?: string | null;
 	reply?: MiNote | null;
 	renote?: MiNote | null;
 	files?: MiDriveFile[] | null;
@@ -435,6 +436,9 @@ export class NoteEditService implements OnApplicationShutdown {
 		if (oldnote.hasPoll !== !!data.poll) {
 			update.hasPoll = !!data.poll;
 		}
+		if (data.lang !== oldnote.lang) {
+			update.lang = data.lang;
+		}
 
 		// technically we should check if the two sets of files are
 		// different, or if their descriptions have changed. In practice
@@ -454,6 +458,7 @@ export class NoteEditService implements OnApplicationShutdown {
 				oldText: oldnote.text || undefined,
 				newText: update.text || undefined,
 				cw: update.cw || undefined,
+				lang: update.lang || undefined,
 				fileIds: undefined,
 				oldDate: exists ? oldnote.updatedAt as Date : this.idService.parse(oldnote.id).date,
 				updatedAt: new Date(),
@@ -473,6 +478,7 @@ export class NoteEditService implements OnApplicationShutdown {
 					: null,
 				name: data.name,
 				text: data.text,
+				lang: data.lang,
 				hasPoll: data.poll != null,
 				cw: data.cw ?? null,
 				tags: tags.map(tag => normalizeForSearch(tag)),

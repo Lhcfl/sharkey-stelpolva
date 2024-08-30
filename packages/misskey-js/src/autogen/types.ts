@@ -4170,6 +4170,8 @@ export type components = {
       /** Format: date-time */
       deletedAt?: string | null;
       text: string | null;
+      /** @enum {string|null} */
+      lang: 'ach' | 'ady' | 'af' | 'ak' | 'ar' | 'ay' | 'az' | 'be' | 'bg' | 'bn' | 'br' | 'bs' | 'ca' | 'cak' | 'chr' | 'cs' | 'cy' | 'da' | 'de' | 'dsb' | 'el' | 'en' | 'eo' | 'es' | 'et' | 'eu' | 'fa' | 'ff' | 'fi' | 'fo' | 'fr' | 'fy' | 'ga' | 'gd' | 'gl' | 'gn' | 'gu' | 'gv' | 'grc' | 'he' | 'hi' | 'hr' | 'hsb' | 'ht' | 'hu' | 'hy' | 'id' | 'is' | 'it' | 'ja' | 'jv' | 'ka' | 'kk' | 'km' | 'kl' | 'kab' | 'kn' | 'ko' | 'ku' | 'kw' | 'la' | 'lb' | 'li' | 'lt' | 'lv' | 'mai' | 'mg' | 'mk' | 'ml' | 'mn' | 'mr' | 'ms' | 'mt' | 'my' | 'nan' | 'no' | 'nb' | 'ne' | 'nl' | 'nn' | 'oc' | 'or' | 'pa' | 'pl' | 'ps' | 'pt' | 'qu' | 'rm' | 'ro' | 'ru' | 'sa' | 'se' | 'sh' | 'si' | 'sk' | 'sl' | 'so' | 'sq' | 'sr' | 'su' | 'sv' | 'sw' | 'ta' | 'te' | 'tg' | 'th' | 'fil' | 'tlh' | 'tok' | 'tr' | 'tt' | 'uk' | 'ur' | 'uz' | 'vi' | 'xh' | 'yi' | 'yue' | 'zh' | 'zu' | 'zh-Hans' | 'zh-Hant';
       cw?: string | null;
       /** Format: id */
       userId: string;
@@ -20212,7 +20214,7 @@ export type operations = {
           birthday?: string | null;
           listenbrainz?: string | null;
           /** @enum {string|null} */
-          lang?: null | 'ach' | 'ady' | 'af' | 'af-NA' | 'af-ZA' | 'ak' | 'ar' | 'ar-AR' | 'ar-MA' | 'ar-SA' | 'ay-BO' | 'az' | 'az-AZ' | 'be-BY' | 'bg' | 'bg-BG' | 'bn' | 'bn-IN' | 'bn-BD' | 'br' | 'bs-BA' | 'ca' | 'ca-ES' | 'cak' | 'ck-US' | 'cs' | 'cs-CZ' | 'cy' | 'cy-GB' | 'da' | 'da-DK' | 'de' | 'de-AT' | 'de-DE' | 'de-CH' | 'dsb' | 'el' | 'el-GR' | 'en' | 'en-GB' | 'en-AU' | 'en-CA' | 'en-IE' | 'en-IN' | 'en-PI' | 'en-SG' | 'en-UD' | 'en-US' | 'en-ZA' | 'en@pirate' | 'eo' | 'eo-EO' | 'es' | 'es-AR' | 'es-419' | 'es-CL' | 'es-CO' | 'es-EC' | 'es-ES' | 'es-LA' | 'es-NI' | 'es-MX' | 'es-US' | 'es-VE' | 'et' | 'et-EE' | 'eu' | 'eu-ES' | 'fa' | 'fa-IR' | 'fb-LT' | 'ff' | 'fi' | 'fi-FI' | 'fo' | 'fo-FO' | 'fr' | 'fr-CA' | 'fr-FR' | 'fr-BE' | 'fr-CH' | 'fy-NL' | 'ga' | 'ga-IE' | 'gd' | 'gl' | 'gl-ES' | 'gn-PY' | 'gu-IN' | 'gv' | 'gx-GR' | 'he' | 'he-IL' | 'hi' | 'hi-IN' | 'hr' | 'hr-HR' | 'hsb' | 'ht' | 'hu' | 'hu-HU' | 'hy' | 'hy-AM' | 'id' | 'id-ID' | 'is' | 'is-IS' | 'it' | 'it-IT' | 'ja' | 'ja-JP' | 'jv-ID' | 'ka-GE' | 'kk-KZ' | 'km' | 'kl' | 'km-KH' | 'kab' | 'kn' | 'kn-IN' | 'ko' | 'ko-KR' | 'ku-TR' | 'kw' | 'la' | 'la-VA' | 'lb' | 'li-NL' | 'lt' | 'lt-LT' | 'lv' | 'lv-LV' | 'mai' | 'mg-MG' | 'mk' | 'mk-MK' | 'ml' | 'ml-IN' | 'mn-MN' | 'mr' | 'mr-IN' | 'ms' | 'ms-MY' | 'mt' | 'mt-MT' | 'my' | 'no' | 'nb' | 'nb-NO' | 'ne' | 'ne-NP' | 'nl' | 'nl-BE' | 'nl-NL' | 'nn-NO' | 'oc' | 'or-IN' | 'pa' | 'pa-IN' | 'pl' | 'pl-PL' | 'ps-AF' | 'pt' | 'pt-BR' | 'pt-PT' | 'qu-PE' | 'rm-CH' | 'ro' | 'ro-RO' | 'ru' | 'ru-RU' | 'sa-IN' | 'se-NO' | 'sh' | 'si-LK' | 'sk' | 'sk-SK' | 'sl' | 'sl-SI' | 'so-SO' | 'sq' | 'sq-AL' | 'sr' | 'sr-RS' | 'su' | 'sv' | 'sv-SE' | 'sw' | 'sw-KE' | 'ta' | 'ta-IN' | 'te' | 'te-IN' | 'tg' | 'tg-TJ' | 'th' | 'th-TH' | 'fil' | 'tlh' | 'tr' | 'tr-TR' | 'tt-RU' | 'uk' | 'uk-UA' | 'ur' | 'ur-PK' | 'uz' | 'uz-UZ' | 'vi' | 'vi-VN' | 'xh-ZA' | 'yi' | 'yi-DE' | 'zh' | 'zh-Hans' | 'zh-Hant' | 'zh-CN' | 'zh-HK' | 'zh-SG' | 'zh-TW' | 'zu-ZA';
+          lang?: null | 'ach' | 'ady' | 'af' | 'ak' | 'ar' | 'ay' | 'az' | 'be' | 'bg' | 'bn' | 'br' | 'bs' | 'ca' | 'cak' | 'chr' | 'cs' | 'cy' | 'da' | 'de' | 'dsb' | 'el' | 'en' | 'eo' | 'es' | 'et' | 'eu' | 'fa' | 'ff' | 'fi' | 'fo' | 'fr' | 'fy' | 'ga' | 'gd' | 'gl' | 'gn' | 'gu' | 'gv' | 'grc' | 'he' | 'hi' | 'hr' | 'hsb' | 'ht' | 'hu' | 'hy' | 'id' | 'is' | 'it' | 'ja' | 'jv' | 'ka' | 'kk' | 'km' | 'kl' | 'kab' | 'kn' | 'ko' | 'ku' | 'kw' | 'la' | 'lb' | 'li' | 'lt' | 'lv' | 'mai' | 'mg' | 'mk' | 'ml' | 'mn' | 'mr' | 'ms' | 'mt' | 'my' | 'nan' | 'no' | 'nb' | 'ne' | 'nl' | 'nn' | 'oc' | 'or' | 'pa' | 'pl' | 'ps' | 'pt' | 'qu' | 'rm' | 'ro' | 'ru' | 'sa' | 'se' | 'sh' | 'si' | 'sk' | 'sl' | 'so' | 'sq' | 'sr' | 'su' | 'sv' | 'sw' | 'ta' | 'te' | 'tg' | 'th' | 'fil' | 'tlh' | 'tok' | 'tr' | 'tt' | 'uk' | 'ur' | 'uz' | 'vi' | 'xh' | 'yi' | 'yue' | 'zh' | 'zu' | 'zh-Hans' | 'zh-Hant';
           /** Format: misskey:id */
           avatarId?: string | null;
           avatarDecorations?: ({
@@ -21866,6 +21868,8 @@ export type operations = {
            */
           visibility?: 'public' | 'home' | 'followers' | 'specified';
           visibleUserIds?: string[];
+          /** @enum {string|null} */
+          lang?: 'ach' | 'ady' | 'af' | 'ak' | 'ar' | 'ay' | 'az' | 'be' | 'bg' | 'bn' | 'br' | 'bs' | 'ca' | 'cak' | 'chr' | 'cs' | 'cy' | 'da' | 'de' | 'dsb' | 'el' | 'en' | 'eo' | 'es' | 'et' | 'eu' | 'fa' | 'ff' | 'fi' | 'fo' | 'fr' | 'fy' | 'ga' | 'gd' | 'gl' | 'gn' | 'gu' | 'gv' | 'grc' | 'he' | 'hi' | 'hr' | 'hsb' | 'ht' | 'hu' | 'hy' | 'id' | 'is' | 'it' | 'ja' | 'jv' | 'ka' | 'kk' | 'km' | 'kl' | 'kab' | 'kn' | 'ko' | 'ku' | 'kw' | 'la' | 'lb' | 'li' | 'lt' | 'lv' | 'mai' | 'mg' | 'mk' | 'ml' | 'mn' | 'mr' | 'ms' | 'mt' | 'my' | 'nan' | 'no' | 'nb' | 'ne' | 'nl' | 'nn' | 'oc' | 'or' | 'pa' | 'pl' | 'ps' | 'pt' | 'qu' | 'rm' | 'ro' | 'ru' | 'sa' | 'se' | 'sh' | 'si' | 'sk' | 'sl' | 'so' | 'sq' | 'sr' | 'su' | 'sv' | 'sw' | 'ta' | 'te' | 'tg' | 'th' | 'fil' | 'tlh' | 'tok' | 'tr' | 'tt' | 'uk' | 'ur' | 'uz' | 'vi' | 'xh' | 'yi' | 'yue' | 'zh' | 'zu' | 'zh-Hans' | 'zh-Hant';
           cw?: string | null;
           /** @default false */
           localOnly?: boolean;
@@ -23629,6 +23633,8 @@ export type operations = {
            */
           visibility?: 'public' | 'home' | 'followers' | 'specified';
           visibleUserIds?: string[];
+          /** @enum {string|null} */
+          lang?: 'ach' | 'ady' | 'af' | 'ak' | 'ar' | 'ay' | 'az' | 'be' | 'bg' | 'bn' | 'br' | 'bs' | 'ca' | 'cak' | 'chr' | 'cs' | 'cy' | 'da' | 'de' | 'dsb' | 'el' | 'en' | 'eo' | 'es' | 'et' | 'eu' | 'fa' | 'ff' | 'fi' | 'fo' | 'fr' | 'fy' | 'ga' | 'gd' | 'gl' | 'gn' | 'gu' | 'gv' | 'grc' | 'he' | 'hi' | 'hr' | 'hsb' | 'ht' | 'hu' | 'hy' | 'id' | 'is' | 'it' | 'ja' | 'jv' | 'ka' | 'kk' | 'km' | 'kl' | 'kab' | 'kn' | 'ko' | 'ku' | 'kw' | 'la' | 'lb' | 'li' | 'lt' | 'lv' | 'mai' | 'mg' | 'mk' | 'ml' | 'mn' | 'mr' | 'ms' | 'mt' | 'my' | 'nan' | 'no' | 'nb' | 'ne' | 'nl' | 'nn' | 'oc' | 'or' | 'pa' | 'pl' | 'ps' | 'pt' | 'qu' | 'rm' | 'ro' | 'ru' | 'sa' | 'se' | 'sh' | 'si' | 'sk' | 'sl' | 'so' | 'sq' | 'sr' | 'su' | 'sv' | 'sw' | 'ta' | 'te' | 'tg' | 'th' | 'fil' | 'tlh' | 'tok' | 'tr' | 'tt' | 'uk' | 'ur' | 'uz' | 'vi' | 'xh' | 'yi' | 'yue' | 'zh' | 'zu' | 'zh-Hans' | 'zh-Hant';
           cw?: string | null;
           /** @default false */
           localOnly?: boolean;

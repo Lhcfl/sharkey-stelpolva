@@ -21,6 +21,7 @@ export interface IObject {
 	inReplyTo?: any;
 	replies?: ICollection;
 	content?: string | null;
+	contentMap?: Obj | null;
 	startTime?: Date;
 	endTime?: Date;
 	icon?: any;
@@ -120,6 +121,7 @@ export interface IPost extends IObject {
 	type: 'Note' | 'Question' | 'Article' | 'Audio' | 'Document' | 'Image' | 'Page' | 'Video' | 'Event';
 	source?: {
 		content: string;
+		contentMap?: Obj | null;
 		mediaType: string;
 	};
 	_misskey_quote?: string;
@@ -134,6 +136,7 @@ export interface IQuestion extends IObject {
 	actor: string;
 	source?: {
 		content: string;
+		contentMap?: Obj | null;
 		mediaType: string;
 	};
 	_misskey_quote?: string;

@@ -132,6 +132,7 @@ type Option = {
 	createdAt?: Date | null;
 	name?: string | null;
 	text?: string | null;
+	lang?: string | null;
 	reply?: MiNote | null;
 	renote?: MiNote | null;
 	files?: MiDriveFile[] | null;
@@ -605,6 +606,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 				: null,
 			name: data.name,
 			text: data.text,
+			lang: data.lang,
 			hasPoll: data.poll != null,
 			cw: data.cw ?? null,
 			tags: tags.map(tag => normalizeForSearch(tag)),

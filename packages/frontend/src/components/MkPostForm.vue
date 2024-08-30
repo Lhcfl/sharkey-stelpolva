@@ -32,6 +32,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span :class="$style.headerRightButtonText">{{ channel.name }}</span>
 				</button>
 			</template>
+			<button v-click-anime v-tooltip="i18n.ts.language" :class="['_button', $style.headerRightItem]" @click="setLanguage">
+				<span><i class="ph-translate ph-bold ph-lg"></i></span>
+				<span v-if="language" :class="$style.headerRightButtonText">{{ language }}</span>
+			</button>
 			<button v-click-anime v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="channel != null || visibility === 'specified'" @click="toggleLocalOnly">
 				<span v-if="!localOnly"><i class="ti ti-rocket"></i></span>
 				<span v-else><i class="ti ti-rocket-off"></i></span>
@@ -65,16 +69,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</div>
 	<MkInfo v-if="hasNotSpecifiedMentions" warn :class="$style.hasNotSpecifiedMentions">{{ i18n.ts.notSpecifiedMentionWarning }} - <button class="_textButton" @click="addMissingMention()">{{ i18n.ts.add }}</button></MkInfo>
-	<input v-show="useCw" ref="cwInputEl" v-model="cw" :class="$style.cw" :placeholder="i18n.ts.annotation" @keydown="onKeydown">
+	<input v-show="useCw" ref="cwInputEl" v-model="cw" :class="$style.cw" :placeholder="i18n.ts.annotation" :lang="language ?? undefined" @keydown="onKeydown">
 	<div :class="[$style.textOuter, { [$style.withCw]: useCw }]">
 		<div v-if="channel" :class="$style.colorBar" :style="{ background: channel.color }"></div>
-		<textarea ref="textareaEl" v-model="text" :class="[$style.text]" :disabled="posting || posted" :readonly="textAreaReadOnly" :placeholder="placeholder" data-cy-post-form-text dir="auto" @keydown="onKeydown" @paste="onPaste" @compositionupdate="onCompositionUpdate" @compositionend="onCompositionEnd"/>
+		<textarea ref="textareaEl" v-model="text" :class="[$style.text]" :disabled="posting || posted" :readonly="textAreaReadOnly" :placeholder="placeholder" :lang="language ?? undefined" data-cy-post-form-text dir="auto" @keydown="onKeydown" @paste="onPaste" @compositionupdate="onCompositionUpdate" @compositionend="onCompositionEnd"/>
 		<div v-if="maxTextLength - textLength < 100" :class="['_acrylic', $style.textCount, { [$style.textOver]: textLength > maxTextLength }]">{{ maxTextLength - textLength }}</div>
 	</div>
 	<input v-show="withHashtags" ref="hashtagsInputEl" v-model="hashtags" :class="$style.hashtags" :placeholder="i18n.ts.hashtags" list="hashtags">
 	<XPostFormAttaches v-model="files" @detach="detachFile" @changeSensitive="updateFileSensitive" @changeName="updateFileName" @replaceFile="replaceFile"/>
-	<MkPollEditor v-if="poll" v-model="poll" @destroyed="poll = null"/>
-	<MkNotePreview v-if="showPreview" :class="$style.preview" :text="text" :files="files" :poll="poll ?? undefined" :useCw="useCw" :cw="cw" :user="postAccount ?? $i"/>
+	<MkPollEditor v-if="poll" v-model="poll" :lang="language ?? undefined" @destroyed="poll = null"/>
+	<MkNotePreview v-if="showPreview" :class="$style.preview" :text="text" :lang="language ?? undefined" :files="files" :poll="poll ?? undefined" :useCw="useCw" :cw="cw" :user="postAccount ?? $i"/>
 	<div v-if="showingOptions" style="padding: 8px 16px;">
 	</div>
 	<footer :class="$style.footer">
@@ -130,6 +134,8 @@ import { miLocalStorage } from '@/local-storage.js';
 import { claimAchievement } from '@/scripts/achievements.js';
 import { emojiPicker } from '@/scripts/emoji-picker.js';
 import { mfmFunctionPicker } from '@/scripts/mfm-function-picker.js';
+import { langmap, langs } from '@/scripts/langmap.js';
+import { MenuItem } from '@/types/menu.js';
 
 const $i = signinRequired();
 
@@ -144,6 +150,7 @@ const props = withDefaults(defineProps<{
 	initialText?: string;
 	initialCw?: string;
 	initialVisibility?: (typeof Misskey.noteVisibilities)[number];
+	initialLanguage?: (typeof Misskey.languages)[number];
 	initialFiles?: Misskey.entities.DriveFile[];
 	initialLocalOnly?: boolean;
 	initialVisibleUsers?: Misskey.entities.UserDetailed[];
@@ -203,6 +210,7 @@ const recentHashtags = ref(JSON.parse(miLocalStorage.getItem('hashtags') ?? '[]'
 const imeText = ref('');
 const showingOptions = ref(false);
 const textAreaReadOnly = ref(false);
+const language = ref<string | null>(props.initialLanguage ?? defaultStore.state.recentlyUsedPostLanguages[0] ?? attemptNormalizeLang(localStorage.getItem('lang')));
 
 const draftKey = computed((): string => {
 	let key = props.channel ? `channel:${props.channel.id}` : '';
@@ -369,6 +377,7 @@ function watchForDraft() {
 	watch(files, () => saveDraft(), { deep: true });
 	watch(visibility, () => saveDraft());
 	watch(localOnly, () => saveDraft());
+	watch(language, () => saveDraft());
 	watch(quoteId, () => saveDraft());
 	watch(reactionAcceptance, () => saveDraft());
 }
@@ -554,6 +563,64 @@ async function toggleReactionAcceptance() {
 	reactionAcceptance.value = select.result;
 }
 
+function attemptNormalizeLang(lang: string | null) {
+	if (lang == null) return null;
+	if (!langs[lang]) lang = lang.split('-')[0];
+	return lang;
+}
+
+function setLanguage(ev: MouseEvent) {
+	const actions: Array<MenuItem> = [];
+
+	if (language.value != null) actions.push({
+		text: langmap[language.value].nativeName,
+		danger: false,
+		active: true,
+		action: () => {},
+	});
+
+	// Show recently used language first
+	let recentlyUsedLanguagesExist = false;
+	for (const lang of defaultStore.state.recentlyUsedPostLanguages) {
+		if (lang === language.value) continue;
+		if (!langs.includes(lang)) continue;
+		actions.push({
+			text: langmap[lang].nativeName,
+			danger: false,
+			active: false,
+			action: () => {
+				language.value = lang;
+			},
+		});
+		recentlyUsedLanguagesExist = true;
+	}
+	if (recentlyUsedLanguagesExist) actions.push({ type: 'divider' });
+
+	actions.push({
+		text: i18n.ts.noLanguage,
+		danger: false,
+		active: false,
+		action: () => {
+			language.value = null;
+		},
+	});
+
+	for (const lang of langs) {
+		if (lang === language.value) continue;
+		if (defaultStore.state.recentlyUsedPostLanguages.includes(lang)) continue;
+		actions.push({
+			text: langmap[lang].nativeName,
+			danger: false,
+			active: false,
+			action: () => {
+				language.value = lang;
+			},
+		});
+	}
+
+	os.popupMenu(actions, ev.currentTarget ?? ev.target);
+}
+
 function pushVisibleUser(user: Misskey.entities.UserDetailed) {
 	if (!visibleUsers.value.some(u => u.username === user.username && u.host === user.host)) {
 		visibleUsers.value.push(user);
@@ -713,6 +780,7 @@ function saveDraft() {
 			cw: cw.value,
 			visibility: visibility.value,
 			localOnly: localOnly.value,
+			lang: language.value,
 			files: files.value,
 			poll: poll.value,
 			visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(x => x.id) : undefined,
@@ -820,6 +888,7 @@ async function post(ev?: MouseEvent) {
 		channelId: props.channel ? props.channel.id : undefined,
 		poll: poll.value,
 		cw: useCw.value ? cw.value ?? '' : null,
+		lang: language.value ?? null,
 		localOnly: localOnly.value,
 		visibility: visibility.value,
 		visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(u => u.id) : undefined,
@@ -927,6 +996,17 @@ async function post(ev?: MouseEvent) {
 			text: err.message + '\n' + (err as any).id,
 		});
 	});
+
+	// update recentlyUsedLanguages
+	if (language.value != null) {
+		const maxLength = 6;
+		const filteredRecentlyUsed = defaultStore.state.recentlyUsedPostLanguages.filter((lang) => {
+			return (lang !== language.value && langs.includes(lang));
+		});
+		const recentlyUsedLangs = [language.value].concat(filteredRecentlyUsed).slice(0, maxLength);
+
+		defaultStore.set('recentlyUsedPostLanguages', recentlyUsedLangs);
+	}
 }
 
 function cancel() {
@@ -1042,6 +1122,7 @@ onMounted(() => {
 				useCw.value = draft.data.useCw;
 				visibility.value = draft.data.visibility;
 				localOnly.value = draft.data.localOnly;
+				language.value = draft.data.lang;
 				files.value = (draft.data.files || []).filter(draftFile => draftFile);
 
 				if (draft.data.poll) {
@@ -1079,6 +1160,7 @@ onMounted(() => {
 					users.forEach(u => pushVisibleUser(u));
 				});
 			}
+			language.value = init.lang;
 			quoteId.value = init.renote ? init.renote.id : null;
 			reactionAcceptance.value = init.reactionAcceptance;
 		}

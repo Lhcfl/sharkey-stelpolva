@@ -13,6 +13,7 @@ import { NoteEditService } from '@/core/NoteEditService.js';
 import { DI } from '@/di-symbols.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { langs } from '@/misc/langmap.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -197,6 +198,7 @@ export const paramDef = {
 				format: 'misskey:id',
 			},
 		},
+		lang: { type: 'string', enum: langs, nullable: true, maxLength: 10 },
 		cw: { type: 'string', nullable: true, minLength: 1, maxLength: 500 },
 		localOnly: { type: 'boolean', default: false },
 		reactionAcceptance: { type: 'string', nullable: true, enum: [null, 'likeOnly', 'likeOnlyForRemote', 'nonSensitiveOnly', 'nonSensitiveOnlyForLocalLikeOnlyForRemote'], default: null },
@@ -436,6 +438,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						expiresAt: ps.poll.expiresAt ? new Date(ps.poll.expiresAt) : null,
 					} : undefined,
 					text: ps.text ?? undefined,
+					lang: ps.lang,
 					reply,
 					renote,
 					cw: ps.cw,

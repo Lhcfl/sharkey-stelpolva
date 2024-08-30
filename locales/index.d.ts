@@ -5242,6 +5242,10 @@ export interface Locale extends ILocale {
      */
     "enableHorizontalSwipe": string;
     /**
+     * 言語なし
+     */
+    "noLanguage": string;
+    /**
      * 読み込み中
      */
     "loading": string;

@@ -35,6 +35,9 @@ export const langmap = {
 	'ar-SA': {
 		nativeName: 'العربية (السعودية)',
 	},
+	'ay': {
+		nativeName: 'Aymar aru',
+	},
 	'ay-BO': {
 		nativeName: 'Aymar aru',
 	},
@@ -43,6 +46,9 @@ export const langmap = {
 	},
 	'az-AZ': {
 		nativeName: 'Azərbaycan dili',
+	},
+	'be': {
+		nativeName: 'Беларуская',
 	},
 	'be-BY': {
 		nativeName: 'Беларуская',
@@ -65,6 +71,9 @@ export const langmap = {
 	'br': {
 		nativeName: 'Brezhoneg',
 	},
+	'bs': {
+		nativeName: 'Bosanski',
+	},
 	'bs-BA': {
 		nativeName: 'Bosanski',
 	},
@@ -77,7 +86,7 @@ export const langmap = {
 	'cak': {
 		nativeName: 'Maya Kaqchikel',
 	},
-	'ck-US': {
+	'chr': {
 		nativeName: 'ᏣᎳᎩ (tsalagi)',
 	},
 	'cs': {
@@ -151,9 +160,6 @@ export const langmap = {
 	},
 	'en-ZA': {
 		nativeName: 'English (South Africa)',
-	},
-	'en@pirate': {
-		nativeName: 'English (Pirate)',
 	},
 	'eo': {
 		nativeName: 'Esperanto',
@@ -248,6 +254,9 @@ export const langmap = {
 	'fr-CH': {
 		nativeName: 'Français (Suisse)',
 	},
+	'fy': {
+		nativeName: 'Frysk',
+	},
 	'fy-NL': {
 		nativeName: 'Frysk',
 	},
@@ -266,8 +275,14 @@ export const langmap = {
 	'gl-ES': {
 		nativeName: 'Galego',
 	},
+	'gn': {
+		nativeName: 'Avañe\'ẽ',
+	},
 	'gn-PY': {
 		nativeName: 'Avañe\'ẽ',
+	},
+	'gu': {
+		nativeName: 'ગુજરાતી',
 	},
 	'gu-IN': {
 		nativeName: 'ગુજરાતી',
@@ -275,7 +290,7 @@ export const langmap = {
 	'gv': {
 		nativeName: 'Gaelg',
 	},
-	'gx-GR': {
+	'grc': {
 		nativeName: 'Ἑλληνική ἀρχαία',
 	},
 	'he': {
@@ -338,11 +353,20 @@ export const langmap = {
 	'ja-JP': {
 		nativeName: '日本語 (日本)',
 	},
+	'jv': {
+		nativeName: 'Basa Jawa',
+	},
 	'jv-ID': {
 		nativeName: 'Basa Jawa',
 	},
+	'ka': {
+		nativeName: 'ქართული',
+	},
 	'ka-GE': {
 		nativeName: 'ქართული',
+	},
+	'kk': {
+		nativeName: 'Қазақша',
 	},
 	'kk-KZ': {
 		nativeName: 'Қазақша',
@@ -371,6 +395,9 @@ export const langmap = {
 	'ko-KR': {
 		nativeName: '한국어 (한국)',
 	},
+	'ku': {
+		nativeName: 'Kurdî',
+	},
 	'ku-TR': {
 		nativeName: 'Kurdî',
 	},
@@ -385,6 +412,9 @@ export const langmap = {
 	},
 	'lb': {
 		nativeName: 'Lëtzebuergesch',
+	},
+	'li': {
+		nativeName: 'Lèmbörgs',
 	},
 	'li-NL': {
 		nativeName: 'Lèmbörgs',
@@ -404,6 +434,9 @@ export const langmap = {
 	'mai': {
 		nativeName: 'मैथिली, মৈথিলী',
 	},
+	'mg': {
+		nativeName: 'Malagasy',
+	},
 	'mg-MG': {
 		nativeName: 'Malagasy',
 	},
@@ -418,6 +451,9 @@ export const langmap = {
 	},
 	'ml-IN': {
 		nativeName: 'മലയാളം',
+	},
+	'mn': {
+		nativeName: 'Монгол',
 	},
 	'mn-MN': {
 		nativeName: 'Монгол',
@@ -443,6 +479,9 @@ export const langmap = {
 	'my': {
 		nativeName: 'ဗမာစကာ',
 	},
+	'nan': {
+		nativeName: '閩南語',
+	},
 	'no': {
 		nativeName: 'Norsk',
 	},
@@ -467,11 +506,17 @@ export const langmap = {
 	'nl-NL': {
 		nativeName: 'Nederlands (Nederland)',
 	},
+	'nn': {
+		nativeName: 'Norsk (nynorsk)',
+	},
 	'nn-NO': {
 		nativeName: 'Norsk (nynorsk)',
 	},
 	'oc': {
 		nativeName: 'Occitan',
+	},
+	'or': {
+		nativeName: 'ଓଡ଼ିଆ',
 	},
 	'or-IN': {
 		nativeName: 'ଓଡ଼ିଆ',
@@ -488,6 +533,9 @@ export const langmap = {
 	'pl-PL': {
 		nativeName: 'Polski',
 	},
+	'ps': {
+		nativeName: 'پښتو',
+	},
 	'ps-AF': {
 		nativeName: 'پښتو',
 	},
@@ -500,8 +548,14 @@ export const langmap = {
 	'pt-PT': {
 		nativeName: 'Português (Portugal)',
 	},
+	'qu': {
+		nativeName: 'Qhichwa',
+	},
 	'qu-PE': {
 		nativeName: 'Qhichwa',
+	},
+	'rm': {
+		nativeName: 'Rumantsch',
 	},
 	'rm-CH': {
 		nativeName: 'Rumantsch',
@@ -518,14 +572,23 @@ export const langmap = {
 	'ru-RU': {
 		nativeName: 'Русский',
 	},
+	'sa': {
+		nativeName: 'संस्कृतम्',
+	},
 	'sa-IN': {
 		nativeName: 'संस्कृतम्',
+	},
+	'se': {
+		nativeName: 'Davvisámegiella',
 	},
 	'se-NO': {
 		nativeName: 'Davvisámegiella',
 	},
 	'sh': {
 		nativeName: 'српскохрватски',
+	},
+	'si': {
+		nativeName: 'සිංහල',
 	},
 	'si-LK': {
 		nativeName: 'සිංහල',
@@ -541,6 +604,9 @@ export const langmap = {
 	},
 	'sl-SI': {
 		nativeName: 'Slovenščina',
+	},
+	'so': {
+		nativeName: 'Soomaaliga',
 	},
 	'so-SO': {
 		nativeName: 'Soomaaliga',
@@ -602,11 +668,17 @@ export const langmap = {
 	'tlh': {
 		nativeName: 'tlhIngan-Hol',
 	},
+	'tok': {
+		nativeName: 'Toki Pona',
+	},
 	'tr': {
 		nativeName: 'Türkçe',
 	},
 	'tr-TR': {
 		nativeName: 'Türkçe',
+	},
+	'tt': {
+		nativeName: 'татарча',
 	},
 	'tt-RU': {
 		nativeName: 'татарча',
@@ -635,6 +707,9 @@ export const langmap = {
 	'vi-VN': {
 		nativeName: 'Tiếng Việt',
 	},
+	'xh': {
+		nativeName: 'isiXhosa',
+	},
 	'xh-ZA': {
 		nativeName: 'isiXhosa',
 	},
@@ -643,6 +718,9 @@ export const langmap = {
 	},
 	'yi-DE': {
 		nativeName: 'ייִדיש (German)',
+	},
+	'yue': {
+		nativeName: '粵語',
 	},
 	'zh': {
 		nativeName: '中文',
@@ -665,7 +743,16 @@ export const langmap = {
 	'zh-TW': {
 		nativeName: '中文（台灣）',
 	},
+	'zu': {
+		nativeName: 'isiZulu',
+	},
 	'zu-ZA': {
 		nativeName: 'isiZulu',
 	},
 };
+
+export const langs: string[] = [
+	...(Object.keys(langmap).filter(tag => tag.indexOf('-') < 0)),
+	'zh-Hans',
+	'zh-Hant',
+];

@@ -95,6 +95,8 @@ type Source = {
 
 	customMOTD?: string[];
 
+	langPref?: string[];
+
 	signToActivityPubGet?: boolean;
 	attachLdSignatureForRelays?: boolean;
 	checkActivityPubGetSignature?: boolean;
@@ -165,6 +167,7 @@ export type Config = {
 	signToActivityPubGet: boolean;
 	attachLdSignatureForRelays: boolean;
 	checkActivityPubGetSignature: boolean | undefined;
+	langPref: string[];
 
 	version: string;
 	publishTarballInsteadOfProvideRepositoryUrl: boolean;
@@ -304,6 +307,7 @@ export function loadConfig(): Config {
 		inboxJobMaxAttempts: config.inboxJobMaxAttempts,
 		proxyRemoteFiles: config.proxyRemoteFiles,
 		customMOTD: config.customMOTD,
+		langPref: config.langPref ?? ['en', 'ja'],
 		signToActivityPubGet: config.signToActivityPubGet ?? true,
 		attachLdSignatureForRelays: config.attachLdSignatureForRelays ?? true,
 		checkActivityPubGetSignature: config.checkActivityPubGetSignature,

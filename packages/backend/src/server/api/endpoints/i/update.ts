@@ -399,7 +399,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				updates.backgroundUrl = null;
 				updates.backgroundBlurhash = null;
 			}
-			
+
 			if (ps.avatarDecorations) {
 				policies ??= await this.roleService.getUserPolicies(user.id);
 				const decorations = await this.avatarDecorationService.getAll(true);
