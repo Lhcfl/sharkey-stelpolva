@@ -611,6 +611,8 @@ seems to do a decent job)
     `packages/frontend/src/pages/timeline.vue`,
     `packages/frontend/src/ui/deck/tl-column.vue`,
     `packages/frontend/src/widgets/WidgetTimeline.vue`)
+* check the changes against our `develop` (`git diff develop`) and
+  against Misskey (`git diff misskey/develop`)
 * re-generate `misskey-js` (`pnpm build-misskey-js-with-types`) and commit
 * build the frontend: `rm -rf built/; NODE_ENV=development pnpm --filter=frontend
   build` (the `development` tells it to keep some of the original
