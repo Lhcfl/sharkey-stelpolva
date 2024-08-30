@@ -24,8 +24,6 @@ import type Logger from '@/logger.js';
 
 const MAX_CHANNELS_PER_CONNECTION = 32;
 
-const MAX_CHANNELS_PER_CONNECTION = 32;
-
 /**
  * Main stream connection
  */
