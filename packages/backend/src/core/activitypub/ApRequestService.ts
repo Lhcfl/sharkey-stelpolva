@@ -240,10 +240,9 @@ export class ApRequestService {
 						return await this.signedGet(href, user, false);
 					}
 				}
-			}
-			catch (e) {
+			} catch (e) {
 				// something went wrong parsing the HTML, ignore the whole thing
-			};
+			}
 		}
 		//#endregion
 
