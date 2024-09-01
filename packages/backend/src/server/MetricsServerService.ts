@@ -1,18 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 import {
+	AggregatorRegistry,
 	collectDefaultMetrics,
-	Registry,
 } from "prom-client";
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
 
 @Injectable()
 export class MetricsServerService {
-	private register: Registry;
+	private register: AggregatorRegistry;
 
 	constructor(
 	) {
-		this.register = new Registry()
+		this.register = new AggregatorRegistry()
 		collectDefaultMetrics({
 			register: this.register,
 		});
@@ -22,7 +22,7 @@ export class MetricsServerService {
 	public createServer(fastify: FastifyInstance, options: FastifyPluginOptions, done: (err?: Error) => void) {
 		fastify.get('/', async (request, reply) => {
 			reply.code(200).send(
-				await this.register.metrics()
+				await this.register.clusterMetrics()
 			);
 		});
 		done()
