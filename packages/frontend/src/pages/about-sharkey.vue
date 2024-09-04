@@ -85,10 +85,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<img src="https://secure.gravatar.com/avatar/c71b315eed7c63ff94c42b1b3e8dbad1?s=192&d=identicon" :class="$style.contributorAvatar">
 							<span :class="$style.contributorUsername">@dakkar</span>
 						</a>
-						<a href="https://activitypub.software/esm" target="_blank" :class="$style.contributor">
-							<img src="https://secure.gravatar.com/avatar/00fd054610e2a9dcf97a2aa661b168d0?s=192&d=identicon" :class="$style.contributorAvatar">
-							<span :class="$style.contributorUsername">@esm</span>
-						</a>
 						<a href="https://activitypub.software/supakaity" target="_blank" :class="$style.contributor">
 							<img src="https://activitypub.software/uploads/-/system/user/avatar/65/avatar.png?width=40" :class="$style.contributorAvatar">
 							<span :class="$style.contributorUsername">@supakaity</span>
