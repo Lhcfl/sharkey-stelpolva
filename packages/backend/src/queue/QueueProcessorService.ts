@@ -6,6 +6,7 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import * as Bull from 'bullmq';
 import * as Sentry from '@sentry/node';
+import { register, Gauge, Histogram } from 'prom-client';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import type Logger from '@/logger.js';
@@ -142,6 +143,19 @@ export class QueueProcessorService implements OnApplicationShutdown {
 			}
 		}
 
+		const histogram = new Histogram({
+			  name: 'sharkey_queue_timings',
+			  help: 'Timings of jobs per queue',
+			  labelNames: ['queue', 'job'] as const,
+			});
+
+		function runProcessorWithTimer(queue: String, processor: (job: Bull.Job) => void, job: Bull.Job) {
+			const end = histogram.startTimer();
+			processor(job);
+			end({queue, job: job.name});
+		}
+
+
 		//#region system
 		{
 			const processer = (job: Bull.Job) => {
@@ -160,7 +174,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				if (this.config.sentryForBackend) {
 					return Sentry.startSpan({ name: 'Queue: System: ' + job.name }, () => processer(job));
 				} else {
-					return processer(job);
+					return runProcessorWithTimer('system', processer, job);
 				}
 			}, {
 				...baseQueueOptions(this.config, QUEUE.SYSTEM),
@@ -225,7 +239,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				if (this.config.sentryForBackend) {
 					return Sentry.startSpan({ name: 'Queue: DB: ' + job.name }, () => processer(job));
 				} else {
-					return processer(job);
+					return runProcessorWithTimer('db', processer, job);
 				}
 			}, {
 				...baseQueueOptions(this.config, QUEUE.DB),
@@ -257,7 +271,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				if (this.config.sentryForBackend) {
 					return Sentry.startSpan({ name: 'Queue: Deliver' }, () => this.deliverProcessorService.process(job));
 				} else {
-					return this.deliverProcessorService.process(job);
+					return runProcessorWithTimer('deliver', this.deliverProcessorService.process, job);
 				}
 			}, {
 				...baseQueueOptions(this.config, QUEUE.DELIVER),
@@ -297,7 +311,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				if (this.config.sentryForBackend) {
 					return Sentry.startSpan({ name: 'Queue: Inbox' }, () => this.inboxProcessorService.process(job));
 				} else {
-					return this.inboxProcessorService.process(job);
+					return runProcessorWithTimer('inbox', this.inboxProcessorService.process, job);
 				}
 			}, {
 				...baseQueueOptions(this.config, QUEUE.INBOX),
@@ -337,7 +351,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				if (this.config.sentryForBackend) {
 					return Sentry.startSpan({ name: 'Queue: UserWebhookDeliver' }, () => this.userWebhookDeliverProcessorService.process(job));
 				} else {
-					return this.userWebhookDeliverProcessorService.process(job);
+					return runProcessorWithTimer('userwebhookdeliver', this.userWebhookDeliverProcessorService.process, job);
 				}
 			}, {
 				...baseQueueOptions(this.config, QUEUE.USER_WEBHOOK_DELIVER),
@@ -377,7 +391,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				if (this.config.sentryForBackend) {
 					return Sentry.startSpan({ name: 'Queue: SystemWebhookDeliver' }, () => this.systemWebhookDeliverProcessorService.process(job));
 				} else {
-					return this.systemWebhookDeliverProcessorService.process(job);
+					return runProcessorWithTimer('systemwebhookdeliver', this.systemWebhookDeliverProcessorService.process, job);
 				}
 			}, {
 				...baseQueueOptions(this.config, QUEUE.SYSTEM_WEBHOOK_DELIVER),
@@ -427,7 +441,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				if (this.config.sentryForBackend) {
 					return Sentry.startSpan({ name: 'Queue: Relationship: ' + job.name }, () => processer(job));
 				} else {
-					return processer(job);
+					return runProcessorWithTimer('relationship', processer, job);
 				}
 			}, {
 				...baseQueueOptions(this.config, QUEUE.RELATIONSHIP),
@@ -472,7 +486,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				if (this.config.sentryForBackend) {
 					return Sentry.startSpan({ name: 'Queue: ObjectStorage: ' + job.name }, () => processer(job));
 				} else {
-					return processer(job);
+					return runProcessorWithTimer('objectstorage', processer, job);
 				}
 			}, {
 				...baseQueueOptions(this.config, QUEUE.OBJECT_STORAGE),
@@ -505,7 +519,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				if (this.config.sentryForBackend) {
 					return Sentry.startSpan({ name: 'Queue: EndedPollNotification' }, () => this.endedPollNotificationProcessorService.process(job));
 				} else {
-					return this.endedPollNotificationProcessorService.process(job);
+					return runProcessorWithTimer('endedpollnotification', this.endedPollNotificationProcessorService.process, job);
 				}
 			}, {
 				...baseQueueOptions(this.config, QUEUE.ENDED_POLL_NOTIFICATION),
