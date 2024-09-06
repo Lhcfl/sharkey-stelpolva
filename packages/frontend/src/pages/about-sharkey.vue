@@ -105,6 +105,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<img src="https://activitypub.software/uploads/-/system/user/avatar/2/avatar.png?width=128" :class="$style.contributorAvatar">
 							<span :class="$style.contributorUsername">@Marie</span>
 						</a>
+						<a href="https://activitypub.software/luna" target="_blank" :class="$style.contributor">
+							<img src="https://secure.gravatar.com/avatar/4faf37df86a3d93a6c19ed6abf8588eade4efb837410dbbc53021b4fd12eaae7?s=80&d=identicon" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@Luna</span>
+						</a>
 					</div>
 					<template #description><MkLink url="https://activitypub.software/TransFem-org/Sharkey/-/graphs/develop">{{ i18n.ts._aboutMisskey.allContributors }}</MkLink></template>
 				</FormSection>
