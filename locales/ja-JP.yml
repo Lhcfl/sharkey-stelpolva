@@ -776,6 +776,7 @@ noCrawleDescription: "外部の検索エンジンにあなたのユーザーペ�
 lockedAccountInfo: "フォローを承認制にしても、ノートの公開範囲を「フォロワー」にしない限り、誰でもあなたのノートを見ることができます。"
 alwaysMarkSensitive: "デフォルトでメディアをセンシティブ設定にする"
 loadRawImages: "添付画像のサムネイルをオリジナル画質にする"
+disableCatSpeak: "猫の話し方を無効にする"
 searchEngine: "検索MFMの検索エンジン"
 searchEngineOther: "カスタム"
 searchEngineCustomURIDescription: "カスタム検索エンジンのURIは、\"https://www.google.com/search?q=\\{query}\" や \"https://www.google.com/search?q=%s\" のような形式で入力する必要があります。"
