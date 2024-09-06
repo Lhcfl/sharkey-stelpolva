@@ -31,6 +31,7 @@ import type { MiNote } from '@/models/Note.js';
 import { QueryService } from '@/core/QueryService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { bindThis } from '@/decorators.js';
 import { IActivity } from '@/core/activitypub/type.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
@@ -78,6 +79,7 @@ export class ActivityPubServerService {
 		private metaService: MetaService,
 		private utilityService: UtilityService,
 		private userEntityService: UserEntityService,
+		private userBlockingService: UserBlockingService,
 		private instanceActorService: InstanceActorService,
 		private apRendererService: ApRendererService,
 		private apDbResolverService: ApDbResolverService,
@@ -204,6 +206,17 @@ export class ActivityPubServerService {
 			this.authlogger.warn(`${logPrefix} we can't figure out who the signer is, or we can't get their key: refuse`);
 			reply.code(401);
 			return true;
+		}
+
+		if (userId) {
+			/* this check is not really effective, because most requests we
+				 get are signed by the remote instance user, not the user
+				 who's requesting the information 😭 */
+			const blocked = await this.userBlockingService.checkBlocked(userId, authUser.user.id);
+			if (blocked) {
+				reply.code(401);
+				return true;
+			}
 		}
 
 		let httpSignatureValidated = httpSignature.verifySignature(signature, authUser.key.keyPem);
@@ -706,6 +719,8 @@ export class ActivityPubServerService {
 				return;
 			}
 
+			if (await this.shouldRefuseGetRequest(request, reply, note.userId)) return;
+
 			// リモートだったらリダイレクト
 			if (note.userHost != null) {
 				if (note.uri == null || this.utilityService.isSelfHost(note.userHost)) {
@@ -738,6 +753,8 @@ export class ActivityPubServerService {
 				reply.code(404);
 				return;
 			}
+
+			if (await this.shouldRefuseGetRequest(request, reply, note.userId)) return;
 
 			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
@@ -861,6 +878,8 @@ export class ActivityPubServerService {
 				return;
 			}
 
+			if (await this.shouldRefuseGetRequest(request, reply, note.userId)) return;
+
 			if (!this.config.checkActivityPubGetSignature) reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
 			return (this.apRendererService.addContext(await this.apRendererService.renderLike(reaction, note)));
@@ -868,7 +887,7 @@ export class ActivityPubServerService {
 
 		// follow
 		fastify.get<{ Params: { follower: string; followee: string; } }>('/follows/:follower/:followee', async (request, reply) => {
-			if (await this.shouldRefuseGetRequest(request, reply)) return;
+			if (await this.shouldRefuseGetRequest(request, reply, request.params.follwer)) return;
 
 			// This may be used before the follow is completed, so we do not
 			// check if the following exists.
@@ -909,6 +928,8 @@ export class ActivityPubServerService {
 				reply.code(404);
 				return;
 			}
+
+			if (await this.shouldRefuseGetRequest(request, reply, followRequest.followerId)) return;
 
 			const [follower, followee] = await Promise.all([
 				this.usersRepository.findOneBy({
