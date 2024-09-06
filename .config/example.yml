@@ -312,5 +312,11 @@ checkActivityPubGetSignature: false
 #  downloadTimeout: 30
 #  maxFileSize: 262144000
 
+# Stripe identity for ID verification
+stripeAgeCheck:
+  enabled: false
+  key: sk_
+  hookKey: whsec_
+
 # PID File of master process
 #pidFile: /tmp/misskey.pid

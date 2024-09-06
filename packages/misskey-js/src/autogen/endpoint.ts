@@ -586,6 +586,7 @@ import type {
 	ReversiSurrenderRequest,
 	ReversiVerifyRequest,
 	ReversiVerifyResponse,
+	StripeCreateVerifySessionResponse,
 } from './entities.js';
 
 export type Endpoints = {
@@ -981,6 +982,7 @@ export type Endpoints = {
 	'reversi/show-game': { req: ReversiShowGameRequest; res: ReversiShowGameResponse };
 	'reversi/surrender': { req: ReversiSurrenderRequest; res: EmptyResponse };
 	'reversi/verify': { req: ReversiVerifyRequest; res: ReversiVerifyResponse };
+	'stripe/create-verify-session': { req: EmptyRequest; res: StripeCreateVerifySessionResponse };
 }
 
 export const endpointReqTypes: Record<keyof Endpoints, 'application/json' | 'multipart/form-data'> = {
@@ -1376,4 +1378,5 @@ export const endpointReqTypes: Record<keyof Endpoints, 'application/json' | 'mul
 	'reversi/show-game': 'application/json',
 	'reversi/surrender': 'application/json',
 	'reversi/verify': 'application/json',
+	'stripe/create-verify-session': 'application/json',
 };

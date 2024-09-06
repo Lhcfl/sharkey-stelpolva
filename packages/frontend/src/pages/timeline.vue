@@ -35,7 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, provide, shallowRef, ref } from 'vue';
+import { computed, watch, provide, shallowRef, ref, defineAsyncComponent } from 'vue';
 import type { Tab } from '@/components/global/MkPageHeader.tabs.vue';
 import MkTimeline from '@/components/MkTimeline.vue';
 import MkInfo from '@/components/MkInfo.vue';
@@ -70,6 +70,13 @@ const withRenotes = computed<boolean>({
 	get: () => defaultStore.reactiveState.tl.value.filter.withRenotes,
 	set: (x) => saveTlFilter('withRenotes', x),
 });
+
+if ($i && $i.idCheckRequired) {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/SkConfirmIdDialog.vue')), {
+	}, {
+		closed: () => dispose(),
+	});
+}
 
 // computed内での無限ループを防ぐためのフラグ
 const localSocialTLFilterSwitchStore = ref<'withReplies' | 'onlyFiles' | false>(

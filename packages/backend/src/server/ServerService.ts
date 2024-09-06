@@ -32,6 +32,7 @@ import { HealthServerService } from './HealthServerService.js';
 import { ClientServerService } from './web/ClientServerService.js';
 import { OpenApiServerService } from './api/openapi/OpenApiServerService.js';
 import { MastodonApiServerService } from './api/mastodon/MastodonApiServerService.js';
+import { StripeHookServerService } from './StripeHookServerService.js';
 import { OAuth2ProviderService } from './oauth/OAuth2ProviderService.js';
 
 const _dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -66,6 +67,7 @@ export class ServerService implements OnApplicationShutdown {
 		private fileServerService: FileServerService,
 		private healthServerService: HealthServerService,
 		private clientServerService: ClientServerService,
+		private stripeHookServerService: StripeHookServerService,
 		private globalEventService: GlobalEventService,
 		private loggerService: LoggerService,
 		private oauth2ProviderService: OAuth2ProviderService,
@@ -109,6 +111,8 @@ export class ServerService implements OnApplicationShutdown {
 		fastify.register(this.mastodonApiServerService.createServer, { prefix: '/api' });
 		fastify.register(this.fileServerService.createServer);
 		fastify.register(this.activityPubServerService.createServer);
+		// only enable stripe webhook if verification is enabled
+		if (this.config.stripeAgeCheck.enabled) fastify.register(this.stripeHookServerService.createServer, { prefix: '/stripe' });
 		fastify.register(this.nodeinfoServerService.createServer);
 		fastify.register(this.wellKnownServerService.createServer);
 		fastify.register(this.oauth2ProviderService.createServer, { prefix: '/oauth' });

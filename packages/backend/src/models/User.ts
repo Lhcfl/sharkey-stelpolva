@@ -305,6 +305,16 @@ export class MiUser {
 	})
 	public signupReason: string | null;
 
+	@Column('boolean', {
+		default: false,
+	})
+	public idCheckRequired: boolean;
+
+	@Column('boolean', {
+		default: false,
+	})
+	public idVerified: boolean;
+
 	constructor(data: Partial<MiUser>) {
 		if (data == null) return;
 

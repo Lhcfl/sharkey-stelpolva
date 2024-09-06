@@ -694,6 +694,14 @@ export const packedMeDetailedOnlySchema = {
 				},
 			},
 		},
+		idCheckRequired: {
+			type: 'boolean',
+			nullable: true, optional: true
+		},
+		idVerified: {
+			type: 'boolean',
+			nullable: true, optional: true
+		},
 		//#endregion
 	},
 } as const;

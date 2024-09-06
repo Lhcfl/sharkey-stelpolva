@@ -108,6 +108,12 @@ type Source = {
 		maxFileSize: number;
 	};
 
+	stripeAgeCheck: {
+		enabled: boolean;
+		key: string;
+		hookKey: string;
+	};
+
 	pidFile: string;
 };
 
@@ -196,6 +202,12 @@ export type Config = {
 		downloadTimeout: number;
 		maxFileSize: number;
 	} | undefined;
+
+	stripeAgeCheck: {
+		enabled: boolean | undefined;
+		key: string;
+		hookKey: string;
+	};
 
 	pidFile: string;
 };
@@ -319,6 +331,7 @@ export function loadConfig(): Config {
 		perUserNotificationsMaxCount: config.perUserNotificationsMaxCount ?? 500,
 		deactivateAntennaThreshold: config.deactivateAntennaThreshold ?? (1000 * 60 * 60 * 24 * 7),
 		import: config.import,
+		stripeAgeCheck: config.stripeAgeCheck,
 		pidFile: config.pidFile,
 	};
 }

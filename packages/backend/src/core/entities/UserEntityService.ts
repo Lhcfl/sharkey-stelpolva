@@ -667,6 +667,8 @@ export class UserEntityService implements OnModuleInit {
 						},
 					})
 					: [],
+				idCheckRequired: user.idCheckRequired,
+				idVerified: user.idVerified,
 			} : {}),
 
 			...(relation ? {

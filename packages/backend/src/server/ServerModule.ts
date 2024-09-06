@@ -49,6 +49,7 @@ import { MastodonApiServerService } from './api/mastodon/MastodonApiServerServic
 import { RoleTimelineChannelService } from './api/stream/channels/role-timeline.js';
 import { ReversiChannelService } from './api/stream/channels/reversi.js';
 import { ReversiGameChannelService } from './api/stream/channels/reversi-game.js';
+import { StripeHookServerService } from './StripeHookServerService.js';
 
 @Module({
 	imports: [
@@ -98,6 +99,7 @@ import { ReversiGameChannelService } from './api/stream/channels/reversi-game.js
 		MastodonApiServerService,
 		OAuth2ProviderService,
 		MastoConverters,
+		StripeHookServerService,
 	],
 	exports: [
 		ServerService,
