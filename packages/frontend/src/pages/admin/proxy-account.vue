@@ -14,7 +14,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #value>{{ proxyAccount ? `@${proxyAccount.username}` : i18n.ts.none }}</template>
 			</MkKeyValue>
 
-			<MkButton primary @click="chooseProxyAccount">{{ i18n.ts.selectAccount }}</MkButton>
+			<div class="_gaps" style="flex-direction:row">
+				<MkButton primary @click="chooseProxyAccount">{{ i18n.ts.selectAccount }}</MkButton>
+				<MkButton :disabled="proxyAccount == null" danger @click="resetProxyAccount">Reset</MkButton>
+			</div>
 		</FormSuspense>
 	</MkSpacer>
 </MkStickyContainer>
@@ -50,6 +53,18 @@ function chooseProxyAccount() {
 		proxyAccountId.value = user.id;
 		save();
 	});
+}
+
+async function resetProxyAccount() {
+	const { canceled } = await os.confirm({ type: 'warning', text: i18n.ts.areYouSure });
+
+	if (canceled) {
+		return;
+	}
+
+	proxyAccount.value = null;
+	proxyAccountId.value = null;
+	save();
 }
 
 function save() {
