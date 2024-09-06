@@ -24,6 +24,8 @@ import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type { DeliverJobData } from '../types.js';
 
+import { jobs_metrics } from '@/misc/metrics.js'
+
 @Injectable()
 export class DeliverProcessorService {
 	private logger: Logger;
@@ -55,6 +57,7 @@ export class DeliverProcessorService {
 		// ブロックしてたら中断
 		const meta = await this.metaService.fetch();
 		if (this.utilityService.isBlockedHost(meta.blockedHosts, this.utilityService.toPuny(host))) {
+			jobs_metrics.inc({ job: 'delivery', status: 'skipped', reason: 'blocked' });
 			return 'skip (blocked)';
 		}
 
@@ -69,6 +72,7 @@ export class DeliverProcessorService {
 			this.suspendedHostsCache.set(suspendedHosts);
 		}
 		if (suspendedHosts.map(x => x.host).includes(this.utilityService.toPuny(host))) {
+			jobs_metrics.inc({ job: 'delivery', status: 'skipped', reason: 'suspended' });
 			return 'skip (suspended)';
 		}
 
@@ -92,7 +96,7 @@ export class DeliverProcessorService {
 					this.instanceChart.requestSent(i.host, true);
 				}
 			});
-
+			jobs_metrics.inc({ job: 'delivery', status: 'success', reason: '' });
 			return 'Success';
 		} catch (res) {
 			// Update stats
@@ -135,15 +139,19 @@ export class DeliverProcessorService {
 								suspensionState: 'goneSuspended',
 							});
 						});
+						jobs_metrics.inc({ job: 'delivery', status: 'failed', reason: 'gone' });
 						throw new Bull.UnrecoverableError(`${host} is gone`);
 					}
+					jobs_metrics.inc({ job: 'delivery', status: 'failed', reason: res.statusCode });
 					throw new Bull.UnrecoverableError(`${res.statusCode} ${res.statusMessage}`);
 				}
 
 				// 5xx etc.
+				jobs_metrics.inc({ job: 'delivery', status: 'failed', reason: 'remote_error' });
 				throw new Error(`${res.statusCode} ${res.statusMessage}`);
 			} else {
 				// DNS error, socket error, timeout ...
+				jobs_metrics.inc({ job: 'delivery', status: 'retrying', reason: 'remote_error' });
 				throw res;
 			}
 		}
