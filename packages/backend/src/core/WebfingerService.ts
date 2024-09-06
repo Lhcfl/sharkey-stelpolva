@@ -8,7 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { XMLParser } from 'fast-xml-parser';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
-import Logger from '@/logger.js';
+import type Logger from '@/logger.js';
 import { RemoteLoggerService } from './RemoteLoggerService.js';
 
 export type ILink = {
