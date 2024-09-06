@@ -4,8 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-//import bcrypt from 'bcryptjs';
-import * as argon2 from 'argon2';
+import bcrypt from 'bcryptjs';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { RegistrationTicketsRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket } from '@/models/_.js';
@@ -20,10 +19,10 @@ import { MiLocalUser } from '@/models/User.js';
 import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
 import { bindThis } from '@/decorators.js';
 import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
-import { SigninService } from './SigninService.js';
-import type { FastifyRequest, FastifyReply } from 'fastify';
-import instance from './endpoints/charts/instance.js';
 import { RoleService } from '@/core/RoleService.js';
+import { SigninService } from './SigninService.js';
+import instance from './endpoints/charts/instance.js';
+import type { FastifyRequest, FastifyReply } from 'fastify';
 
 @Injectable()
 export class SignupApiService {
@@ -193,8 +192,8 @@ export class SignupApiService {
 			const code = secureRndstr(16, { chars: L_CHARS });
 
 			// Generate hash of password
-			//const salt = await bcrypt.genSalt(8);
-			const hash = await argon2.hash(password);
+			const salt = await bcrypt.genSalt(8);
+			const hash = await bcrypt.hash(password, salt);
 
 			const pendingUser = await this.userPendingsRepository.insertOne({
 				id: this.idService.gen(),

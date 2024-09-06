@@ -139,7 +139,22 @@ export class SigninApiService {
 		}
 
 		// Compare password
-		const same = await argon2.verify(profile.password!, password) || bcrypt.compareSync(password, profile.password!);
+		let same;
+
+		if (profile.password?.startsWith('$argon2')) {
+			same = await argon2.verify(profile.password, password);
+
+			if (same) {
+				// rehash
+				const salt = await bcrypt.genSalt(8);
+				const newHash = await bcrypt.hash(password, salt);
+				await this.userProfilesRepository.update(user.id, {
+					password: newHash,
+				});
+			}
+		} else {
+			same = await bcrypt.compare(password, profile.password!);
+		}
 
 		const fail = async (status?: number, failure?: { id: string }) => {
 			// Append signin history
@@ -156,12 +171,6 @@ export class SigninApiService {
 
 		if (!profile.twoFactorEnabled) {
 			if (same) {
-				if (profile.password!.startsWith('$2')) {
-					const newHash = await argon2.hash(password);
-					this.userProfilesRepository.update(user.id, {
-						password: newHash
-					});
-				}
 				if (!instance.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
 
 				return this.signinService.signin(request, reply, user);
@@ -180,12 +189,6 @@ export class SigninApiService {
 			}
 
 			try {
-				if (profile.password!.startsWith('$2')) {
-					const newHash = await argon2.hash(password);
-					this.userProfilesRepository.update(user.id, {
-						password: newHash
-					});
-				}
 				await this.userAuthService.twoFactorAuthenticate(profile, token);
 			} catch (e) {
 				return await fail(403, {
