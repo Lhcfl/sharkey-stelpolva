@@ -56,7 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<FormLink to="https://opencollective.com/sharkey" external>
 							<template #icon><i class="ph-piggy-bank ph-bold ph-lg"></i></template>
 							{{ i18n.ts._aboutMisskey.donate_sharkey }}
-							<template #suffix>Ko-Fi</template>
+							<template #suffix>OpenCollective</template>
 						</FormLink>
 					</div>
 				</FormSection>
