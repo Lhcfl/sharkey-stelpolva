@@ -3,6 +3,8 @@
 	<img src="https://activitypub.software/TransFem-org/Sharkey/-/raw/develop/packages/frontend/assets/sharkey.svg" alt="Sharkey logo" style="border-radius:50%" width="300"/>
 </a>
 
+## Sharkey Stelpolva Edition
+
 **🌎 **[Sharkey](https://joinsharkey.org/)** is an open source, decentralized social media platform that's free forever! 🚀**
 
 ---
@@ -22,6 +24,11 @@
 ---
 
 </div>
+
+## 相对于 Sharkey 的修改：
+
+- 添加了 Google Translation
+
 
 <div>
 
