@@ -28,7 +28,7 @@
 ## 相对于 Sharkey 的修改：
 
 - 添加了 Google Translation
-
+- 在 MkPostForm 上添加了 autosize
 
 <div>
 

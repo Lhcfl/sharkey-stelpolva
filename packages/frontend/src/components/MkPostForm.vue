@@ -106,6 +106,7 @@ import * as mfm from '@transfem-org/sfm-js';
 import * as Misskey from 'misskey-js';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import { toASCII } from 'punycode/';
+import autosize from 'autosize';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import MkNotePreview from '@/components/MkNotePreview.vue';
 import XPostFormAttaches from '@/components/MkPostFormAttaches.vue';
@@ -579,16 +580,21 @@ function clear() {
 	files.value = [];
 	poll.value = null;
 	quoteId.value = null;
+
+	nextTick(() => textareaEl.value && autosize.update(textareaEl.value));
 }
 
 function onKeydown(ev: KeyboardEvent) {
 	if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && canPost.value) post();
 
 	if (ev.key === 'Escape') emit('esc');
+
+	nextTick(() => textareaEl.value && autosize.update(textareaEl.value));
 }
 
 function onCompositionUpdate(ev: CompositionEvent) {
 	imeText.value = ev.data;
+	nextTick(() => textareaEl.value && autosize.update(textareaEl.value));
 }
 
 function onCompositionEnd(ev: CompositionEvent) {
@@ -644,6 +650,8 @@ async function onPaste(ev: ClipboardEvent) {
 			upload(file, `${fileName}.txt`);
 		});
 	}
+
+	nextTick(() => textareaEl.value && autosize.update(textareaEl.value));
 }
 
 function onDragover(ev) {
@@ -791,7 +799,7 @@ async function post(ev?: MouseEvent) {
 		const filesData = toRaw(files.value);
 
 		const isMissingAltText = filesData.filter(
-			file => file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/')
+			file => file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/'),
 		).some(file => !file.comment);
 
 		if (isMissingAltText) {
@@ -1084,6 +1092,7 @@ onMounted(() => {
 		}
 
 		nextTick(() => watchForDraft());
+		nextTick(() => textareaEl.value && autosize(textareaEl.value));
 	});
 });
 
