@@ -12,7 +12,7 @@ import { bindThis } from '@/decorators.js';
 const GLOBAL_NOTES_RANKING_WINDOW = 1000 * 60 * 60 * 24 * 3; // 3日ごと
 export const GALLERY_POSTS_RANKING_WINDOW = 1000 * 60 * 60 * 24 * 3; // 3日ごと
 const PER_USER_NOTES_RANKING_WINDOW = 1000 * 60 * 60 * 24 * 7; // 1週間ごと
-const HASHTAG_RANKING_WINDOW = 1000 * 60 * 60; // 1時間ごと
+const HASHTAG_RANKING_WINDOW = 1000 * 60 * 60 * 48; // 48時間ごと
 
 const featuredEpoc = new Date('2023-01-01T00:00:00Z').getTime();
 
