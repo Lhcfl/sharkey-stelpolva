@@ -143,11 +143,12 @@ async function search() {
 
 	key.value++;
 
-	os.popup(defineAsyncComponent(() => import('@/components/SkSearchResultWindow.vue')), {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/SkSearchResultWindow.vue')), {
 		noteKey: key.value,
 		notePagination: notePagination.value,
 	}, {
-	}, 'closed');
+		closed: () => dispose(),
+	});
 }
 
 defineExpose<WidgetComponentExpose>({

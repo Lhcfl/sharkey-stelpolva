@@ -25,7 +25,6 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 import { checkHttps } from '@/misc/check-https.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { isNotNull } from '@/misc/is-not-null.js';
 import { getOneApId, getApId, getOneApHrefNullable, validPost, isEmoji, getApType } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { ApMfmService } from '../ApMfmService.js';
@@ -84,9 +83,10 @@ export class ApNoteService {
 	@bindThis
 	public validateNote(object: IObject, uri: string): Error | null {
 		const expectHost = this.utilityService.extractDbHost(uri);
+		const apType = getApType(object);
 
-		if (!validPost.includes(getApType(object))) {
-			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note: invalid object type ${getApType(object)}`);
+		if (apType == null || !validPost.includes(apType)) {
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note: invalid object type ${apType ?? 'undefined'}`);
 		}
 
 		if (object.id && this.utilityService.extractDbHost(object.id) !== expectHost) {
@@ -258,7 +258,7 @@ export class ApNoteService {
 				}
 			};
 
-			const uris = unique([note._misskey_quote, note.quoteUrl, note.quoteUri].filter(isNotNull));
+			const uris = unique([note._misskey_quote, note.quoteUrl, note.quoteUri].filter(x => x != null));
 			const results = await Promise.all(uris.map(tryResolveNote));
 
 			quote = results.filter((x): x is { status: 'ok', res: MiNote } => x.status === 'ok').map(x => x.res).at(0);
@@ -358,7 +358,7 @@ export class ApNoteService {
 				value,
 				object,
 			});
-			throw new Error('invalid note');
+			throw err;
 		}
 
 		const note = object as IPost;
@@ -471,19 +471,19 @@ export class ApNoteService {
 				| { status: 'ok'; res: MiNote }
 				| { status: 'permerror' | 'temperror' }
 			> => {
-				if (!/^https?:/.test(uri)) return { status: 'permerror' };
+				if (typeof uri !== 'string' || !/^https?:/.test(uri)) return { status: 'permerror' };
 				try {
 					const res = await this.resolveNote(uri, { resolver });
 					if (res == null) return { status: 'permerror' };
 					return { status: 'ok', res };
 				} catch (e) {
 					return {
-						status: (e instanceof StatusError && e.isClientError) ? 'permerror' : 'temperror',
+						status: (e instanceof StatusError && !e.isRetryable) ? 'permerror' : 'temperror',
 					};
 				}
 			};
 
-			const uris = unique([note._misskey_quote, note.quoteUrl, note.quoteUri].filter((x): x is string => typeof x === 'string'));
+			const uris = unique([note._misskey_quote, note.quoteUrl, note.quoteUri].filter(x => x != null));
 			const results = await Promise.all(uris.map(tryResolveNote));
 
 			quote = results.filter((x): x is { status: 'ok', res: MiNote } => x.status === 'ok').map(x => x.res).at(0);
@@ -496,10 +496,10 @@ export class ApNoteService {
 
 		// vote
 		if (reply && reply.hasPoll) {
-			const replyPoll = await this.pollsRepository.findOneByOrFail({ noteId: reply.id });
+			const poll = await this.pollsRepository.findOneByOrFail({ noteId: reply.id });
 
 			const tryCreateVote = async (name: string, index: number): Promise<null> => {
-				if (replyPoll.expiresAt && Date.now() > new Date(replyPoll.expiresAt).getTime()) {
+				if (poll.expiresAt && Date.now() > new Date(poll.expiresAt).getTime()) {
 					this.logger.warn(`vote to expired poll from AP: actor=${actor.username}@${actor.host}, note=${note.id}, choice=${name}`);
 				} else if (index >= 0) {
 					this.logger.info(`vote from AP: actor=${actor.username}@${actor.host}, note=${note.id}, choice=${name}`);
@@ -512,7 +512,7 @@ export class ApNoteService {
 			};
 
 			if (note.name) {
-				return await tryCreateVote(note.name, replyPoll.choices.findIndex(x => x === note.name));
+				return await tryCreateVote(note.name, poll.choices.findIndex(x => x === note.name));
 			}
 		}
 
@@ -637,7 +637,7 @@ export class ApNoteService {
 
 			this.logger.info(`register emoji host=${host}, name=${name}`);
 
-			return await this.emojisRepository.insert({
+			return await this.emojisRepository.insertOne({
 				id: this.idService.gen(),
 				host,
 				name,
@@ -646,7 +646,7 @@ export class ApNoteService {
 				publicUrl: tag.icon.url,
 				updatedAt: new Date(),
 				aliases: [],
-			}).then(x => this.emojisRepository.findOneByOrFail(x.identifiers[0]));
+			});
 		}));
 	}
 }

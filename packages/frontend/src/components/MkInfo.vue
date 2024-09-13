@@ -5,10 +5,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div :class="[$style.root, { [$style.warn]: warn }]">
-	<i v-if="warn" class="ph-warning ph-bold ph-lg" :class="$style.i"></i>
-	<i v-else class="ph-info ph-bold ph-lg" :class="$style.i"></i>
+	<i v-if="warn" class="ti ti-alert-triangle" :class="$style.i"></i>
+	<i v-else class="ti ti-info-circle" :class="$style.i"></i>
 	<div><slot></slot></div>
-	<button v-if="closable" :class="$style.button" class="_button" @click="close()"><i class="ph-x ph-bold ph-lg"></i></button>
+	<button v-if="closable" :class="$style.button" class="_button" @click="close()"><i class="ti ti-x"></i></button>
 </div>
 </template>
 

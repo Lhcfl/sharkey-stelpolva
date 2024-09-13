@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.root">
 			<img :class="$style.img" :src="serverErrorImageUrl" class="_ghost"/>
 			<p :class="$style.text">
-				<i class="ph-warning ph-bold ph-lg"></i>
+				<i class="ti ti-alert-triangle"></i>
 				{{ error }}
 			</p>
 		</div>
@@ -85,17 +85,17 @@ const users = computed(() => ({
 
 const headerTabs = computed(() => [{
 	key: 'users',
-	icon: 'ph-users ph-bold ph-lg',
+	icon: 'ti ti-users',
 	title: i18n.ts.users,
 }, {
 	key: 'timeline',
-	icon: 'ph-pencil-simple ph-bold ph-lg',
+	icon: 'ti ti-pencil',
 	title: i18n.ts.timeline,
 }]);
 
 definePageMetadata(() => ({
 	title: role.value ? role.value.name : i18n.ts.role,
-	icon: 'ph-seal-check ph-bold ph-lg',
+	icon: 'ti ti-badge',
 }));
 </script>
 
@@ -118,4 +118,3 @@ definePageMetadata(() => ({
 	border-radius: var(--radius-md);
 }
 </style>
-

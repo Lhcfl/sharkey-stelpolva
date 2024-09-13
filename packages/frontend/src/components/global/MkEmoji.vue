@@ -14,7 +14,7 @@ import { char2fluentEmojiFilePath, char2twemojiFilePath, char2tossfaceFilePath }
 import { defaultStore } from '@/store.js';
 import { colorizeEmoji, getEmojiName } from '@/scripts/emojilist.js';
 import * as os from '@/os.js';
-import copyToClipboard from '@/scripts/copy-to-clipboard.js';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 import * as sound from '@/scripts/sound.js';
 import { i18n } from '@/i18n.js';
 
@@ -45,7 +45,7 @@ function onClick(ev: MouseEvent) {
 			text: props.emoji,
 		}, {
 			text: i18n.ts.copy,
-			icon: 'ph-copy ph-bold ph-lg',
+			icon: 'ti ti-copy',
 			action: () => {
 				copyToClipboard(props.emoji);
 				os.success();

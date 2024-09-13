@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <XColumn :column="column" :isStacked="isStacked" :refresher="() => reloadTimeline()">
-	<template #header><i class="ph-envelope ph-bold ph-lg" style="margin-right: 8px;"></i>{{ column.name }}</template>
+	<template #header><i class="ti ti-mail" style="margin-right: 8px;"></i>{{ column.name }}</template>
 
 	<MkNotes ref="tlComponent" :pagination="pagination"/>
 </XColumn>
@@ -34,7 +34,7 @@ const tlComponent = ref<InstanceType<typeof MkNotes>>();
 
 function reloadTimeline() {
 	return new Promise<void>((res) => {
-		tlComponent.value.pagingComponent?.reload().then(() => {
+		tlComponent.value?.pagingComponent?.reload().then(() => {
 			res();
 		});
 	});

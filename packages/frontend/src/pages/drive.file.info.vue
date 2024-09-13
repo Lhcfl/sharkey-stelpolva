@@ -14,34 +14,40 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.fileQuickActionsRoot">
 			<button class="_button" :class="$style.fileNameEditBtn" @click="rename()">
 				<h2 class="_nowrap" :class="$style.fileName">{{ file.name }}</h2>
-				<i class="ph-pencil-simple ph-bold ph-lg" :class="$style.fileNameEditIcon"></i>
+				<i class="ti ti-pencil" :class="$style.fileNameEditIcon"></i>
 			</button>
 			<div :class="$style.fileQuickActionsOthers">
 				<button v-tooltip="i18n.ts.createNoteFromTheFile" class="_button" :class="$style.fileQuickActionsOthersButton" @click="postThis()">
-					<i class="ph-pencil-simple ph-bold ph-lg"></i>
+					<i class="ti ti-pencil"></i>
 				</button>
 				<button v-if="isImage" v-tooltip="i18n.ts.cropImage" class="_button" :class="$style.fileQuickActionsOthersButton" @click="crop()">
-					<i class="ph-crop ph-bold ph-lg"></i>
+					<i class="ti ti-crop"></i>
 				</button>
 				<button v-if="file.isSensitive" v-tooltip="i18n.ts.unmarkAsSensitive" class="_button" :class="$style.fileQuickActionsOthersButton" @click="toggleSensitive()">
-					<i class="ph-eye ph-bold ph-lg"></i>
+					<i class="ti ti-eye"></i>
 				</button>
 				<button v-else v-tooltip="i18n.ts.markAsSensitive" class="_button" :class="$style.fileQuickActionsOthersButton" @click="toggleSensitive()">
-					<i class="ph-eye-slash ph-bold ph-lg"></i>
+					<i class="ti ti-eye-exclamation"></i>
 				</button>
 				<a v-tooltip="i18n.ts.download" :href="file.url" :download="file.name" class="_button" :class="$style.fileQuickActionsOthersButton">
-					<i class="ph-download ph-bold ph-lg"></i>
+					<i class="ti ti-download"></i>
 				</a>
 				<button v-tooltip="i18n.ts.delete" class="_button" :class="[$style.fileQuickActionsOthersButton, $style.danger]" @click="deleteFile()">
-					<i class="ph-trash ph-bold ph-lg"></i>
+					<i class="ti ti-trash"></i>
 				</button>
 			</div>
 		</div>
-		<div>
-			<button class="_button" :class="$style.fileAltEditBtn" @click="describe()">
+		<div class="_gaps_s">
+			<button class="_button" :class="$style.kvEditBtn" @click="move()">
+				<MkKeyValue>
+					<template #key>{{ i18n.ts.folder }}</template>
+					<template #value>{{ folderHierarchy.join(' > ') }}<i class="ti ti-pencil" :class="$style.kvEditIcon"></i></template>
+				</MkKeyValue>
+			</button>
+			<button class="_button" :class="$style.kvEditBtn" @click="describe()">
 				<MkKeyValue>
 					<template #key>{{ i18n.ts.description }}</template>
-					<template #value>{{ file.comment ? file.comment : `(${i18n.ts.none})` }}<i class="ph-pencil-simple ph-bold ph-lg" :class="$style.fileAltEditIcon"></i></template>
+					<template #value>{{ file.comment ? file.comment : `(${i18n.ts.none})` }}<i class="ti ti-pencil" :class="$style.kvEditIcon"></i></template>
 				</MkKeyValue>
 			</button>
 			<MkKeyValue :class="$style.fileMetaDataChildren">
@@ -90,6 +96,18 @@ const props = defineProps<{
 
 const fetching = ref(true);
 const file = ref<Misskey.entities.DriveFile>();
+const folderHierarchy = computed(() => {
+	if (!file.value) return [i18n.ts.drive];
+	const folderNames = [i18n.ts.drive];
+	
+	function get(folder: Misskey.entities.DriveFolder) {
+		if (folder.parent) get(folder.parent);
+		folderNames.push(folder.name);
+	}
+	
+	if (file.value.folder) get(file.value.folder);
+	return folderNames;
+});
 const isImage = computed(() => file.value?.type.startsWith('image/'));
 
 async function fetch() {
@@ -119,6 +137,19 @@ function crop() {
 	os.cropImage(file.value, {
 		aspectRatio: NaN,
 		uploadFolder: file.value.folderId ?? null,
+	});
+}
+
+function move() {
+	if (!file.value) return;
+
+	os.selectDriveFolder(false).then(folder => {
+		misskeyApi('drive/files/update', {
+			fileId: file.value.id,
+			folderId: folder[0] ? folder[0].id : null,
+		}).then(async () => {
+			await fetch();
+		});
 	});
 }
 
@@ -160,7 +191,7 @@ function rename() {
 function describe() {
 	if (!file.value) return;
 
-	os.popup(defineAsyncComponent(() => import('@/components/MkFileCaptionEditWindow.vue')), {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkFileCaptionEditWindow.vue')), {
 		default: file.value.comment ?? '',
 		file: file.value,
 	}, {
@@ -172,7 +203,8 @@ function describe() {
 				await fetch();
 			});
 		},
-	}, 'closed');
+		closed: () => dispose(),
+	});
 }
 
 async function deleteFile() {
@@ -233,6 +265,7 @@ onMounted(async () => {
 			background-color: var(--accentedBg);
 			color: var(--accent);
 			text-decoration: none;
+			outline: none;
 		}
 
 		&.danger {
@@ -280,14 +313,14 @@ onMounted(async () => {
 	padding: .5rem 1rem;
 }
 
-.fileAltEditBtn {
+.kvEditBtn {
 	text-align: start;
 	display: block;
 	width: 100%;
 	padding: .5rem 1rem;
 	border-radius: var(--radius);
 
-	.fileAltEditIcon {
+	.kvEditIcon {
 		display: inline-block;
 		color: transparent;
 		visibility: hidden;
@@ -298,7 +331,7 @@ onMounted(async () => {
 		color: var(--accent);
 		background-color: var(--accentedBg);
 
-		.fileAltEditIcon {
+		.kvEditIcon {
 			color: var(--accent);
 			visibility: visible;
 		}

@@ -16,13 +16,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 
 			<template #default="{ items }">
-				<MkDateSeparatedList v-if="defaultStore.state.noteDesign === 'misskey'"
-					v-slot="{ item }" :items="items" :direction="'down'" :noGap="false" :ad="false">
+				<MkDateSeparatedList v-slot="{ item }" :items="items" :direction="'down'" :noGap="false" :ad="false">
 					<MkNote :key="item.id" :note="item.note" :class="$style.note"/>
-				</MkDateSeparatedList>
-				<MkDateSeparatedList v-if="defaultStore.state.noteDesign === 'sharkey'"
-					v-slot="{ item }" :items="items" :direction="'down'" :noGap="false" :ad="false">
-					<SkNote :key="item.id" :note="item.note" :class="$style.note"/>
 				</MkDateSeparatedList>
 			</template>
 		</MkPagination>
@@ -32,13 +27,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import MkPagination from '@/components/MkPagination.vue';
-import MkNote from '@/components/MkNote.vue';
-import SkNote from '@/components/SkNote.vue';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
+import { defineAsyncComponent } from 'vue';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { infoImageUrl } from '@/instance.js';
 import { defaultStore } from '@/store.js';
+
+const MkNote = defineAsyncComponent(() =>
+	(defaultStore.state.noteDesign === 'misskey') ? import('@/components/MkNote.vue') :
+	(defaultStore.state.noteDesign === 'sharkey') ? import('@/components/SkNote.vue') :
+	null
+);
 
 const pagination = {
 	endpoint: 'i/favorites' as const,
@@ -47,7 +47,7 @@ const pagination = {
 
 definePageMetadata(() => ({
 	title: i18n.ts.favorites,
-	icon: 'ph-star ph-bold ph-lg',
+	icon: 'ti ti-star',
 }));
 </script>
 

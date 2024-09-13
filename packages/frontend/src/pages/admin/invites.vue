@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkSpacer :contentMax="800">
 		<div class="_gaps_m">
 			<MkFolder :expanded="false">
-				<template #icon><i class="ph-plus ph-bold ph-lg"></i></template>
+				<template #icon><i class="ti ti-plus"></i></template>
 				<template #label>{{ i18n.ts.createInviteCode }}</template>
 
 				<div class="_gaps_m">
@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkInput v-if="!noExpirationDate" v-model="expiresAt" type="datetime-local">
 						<template #label>{{ i18n.ts.expirationDate }}</template>
 					</MkInput>
-					<MkInput v-model="createCount" type="number">
+					<MkInput v-model="createCount" type="number" min="1">
 						<template #label>{{ i18n.ts.createCount }}</template>
 					</MkInput>
 					<MkButton primary rounded @click="createWithOptions">{{ i18n.ts.create }}</MkButton>
@@ -115,7 +115,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.invite,
-	icon: 'ph-user-plus ph-bold ph-lg',
+	icon: 'ti ti-user-plus',
 }));
 </script>
 

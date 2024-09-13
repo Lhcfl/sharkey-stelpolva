@@ -8,8 +8,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<FormSuspense :p="init">
 		<div class="_gaps">
 			<div class="_buttons">
-				<MkButton primary @click="addAccount"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts.addAccount }}</MkButton>
-				<MkButton @click="init"><i class="ph-arrows-counter-clockwise ph-bold ph-lg"></i> {{ i18n.ts.reloadAccountsList }}</MkButton>
+				<MkButton primary @click="addAccount"><i class="ti ti-plus"></i> {{ i18n.ts.addAccount }}</MkButton>
+				<MkButton @click="init"><i class="ti ti-refresh"></i> {{ i18n.ts.reloadAccountsList }}</MkButton>
 			</div>
 
 			<MkUserCardMini v-for="user in accounts" :key="user.id" :user="user" :class="$style.user" @click.prevent="menu(user, $event)"/>
@@ -48,11 +48,11 @@ const init = async () => {
 function menu(account, ev) {
 	os.popupMenu([{
 		text: i18n.ts.switch,
-		icon: 'ph-arrows-left-right ph-bold ph-lg',
+		icon: 'ti ti-switch-horizontal',
 		action: () => switchAccount(account),
 	}, {
 		text: i18n.ts.logout,
-		icon: 'ph-trash ph-bold ph-lg',
+		icon: 'ti ti-trash',
 		danger: true,
 		action: () => removeAccount(account),
 	}], ev.currentTarget ?? ev.target);
@@ -74,22 +74,24 @@ async function removeAccount(account) {
 }
 
 function addExistingAccount() {
-	os.popup(defineAsyncComponent(() => import('@/components/MkSigninDialog.vue')), {}, {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkSigninDialog.vue')), {}, {
 		done: async res => {
 			await addAccounts(res.id, res.i);
 			os.success();
 			init();
 		},
-	}, 'closed');
+		closed: () => dispose(),
+	});
 }
 
 function createAccount() {
-	os.popup(defineAsyncComponent(() => import('@/components/MkSignupDialog.vue')), {}, {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkSignupDialog.vue')), {}, {
 		done: async res => {
 			await addAccounts(res.id, res.i);
 			switchAccountWithToken(res.i);
 		},
-	}, 'closed');
+		closed: () => dispose(),
+	});
 }
 
 async function switchAccount(account: any) {
@@ -108,7 +110,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.accounts,
-	icon: 'ph-users ph-bold ph-lg',
+	icon: 'ti ti-users',
 }));
 </script>
 

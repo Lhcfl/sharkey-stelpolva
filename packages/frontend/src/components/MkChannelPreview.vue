@@ -5,14 +5,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div style="position: relative;">
-	<MkA :to="`/channels/${channel.id}`" class="eftoefju _panel" tabindex="-1" @click="updateLastReadedAt">
+	<MkA :to="`/channels/${channel.id}`" class="eftoefju _panel" @click="updateLastReadedAt">
 		<div class="banner" :style="bannerStyle">
 			<div class="fade"></div>
-			<div class="name"><i class="ph-television ph-bold ph-lg"></i> {{ channel.name }}</div>
+			<div class="name"><i class="ti ti-device-tv"></i> {{ channel.name }}</div>
 			<div v-if="channel.isSensitive" class="sensitiveIndicator">{{ i18n.ts.sensitive }}</div>
 			<div class="status">
 				<div>
-					<i class="ph-users ph-bold ph-lg"></i>
+					<i class="ti ti-users ti-fw"></i>
 					<I18n :src="i18n.ts._channel.usersCount" tag="span" style="margin-left: 4px;">
 						<template #n>
 							<b>{{ channel.usersCount }}</b>
@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</I18n>
 				</div>
 				<div>
-					<i class="ph-pencil-simple ph-bold ph-lg"></i>
+					<i class="ti ti-pencil ti-fw"></i>
 					<I18n :src="i18n.ts._channel.notesCount" tag="span" style="margin-left: 4px;">
 						<template #n>
 							<b>{{ channel.notesCount }}</b>
@@ -80,11 +80,28 @@ const bannerStyle = computed(() => {
 <style lang="scss" scoped>
 .eftoefju {
 	display: block;
+	position: relative;
 	overflow: hidden;
 	width: 100%;
 
 	&:hover {
 		text-decoration: none;
+	}
+
+	&:focus-within {
+		outline: none;
+
+		&::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			border-radius: inherit;
+			pointer-events: none;
+			box-shadow: inset 0 0 0 2px var(--focus);
+		}
 	}
 
 	> .banner {

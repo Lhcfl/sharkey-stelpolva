@@ -118,13 +118,13 @@ function onContextmenu(ev: MouseEvent) {
 		type: 'label',
 		text: path,
 	}, {
-		icon: fullView.value ? 'ph-arrows-in-simple ph-bold ph-lg' : 'ph-frame-corners ph-bold ph-lg',
+		icon: fullView.value ? 'ti ti-minimize' : 'ti ti-maximize',
 		text: fullView.value ? i18n.ts.quitFullView : i18n.ts.fullView,
 		action: () => {
 			fullView.value = !fullView.value;
 		},
 	}, {
-		icon: 'ph-frame-corners ph-bold ph-lg',
+		icon: 'ti ti-window-maximize',
 		text: i18n.ts.openInWindow,
 		action: () => {
 			os.pageWindow(path);

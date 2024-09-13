@@ -16,13 +16,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 						<div class="actions _panel">
 							<div class="items">
-								<MkButton v-tooltip="i18n.ts.reload" class="button" rounded @click="reset"><i class="ph-arrows-clockwise ph-bold ph-lg"></i></MkButton>
+								<MkButton v-tooltip="i18n.ts.reload" class="button" rounded @click="reset"><i class="ti ti-reload"></i></MkButton>
 							</div>
 							<div class="items">
-								<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary @click="unlike()"><i class="ph-heart ph-bold ph-lg"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
-								<MkButton v-else v-tooltip="i18n.ts.like" asLike class="button" rounded @click="like()"><i class="ph-heart ph-bold ph-lg"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
-								<MkButton v-tooltip="i18n.ts.copyLink" class="button" rounded @click="copyLink"><i class="ph-link ph-bold ph-lg ti-fw"></i></MkButton>
-								<MkButton v-tooltip="i18n.ts.share" class="button" rounded @click="share"><i class="ph-share-network ph-bold ph-lg ti-fw"></i></MkButton>
+								<MkButton v-if="flash.isLiked" v-tooltip="i18n.ts.unlike" asLike class="button" rounded primary @click="unlike()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
+								<MkButton v-else v-tooltip="i18n.ts.like" asLike class="button" rounded @click="like()"><i class="ti ti-heart"></i><span v-if="flash?.likedCount && flash.likedCount > 0" style="margin-left: 6px;">{{ flash.likedCount }}</span></MkButton>
+								<MkButton v-tooltip="i18n.ts.copyLink" class="button" rounded @click="copyLink"><i class="ti ti-link ti-fw"></i></MkButton>
+								<MkButton v-tooltip="i18n.ts.share" class="button" rounded @click="share"><i class="ti ti-share ti-fw"></i></MkButton>
+								<MkButton v-if="$i && $i.id !== flash.user.id" class="button" rounded @mousedown="showMenu"><i class="ti ti-dots ti-fw"></i></MkButton>
 							</div>
 						</div>
 					</div>
@@ -32,13 +33,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<div class="summary"><Mfm :text="flash.summary" :isBlock="true"/></div>
 							<MkButton class="start" gradate rounded large @click="start">Play</MkButton>
 							<div class="info">
-								<span v-tooltip="i18n.ts.numberOfLikes"><i class="ph-heart ph-bold ph-lg"></i> {{ flash.likedCount }}</span>
+								<span v-tooltip="i18n.ts.numberOfLikes"><i class="ti ti-heart"></i> {{ flash.likedCount }}</span>
 							</div>
 						</div>
 					</div>
 				</Transition>
 				<MkFolder :defaultOpen="false" :max-height="280" class="_margin">
-					<template #icon><i class="ph-code ph-bold ph-lg"></i></template>
+					<template #icon><i class="ti ti-code"></i></template>
 					<template #label>{{ i18n.ts._play.viewSource }}</template>
 
 					<MkCode :code="flash.script" lang="is" class="_monospace"/>
@@ -46,8 +47,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div :class="$style.footer">
 					<Mfm :text="`By @${flash.user.username}`"/>
 					<div class="date">
-						<div v-if="flash.createdAt != flash.updatedAt"><i class="ph-clock ph-bold ph-lg"></i> {{ i18n.ts.updatedAt }}: <MkTime :time="flash.updatedAt" mode="detail"/></div>
-						<div><i class="ph-clock ph-bold ph-lg"></i> {{ i18n.ts.createdAt }}: <MkTime :time="flash.createdAt" mode="detail"/></div>
+						<div v-if="flash.createdAt != flash.updatedAt"><i class="ti ti-clock"></i> {{ i18n.ts.updatedAt }}: <MkTime :time="flash.updatedAt" mode="detail"/></div>
+						<div><i class="ti ti-clock"></i> {{ i18n.ts.createdAt }}: <MkTime :time="flash.createdAt" mode="detail"/></div>
 					</div>
 				</div>
 				<MkA v-if="$i && $i.id === flash.userId" :to="`/play/${flash.id}/edit`" style="color: var(--accent);">{{ i18n.ts._play.editThisPage }}</MkA>
@@ -61,7 +62,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, onDeactivated, onUnmounted, Ref, ref, watch, shallowRef } from 'vue';
+import { computed, onDeactivated, onUnmounted, Ref, ref, watch, shallowRef, defineAsyncComponent } from 'vue';
 import * as Misskey from 'misskey-js';
 import { Interpreter, Parser, values } from '@syuilo/aiscript';
 import MkButton from '@/components/MkButton.vue';
@@ -78,7 +79,9 @@ import MkCode from '@/components/MkCode.vue';
 import { defaultStore } from '@/store.js';
 import { $i } from '@/account.js';
 import { isSupportShare } from '@/scripts/navigator.js';
-import copyToClipboard from '@/scripts/copy-to-clipboard.js';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
+import { MenuItem } from '@/types/menu';
+import { pleaseLogin } from '@/scripts/please-login.js';
 
 const props = defineProps<{
 	id: string;
@@ -109,11 +112,11 @@ function share(ev: MouseEvent) {
 		},
 		...(isSupportShare() ? [{
 			text: i18n.ts.share,
-			icon: 'ph-share-network ph-bold ph-lg ti-fw',
+			icon: 'ti ti-share',
 			action: shareWithNavigator,
 		}] : []),
 	], ev.currentTarget ?? ev.target);
-	}
+}
 
 function copyLink() {
 	if (!flash.value) return;
@@ -143,6 +146,7 @@ function shareWithNote() {
 
 function like() {
 	if (!flash.value) return;
+	pleaseLogin();
 
 	os.apiWithDialog('flash/like', {
 		flashId: flash.value.id,
@@ -154,6 +158,7 @@ function like() {
 
 async function unlike() {
 	if (!flash.value) return;
+	pleaseLogin();
 
 	const confirm = await os.confirm({
 		type: 'warning',
@@ -224,6 +229,53 @@ async function run() {
 			text: err.message,
 		});
 	}
+}
+
+function reportAbuse() {
+	if (!flash.value) return;
+
+	const pageUrl = `${url}/play/${flash.value.id}`;
+
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkAbuseReportWindow.vue')), {
+		user: flash.value.user,
+		initialComment: `Play: ${pageUrl}\n-----\n`,
+	}, {
+		closed: () => dispose(),
+	});
+}
+
+function showMenu(ev: MouseEvent) {
+	if (!flash.value) return;
+
+	const menu: MenuItem[] = [
+		...($i && $i.id !== flash.value.userId ? [
+			{
+				icon: 'ti ti-exclamation-circle',
+				text: i18n.ts.reportAbuse,
+				action: reportAbuse,
+			},
+			...($i.isModerator || $i.isAdmin ? [
+				{
+					type: 'divider' as const,
+				},
+				{
+					icon: 'ti ti-trash',
+					text: i18n.ts.delete,
+					danger: true,
+					action: () => os.confirm({
+						type: 'warning',
+						text: i18n.ts.deleteConfirm,
+					}).then(({ canceled }) => {
+						if (canceled || !flash.value) return;
+
+						os.apiWithDialog('flash/delete', { flashId: flash.value.id });
+					}),
+				},
+			] : []),
+		] : []),
+	];
+
+	os.popupMenu(menu, ev.currentTarget ?? ev.target);
 }
 
 function reset() {

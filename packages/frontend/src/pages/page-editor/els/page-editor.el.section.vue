@@ -6,16 +6,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <!-- eslint-disable vue/no-mutating-props -->
 <XContainer :draggable="true" @remove="() => $emit('remove')">
-	<template #header><i class="ph-note ph-bold ph-lg"></i> {{ props.modelValue.title }}</template>
+	<template #header><i class="ti ti-note"></i> {{ props.modelValue.title }}</template>
 	<template #func>
 		<button class="_button" @click="rename()">
-			<i class="ph-pencil-simple ph-bold ph-lg"></i>
+			<i class="ti ti-pencil"></i>
 		</button>
 	</template>
 
 	<section class="ilrvjyvi">
 		<XBlocks v-model="children" class="children"/>
-		<MkButton rounded class="add" @click="add()"><i class="ph-plus ph-bold ph-lg"></i></MkButton>
+		<MkButton rounded class="add" @click="add()"><i class="ti ti-plus"></i></MkButton>
 	</section>
 </XContainer>
 </template>
@@ -29,6 +29,7 @@ import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 import { deepClone } from '@/scripts/clone.js';
 import MkButton from '@/components/MkButton.vue';
+import { getPageBlockList } from '@/pages/page-editor/common.js';
 
 const XBlocks = defineAsyncComponent(() => import('../page-editor.blocks.vue'));
 
@@ -53,11 +54,9 @@ watch(children, () => {
 	deep: true,
 });
 
-const getPageBlockList = inject<(any) => any>('getPageBlockList');
-
 async function rename() {
 	const { canceled, result: title } = await os.inputText({
-		title: 'Enter title',
+		title: i18n.ts._pages.enterSectionTitle,
 		default: props.modelValue.title,
 	});
 	if (canceled) return;

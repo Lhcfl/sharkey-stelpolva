@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkHorizontalSwipe v-model:tab="tab" :tabs="headerTabs">
 			<div v-if="tab === 'explore'" key="explore">
 				<MkFoldableSection class="_margin">
-					<template #header><i class="ph-clock ph-bold ph-lg"></i>{{ i18n.ts.recentPosts }}</template>
+					<template #header><i class="ti ti-clock"></i>{{ i18n.ts.recentPosts }}</template>
 					<MkPagination v-slot="{items}" :pagination="recentPostsPagination" :disableAutoLoad="true">
 						<div :class="$style.items">
 							<MkGalleryPostPreview v-for="post in items" :key="post.id" :post="post" class="post"/>
@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkPagination>
 				</MkFoldableSection>
 				<MkFoldableSection class="_margin">
-					<template #header><i class="ph-shooting-star ph-bold ph-lg"></i>{{ i18n.ts.popularPosts }}</template>
+					<template #header><i class="ti ti-comet"></i>{{ i18n.ts.popularPosts }}</template>
 					<MkPagination v-slot="{items}" :pagination="popularPostsPagination" :disableAutoLoad="true">
 						<div :class="$style.items">
 							<MkGalleryPostPreview v-for="post in items" :key="post.id" :post="post" class="post"/>
@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkPagination>
 			</div>
 			<div v-else-if="tab === 'my'" key="my">
-				<MkA to="/gallery/new" class="_link" style="margin: 16px;"><i class="ph-plus ph-bold ph-lg"></i> {{ i18n.ts.postToGallery }}</MkA>
+				<MkA to="/gallery/new" class="_link" style="margin: 16px;"><i class="ti ti-plus"></i> {{ i18n.ts.postToGallery }}</MkA>
 				<MkPagination v-slot="{items}" :pagination="myPostsPagination">
 					<div :class="$style.items">
 						<MkGalleryPostPreview v-for="post in items" :key="post.id" :post="post" class="post"/>
@@ -98,7 +98,7 @@ watch(() => props.tag, () => {
 });
 
 const headerActions = computed(() => [{
-	icon: 'ph-plus ph-bold ph-lg',
+	icon: 'ti ti-plus',
 	text: i18n.ts.create,
 	handler: () => {
 		router.push('/gallery/new');
@@ -112,11 +112,11 @@ const headerTabs = computed(() => [{
 }, {
 	key: 'liked',
 	title: i18n.ts._gallery.liked,
-	icon: 'ph-heart ph-bold ph-lg',
+	icon: 'ti ti-heart',
 }, {
 	key: 'my',
 	title: i18n.ts._gallery.my,
-	icon: 'ph-pencil-simple-line ph-bold ph-lg',
+	icon: 'ti ti-edit',
 }]);
 
 definePageMetadata(() => ({

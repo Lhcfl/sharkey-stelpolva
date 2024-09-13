@@ -265,6 +265,10 @@ export interface Locale extends ILocale {
      */
     "searchUser": string;
     /**
+     * ユーザーのノートを検索
+     */
+    "searchThisUsersNotes": string;
+    /**
      * 返信
      */
     "reply": string;
@@ -665,6 +669,10 @@ export interface Locale extends ILocale {
      */
     "editAntenna": string;
     /**
+     * アンテナを作成
+     */
+    "createAntenna": string;
+    /**
      * ウィジェットを選択
      */
     "selectWidget": string;
@@ -777,6 +785,22 @@ export interface Locale extends ILocale {
      */
     "showOnRemote": string;
     /**
+     * リモートで続行
+     */
+    "continueOnRemote": string;
+    /**
+     * Misskey Hubからサーバーを選択
+     */
+    "chooseServerOnMisskeyHub": string;
+    /**
+     * サーバーのドメインを直接指定
+     */
+    "specifyServerHost": string;
+    /**
+     * ドメインを入力してください
+     */
+    "inputHostName": string;
+    /**
      * 全般
      */
     "general": string;
@@ -816,6 +840,10 @@ export interface Locale extends ILocale {
      * ホスト
      */
     "host": string;
+    /**
+     * 自分を選択
+     */
+    "selectSelf": string;
     /**
      * ユーザーを選択
      */
@@ -869,13 +897,17 @@ export interface Locale extends ILocale {
      */
     "stopActivityDelivery": string;
     /**
-     * このインスタンスをブロック
+     * このサーバーをブロック
      */
     "blockThisInstance": string;
     /**
-     * インスタンスをサイレンス
+     * サーバーをサイレンス
      */
     "silenceThisInstance": string;
+    /**
+     * サーバーをメディアサイレンス
+     */
+    "mediaSilenceThisInstance": string;
     /**
      * 操作
      */
@@ -960,6 +992,14 @@ export interface Locale extends ILocale {
      * サイレンスしたいサーバーのホストを改行で区切って設定します。サイレンスされたサーバーに所属するアカウントはすべて「サイレンス」として扱われ、フォローがすべてリクエストになります。ブロックしたインスタンスには影響しません。
      */
     "silencedInstancesDescription": string;
+    /**
+     * メディアサイレンスしたサーバー
+     */
+    "mediaSilencedInstances": string;
+    /**
+     * メディアサイレンスしたいサーバーのホストを改行で区切って設定します。メディアサイレンスされたサーバーに所属するアカウントによるファイルはすべてセンシティブとして扱われ、カスタム絵文字が使用できないようになります。ブロックしたインスタンスには影響しません。
+     */
+    "mediaSilencedInstancesDescription": string;
     /**
      * ミュートとブロック
      */
@@ -1300,6 +1340,10 @@ export interface Locale extends ILocale {
      * ドライブ
      */
     "drive": string;
+    /**
+     * 検索ドライブ
+     */
+    "driveSearchbarPlaceholder": string;
     /**
      * ファイル名
      */
@@ -1973,9 +2017,13 @@ export interface Locale extends ILocale {
      */
     "onlyOneFileCanBeAttached": string;
     /**
-     * 続行する前に、サインアップまたはサインインが必要です
+     * 続行する前に、登録またはログインが必要です
      */
     "signinRequired": string;
+    /**
+     * 続行するには、お使いのサーバーに移動するか、このサーバーに登録・ログインする必要があります
+     */
+    "signinOrContinueOnRemote": string;
     /**
      * 招待
      */
@@ -2141,6 +2189,10 @@ export interface Locale extends ILocale {
      */
     "openImageInNewTab": string;
     /**
+     * 代替テキストを入れ忘れたときに警告する
+     */
+    "warnForMissingAltText": string;
+    /**
      * ダッシュボード
      */
     "dashboard": string;
@@ -2269,11 +2321,11 @@ export interface Locale extends ILocale {
      */
     "s3ForcePathStyleDesc": string;
     /**
-     * DeepLX-JS を使用する (認証キーなし)
+     * DeepLX-JS を使用する (認証キー不要)
      */
     "deeplFreeMode": string;
     /**
-     * ヘルプが必要ですか? DeepLX-JSのセットアップ方法については、ドキュメントを参照してください。
+     * DeepLX-JSの設定方法については、ドキュメントを参照してください。
      */
     "deeplFreeModeDescription": string;
     /**
@@ -2337,7 +2389,7 @@ export interface Locale extends ILocale {
      */
     "notUseSound": string;
     /**
-     * Misskeyがアクティブな時のみサウンドを出力する
+     * Sharkeyがアクティブな時のみサウンドを出力する
      */
     "useSoundOnlyWhenActive": string;
     /**
@@ -2797,19 +2849,19 @@ export interface Locale extends ILocale {
      */
     "enableFaviconNotificationDot": string;
     /**
-     * 通知ドットがインスタンスで機能するかどうかを確認します。
+     * タブアイコン強調機能の動作確認
      */
     "verifyNotificationDotWorkingButton": string;
     /**
-     * 残念ながら、このインスタンスは現時点では通知ドット機能をサポートしていません。
+     * このサーバーは現時点ではタブアイコン強調機能をサポートしていません。
      */
     "notificationDotNotWorking": string;
     /**
-     * 通知ドットは、このインスタンスで正しく機能しています。
+     * タブアイコン強調機能は、このサーバーで正しく機能しています。
      */
     "notificationDotWorking": string;
     /**
-     * 通知ドットが機能しない場合は、管理者にドキュメントを確認するように依頼してください {link}
+     * タブアイコン強調機能が機能しない場合は、管理者にドキュメントを確認するように依頼してください {link}
      */
     "notificationDotNotWorkingAdvice": ParameterizedString<"link">;
     /**
@@ -2869,7 +2921,7 @@ export interface Locale extends ILocale {
      */
     "reportAbuseOf": ParameterizedString<"name">;
     /**
-     * 通報理由の詳細を記入してください。対象のノートがある場合はそのURLも記入してください。
+     * 通報理由の詳細を記入してください。対象のノートやページなどがある場合はそのURLも記入してください。
      */
     "fillAbuseReportDescription": string;
     /**
@@ -3073,15 +3125,15 @@ export interface Locale extends ILocale {
      */
     "searchEngine": string;
     /**
-     * 他
+     * カスタム
      */
     "searchEngineOther": string;
     /**
-     * カスタム URI は、"https://www.google.com/search?q=\{query}" や "https://www.google.com/search?q=%s" のような形式で入力する必要があります。
+     * カスタム検索エンジンのURIは、"https://www.google.com/search?q=\{query}" や "https://www.google.com/search?q=%s" のような形式で入力する必要があります。
      */
     "searchEngineCustomURIDescription": string;
     /**
-     * カスタム URI
+     * カスタム検索エンジン URI
      */
     "searchEngineCusomURI": string;
     /**
@@ -3677,7 +3729,7 @@ export interface Locale extends ILocale {
      */
     "emailRequiredForSignup": string;
     /**
-     * 新規ユーザーの承認が必要
+     * アカウント登録を承認制にする
      */
     "approvalRequiredForSignup": string;
     /**
@@ -3886,7 +3938,7 @@ export interface Locale extends ILocale {
      */
     "thereIsUnresolvedAbuseReportWarning": string;
     /**
-     * 承認待ちのユーザーがいる。
+     * 承認待ちのユーザーがいます。
      */
     "pendingUserApprovals": string;
     /**
@@ -3958,7 +4010,7 @@ export interface Locale extends ILocale {
      */
     "numberOfReplies": string;
     /**
-     * この数値を大きくすると、より多くの返信が表示されます。この値を大きくしすぎると、返信が窮屈になり、読めなくなることがあります。
+     * この数値を大きくすると、より多くの返信が表示されます。この値を大きくしすぎると、UIが窮屈になって読みにくくなることがあります。
      */
     "numberOfRepliesDescription": string;
     /**
@@ -3966,15 +4018,15 @@ export interface Locale extends ILocale {
      */
     "boostSettings": string;
     /**
-     * 可視性セレクタを表示
+     * 公開範囲セレクターを表示
      */
     "showVisibilitySelectorOnBoost": string;
     /**
-     * 無効の場合、以下で定義されるデフォルトの可視性が使用され、セレクタは表示されません。
+     * 無効の場合、以下で設定したデフォルトの公開範囲が使用され、セレクターは表示されません。
      */
     "showVisibilitySelectorOnBoostDescription": string;
     /**
-     * デフォルトのブースト可視性の設定
+     * デフォルトのブースト公開範囲
      */
     "visibilityOnBoost": string;
     /**
@@ -4302,7 +4354,7 @@ export interface Locale extends ILocale {
      */
     "thisPostIsMissingAltTextIgnore": string;
     /**
-     * この投稿に添付されたファイルの 1 つに代替テキストがありません。すべての添付ファイルに代替テキストが含まれていることを確認してください。
+     * 代替テキストがないファイルが添付されています。すべての添付ファイルに代替テキストを含むようにしてください。
      */
     "thisPostIsMissingAltText": string;
     /**
@@ -4314,7 +4366,7 @@ export interface Locale extends ILocale {
      */
     "collapseRenotesDescription": string;
     /**
-     * 返信されたノート省略
+     * 返信元のノートを折りたたむ
      */
     "collapseNotesRepliedTo": string;
     /**
@@ -4322,7 +4374,7 @@ export interface Locale extends ILocale {
      */
     "collapseFiles": string;
     /**
-     * 返信に会話を読み込む
+     * 会話スレッドを自動で読み込む
      */
     "autoloadConversation": string;
     /**
@@ -4366,7 +4418,7 @@ export interface Locale extends ILocale {
      */
     "invitationRequiredToRegister": string;
     /**
-     * このインスタンスは、登録理由を指定したユーザーのみを受け入れています。
+     * 現在このサーバーは承認制です。参加したい理由を記入し、承認された方のみ登録できます。
      */
     "approvalRequiredToRegister": string;
     /**
@@ -4538,7 +4590,7 @@ export interface Locale extends ILocale {
      */
     "forceShowAds": string;
     /**
-     * 猫友達 :3
+     * にゃんこフレンド :3
      */
     "oneko": string;
     /**
@@ -4626,6 +4678,14 @@ export interface Locale extends ILocale {
      */
     "archive": string;
     /**
+     * アーカイブ済み
+     */
+    "archived": string;
+    /**
+     * アーカイブ解除
+     */
+    "unarchive": string;
+    /**
      * {name}をアーカイブしますか？
      */
     "channelArchiveConfirmTitle": ParameterizedString<"name">;
@@ -4665,6 +4725,18 @@ export interface Locale extends ILocale {
      * ユーザー指定
      */
     "specifyUser": string;
+    /**
+     * 照会しますか？
+     */
+    "lookupConfirm": string;
+    /**
+     * ハッシュタグのページを開きますか？
+     */
+    "openTagPageConfirm": string;
+    /**
+     * ホスト指定
+     */
+    "specifyHost": string;
     /**
      * プレビューできません
      */
@@ -4970,7 +5042,7 @@ export interface Locale extends ILocale {
      */
     "repositoryUrl": string;
     /**
-     * ソースコードが公開されているリポジトリがある場合、そのURLを記入します。Misskeyを現状のまま（ソースコードにいかなる変更も加えずに）使用している場合は https://github.com/misskey-dev/misskey と記入します。
+     * ソースコードが公開されているリポジトリがある場合、そのURLを記入します。Sharkeyを現状のまま（ソースコードにいかなる変更も加えずに）使用している場合は https://activitypub.software/TransFem-org/Sharkey/ と記入します。
      */
     "repositoryUrlDescription": string;
     /**
@@ -5221,6 +5293,26 @@ export interface Locale extends ILocale {
      * お問い合わせ
      */
     "inquiry": string;
+    /**
+     * もう一度お試しください。
+     */
+    "tryAgain": string;
+    /**
+     * センシティブなメディアを表示するとき確認する
+     */
+    "confirmWhenRevealingSensitiveMedia": string;
+    /**
+     * センシティブなメディアです。表示しますか？
+     */
+    "sensitiveMediaRevealConfirm": string;
+    /**
+     * 作成したリスト
+     */
+    "createdLists": string;
+    /**
+     * 作成したアンテナ
+     */
+    "createdAntennas": string;
     "_delivery": {
         /**
          * 配信状態
@@ -6840,6 +6932,10 @@ export interface Locale extends ILocale {
              */
             "alwaysMarkNsfw": string;
             /**
+             * アイコンとバナーの更新を許可
+             */
+            "canUpdateBioMedia": string;
+            /**
              * ノートのピン留めの最大数
              */
             "pinMax": string;
@@ -7785,14 +7881,6 @@ export interface Locale extends ILocale {
          */
         "notification": string;
         /**
-         * アンテナ受信
-         */
-        "antenna": string;
-        /**
-         * チャンネル通知
-         */
-        "channel": string;
-        /**
          * リアクション選択時
          */
         "reaction": string;
@@ -7819,9 +7907,13 @@ export interface Locale extends ILocale {
          */
         "driveFileDurationWarn": string;
         /**
-         * 長い音声を使用するとMisskeyの使用に支障をきたす可能性があります。それでも続行しますか？
+         * 長い音声を使用するとSharkeyの使用に支障をきたす可能性があります。それでも続行しますか？
          */
         "driveFileDurationWarnDescription": string;
+        /**
+         * 音声が読み込めませんでした。設定を変更してください
+         */
+        "driveFileError": string;
     };
     "_ago": {
         /**
@@ -9002,6 +9094,10 @@ export interface Locale extends ILocale {
          * グローバル
          */
         "global": string;
+        /**
+         * バッッブル
+         */
+        "bubble": string;
     };
     "_play": {
         /**
@@ -9198,6 +9294,10 @@ export interface Locale extends ILocale {
          * ブロックを追加
          */
         "chooseBlock": string;
+        /**
+         * セクションタイトルを入力
+         */
+        "enterSectionTitle": string;
         /**
          * 種類を選択
          */
@@ -9431,6 +9531,10 @@ export interface Locale extends ILocale {
              * 連携アプリからの通知
              */
             "app": string;
+            /**
+             * 編集済み
+             */
+            "edited": string;
         };
         "_actions": {
             /**
@@ -9442,7 +9546,7 @@ export interface Locale extends ILocale {
              */
             "reply": string;
             /**
-             * Boost
+             * ブースト
              */
             "renote": string;
         };
@@ -9607,6 +9711,10 @@ export interface Locale extends ILocale {
          */
         "createWebhook": string;
         /**
+         * Webhookを編集
+         */
+        "modifyWebhook": string;
+        /**
          * 名前
          */
         "name": string;
@@ -9615,9 +9723,9 @@ export interface Locale extends ILocale {
          */
         "secret": string;
         /**
-         * Webhookを実行するタイミング
+         * トリガー
          */
-        "events": string;
+        "trigger": string;
         /**
          * 有効
          */
@@ -9651,6 +9759,76 @@ export interface Locale extends ILocale {
              * メンションされたとき
              */
             "mention": string;
+        };
+        "_systemEvents": {
+            /**
+             * ユーザーから通報があったとき
+             */
+            "abuseReport": string;
+            /**
+             * ユーザーからの通報を処理したとき
+             */
+            "abuseReportResolved": string;
+            /**
+             * ユーザーが作成されたとき
+             */
+            "userCreated": string;
+        };
+        /**
+         * Webhookを削除しますか？
+         */
+        "deleteConfirm": string;
+    };
+    "_abuseReport": {
+        "_notificationRecipient": {
+            /**
+             * 通報の通知先を追加
+             */
+            "createRecipient": string;
+            /**
+             * 通報の通知先を編集
+             */
+            "modifyRecipient": string;
+            /**
+             * 通知先の種類
+             */
+            "recipientType": string;
+            "_recipientType": {
+                /**
+                 * メール
+                 */
+                "mail": string;
+                /**
+                 * Webhook
+                 */
+                "webhook": string;
+                "_captions": {
+                    /**
+                     * モデレーター権限を持つユーザーのメールアドレスに通知を送ります(通報を受けた時のみ)
+                     */
+                    "mail": string;
+                    /**
+                     * 指定したSystemWebhookに通知を送ります(通報を受けた時と通報を解決した時にそれぞれ発信)
+                     */
+                    "webhook": string;
+                };
+            };
+            /**
+             * キーワード
+             */
+            "keywords": string;
+            /**
+             * 通知先ユーザー
+             */
+            "notifiedUser": string;
+            /**
+             * 使用するWebhook
+             */
+            "notifiedWebhook": string;
+            /**
+             * 通知先を削除しますか？
+             */
+            "deleteConfirm": string;
         };
     };
     "_moderationLogTypes": {
@@ -9802,6 +9980,364 @@ export interface Locale extends ILocale {
          * ユーザーのバナーを解除
          */
         "unsetUserBanner": string;
+        /**
+         * SystemWebhookを作成
+         */
+        "createSystemWebhook": string;
+        /**
+         * SystemWebhookを更新
+         */
+        "updateSystemWebhook": string;
+        /**
+         * SystemWebhookを削除
+         */
+        "deleteSystemWebhook": string;
+        /**
+         * 通報の通知先を作成
+         */
+        "createAbuseReportNotificationRecipient": string;
+        /**
+         * 通報の通知先を更新
+         */
+        "updateAbuseReportNotificationRecipient": string;
+        /**
+         * 通報の通知先を削除
+         */
+        "deleteAbuseReportNotificationRecipient": string;
+        /**
+         * アカウントを削除
+         */
+        "deleteAccount": string;
+        /**
+         * ページを削除
+         */
+        "deletePage": string;
+        /**
+         * Playを削除
+         */
+        "deleteFlash": string;
+        /**
+         * ギャラリーの投稿を削除
+         */
+        "deleteGalleryPost": string;
+    };
+    "_mfm": {
+        /**
+         * この機能は一般的に普及していないため、他のMisskeyフォークを含めた多くのFediverseソフトウェアで表示できないことがあります。
+         */
+        "uncommonFeature": string;
+        /**
+         * MFM はMisskey, Sharkey, Firefish, Akkomaなど、多くの場所で使用できるマークアップ言語です。ここでは、利用できるMFM構文の一覧をご覧いただけます。
+         */
+        "intro": string;
+        /**
+         * SharkeyでFediverseの世界が広がります
+         */
+        "dummy": string;
+        /**
+         * メンション
+         */
+        "mention": string;
+        /**
+         * アットマーク + ユーザー名で、特定のユーザーを示すことができます。
+         */
+        "mentionDescription": string;
+        /**
+         * ハッシュタグ
+         */
+        "hashtag": string;
+        /**
+         * ナンバーサイン + タグで、ハッシュタグを示すことができます。
+         */
+        "hashtagDescription": string;
+        /**
+         * URL
+         */
+        "url": string;
+        /**
+         * URLを示すことができます。
+         */
+        "urlDescription": string;
+        /**
+         * リンク
+         */
+        "link": string;
+        /**
+         * 文章の特定の範囲を、URLに紐づけることができます。
+         */
+        "linkDescription": string;
+        /**
+         * 太字
+         */
+        "bold": string;
+        /**
+         * 文字を太く表示して強調することができます。
+         */
+        "boldDescription": string;
+        /**
+         * 小文字
+         */
+        "small": string;
+        /**
+         * 内容を小さく・薄く表示させることができます。
+         */
+        "smallDescription": string;
+        /**
+         * 中央寄せ
+         */
+        "center": string;
+        /**
+         * 内容を中央寄せで表示させることができます。
+         */
+        "centerDescription": string;
+        /**
+         * コード（インライン）
+         */
+        "inlineCode": string;
+        /**
+         * プログラムなどのコードをインラインでシンタックスハイライトします。
+         */
+        "inlineCodeDescription": string;
+        /**
+         * コード（ブロック）
+         */
+        "blockCode": string;
+        /**
+         * 複数行のプログラムなどのコードをブロックでシンタックスハイライトします。
+         */
+        "blockCodeDescription": string;
+        /**
+         * 数式（インライン）
+         */
+        "inlineMath": string;
+        /**
+         * 数式 （KaTeX形式）をインラインで表示します。
+         */
+        "inlineMathDescription": string;
+        /**
+         * 数式（ブロック）
+         */
+        "blockMath": string;
+        /**
+         * 数式 （KaTeX形式）をブロックで表示します。
+         */
+        "blockMathDescription": string;
+        /**
+         * 引用
+         */
+        "quote": string;
+        /**
+         * 内容が引用であることを示すことができます。
+         */
+        "quoteDescription": string;
+        /**
+         * カスタム絵文字
+         */
+        "emoji": string;
+        /**
+         * コロンでカスタム絵文字名を囲むと、カスタム絵文字を表示させることができます。
+         */
+        "emojiDescription": string;
+        /**
+         * 検索
+         */
+        "search": string;
+        /**
+         * 検索ボックスを表示できます。
+         */
+        "searchDescription": string;
+        /**
+         * 反転
+         */
+        "flip": string;
+        /**
+         * 内容を上下または左右に反転させます。
+         */
+        "flipDescription": string;
+        /**
+         * アニメーション（びよんびよん）
+         */
+        "jelly": string;
+        /**
+         * ゼリーが揺れるような感じのアニメーションをさせます。
+         */
+        "jellyDescription": string;
+        /**
+         * アニメーション（じゃーん）
+         */
+        "tada": string;
+        /**
+         * 「じゃーん！」と強調するような感じのアニメーションをさせます。
+         */
+        "tadaDescription": string;
+        /**
+         * アニメーション（ジャンプ）
+         */
+        "jump": string;
+        /**
+         * 跳ねるアニメーションをさせます。
+         */
+        "jumpDescription": string;
+        /**
+         * アニメーション（バウンド）
+         */
+        "bounce": string;
+        /**
+         * 跳ねて着地するようなアニメーションをさせます。
+         */
+        "bounceDescription": string;
+        /**
+         * アニメーション（ぶるぶる）
+         */
+        "shake": string;
+        /**
+         * 震えるアニメーションをさせます。
+         */
+        "shakeDescription": string;
+        /**
+         * アニメーション（ガタガタ）
+         */
+        "twitch": string;
+        /**
+         * より激しく震えるアニメーションをさせます。
+         */
+        "twitchDescription": string;
+        /**
+         * アニメーション（回転）
+         */
+        "spin": string;
+        /**
+         * 内容を回転させます。
+         */
+        "spinDescription": string;
+        /**
+         * 大
+         */
+        "x2": string;
+        /**
+         * 内容を大きく表示させます。
+         */
+        "x2Description": string;
+        /**
+         * 特大
+         */
+        "x3": string;
+        /**
+         * 内容をより大きく表示させます。
+         */
+        "x3Description": string;
+        /**
+         * 超特大
+         */
+        "x4": string;
+        /**
+         * 内容をさらに大きく表示させます。
+         */
+        "x4Description": string;
+        /**
+         * ぼかし
+         */
+        "blur": string;
+        /**
+         * 内容をぼかすことができます。ポインターを上に乗せるとはっきり見えるようになります。
+         */
+        "blurDescription": string;
+        /**
+         * フォント
+         */
+        "font": string;
+        /**
+         * 内容のフォントを指定することができます。
+         */
+        "fontDescription": string;
+        /**
+         * レインボー
+         */
+        "rainbow": string;
+        /**
+         * 内容を虹色で表示させます。
+         */
+        "rainbowDescription": string;
+        /**
+         * キラキラ
+         */
+        "sparkle": string;
+        /**
+         * キラキラと星型のパーティクルを表示させます。
+         */
+        "sparkleDescription": string;
+        /**
+         * 角度変更
+         */
+        "rotate": string;
+        /**
+         * 指定した角度で回転させます。
+         */
+        "rotateDescription": string;
+        /**
+         * 位置変更
+         */
+        "position": string;
+        /**
+         * 位置をずらすことができます。
+         */
+        "positionDescription": string;
+        /**
+         * 切り取り
+         */
+        "crop": string;
+        /**
+         * 内容を切り抜きます。
+         */
+        "cropDescription": string;
+        /**
+         * マウス追従
+         */
+        "followMouse": string;
+        /**
+         * 内容がマウスに追従します。スマホの場合はタップした場所に追従します。
+         */
+        "followMouseDescription": string;
+        /**
+         * 拡大
+         */
+        "scale": string;
+        /**
+         * 内容を引き伸ばして表示します。
+         */
+        "scaleDescription": string;
+        /**
+         * 文字色
+         */
+        "foreground": string;
+        /**
+         * 文字色を変更します。
+         */
+        "foregroundDescription": string;
+        /**
+         * フェード
+         */
+        "fade": string;
+        /**
+         * 内容をフェードイン・フェードアウトさせます。
+         */
+        "fadeDescription": string;
+        /**
+         * 背景色
+         */
+        "background": string;
+        /**
+         * 背景色を変更します。
+         */
+        "backgroundDescription": string;
+        /**
+         * Plain
+         */
+        "plain": string;
+        /**
+         * 内側の構文を全て無効にします。
+         */
+        "plainDescription": string;
     };
     "_fileViewer": {
         /**
@@ -9980,7 +10516,7 @@ export interface Locale extends ILocale {
         "stop": string;
         "_alert": {
             /**
-             * MFMアニメーションには、点滅するライトや高速で動くテキスト/絵文字を含まれる場合があります。
+             * MFMアニメーションには、高速で点滅したり動いたりするテキスト・絵文字を含む場合があります。
              */
             "text": string;
             /**
@@ -9999,18 +10535,18 @@ export interface Locale extends ILocale {
          */
         "warn": string;
         /**
-         * データの保存が完了すると、このアカウントに登録されているEメールアドレスにメールが送信されます。
+         * データの保存が完了すると、このアカウントに登録されているメールアドレスにメールが送信されます。
          */
         "text": string;
         /**
-         * リクエスト
+         * データリクエスト実行
          */
         "button": string;
     };
     "_dataSaver": {
         "_media": {
             /**
-             * メディアの読み込み
+             * メディアの読み込みを無効化
              */
             "title": string;
             /**
@@ -10020,7 +10556,7 @@ export interface Locale extends ILocale {
         };
         "_avatar": {
             /**
-             * アイコン画像
+             * アイコン画像のアニメーションを無効化
              */
             "title": string;
             /**
@@ -10030,7 +10566,7 @@ export interface Locale extends ILocale {
         };
         "_urlPreview": {
             /**
-             * URLプレビューのサムネイル
+             * URLプレビューのサムネイルを非表示
              */
             "title": string;
             /**
@@ -10040,7 +10576,7 @@ export interface Locale extends ILocale {
         };
         "_code": {
             /**
-             * コードハイライト
+             * コードハイライトを非表示
              */
             "title": string;
             /**
@@ -10314,6 +10850,24 @@ export interface Locale extends ILocale {
          * ループ再生
          */
         "loop": string;
+    };
+    "_contextMenu": {
+        /**
+         * コンテキストメニュー
+         */
+        "title": string;
+        /**
+         * アプリケーション
+         */
+        "app": string;
+        /**
+         * Shiftキーでアプリケーション
+         */
+        "appWithShift": string;
+        /**
+         * ブラウザのUI
+         */
+        "native": string;
     };
 }
 declare const locales: {

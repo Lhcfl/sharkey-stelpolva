@@ -10,16 +10,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 		type="checkbox"
 		:disabled="disabled"
 		:class="$style.input"
-		@keydown.enter="toggle"
+		@click="toggle"
 	>
-	<XButton :checked="checked" :disabled="disabled" @toggle="toggle"/>
-	<span :class="$style.body">
+	<XButton :class="$style.toggle" :checked="checked" :disabled="disabled" @toggle="toggle"/>
+	<span v-if="!noBody" :class="$style.body">
 		<!-- TODO: 無名slotの方は廃止 -->
 		<span :class="$style.label">
 			<span @click="toggle">
 				<slot name="label"></slot><slot></slot>
 			</span>
-			<span v-if="helpText" v-tooltip:dialog="helpText" class="_button _help" :class="$style.help"><i class="ph-question ph-bold ph-lg"></i></span>
+			<span v-if="helpText" v-tooltip:dialog="helpText" class="_button _help" :class="$style.help"><i class="ti ti-help-circle"></i></span>
 		</span>
 		<p :class="$style.caption"><slot name="caption"></slot></p>
 	</span>
@@ -34,16 +34,19 @@ const props = defineProps<{
 	modelValue: boolean | Ref<boolean>;
 	disabled?: boolean;
 	helpText?: string;
+	noBody?: boolean;
 }>();
 
 const emit = defineEmits<{
 	(ev: 'update:modelValue', v: boolean): void;
+	(ev: 'change', v: boolean): void;
 }>();
 
 const checked = toRefs(props).modelValue;
 const toggle = () => {
 	if (props.disabled) return;
 	emit('update:modelValue', !checked.value);
+	emit('change', !checked.value);
 };
 </script>
 
@@ -72,7 +75,13 @@ const toggle = () => {
 	height: 0;
 	opacity: 0;
 	margin: 0;
+
+	&:focus-visible ~ .toggle {
+		outline: 2px solid var(--focus);
+		outline-offset: 2px;
+	}
 }
+
 .body {
 	margin-left: 12px;
 	margin-top: 2px;

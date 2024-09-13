@@ -21,13 +21,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkFolder v-for="type in operationTypes" :key="type">
 				<template #label>{{ i18n.ts._sfx[type] }}</template>
 				<template #suffix>{{ getSoundTypeName(sounds[type].type) }}</template>
-
-				<XSound :type="sounds[type].type" :volume="sounds[type].volume" :fileId="sounds[type].fileId" :fileUrl="sounds[type].fileUrl" @update="(res) => updated(type, res)"/>
+				<Suspense>
+					<template #default>
+						<XSound :type="sounds[type].type" :volume="sounds[type].volume" :fileId="sounds[type].fileId" :fileUrl="sounds[type].fileUrl" @update="(res) => updated(type, res)"/>
+					</template>
+					<template #fallback>
+						<MkLoading/>
+					</template>
+				</Suspense>
 			</MkFolder>
 		</div>
 	</FormSection>
 
-	<MkButton danger @click="reset()"><i class="ph-arrow-clockwise ph-bold ph-lg"></i> {{ i18n.ts.default }}</MkButton>
+	<MkButton danger @click="reset()"><i class="ti ti-reload"></i> {{ i18n.ts.default }}</MkButton>
 </div>
 </template>
 
@@ -54,8 +60,6 @@ const sounds = ref<Record<OperationType, Ref<SoundStore>>>({
 	note: defaultStore.reactiveState.sound_note,
 	noteMy: defaultStore.reactiveState.sound_noteMy,
 	notification: defaultStore.reactiveState.sound_notification,
-	antenna: defaultStore.reactiveState.sound_antenna,
-	channel: defaultStore.reactiveState.sound_channel,
 	reaction: defaultStore.reactiveState.sound_reaction,
 });
 
@@ -96,6 +100,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.sounds,
-	icon: 'ph-music-notes ph-bold ph-lg',
+	icon: 'ti ti-music',
 }));
 </script>

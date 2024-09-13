@@ -6,24 +6,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <MkContainer :showHeader="widgetProps.showHeader" :style="`height: ${widgetProps.height}px;`" :scrollable="true" data-cy-mkw-timeline class="mkw-timeline">
 	<template #icon>
-		<i v-if="widgetProps.src === 'home'" class="ph-house ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'local'" class="ph-planet ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'social'" class="ph-rocket-launch ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'bubble'" class="ph-drop ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'global'" class="ph-globe-hemisphere-west ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'list'" class="ph-list ph-bold ph-lg"></i>
-		<i v-else-if="widgetProps.src === 'antenna'" class="ph-flying-saucer ph-bold ph-lg"></i>
+		<i v-if="isBasicTimeline(widgetProps.src)" :class="basicTimelineIconClass(widgetProps.src)"></i>
+		<i v-else-if="widgetProps.src === 'list'" class="ti ti-list"></i>
+		<i v-else-if="widgetProps.src === 'antenna'" class="ti ti-antenna"></i>
 	</template>
 	<template #header>
 		<button class="_button" @click="choose">
 			<span>{{ widgetProps.src === 'list' ? widgetProps.list.name : widgetProps.src === 'antenna' ? widgetProps.antenna.name : i18n.ts._timelines[widgetProps.src] }}</span>
-			<i :class="menuOpened ? 'ph-caret-up ph-bold ph-lg' : 'ph-caret-down ph-bold ph-lg'" style="margin-left: 8px;"></i>
+			<i :class="menuOpened ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" style="margin-left: 8px;"></i>
 		</button>
 	</template>
 
-	<div v-if="(((widgetProps.src === 'local' || widgetProps.src === 'social') && !isLocalTimelineAvailable) || (widgetProps.src === 'bubble' && !isBubbleTimelineAvailable) || (widgetProps.src === 'global' && !isGlobalTimelineAvailable))" :class="$style.disabled">
+	<div v-if="isBasicTimeline(widgetProps.src) && !isAvailableBasicTimeline(widgetProps.src)" :class="$style.disabled">
 		<p :class="$style.disabledTitle">
-			<i class="ph-minus ph-bold ph-lg"></i>
+			<i class="ti ti-minus"></i>
 			{{ i18n.ts._disabledTimeline.title }}
 		</p>
 		<p :class="$style.disabledDescription">{{ i18n.ts._disabledTimeline.description }}</p>
@@ -43,13 +39,9 @@ import { misskeyApi } from '@/scripts/misskey-api.js';
 import MkContainer from '@/components/MkContainer.vue';
 import MkTimeline from '@/components/MkTimeline.vue';
 import { i18n } from '@/i18n.js';
-import { $i } from '@/account.js';
-import { instance } from '@/instance.js';
+import { availableBasicTimelines, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
 
 const name = 'timeline';
-const isLocalTimelineAvailable = (($i == null && instance.policies.ltlAvailable) || ($i != null && $i.policies.ltlAvailable));
-const isGlobalTimelineAvailable = (($i == null && instance.policies.gtlAvailable) || ($i != null && $i.policies.gtlAvailable));
-const isBubbleTimelineAvailable = (($i == null && instance.policies.btlAvailable) || ($i != null && $i.policies.btlAvailable));
 
 const widgetPropsDef = {
 	showHeader: {
@@ -103,7 +95,7 @@ const choose = async (ev) => {
 	]);
 	const antennaItems = antennas.map(antenna => ({
 		text: antenna.name,
-		icon: 'ph-flying-saucer ph-bold ph-lg',
+		icon: 'ti ti-antenna',
 		action: () => {
 			widgetProps.antenna = antenna;
 			setSrc('antenna');
@@ -111,33 +103,17 @@ const choose = async (ev) => {
 	}));
 	const listItems = lists.map(list => ({
 		text: list.name,
-		icon: 'ph-list ph-bold ph-lg',
+		icon: 'ti ti-list',
 		action: () => {
 			widgetProps.list = list;
 			setSrc('list');
 		},
 	}));
-	os.popupMenu([{
-		text: i18n.ts._timelines.home,
-		icon: 'ph-house ph-bold ph-lg',
-		action: () => { setSrc('home'); },
-	}, {
-		text: i18n.ts._timelines.local,
-		icon: 'ph-planet ph-bold ph-lg',
-		action: () => { setSrc('local'); },
-	}, {
-		text: i18n.ts._timelines.social,
-		icon: 'ph-rocket-launch ph-bold ph-lg',
-		action: () => { setSrc('social'); },
-	}, {
-		text: 'Bubble',
-		icon: 'ph-drop ph-bold ph-lg',
-		action: () => { setSrc('bubble'); },
-	}, {
-		text: i18n.ts._timelines.global,
-		icon: 'ph-globe-hemisphere-west ph-bold ph-lg',
-		action: () => { setSrc('global'); },
-	}, antennaItems.length > 0 ? { type: 'divider' } : undefined, ...antennaItems, listItems.length > 0 ? { type: 'divider' } : undefined, ...listItems], ev.currentTarget ?? ev.target).then(() => {
+	os.popupMenu([...availableBasicTimelines().map(tl => ({
+		text: i18n.ts._timelines[tl],
+		icon: basicTimelineIconClass(tl),
+		action: () => { setSrc(tl); },
+	})), antennaItems.length > 0 ? { type: 'divider' } : undefined, ...antennaItems, listItems.length > 0 ? { type: 'divider' } : undefined, ...listItems], ev.currentTarget ?? ev.target).then(() => {
 		menuOpened.value = false;
 	});
 };

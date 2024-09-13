@@ -23,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</template>
 			</I18n>
 			<div style="margin-top: 0.2em;">
-				<MkLink target="_blank" url="https://ko-fi.com/transfem">{{ i18n.ts.learnMore }}</MkLink>
+				<MkLink target="_blank" url="https://opencollective.com/sharkey">{{ i18n.ts.learnMore }}</MkLink>
 			</div>
 		</div>
 		<div v-if="instance.donationUrl" :class="$style.text">
@@ -41,7 +41,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkButton @click="neverShow">{{ i18n.ts.neverShow }}</MkButton>
 		</div>
 	</div>
-	<button class="_button" :class="$style.close" @click="close"><i class="ph-x ph-bold ph-lg"></i></button>
+	<button class="_button" :class="$style.close" @click="close"><i class="ti ti-x"></i></button>
 </div>
 </template>
 

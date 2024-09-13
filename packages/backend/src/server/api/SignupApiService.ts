@@ -196,14 +196,14 @@ export class SignupApiService {
 			//const salt = await bcrypt.genSalt(8);
 			const hash = await argon2.hash(password);
 
-			const pendingUser = await this.userPendingsRepository.insert({
+			const pendingUser = await this.userPendingsRepository.insertOne({
 				id: this.idService.gen(),
 				code,
 				email: emailAddress!,
 				username: username,
 				password: hash,
 				reason: reason,
-			}).then(x => this.userPendingsRepository.findOneByOrFail(x.identifiers[0]));
+			});
 
 			const link = `${this.config.url}/signup-complete/${code}`;
 

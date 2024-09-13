@@ -31,7 +31,7 @@ import { defaultStore } from '@/store.js';
 import { customEmojisMap } from '@/custom-emojis.js';
 import * as os from '@/os.js';
 import { misskeyApiGet } from '@/scripts/misskey-api.js';
-import copyToClipboard from '@/scripts/copy-to-clipboard.js';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 import * as sound from '@/scripts/sound.js';
 import { i18n } from '@/i18n.js';
 import MkCustomEmojiDetailedDialog from '@/components/MkCustomEmojiDetailedDialog.vue';
@@ -91,7 +91,7 @@ function onClick(ev: MouseEvent) {
 			text: `:${props.name}:`,
 		}, {
 			text: i18n.ts.copy,
-			icon: 'ph-copy ph-bold ph-lg',
+			icon: 'ti ti-copy',
 			action: () => {
 				copyToClipboard(`:${props.name}:`);
 				os.success();
@@ -105,14 +105,14 @@ function onClick(ev: MouseEvent) {
 			},
 		}] : []), {
 			text: i18n.ts.info,
-			icon: 'ph-info ph-bold ph-lg',
+			icon: 'ti ti-info-circle',
 			action: async () => {
-				os.popup(MkCustomEmojiDetailedDialog, {
+				const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
 					emoji: await misskeyApiGet('emoji', {
 						name: customEmojiName.value,
 					}),
 				}, {
-					anchor: ev.target,
+					closed: () => dispose(),
 				});
 			},
 		}], ev.currentTarget ?? ev.target);

@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div :class="$style.editor" class="_panel">
 					<MkCodeEditor v-model="code" lang="aiscript"/>
 				</div>
-				<MkButton primary @click="run()"><i class="ph-play ph-bold ph-lg"></i></MkButton>
+				<MkButton primary @click="run()"><i class="ti ti-player-play"></i></MkButton>
 			</div>
 
 			<MkContainer v-if="root && components.length > 1" :key="uiKey" :foldable="true">
@@ -154,7 +154,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: i18n.ts.scratchpad,
-	icon: 'ph-terminal-window ph-bold ph-lg-2',
+	icon: 'ti ti-terminal-2',
 }));
 </script>
 

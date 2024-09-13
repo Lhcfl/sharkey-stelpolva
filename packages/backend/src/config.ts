@@ -12,9 +12,10 @@ import * as Sentry from '@sentry/node';
 import type { RedisOptions } from 'ioredis';
 
 type RedisOptionsSource = Partial<RedisOptions> & {
-	host: string;
-	port: number;
+	host?: string;
+	port?: number;
 	family?: number;
+	path?: string,
 	pass: string;
 	db?: number;
 	prefix?: string;
@@ -24,7 +25,7 @@ type RedisOptionsSource = Partial<RedisOptions> & {
  * 設定ファイルの型
  */
 type Source = {
-	url: string;
+	url?: string;
 	port?: number;
 	socket?: string;
 	chmodSocket?: string;
@@ -32,9 +33,9 @@ type Source = {
 	db: {
 		host: string;
 		port: number;
-		db: string;
-		user: string;
-		pass: string;
+		db?: string;
+		user?: string;
+		pass?: string;
 		disableCache?: boolean;
 		extra?: { [x: string]: string };
 	};
@@ -95,6 +96,7 @@ type Source = {
 	customMOTD?: string[];
 
 	signToActivityPubGet?: boolean;
+	attachLdSignatureForRelays?: boolean;
 	checkActivityPubGetSignature?: boolean;
 
 	perChannelMaxNoteCacheCount?: number;
@@ -161,6 +163,7 @@ export type Config = {
 	proxyRemoteFiles: boolean | undefined;
 	customMOTD: string[] | undefined;
 	signToActivityPubGet: boolean;
+	attachLdSignatureForRelays: boolean;
 	checkActivityPubGetSignature: boolean | undefined;
 
 	version: string;
@@ -221,8 +224,15 @@ export function loadConfig(): Config {
 		JSON.parse(fs.readFileSync(`${_dirname}/../../../built/_vite_/manifest.json`, 'utf-8'))
 		: { 'src/_boot_.ts': { file: 'src/_boot_.ts' } };
 
-	const config = globSync(path).sort()
-		.map(path => fs.readFileSync(path, 'utf-8'))
+	const configFiles = globSync(path).sort();
+
+	if (configFiles.length === 0
+			&& !process.env['MK_WARNED_ABOUT_CONFIG']) {
+		console.log('No config files loaded, check if this is intentional');
+		process.env['MK_WARNED_ABOUT_CONFIG'] = '1';
+	}
+
+	const config = configFiles.map(path => fs.readFileSync(path, 'utf-8'))
 		.map(contents => yaml.load(contents) as Source)
 		.reduce(
 			(acc: Source, cur: Source) => Object.assign(acc, cur),
@@ -231,12 +241,16 @@ export function loadConfig(): Config {
 
 	applyEnvOverrides(config);
 
-	const url = tryCreateUrl(config.url);
+	const url = tryCreateUrl(config.url ?? process.env.MISSKEY_URL ?? '');
 	const version = meta.version;
 	const host = url.host;
 	const hostname = url.hostname;
 	const scheme = url.protocol.replace(/:$/, '');
 	const wsScheme = scheme.replace('http', 'ws');
+
+	const dbDb = config.db.db ?? process.env.DATABASE_DB ?? '';
+	const dbUser = config.db.user ?? process.env.DATABASE_USER ?? '';
+	const dbPass = config.db.pass ?? process.env.DATABASE_PASSWORD ?? '';
 
 	const externalMediaProxy = config.mediaProxy ?
 		config.mediaProxy.endsWith('/') ? config.mediaProxy.substring(0, config.mediaProxy.length - 1) : config.mediaProxy
@@ -248,7 +262,7 @@ export function loadConfig(): Config {
 		version,
 		publishTarballInsteadOfProvideRepositoryUrl: !!config.publishTarballInsteadOfProvideRepositoryUrl,
 		url: url.origin,
-		port: config.port ?? parseInt(process.env.PORT ?? '', 10),
+		port: config.port ?? parseInt(process.env.PORT ?? '3000', 10),
 		socket: config.socket,
 		chmodSocket: config.chmodSocket,
 		disableHsts: config.disableHsts,
@@ -260,7 +274,7 @@ export function loadConfig(): Config {
 		apiUrl: `${scheme}://${host}/api`,
 		authUrl: `${scheme}://${host}/auth`,
 		driveUrl: `${scheme}://${host}/files`,
-		db: config.db,
+		db: { ...config.db, db: dbDb, user: dbUser, pass: dbPass },
 		dbReplications: config.dbReplications,
 		dbSlaves: config.dbSlaves,
 		meilisearch: config.meilisearch,
@@ -291,6 +305,7 @@ export function loadConfig(): Config {
 		proxyRemoteFiles: config.proxyRemoteFiles,
 		customMOTD: config.customMOTD,
 		signToActivityPubGet: config.signToActivityPubGet ?? true,
+		attachLdSignatureForRelays: config.attachLdSignatureForRelays ?? true,
 		checkActivityPubGetSignature: config.checkActivityPubGetSignature,
 		mediaProxy: externalMediaProxy ?? internalMediaProxy,
 		externalMediaProxyEnabled: externalMediaProxy !== null && externalMediaProxy !== internalMediaProxy,
@@ -436,8 +451,8 @@ function applyEnvOverrides(config: Source) {
 
 	// these are all the settings that can be overridden
 
-	_apply_top([['url', 'port', 'socket', 'chmodSocket', 'disableHsts']]);
-	_apply_top(['db', ['host', 'port', 'db', 'user', 'pass']]);
+	_apply_top([['url', 'port', 'socket', 'chmodSocket', 'disableHsts', 'id', 'dbReplications']]);
+	_apply_top(['db', ['host', 'port', 'db', 'user', 'pass', 'disableCache']]);
 	_apply_top(['dbSlaves', Array.from((config.dbSlaves ?? []).keys()), ['host', 'port', 'db', 'user', 'pass']]);
 	_apply_top([
 		['redis', 'redisForPubsub', 'redisForJobQueue', 'redisForTimelines'],
@@ -447,7 +462,8 @@ function applyEnvOverrides(config: Source) {
 	_apply_top([['sentryForFrontend', 'sentryForBackend'], 'options', ['dsn', 'profileSampleRate', 'serverName', 'includeLocalVariables', 'proxy', 'keepAlive', 'caCerts']]);
 	_apply_top(['sentryForBackend', 'enableNodeProfiling']);
 	_apply_top([['clusterLimit', 'deliverJobConcurrency', 'inboxJobConcurrency', 'relashionshipJobConcurrency', 'deliverJobPerSec', 'inboxJobPerSec', 'relashionshipJobPerSec', 'deliverJobMaxAttempts', 'inboxJobMaxAttempts']]);
-	_apply_top([['outgoingAddress', 'outgoingAddressFamily', 'proxy', 'proxySmtp', 'mediaProxy', 'videoThumbnailGenerator']]);
+	_apply_top([['outgoingAddress', 'outgoingAddressFamily', 'proxy', 'proxySmtp', 'mediaProxy', 'proxyRemoteFiles', 'videoThumbnailGenerator']]);
 	_apply_top([['maxFileSize', 'maxNoteLength', 'pidFile']]);
 	_apply_top(['import', ['downloadTimeout', 'maxFileSize']]);
+	_apply_top([['signToActivityPubGet', 'checkActivityPubGetSignature']]);
 }

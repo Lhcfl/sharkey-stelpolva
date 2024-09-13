@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <MkStickyContainer>
 	<template #header><MkPageHeader :actions="headerActions" :tabs="headerTabs"/></template>
 	<MkSpacer :contentMax="800">
-		<div ref="rootEl" v-hotkey.global="keymap">
+		<div ref="rootEl">
 			<div v-if="queue > 0" :class="$style.new"><button class="_buttonPrimary" :class="$style.newButton" @click="top()">{{ i18n.ts.newNoteRecived }}</button></div>
 			<div :class="$style.tl">
 				<MkTimeline
@@ -44,9 +44,6 @@ const antenna = ref<Misskey.entities.Antenna | null>(null);
 const queue = ref(0);
 const rootEl = shallowRef<HTMLElement>();
 const tlEl = shallowRef<InstanceType<typeof MkTimeline>>();
-const keymap = computed(() => ({
-	't': focus,
-}));
 
 function queueUpdated(q) {
 	queue.value = q;
@@ -80,11 +77,11 @@ watch(() => props.antennaId, async () => {
 }, { immediate: true });
 
 const headerActions = computed(() => antenna.value ? [{
-	icon: 'ph-calendar ph-bold ph-lg',
+	icon: 'ti ti-calendar-time',
 	text: i18n.ts.jumpToSpecifiedDate,
 	handler: timetravel,
 }, {
-	icon: 'ph-gear ph-bold ph-lg',
+	icon: 'ti ti-settings',
 	text: i18n.ts.settings,
 	handler: settings,
 }] : []);
@@ -93,7 +90,7 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: antenna.value ? antenna.value.name : i18n.ts.antennas,
-	icon: 'ph-flying-saucer ph-bold ph-lg',
+	icon: 'ti ti-antenna',
 }));
 </script>
 

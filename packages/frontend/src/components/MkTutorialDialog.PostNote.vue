@@ -11,16 +11,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template #label>{{ i18n.ts.visibility }}</template>
 		<div class="_gaps">
 			<div>{{ i18n.ts._initialTutorial._postNote._visibility.description }}</div>
-			<div><i class="ph-globe-hemisphere-west ph-bold ph-lg"></i> <b>{{ i18n.ts._visibility.public }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.public }}</div>
-			<div><i class="ph-house ph-bold ph-lg"></i> <b>{{ i18n.ts._visibility.home }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.home }}</div>
-			<div><i class="ph-lock ph-bold ph-lg"></i> <b>{{ i18n.ts._visibility.followers }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.followers }}</div>
+			<div><i class="ti ti-world"></i> <b>{{ i18n.ts._visibility.public }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.public }}</div>
+			<div><i class="ti ti-home"></i> <b>{{ i18n.ts._visibility.home }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.home }}</div>
+			<div><i class="ti ti-lock"></i> <b>{{ i18n.ts._visibility.followers }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.followers }}</div>
 			<div class="_gaps_s">
-				<div><i class="ph-envelope ph-bold ph-lg"></i> <b>{{ i18n.ts._visibility.specified }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.direct }}</div>
+				<div><i class="ti ti-mail"></i> <b>{{ i18n.ts._visibility.specified }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.direct }}</div>
 				<MkInfo :warn="true">
 					<b>{{ i18n.ts._initialTutorial._postNote._visibility.doNotSendConfidencialOnDirect1 }}</b> {{ i18n.ts._initialTutorial._postNote._visibility.doNotSendConfidencialOnDirect2 }}
 				</MkInfo>
 			</div>
-			<div><i class="ph-rocket ph-bold ph-lg"></i> <b>{{ i18n.ts._visibility.disableFederation }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.localOnly }}</div>
+			<div><i class="ti ti-rocket-off"></i> <b>{{ i18n.ts._visibility.disableFederation }}</b> … {{ i18n.ts._initialTutorial._postNote._visibility.localOnly }}</div>
 		</div>
 	</MkFormSection>
 	<MkFormSection>
@@ -105,7 +105,7 @@ const exampleCWNote = reactive<Misskey.entities.Note>({
 	font-weight: bold;
 	text-align: left;
 
-	&:before {
+	&::before {
 		content: "";
 		display: block;
 		width: calc(100% - 38px);

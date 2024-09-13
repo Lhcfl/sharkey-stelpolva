@@ -58,7 +58,7 @@ function setFilter(ev) {
 		},
 	}));
 	const items = includeTypes.value != null ? [{
-		icon: 'ph-x ph-bold ph-lg',
+		icon: 'ti ti-x',
 		text: i18n.ts.clear,
 		action: () => {
 			includeTypes.value = null;
@@ -69,12 +69,12 @@ function setFilter(ev) {
 
 const headerActions = computed(() => [tab.value === 'all' ? {
 	text: i18n.ts.filter,
-	icon: 'ph-funnel ph-bold ph-lg',
+	icon: 'ti ti-filter',
 	highlighted: includeTypes.value != null,
 	handler: setFilter,
 } : undefined, tab.value === 'all' ? {
 	text: i18n.ts.markAllAsRead,
-	icon: 'ph-check ph-bold ph-lg',
+	icon: 'ti ti-check',
 	handler: () => {
 		os.apiWithDialog('notifications/mark-all-as-read');
 	},
@@ -83,20 +83,20 @@ const headerActions = computed(() => [tab.value === 'all' ? {
 const headerTabs = computed(() => [{
 	key: 'all',
 	title: i18n.ts.all,
-	icon: 'ph-circle ph-bold ph-lg',
+	icon: 'ti ti-point',
 }, {
 	key: 'mentions',
 	title: i18n.ts.mentions,
-	icon: 'ph-at ph-bold ph-lg',
+	icon: 'ti ti-at',
 }, {
 	key: 'directNotes',
 	title: i18n.ts.directNotes,
-	icon: 'ph-envelope ph-bold ph-lg',
+	icon: 'ti ti-mail',
 }]);
 
 definePageMetadata(() => ({
 	title: i18n.ts.notifications,
-	icon: 'ph-bell ph-bold ph-lg',
+	icon: 'ti ti-bell',
 }));
 </script>
 

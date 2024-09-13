@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<span v-if="pathname != ''" :class="$style.pathname">{{ self ? pathname.substring(1) : pathname }}</span>
 	<span :class="$style.query">{{ query }}</span>
 	<span :class="$style.hash">{{ hash }}</span>
-	<i v-if="target === '_blank'" :class="$style.icon" class="ph-arrow-square-out ph-bold ph-lg"></i>
+	<i v-if="target === '_blank'" :class="$style.icon" class="ti ti-external-link"></i>
 </component>
 </template>
 
@@ -51,11 +51,13 @@ const el = ref();
 
 if (props.showUrlPreview && isEnabledUrlPreview.value) {
 	useTooltip(el, (showing) => {
-		os.popup(defineAsyncComponent(() => import('@/components/MkUrlPreviewPopup.vue')), {
+		const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkUrlPreviewPopup.vue')), {
 			showing,
 			url: props.url,
 			source: el.value instanceof HTMLElement ? el.value : el.value?.$el,
-		}, {}, 'closed');
+		}, {
+			closed: () => dispose(),
+		});
 	});
 }
 

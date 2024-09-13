@@ -14,12 +14,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</MkInput>
 
 	<MkInput v-model="secret">
-		<template #prefix><i class="ph-lock ph-bold ph-lg"></i></template>
+		<template #prefix><i class="ti ti-lock"></i></template>
 		<template #label>{{ i18n.ts._webhookSettings.secret }}</template>
 	</MkInput>
 
 	<FormSection>
-		<template #label>{{ i18n.ts._webhookSettings.events }}</template>
+		<template #label>{{ i18n.ts._webhookSettings.trigger }}</template>
 
 		<div class="_gaps_s">
 			<MkSwitch v-model="event_follow">{{ i18n.ts._webhookSettings._events.follow }}</MkSwitch>
@@ -35,8 +35,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkSwitch v-model="active">{{ i18n.ts._webhookSettings.active }}</MkSwitch>
 
 	<div class="_buttons">
-		<MkButton primary inline @click="save"><i class="ph-check ph-bold ph-lg"></i> {{ i18n.ts.save }}</MkButton>
-		<MkButton danger inline @click="del"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.delete }}</MkButton>
+		<MkButton primary inline @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
+		<MkButton danger inline @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 	</div>
 </div>
 </template>
@@ -116,6 +116,6 @@ const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
 	title: 'Edit webhook',
-	icon: 'ph-webhooks-logo ph-bold ph-lg',
+	icon: 'ti ti-webhook',
 }));
 </script>
