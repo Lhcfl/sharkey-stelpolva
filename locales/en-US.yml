@@ -1426,7 +1426,7 @@ _initialTutorial:
       _exampleNote:
         cw: "This will surely make you hungry!"
         note: "Just had a chocolate-glazed donut 🍩😋"
-      useCases: "This is used when following the server guidelines for necessary notes or for self-restriction of spoiler or sensitive text."
+      useCases: "This is used when following the server guidelines, for necessary notes, or for self-restriction of spoiler or sensitive text."
   _howToMakeAttachmentsSensitive:
     title: "How to Mark Attachments as Sensitive?"
     description: "For attachments that are required by server guidelines or that should not be left intact, add a \"sensitive\" flag."
@@ -2393,6 +2393,7 @@ _pages:
   eyeCatchingImageSet: "Set thumbnail"
   eyeCatchingImageRemove: "Delete thumbnail"
   chooseBlock: "Add a block"
+  enterSectionTitle: "Enter a section title"
   selectType: "Select a type"
   contentBlocks: "Content"
   inputBlocks: "Input"
@@ -2574,11 +2575,16 @@ _moderationLogTypes:
   unsetUserAvatar: "Unset this user's avatar"
   unsetUserBanner: "Unset this user's banner"
   createSystemWebhook: "Create SystemWebhook"
-  updateSystemWebhook: "Update SystemWebHook"
+  updateSystemWebhook: "Update SystemWebhook"
   deleteSystemWebhook: "Delete SystemWebhook"
   createAbuseReportNotificationRecipient: "Create a recipient for abuse reports"
   updateAbuseReportNotificationRecipient: "Update recipients for abuse reports"
   deleteAbuseReportNotificationRecipient: "Delete a recipient for abuse reports"
+  deleteAccount: "Delete the account"
+  deletePage: "Delete the page"
+  deleteFlash: "Delete Play"
+  deleteGalleryPost: "Delete the gallery post"
+
 _mfm:
   uncommonFeature: "This is not a widespread feature, it may not display properly on most other fedi software, including other Misskey forks"
   intro: "MFM is a markup language used on Misskey, Sharkey, Firefish, Akkoma, and more that can be used in many places. Here you can view a list of all available MFM syntax."
