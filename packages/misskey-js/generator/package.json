@@ -4,7 +4,7 @@
 	"description": "Misskey TypeGenerator",
 	"type": "module",
 	"scripts": {
-		"generate": "tsx src/generator.ts && eslint ./built/**/*.ts --fix"
+		"generate": "tsx src/generator.ts && eslint ./built/**/*.ts --fix --cache"
 	},
 	"devDependencies": {
 		"@readme/openapi-parser": "2.5.0",
