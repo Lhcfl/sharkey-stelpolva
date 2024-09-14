@@ -289,7 +289,7 @@ export const defaultStore = markRaw(new Storage('base', {
 		default: window.matchMedia('(prefers-reduced-motion)').matches,
 	},
 	disableCatSpeak: {
-		where: 'device',
+		where: 'account',
 		default: false,
 	},
 	emojiStyle: {
