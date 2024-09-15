@@ -63,7 +63,7 @@ if (isEnabledUrlPreview.value) {
 async function promptConfirm() {
 	const { canceled } = await os.confirm({
 		type: 'question',
-		text: i18n.tsx.confirmRemoteUrl({x: props.url}),
+		text: i18n.tsx.confirmRemoteUrl({ x: props.url }),
 		plain: true,
 	});
 	if (canceled) return;
