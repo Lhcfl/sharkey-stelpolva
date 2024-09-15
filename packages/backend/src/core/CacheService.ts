@@ -139,7 +139,7 @@ export class CacheService implements OnApplicationShutdown {
 				id: key,
 			}) as Promise<MiLocalUser>).then(user => {
 				if (user.host == null) return [];
-				if (!(config.avatarDecorationAllowedHosts?.includes(user.host))) return [];
+				if (!(this.config.avatarDecorationAllowedHosts?.includes(user.host))) return [];
 				return this.httpRequestService.send(`https://${user.host}/api/users/show`, {
 					method: 'POST',
 					headers: {
