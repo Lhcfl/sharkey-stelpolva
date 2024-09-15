@@ -97,6 +97,7 @@ function createPluginEnv(opts: { plugin: Plugin; storageKey: string }): Record<s
 				const { canceled } = await os.confirm({
 					type: 'question',
 					text: i18n.tsx.confirmRemoteUrl({x: url.value}),
+					plain: true,
 				});
 				if (canceled) return;
 				window.open(url.value, '_blank', 'noopener');

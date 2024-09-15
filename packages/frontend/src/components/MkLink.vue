@@ -5,9 +5,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <component
-	:is="self ? 'MkA' : 'a'" ref="el" style="word-break: break-all;" class="_link" :[attr]="self ? url.substring(local.length) : url" :rel="rel ?? 'nofollow noopener'" :target="target"
+	v-if="self"
+	:is="'MkA'" ref="el" style="word-break: break-all;" class="_link" :to="url.substring(local.length)" :rel="rel ?? 'nofollow noopener'" :target="target"
 	:behavior="props.navigationBehavior"
 	:title="url"
+	@click.stop
+>
+	<slot></slot>
+	<i v-if="target === '_blank'" class="ti ti-external-link" :class="$style.icon"></i>
+</component>
+<component
+	v-else
+	:is="'a'" ref="el" style="word-break: break-all;" class="_link" :rel="rel ?? 'nofollow noopener popup=false'" :target="target"
+	:behavior="props.navigationBehavior"
+	:title="url"
+	@click="promptConfirm()"
 	@click.stop
 >
 	<slot></slot>
@@ -22,6 +34,7 @@ import { useTooltip } from '@/scripts/use-tooltip.js';
 import * as os from '@/os.js';
 import { isEnabledUrlPreview } from '@/instance.js';
 import { MkABehavior } from '@/components/global/MkA.vue';
+import { i18n } from '@/i18n.js';
 
 const props = withDefaults(defineProps<{
 	url: string;
@@ -31,7 +44,6 @@ const props = withDefaults(defineProps<{
 });
 
 const self = props.url.startsWith(local);
-const attr = self ? 'to' : 'href';
 const target = self ? null : '_blank';
 
 const el = ref<HTMLElement | { $el: HTMLElement }>();
@@ -46,6 +58,16 @@ if (isEnabledUrlPreview.value) {
 			closed: () => dispose(),
 		});
 	});
+}
+
+async function promptConfirm() {
+	const { canceled } = await os.confirm({
+		type: 'question',
+		text: i18n.tsx.confirmRemoteUrl({x: props.url}),
+		plain: true,
+	});
+	if (canceled) return;
+	window.open(props.url, '_blank', 'nofollow noopener popup=false');
 }
 </script>
 
