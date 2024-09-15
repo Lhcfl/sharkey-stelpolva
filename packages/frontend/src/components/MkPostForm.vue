@@ -1103,6 +1103,7 @@ defineExpose({
 	&.modal {
 		width: 100%;
 		max-width: 520px;
+		overflow-y: auto;
 	}
 }
 
@@ -1334,7 +1335,6 @@ defineExpose({
 	min-width: 100%;
 	width: 100%;
 	min-height: 90px;
-	max-height: calc(100vh - 200px);
 	height: 100%;
 }
 
