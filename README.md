@@ -31,6 +31,9 @@
 - 在 MkPostForm 上添加了 autosize
 - 还原了 Misskey 的 Hashtag 搜索设置，即你能搜到任何你可见的打了某个 Hashtag 的帖子
 - 允许加载某些白名单远程服务器的 AvatarDecorations （仅限 Misskey系 ）
+  - 请在 .config/default.yml 中添加一个字符串数组 `avatarDecorationAllowedHosts`
+	- 它是允许加载 Misskey 的头像挂件的白名单实例
+	- 启用了 MediaProxy，因此应该不用担心安全风险
 
 <div>
 
