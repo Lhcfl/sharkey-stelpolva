@@ -41,7 +41,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					const sponsorsOC = await fetch('https://opencollective.com/sharkey/tiers/sponsor/all.json').then((response) => response.json());
 
 					// Merge both together into one array and make sure it only has Active subscriptions
-					const allSponsors = [...backers, ...sponsorsOC].filter(sponsor => sponsor.isActive == true);
+					const allSponsors = [...backers, ...sponsorsOC].filter(sponsor => sponsor.isActive === true);
 
 					// Remove possible duplicates
 					totalSponsors = [...new Map(allSponsors.map(v => [v.profile, v])).values()];
