@@ -23,6 +23,9 @@ packages/sw/.yarn/cache
 # pnpm
 .pnpm-store
 
+# eslint
+**/.eslintcache
+
 # Cypress
 cypress/screenshots
 cypress/videos
@@ -35,6 +38,8 @@ coverage
 !/.config/example.yml
 !/.config/docker_example.yml
 !/.config/docker_example.env
+docker-compose.yml
+compose.yml
 .devcontainer/compose.yml
 !/.devcontainer/compose.yml
 

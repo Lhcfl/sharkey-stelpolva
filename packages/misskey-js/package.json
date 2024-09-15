@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "misskey-js",
-	"version": "2024.7.0",
+	"version": "2024.8.0",
 	"description": "Misskey SDK for JavaScript",
 	"license": "MIT",
 	"main": "./built/index.js",
@@ -22,7 +22,7 @@
 		"tsd": "tsd",
 		"api": "pnpm api-extractor run --local --verbose",
 		"api-prod": "pnpm api-extractor run --verbose",
-		"eslint": "eslint './**/*.{js,jsx,ts,tsx}'",
+		"eslint": "eslint './**/*.{js,jsx,ts,tsx}' --cache",
 		"typecheck": "tsc --noEmit",
 		"lint": "pnpm typecheck && pnpm eslint",
 		"jest": "jest --coverage --detectOpenHandles",

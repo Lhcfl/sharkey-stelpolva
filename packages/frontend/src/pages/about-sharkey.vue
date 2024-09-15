@@ -53,10 +53,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 							{{ i18n.ts._aboutMisskey.source }} ({{ i18n.ts._aboutMisskey.original_sharkey }})
 							<template #suffix>GitLab</template>
 						</FormLink>
-						<FormLink to="https://ko-fi.com/transfem" external>
+						<FormLink to="https://opencollective.com/sharkey" external>
 							<template #icon><i class="ph-piggy-bank ph-bold ph-lg"></i></template>
 							{{ i18n.ts._aboutMisskey.donate_sharkey }}
-							<template #suffix>Ko-Fi</template>
+							<template #suffix>OpenCollective</template>
 						</FormLink>
 					</div>
 				</FormSection>
@@ -77,10 +77,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<FormSection>
 					<template #label>{{ i18n.ts._aboutMisskey.projectMembers }}</template>
 					<div :class="$style.contributors" style="margin-bottom: 8px;">
-						<a href="https://activitypub.software/Amelia" target="_blank" :class="$style.contributor">
-							<img src="https://activitypub.software/uploads/-/system/user/avatar/1/avatar.png?width=128" :class="$style.contributorAvatar">
-							<span :class="$style.contributorUsername">@Amelia</span>
-						</a>
 						<a href="https://activitypub.software/dakkar" target="_blank" :class="$style.contributor">
 							<img src="https://secure.gravatar.com/avatar/c71b315eed7c63ff94c42b1b3e8dbad1?s=192&d=identicon" :class="$style.contributorAvatar">
 							<span :class="$style.contributorUsername">@dakkar</span>
@@ -104,6 +100,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<a href="https://activitypub.software/tess" target="_blank" :class="$style.contributor">
 							<img src="https://activitypub.software/uploads/-/system/user/avatar/132/avatar.png?width=128" :class="$style.contributorAvatar">
 							<span :class="$style.contributorUsername">@tess</span>
+						</a>
+						<a href="https://activitypub.software/marie" target="_blank" :class="$style.contributor">
+							<img src="https://activitypub.software/uploads/-/system/user/avatar/2/avatar.png?width=128" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@Marie</span>
+						</a>
+						<a href="https://activitypub.software/luna" target="_blank" :class="$style.contributor">
+							<img src="https://secure.gravatar.com/avatar/4faf37df86a3d93a6c19ed6abf8588eade4efb837410dbbc53021b4fd12eaae7?s=80&d=identicon" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@Luna</span>
 						</a>
 					</div>
 					<template #description><MkLink url="https://activitypub.software/TransFem-org/Sharkey/-/graphs/develop">{{ i18n.ts._aboutMisskey.allContributors }}</MkLink></template>

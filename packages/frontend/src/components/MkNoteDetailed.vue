@@ -266,6 +266,7 @@ import MkReactionIcon from '@/components/MkReactionIcon.vue';
 import MkButton from '@/components/MkButton.vue';
 import { boostMenuItems, type Visibility } from '@/scripts/boost-quote.js';
 import { isEnabledUrlPreview } from '@/instance.js';
+import { getAppearNote } from '@/scripts/get-appear-note.js';
 import { type Keymap } from '@/scripts/hotkey.js';
 
 const props = withDefaults(defineProps<{
@@ -299,14 +300,7 @@ if (noteViewInterruptors.length > 0) {
 	});
 }
 
-const isRenote = (
-	note.value.renote != null &&
-	note.value.reply == null &&
-	note.value.text == null &&
-	note.value.cw == null &&
-	note.value.fileIds && note.value.fileIds.length === 0 &&
-	note.value.poll == null
-);
+const isRenote = Misskey.note.isPureRenote(note.value);
 
 const rootEl = shallowRef<HTMLElement>();
 const menuButton = shallowRef<HTMLElement>();
@@ -317,7 +311,7 @@ const reactButton = shallowRef<HTMLElement>();
 const quoteButton = shallowRef<HTMLElement>();
 const clipButton = shallowRef<HTMLElement>();
 const likeButton = shallowRef<HTMLElement>();
-const appearNote = computed(() => isRenote ? note.value.renote as Misskey.entities.Note : note.value);
+const appearNote = computed(() => getAppearNote(note.value));
 const galleryEl = shallowRef<InstanceType<typeof MkMediaList>>();
 const isMyRenote = $i && ($i.id === note.value.userId);
 const showContent = ref(defaultStore.state.uncollapseCW);
