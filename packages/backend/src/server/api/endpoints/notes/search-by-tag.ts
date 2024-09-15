@@ -82,7 +82,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const meta = await this.metaService.fetch(true);
 
 			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
-				.andWhere('note.visibility = \'public\'')
+				// .andWhere(new Brackets(qb => {
+				// 	qb.orWhere('note.visibility = \'public\'');
+				// 	if (me) {
+				// 		qb.orWhere('note.userId = :meid');
+				// 	}
+				// }))
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('note.reply', 'reply')
 				.leftJoinAndSelect('note.renote', 'renote')
@@ -100,6 +105,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			] = me ? await Promise.all([
 				this.cacheService.userFollowingsCache.fetch(me.id),
 			]) : [undefined];
+
+			console.log(followings);
 
 			try {
 				if (ps.tag) {

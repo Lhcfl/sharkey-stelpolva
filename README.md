@@ -29,6 +29,7 @@
 
 - 添加了 Google Translation
 - 在 MkPostForm 上添加了 autosize
+- 还原了 Misskey 的 Hashtag 搜索设置，即你能搜到任何你可见的打了某个 Hashtag 的帖子
 
 <div>
 
