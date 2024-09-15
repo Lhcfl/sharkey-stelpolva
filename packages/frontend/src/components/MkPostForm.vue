@@ -273,6 +273,7 @@ const hashtags = computed(defaultStore.makeGetterSetter('postFormHashtags'));
 
 watch(text, () => {
 	checkMissingMention();
+	nextTick(() => textareaEl.value && autosize.update(textareaEl.value));
 }, { immediate: true });
 
 watch(visibility, () => {
@@ -580,21 +581,16 @@ function clear() {
 	files.value = [];
 	poll.value = null;
 	quoteId.value = null;
-
-	nextTick(() => textareaEl.value && autosize.update(textareaEl.value));
 }
 
 function onKeydown(ev: KeyboardEvent) {
 	if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && canPost.value) post();
 
 	if (ev.key === 'Escape') emit('esc');
-
-	nextTick(() => textareaEl.value && autosize.update(textareaEl.value));
 }
 
 function onCompositionUpdate(ev: CompositionEvent) {
 	imeText.value = ev.data;
-	nextTick(() => textareaEl.value && autosize.update(textareaEl.value));
 }
 
 function onCompositionEnd(ev: CompositionEvent) {
@@ -650,8 +646,6 @@ async function onPaste(ev: ClipboardEvent) {
 			upload(file, `${fileName}.txt`);
 		});
 	}
-
-	nextTick(() => textareaEl.value && autosize.update(textareaEl.value));
 }
 
 function onDragover(ev) {
@@ -1109,6 +1103,7 @@ defineExpose({
 	&.modal {
 		width: 100%;
 		max-width: 520px;
+		overflow-y: auto;
 	}
 }
 
