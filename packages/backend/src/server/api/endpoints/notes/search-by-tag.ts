@@ -106,8 +106,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				this.cacheService.userFollowingsCache.fetch(me.id),
 			]) : [undefined];
 
-			console.log(followings);
-
 			try {
 				if (ps.tag) {
 					if (!safeForSql(normalizeForSearch(ps.tag))) throw new Error('Injection');
