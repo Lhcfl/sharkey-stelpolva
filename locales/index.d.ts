@@ -1181,6 +1181,10 @@ export interface Locale extends ILocale {
      */
     "areYouSure": string;
     /**
+     * 「{x}」を開きますか？
+     */
+    "confirmRemoteUrl": ParameterizedString<"x">;
+    /**
      * 保存しました
      */
     "saved": string;
