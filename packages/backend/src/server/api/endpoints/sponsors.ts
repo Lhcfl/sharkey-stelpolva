@@ -10,7 +10,7 @@ import { DI } from '@/di-symbols.js';
 
 export const meta = {
 	tags: ['meta'],
-	description: 'Get Sharkey GH Sponsors',
+	description: 'Get Sharkey Sponsors',
 
 	requireCredential: false,
 	requireCredentialPrivateMode: false,
@@ -30,29 +30,28 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
         @Inject(DI.redis) private redisClient: Redis.Redis,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			let sponsors;
-			const cachedSponsors = await this.redisClient.get('sponsors');
+			let totalSponsors;
+			const cachedSponsors = await this.redisClient.get('sponsors');	
+
 			if (!ps.forceUpdate && cachedSponsors) {
-				sponsors = JSON.parse(cachedSponsors);
+				totalSponsors = JSON.parse(cachedSponsors);
 			} else {
-				AbortSignal.timeout ??= function timeout(ms) {
-					const ctrl = new AbortController();
-					setTimeout(() => ctrl.abort(), ms);
-					return ctrl.signal;
-				};
-
 				try {
-					sponsors = await fetch('https://kaifa.ch/transfem-sponsors.json', { signal: AbortSignal.timeout(2000) })
-						.then((response) => response.json());
+					const backers = await fetch('https://opencollective.com/sharkey/tiers/backer/all.json').then((response) => response.json());
+					const sponsorsOC = await fetch('https://opencollective.com/sharkey/tiers/sponsor/all.json').then((response) => response.json());
 
-					await this.redisClient.set('sponsors', JSON.stringify(sponsors), 'EX', 3600);
+					// Merge both together into one array and make sure it only has Active subscriptions
+					const allSponsors = [...backers, ...sponsorsOC].filter(sponsor => sponsor.isActive == true);
+
+					// Remove possible duplicates
+					totalSponsors = [...new Map(allSponsors.map(v => [v.profile, v])).values()];
+
+					await this.redisClient.set('sponsors', JSON.stringify(totalSponsors), 'EX', 3600);
 				} catch (error) {
-					sponsors = {
-						sponsors: [],
-					};
+					totalSponsors = [];
 				}
 			}
-			return { sponsor_data: sponsors['sponsors'] };
+			return { sponsor_data: totalSponsors };
 		});
 	}
 }
