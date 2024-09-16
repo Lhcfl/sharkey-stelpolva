@@ -22,12 +22,13 @@ import MkSparkle from '@/components/MkSparkle.vue';
 import { version } from '@/config.js';
 import { i18n } from '@/i18n.js';
 import { confetti } from '@/scripts/confetti.js';
+import { useRouter } from '@/router/supplier';
 
 const modal = shallowRef<InstanceType<typeof MkModal>>();
 
 const whatIsNew = () => {
 	modal.value?.close();
-	window.open(`https://activitypub.software/TransFem-org/Sharkey/-/releases/${version}`, '_blank');
+	useRouter().push(`/tags/${version.replaceAll('.', '-')}`);
 };
 
 onMounted(() => {
