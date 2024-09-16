@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import https from 'node:https';
 import { Inject, Injectable } from '@nestjs/common';
 import { summaly } from '@misskey-dev/summaly';
 import { SummalyResult } from '@misskey-dev/summaly/built/summary.js';
+import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { MetaService } from '@/core/MetaService.js';
@@ -16,9 +18,8 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import { ApiError } from '@/server/api/error.js';
 import { MiMeta } from '@/models/Meta.js';
-import type { FastifyRequest, FastifyReply } from 'fastify';
-import * as Redis from 'ioredis';
 import { RedisKVCache } from '@/misc/cache.js';
+import type { FastifyRequest, FastifyReply } from 'fastify';
 
 @Injectable()
 export class UrlPreviewService {
@@ -157,6 +158,44 @@ export class UrlPreviewService {
 			operationTimeout: meta.urlPreviewTimeout,
 			contentLengthLimit: meta.urlPreviewMaximumContentLength,
 			contentLengthRequired: meta.urlPreviewRequireContentLength,
+			plugins: [
+				{
+					test: (url) => /^https:\/\/www.bilibili.com\/video\/([a-zA-Z0-9]+)/.test(url.toString()),
+					async summarize(url, opts) {
+						const summary = await summaly(url.toString(), { ...opts, plugins: [] });
+						const bilibiliMatch = summary.url.match(/^https:\/\/www.bilibili.com\/video\/([a-zA-Z0-9]+)/);
+						if (bilibiliMatch?.[1] && summary.player.url == null) {
+							summary.player.url = `https://player.bilibili.com/player.html?isOutside=true&bvid=${bilibiliMatch[1]}`;
+							summary.player.width = 640;
+							summary.player.height = 480;
+						}
+						return summary;
+					},
+				},
+				{
+					test: (url) => /^https:\/\/b23.tv\/([a-zA-Z0-9]+)/.test(url.toString()),
+					summarize(url, opts) {
+						return new Promise((resolve, reject) => {
+							https.request({
+								hostname: 'b23.tv',
+								path: url.pathname,
+								method: 'GET',
+								headers: {
+									'User-Agent': 'Mozilla/5.0 (compatible)',
+								},
+							}, (res) => {
+								const location = res.headers['location'] ?? '';
+								const bilibiliMatch = location.match(/^https:\/\/www.bilibili.com\/video\/([a-zA-Z0-9]+)/);
+								if (!location || !bilibiliMatch?.[1]) {
+									summaly(url.toString(), { ...opts, plugins: [] }).then(val => resolve(val)).catch(reject); // fallback;
+								} else {
+									summaly(`https://www.bilibili.com/video/${bilibiliMatch[1]}`, opts).then(val => resolve(val)).catch(reject);
+								}
+							}).end();
+						});
+					},
+				},
+			],
 		});
 	}
 

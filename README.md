@@ -31,6 +31,7 @@
 - 在 MkPostForm 上添加了 autosize
 - 还原了 Misskey 的 Hashtag 搜索设置，即你能搜到任何你可见的打了某个 Hashtag 的帖子
 - MkUrlPreview中添加了对 ActivityPub Note 的 Quote-style 预览支持
+- 允许 MkUrlPreview 打开 Bilibili 播放器
 - 允许加载某些白名单远程服务器的 AvatarDecorations （仅限 Misskey系 ）
 
 <div>
