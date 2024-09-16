@@ -43,6 +43,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</MkButton>
 	</div>
 </template>
+<template v-else-if="apNote && apExpanded">
+	<SkNoteSimple :note="apNote" :class="$style.linkNote"/>
+	<div :class="$style.action">
+		<MkButton :small="true" inline @click="apExpanded = false">
+			<i class="ti ti-x"></i> {{ i18n.ts.close }}
+		</MkButton>
+	</div>
+</template>
 <div v-else>
 	<component :is="self ? 'MkA' : 'a'" :class="[$style.link, { [$style.compact]: compact }]" :[attr]="self ? url.substring(local.length) : url" rel="nofollow noopener" :target="target" :title="url">
 		<div v-if="thumbnail && !sensitive" :class="$style.thumbnail" :style="defaultStore.state.dataSaver.urlPreview ? '' : `background-image: url('${thumbnail}')`">
@@ -78,12 +86,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i class="ti ti-picture-in-picture"></i> {{ i18n.ts.openInWindow }}
 			</MkButton>
 		</div>
+		<div v-else-if="!apExpanded && apNote" :class="$style.action">
+			<MkButton :small="true" inline @click="apExpanded = true">
+				<i class="ti ti-world-x"></i> {{ i18n.ts.expandTweet }}
+			</MkButton>
+		</div>
 	</template>
 </div>
 </template>
 
 <script lang="ts" setup>
 import { defineAsyncComponent, onDeactivated, onUnmounted, ref } from 'vue';
+import * as Misskey from 'misskey-js';
+import SkNoteSimple from './SkNoteSimple.vue';
 import type { summaly } from '@misskey-dev/summaly';
 import { url as local } from '@/config.js';
 import { i18n } from '@/i18n.js';
@@ -93,6 +108,7 @@ import MkButton from '@/components/MkButton.vue';
 import { versatileLang } from '@/scripts/intl-const.js';
 import { transformPlayerUrl } from '@/scripts/player-url-transform.js';
 import { defaultStore } from '@/store.js';
+import { misskeyApi } from '@/scripts/misskey-api';
 
 type SummalyResult = Awaited<ReturnType<typeof summaly>>;
 
@@ -131,6 +147,8 @@ const tweetExpanded = ref(props.detail);
 const embedId = `embed${Math.random().toString().replace(/\D/, '')}`;
 const tweetHeight = ref(150);
 const unknownUrl = ref(false);
+const apExpanded = ref(false);
+const apNote = ref<Misskey.entities.Note | null>(null);
 
 onDeactivated(() => {
 	playerEnabled.value = false;
@@ -178,6 +196,16 @@ window.fetch(`/url?url=${encodeURIComponent(requestUrl.href)}&lang=${versatileLa
 		sitename.value = info.sitename;
 		player.value = info.player;
 		sensitive.value = info.sensitive ?? false;
+
+		if (info.activityPub) {
+			misskeyApi('ap/show', {
+				uri: info.activityPub,
+			}).then(res => {
+				if (res.type === 'Note') {
+					apNote.value = res.object;
+				}
+			});
+		}
 	});
 
 function adjustTweetHeight(message: any) {
@@ -234,6 +262,14 @@ onUnmounted(() => {
 	position: absolute;
 	top: 0;
 	width: 100%;
+}
+
+.linkNote {
+	margin-top: 5px;
+	padding: 16px;
+	border: solid 1px var(--renote);
+	border-radius: var(--radius-sm);
+	overflow: clip;
 }
 
 .link {
