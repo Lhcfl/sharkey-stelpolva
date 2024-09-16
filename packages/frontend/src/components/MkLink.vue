@@ -5,8 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <component
-	v-if="self"
-	:is="'MkA'" ref="el" style="word-break: break-all;" class="_link" :to="url.substring(local.length)" :rel="rel ?? 'nofollow noopener'" :target="target"
+	:is="'MkA'" v-if="self" ref="el" style="word-break: break-all;" class="_link" :to="url.substring(local.length)" :rel="rel ?? 'nofollow noopener'" :target="target"
 	:behavior="props.navigationBehavior"
 	:title="url"
 	@click.stop
@@ -15,8 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<i v-if="target === '_blank'" class="ti ti-external-link" :class="$style.icon"></i>
 </component>
 <component
-	v-else
-	:is="'a'" ref="el" style="word-break: break-all;" class="_link" :rel="rel ?? 'nofollow noopener popup=false'" :target="target"
+	:is="'a'" v-else ref="el" style="word-break: break-all;" class="_link" :rel="rel ?? 'nofollow noopener popup=false'" :target="target"
 	:behavior="props.navigationBehavior"
 	:title="url"
 	@click="promptConfirm()"
