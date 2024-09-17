@@ -73,3 +73,5 @@ misskey-assets
 
 # VSCode addon
 .favorites.json
+
+/dump.rdb
