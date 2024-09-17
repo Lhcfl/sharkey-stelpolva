@@ -1020,6 +1020,7 @@ onMounted(() => {
 
 		nextTick(() => {
 			focus();
+			setTimeout(() => focus(), 10);
 		});
 	}
 
