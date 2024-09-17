@@ -146,7 +146,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				},
 				(key, ns) => {
 					const [type, id] = key.split(':');
-					if (type === 'normal') {
+					if (type === 'normal' || ns.length === 1) {
 						return ns[0];
 					} else if (type === 'reaction') {
 						return {
@@ -164,7 +164,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 							type: 'renote:grouped',
 							id: ns[ns.length - 1].id,
 							createdAt: ns[ns.length - 1].createdAt,
-							noteId: id,
+							noteId: (ns as FilterUnionByProperty<MiNotification, 'type', 'renote'>[])[0].noteId,
 							userIds: (ns as FilterUnionByProperty<MiNotification, 'type', 'renote'>[]).map(n => n.notifierId),
 						};
 					} else {
