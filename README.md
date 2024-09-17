@@ -33,6 +33,7 @@
 - MkUrlPreview中添加了对 ActivityPub Note 的 Quote-style 预览支持
 - 允许 MkUrlPreview 打开 Bilibili 播放器
 - 更好的 Notification Read 逻辑
+- Firefish 风格的 InstanceTicker（点击打开实例信息页面而不是转到原帖子）
 - 允许加载某些白名单远程服务器的 AvatarDecorations （仅限 Misskey系 ）
 
 <div>

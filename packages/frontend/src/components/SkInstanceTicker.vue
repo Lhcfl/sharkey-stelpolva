@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root" :style="bg">
+<div :class="$style.root" :style="bg" @click.stop="showInstanceTickerWindow">
 	<img v-if="faviconUrl" :class="$style.icon" :src="faviconUrl"/>
 	<div :class="$style.name">{{ instance.name }}</div>
 </div>
@@ -15,6 +15,7 @@ import { computed } from 'vue';
 import { instanceName } from '@/config.js';
 import { instance as Instance } from '@/instance.js';
 import { getProxiedImageUrlNullable } from '@/scripts/media-proxy.js';
+import * as os from '@/os.js';
 
 const props = defineProps<{
 	instance?: {
@@ -22,6 +23,7 @@ const props = defineProps<{
 		name: string
 		themeColor?: string
 	}
+	host: string | null,
 }>();
 
 // if no instance data is given, this is for the local instance
@@ -38,6 +40,14 @@ const bg = {
 	//background: `linear-gradient(90deg, ${themeColor}, ${themeColor}00)`,
 	background: `${themeColor}`,
 };
+
+function showInstanceTickerWindow() {
+	if (props.host) {
+		os.pageWindow(`/instance-info/${props.host}`);
+	} else {
+		os.pageWindow('/about');
+	}
+}
 </script>
 
 <style lang="scss" module>
