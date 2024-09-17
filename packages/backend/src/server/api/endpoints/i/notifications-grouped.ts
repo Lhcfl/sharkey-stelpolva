@@ -115,53 +115,112 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			// grouping
-			let groupedNotifications = [notifications[0]] as MiGroupedNotification[];
-			for (let i = 1; i < notifications.length; i++) {
-				const notification = notifications[i];
-				const prev = notifications[i - 1];
-				let prevGroupedNotification = groupedNotifications.at(-1)!;
+			const notificationGrouper = (
+				ns: MiNotification[],
+				grouppingKey: (n: MiNotification) => string,
+				grouper: (id: string, ns: MiNotification[]) => MiGroupedNotification,
+			) => {
+				const nMap = new Map<string, MiNotification[]>();
+				for (const n of ns) {
+					const key = grouppingKey(n);
+					let arr = nMap.get(key);
+					if (arr == null) {
+						arr = [];
+						nMap.set(key, arr);
+					}
+					arr.push(n);
+				}
+				return Array.from(nMap.entries()).map(([id, ns]) => grouper(id, ns));
+			};
 
-				if (prev.type === 'reaction' && notification.type === 'reaction' && prev.noteId === notification.noteId) {
-					if (prevGroupedNotification.type !== 'reaction:grouped') {
-						groupedNotifications[groupedNotifications.length - 1] = {
+			const groupedNotifications = notificationGrouper(
+				notifications,
+				(n) => {
+					if (n.type === 'reaction') {
+						return `reaction:${n.noteId}`;
+					}
+					if (n.type === 'renote') {
+						return `renote:${n.targetNoteId}`;
+					}
+					return `normal:${n.id}`;
+				},
+				(key, ns) => {
+					const [type, id] = key.split(':');
+					if (type === 'normal') {
+						return ns[0];
+					} else if (type === 'reaction') {
+						return {
 							type: 'reaction:grouped',
-							id: '',
-							createdAt: prev.createdAt,
-							noteId: prev.noteId!,
-							reactions: [{
-								userId: prev.notifierId!,
-								reaction: prev.reaction!,
-							}],
+							id: ns[ns.length - 1].id,
+							createdAt: ns[ns.length - 1].createdAt,
+							noteId: id,
+							reactions: (ns as FilterUnionByProperty<MiNotification, 'type', 'reaction'>[]).map(n => ({
+								userId: n.notifierId,
+								reaction: n.reaction,
+							})),
 						};
-						prevGroupedNotification = groupedNotifications.at(-1)!;
-					}
-					(prevGroupedNotification as FilterUnionByProperty<MiGroupedNotification, 'type', 'reaction:grouped'>).reactions.push({
-						userId: notification.notifierId!,
-						reaction: notification.reaction!,
-					});
-					prevGroupedNotification.id = notification.id;
-					continue;
-				}
-				if (prev.type === 'renote' && notification.type === 'renote' && prev.targetNoteId === notification.targetNoteId) {
-					if (prevGroupedNotification.type !== 'renote:grouped') {
-						groupedNotifications[groupedNotifications.length - 1] = {
+					} else if (type === 'renote') {
+						return {
 							type: 'renote:grouped',
-							id: '',
-							createdAt: notification.createdAt,
-							noteId: prev.noteId!,
-							userIds: [prev.notifierId!],
+							id: ns[ns.length - 1].id,
+							createdAt: ns[ns.length - 1].createdAt,
+							noteId: id,
+							userIds: (ns as FilterUnionByProperty<MiNotification, 'type', 'renote'>[]).map(n => n.notifierId),
 						};
-						prevGroupedNotification = groupedNotifications.at(-1)!;
+					} else {
+						throw new Error('Never');
 					}
-					(prevGroupedNotification as FilterUnionByProperty<MiGroupedNotification, 'type', 'renote:grouped'>).userIds.push(notification.notifierId!);
-					prevGroupedNotification.id = notification.id;
-					continue;
-				}
+				},
+			).slice(0, ps.limit);
 
-				groupedNotifications.push(notification);
-			}
+			// let groupedNotifications = [notifications[0]] as MiGroupedNotification[];
+			// for (let i = 1; i < notifications.length; i++) {
+			// 	const notification = notifications[i];
+			// 	const prev = notifications[i - 1];
+			// 	let prevGroupedNotification = groupedNotifications.at(-1)!;
 
-			groupedNotifications = groupedNotifications.slice(0, ps.limit);
+			// 	if (prev.type === 'reaction' && notification.type === 'reaction' && prev.noteId === notification.noteId) {
+			// 		if (prevGroupedNotification.type !== 'reaction:grouped') {
+			// 			groupedNotifications[groupedNotifications.length - 1] = {
+			// 				type: 'reaction:grouped',
+			// 				id: '',
+			// 				createdAt: prev.createdAt,
+			// 				noteId: prev.noteId!,
+			// 				reactions: [{
+			// 					userId: prev.notifierId!,
+			// 					reaction: prev.reaction!,
+			// 				}],
+			// 			};
+			// 			prevGroupedNotification = groupedNotifications.at(-1)!;
+			// 		}
+			// 		(prevGroupedNotification as FilterUnionByProperty<MiGroupedNotification, 'type', 'reaction:grouped'>).reactions.push({
+			// 			userId: notification.notifierId!,
+			// 			reaction: notification.reaction!,
+			// 		});
+			// 		prevGroupedNotification.id = notification.id;
+			// 		continue;
+			// 	}
+			// 	if (prev.type === 'renote' && notification.type === 'renote' && prev.targetNoteId === notification.targetNoteId) {
+			// 		if (prevGroupedNotification.type !== 'renote:grouped') {
+			// 			groupedNotifications[groupedNotifications.length - 1] = {
+			// 				type: 'renote:grouped',
+			// 				id: '',
+			// 				createdAt: notification.createdAt,
+			// 				noteId: prev.noteId!,
+			// 				userIds: [prev.notifierId!],
+			// 			};
+			// 			prevGroupedNotification = groupedNotifications.at(-1)!;
+			// 		}
+			// 		(prevGroupedNotification as FilterUnionByProperty<MiGroupedNotification, 'type', 'renote:grouped'>).userIds.push(notification.notifierId!);
+			// 		prevGroupedNotification.id = notification.id;
+			// 		continue;
+			// 	}
+
+			// 	groupedNotifications.push(notification);
+			// }
+
+			// groupedNotifications = groupedNotifications.slice(0, ps.limit);
+
 			const noteIds = groupedNotifications
 				.filter((notification): notification is FilterUnionByProperty<MiNotification, 'type', 'mention' | 'reply' | 'quote' | 'edited'> => ['mention', 'reply', 'quote', 'edited'].includes(notification.type))
 				.map(notification => notification.noteId!);
