@@ -25,6 +25,8 @@
 
 </div>
 
+> <big><b> ⚠️ 由于 Sharkey 最新stable分支上存在严重内存泄漏问题，影响到了默认的 stelpolva 分支。请暂时不要在默认的 stelpolva 分支上构建。星屑正在使用的是 [stelpolva-temp-downgrade 分支](https://github.com/Lhcfl/sharkey-stelpolva/tree/stelpolva-temp-downgrade) </b></big>
+
 ## 相对于 Sharkey 的修改：
 
 - 添加了 Google Translation
