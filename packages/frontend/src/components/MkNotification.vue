@@ -28,7 +28,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 				[$style.t_roleAssigned]: notification.type === 'roleAssigned' && notification.role.iconUrl == null,
 				[$style.t_pollEnded]: notification.type === 'edited',
 			}]"
-		> <!-- we re-use t_pollEnded for "edited" instead of making an identical style -->
+		>
+			<!-- we re-use t_pollEnded for "edited" instead of making an identical style -->
 			<i v-if="notification.type === 'follow'" class="ti ti-plus"></i>
 			<i v-else-if="notification.type === 'receiveFollowRequest'" class="ti ti-clock"></i>
 			<i v-else-if="notification.type === 'followRequestAccepted'" class="ti ti-check"></i>
@@ -74,7 +75,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<Mfm :text="getNoteSummary(notification.note)" :isBlock="true" :plain="true" :nowrap="true" :author="notification.note.user"/>
 				<i class="ti ti-quote" :class="$style.quote"></i>
 			</MkA>
-			<MkA v-else-if="notification.type === 'renote' || notification.type === 'renote:grouped'" :class="$style.text" :to="notePage(notification.note)" :title="getNoteSummary(notification.note.renote)">
+			<MkA v-else-if="notification.type === 'renote' || notification.type === 'renote:grouped'" :class="$style.text" :to="notePage(notification.note.renote)" :title="getNoteSummary(notification.note.renote)">
 				<i class="ti ti-quote" :class="$style.quote"></i>
 				<Mfm :text="getNoteSummary(notification.note.renote)" :isBlock="true" :plain="true" :nowrap="true" :author="notification.note.renote?.user"/>
 				<i class="ti ti-quote" :class="$style.quote"></i>
