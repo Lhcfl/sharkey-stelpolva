@@ -257,8 +257,8 @@ importers:
         specifier: 14.4.2
         version: 14.4.2
       happy-dom:
-        specifier: 15.6.1
-        version: 15.6.1
+        specifier: 15.7.4
+        version: 15.7.4
       hpagent:
         specifier: 1.2.0
         version: 1.2.0
@@ -7666,8 +7666,8 @@ packages:
   happy-dom@10.0.3:
     resolution: {integrity: sha512-WkCP+Z5fX6U5PY+yHP3ElV5D9PoxRAHRWPFq3pG9rg/6Hjf5ak7dozAgSCywsTRUq2qfa8vV8OQvUy5pRXy8EQ==}
 
-  happy-dom@15.6.1:
-    resolution: {integrity: sha512-dsMHLsJHZYhXeExP47B2siAfKNVxptlwFss3/bq/9sG3iBt0P2WYFBq68JgMR5vB5gsN2Ev0feTTPD/+rosUNQ==}
+  happy-dom@15.7.4:
+    resolution: {integrity: sha512-r1vadDYGMtsHAAsqhDuk4IpPvr6N8MGKy5ntBo7tSdim+pWDxus2PNqOcOt8LuDZ4t3KJHE+gCuzupcx/GKnyQ==}
     engines: {node: '>=18.0.0'}
 
   hard-rejection@2.1.0:
@@ -20157,7 +20157,7 @@ snapshots:
       whatwg-encoding: 2.0.0
       whatwg-mimetype: 3.0.0
 
-  happy-dom@15.6.1:
+  happy-dom@15.7.4:
     dependencies:
       entities: 4.5.0
       webidl-conversions: 7.0.0
