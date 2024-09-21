@@ -64,7 +64,7 @@ services:
 #      PORT: 7493
 #      MCAPTCHA_redis_URL: "redis://mcaptcha_redis/"
 #      MCAPTCHA_allow_registration: true
-#      MCAPTCHA_server_DOMAIN: "ChangeThis"
+#      MCAPTCHA_server_DOMAIN: "example.tld"
 #    depends_on:
 #      db:
 #        condition: service_healthy
