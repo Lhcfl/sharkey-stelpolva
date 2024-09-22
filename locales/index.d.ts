@@ -5777,6 +5777,18 @@ export interface Locale extends ILocale {
          */
         "iconUrl": string;
         /**
+         * 高精細、ダイナミック幅のシナリオで通常のアイコンの代わりに使用するロゴを指定します。
+         */
+        "sidebarLogoDescription": string;
+        /**
+         * 例：サイドバー、訪問者用、「About 」ページ
+         */
+        "sidebarLogoUsageExample": string;
+        /**
+         * サイドバー/ロゴ
+         */
+        "sidebarLogoHint": string;
+        /**
          * {host}がアプリとして表示される際のアイコンを指定します。
          */
         "appIconDescription": ParameterizedString<"host">;

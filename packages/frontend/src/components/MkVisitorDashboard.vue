@@ -6,8 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div v-if="instance" :class="$style.root">
 	<div :class="[$style.main, $style.panel]">
-		<img v-if="instance.sidebarLogoUrl" :src="instance.sidebarLogoUrl" alt="" :class="$style.wideIcon"/>
-		<img v-if="!instance.sidebarLogoUrl" :src="instance.sidebarLogoUrl || instance.iconUrl || '/apple-touch-icon.png'" alt="" :class="$style.mainIcon"/>
+		<img :src="instance.sidebarLogoUrl || instance.iconUrl || '/apple-touch-icon.png'" alt="" :class="instance.sidebarLogoUrl ? $style.wideIcon : $style.mainIcon"/>
 		<button class="_button _acrylic" :class="$style.mainMenu" @click="showMenu"><i class="ti ti-dots"></i></button>
 		<div :class="$style.mainFg">
 			<h1 :class="$style.mainTitle">

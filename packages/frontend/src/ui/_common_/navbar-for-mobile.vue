@@ -8,8 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.top">
 		<div :class="$style.banner" :style="{ backgroundImage: `url(${ instance.bannerUrl })` }"></div>
 		<button class="_button" :class="$style.instance" @click="openInstanceMenu">
-			<img v-if="instance.sidebarLogoUrl" :src="instance.sidebarLogoUrl" alt="" :class="$style.wideInstanceIcon"/>
-			<img v-if="!instance.sidebarLogoUrl" :src="instance.sidebarLogoUrl || instance.iconUrl || instance.faviconUrl || '/favicon.ico'" alt="" :class="$style.instanceIcon"/>
+		<img :src="instance.sidebarLogoUrl || instance.iconUrl || '/apple-touch-icon.png'" alt="" :class="instance.sidebarLogoUrl ? $style.wideInstanceIcon : $style.instanceIcon"/>
 		</button>
 	</div>
 	<div :class="$style.middle">
