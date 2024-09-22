@@ -5781,7 +5781,7 @@ export interface Locale extends ILocale {
          */
         "sidebarLogoDescription": string;
         /**
-         * 例：サイドバー、訪問者用、「About 」ページ
+         * 例：サイドバー、訪問者用、「情報」ページ
          */
         "sidebarLogoUsageExample": string;
         /**
