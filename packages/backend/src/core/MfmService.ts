@@ -245,7 +245,7 @@ export class MfmService {
 			return null;
 		}
 
-		const { window } = new Window();
+		const { happyDOM, window } = new Window();
 
 		const doc = window.document;
 
@@ -463,7 +463,11 @@ export class MfmService {
 
 		appendChildren(nodes, body);
 
-		return new XMLSerializer().serializeToString(body);
+		const serialized = new XMLSerializer().serializeToString(body);
+
+		happyDOM.close().catch(e => {});
+
+		return serialized;
 	}
 
 	// the toMastoApiHtml function was taken from Iceshrimp and written by zotan and modified by marie to work with the current MK version
@@ -474,7 +478,7 @@ export class MfmService {
 			return null;
 		}
 
-		const { window } = new Window();
+		const { happyDOM, window } = new Window();
 
 		const doc = window.document;
 
@@ -680,6 +684,8 @@ export class MfmService {
 		if (inline) {
 			result = result.replace(/^<p>/, '').replace(/<\/p>$/, '');
 		}
+
+		happyDOM.close().catch(e => {});
 
 		return result;
 	}
