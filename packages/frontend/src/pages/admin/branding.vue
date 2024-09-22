@@ -19,7 +19,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #prefix><i class="ti ti-link"></i></template>
 						<template #label>{{ i18n.ts._serverSettings.iconUrl }} (Sidebar/Logo)</template>
 						<template #caption>
-							<div>{{ i18n.tsx._serverSettings.sidebarLogoIconDescriptionhost }}</div>
+							<div>{{ i18n.ts._serverSettings.sidebarLogoDescription }}</div>
+							<div>({{ i18n.ts._serverSettings.sidebarLogoUsageExample }})</div>
 						</template>
 					</MkInput>
 
