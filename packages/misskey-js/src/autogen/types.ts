@@ -5191,6 +5191,7 @@ export type operations = {
             infoImageUrl: string | null;
             notFoundImageUrl: string | null;
             iconUrl: string | null;
+            sidebarLogoUrl: string | null;
             app192IconUrl: string | null;
             app512IconUrl: string | null;
             enableEmail: boolean;
@@ -9704,6 +9705,7 @@ export type operations = {
           infoImageUrl?: string | null;
           notFoundImageUrl?: string | null;
           iconUrl?: string | null;
+          sidebarLogoUrl?: string | null;
           app192IconUrl?: string | null;
           app512IconUrl?: string | null;
           backgroundImageUrl?: string | null;

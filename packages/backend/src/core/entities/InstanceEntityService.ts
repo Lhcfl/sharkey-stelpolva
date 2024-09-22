@@ -52,6 +52,7 @@ export class InstanceEntityService {
 			isSilenced: this.utilityService.isSilencedHost(meta.silencedHosts, instance.host),
 			isMediaSilenced: this.utilityService.isMediaSilencedHost(meta.mediaSilencedHosts, instance.host),
 			iconUrl: instance.iconUrl,
+			sidebarLogoUrl: instance.sidebarLogoUrl,
 			faviconUrl: instance.faviconUrl,
 			themeColor: instance.themeColor,
 			infoUpdatedAt: instance.infoUpdatedAt ? instance.infoUpdatedAt.toISOString() : null,

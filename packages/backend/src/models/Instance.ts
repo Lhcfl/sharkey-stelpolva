@@ -142,6 +142,11 @@ export class MiInstance {
 	@Column('varchar', {
 		length: 256, nullable: true,
 	})
+	public sidebarLogoUrl: string | null;
+
+	@Column('varchar', {
+		length: 256, nullable: true,
+	})
 	public faviconUrl: string | null;
 
 	@Column('varchar', {
