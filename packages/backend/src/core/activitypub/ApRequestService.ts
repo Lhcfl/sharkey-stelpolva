@@ -241,9 +241,6 @@ export class ApRequestService {
 				if (alternate) {
 					const href = alternate.getAttribute('href');
 					if (href) {
-						// Since this early exits, we need to call DetachedWindowAPI.close
-						await window.happyDOM.close();
-
 						return await this.signedGet(href, user, false);
 					}
 				}
