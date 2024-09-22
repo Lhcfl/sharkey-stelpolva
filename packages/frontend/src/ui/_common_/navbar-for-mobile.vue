@@ -127,7 +127,6 @@ function more() {
 		min-width: 38px;
 		max-width: 100%;
 		max-height: 80px;
-		
 	}
 
 .bottom {
