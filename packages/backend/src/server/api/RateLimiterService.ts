@@ -32,18 +32,11 @@ export class RateLimiterService {
 
 	@bindThis
 	public limit(limitation: IEndpointMeta['limit'] & { key: NonNullable<string> }, actor: string, factor = 1) {
-		{
-			if (this.disabled) {
-				return Promise.resolve();
-			}
-
-			// those lines with the "wrong" brace style / indentation are
-			// done that way so that the *other* lines stay identical to
-			// Misskey, simplifying merges
+		return new Promise<void>((ok, reject) => {
+			if (this.disabled) ok();
 
 			// Short-term limit
-			// eslint-disable-next-line brace-style
-			const minP = () => { return new Promise<void>((ok, reject) => {
+			const minP = (): void => {
 				const minIntervalLimiter = new Limiter({
 					id: `${actor}:${limitation.key}:min`,
 					duration: limitation.minInterval! * factor,
@@ -62,18 +55,16 @@ export class RateLimiterService {
 						return reject({ code: 'BRIEF_REQUEST_INTERVAL', info });
 					} else {
 						if (hasLongTermLimit) {
-							return maxP().then(ok, reject);
+							return maxP();
 						} else {
 							return ok();
 						}
 					}
 				});
-			// eslint-disable-next-line brace-style
-			}); };
+			};
 
 			// Long term limit
-			// eslint-disable-next-line brace-style
-			const maxP = () => { return new Promise<void>((ok, reject) => {
+			const maxP = (): void => {
 				const limiter = new Limiter({
 					id: `${actor}:${limitation.key}`,
 					duration: limitation.duration! * factor,
@@ -94,8 +85,7 @@ export class RateLimiterService {
 						return ok();
 					}
 				});
-			// eslint-disable-next-line brace-style
-			}); };
+			};
 
 			const hasShortTermLimit = typeof limitation.minInterval === 'number';
 
@@ -104,12 +94,12 @@ export class RateLimiterService {
 				typeof limitation.max === 'number';
 
 			if (hasShortTermLimit) {
-				return minP();
+				minP();
 			} else if (hasLongTermLimit) {
-				return maxP();
+				maxP();
 			} else {
-				return Promise.resolve();
+				ok();
 			}
-		}
+		});
 	}
 }
