@@ -121,12 +121,12 @@ function more() {
 	aspect-ratio: 1;
 }
 
-	.wideInstanceIcon {
-		display: inline-block;
-		min-width: 38px;
-		max-width: 100%;
-		max-height: 80px;
-	}
+.wideInstanceIcon {
+	display: inline-block;
+	min-width: 38px;
+	max-width: 100%;
+	max-height: 80px;
+}
 
 .bottom {
 	position: sticky;
