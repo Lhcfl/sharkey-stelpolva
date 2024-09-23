@@ -6,7 +6,7 @@
   "typings": "./lib/src/index.d.ts",
   "scripts": {
     "build": "tsc -p ./",
-    "lint": "eslint --ext .js,.ts src",
+    "lint": "eslint --ext .js,.ts src --cache",
     "doc": "typedoc --out ../docs ./src",
     "test": "NODE_ENV=test jest -u --maxWorkers=3"
   },

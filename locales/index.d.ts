@@ -3121,6 +3121,10 @@ export interface Locale extends ILocale {
      */
     "loadRawImages": string;
     /**
+     * 返信にサーバー情報を表示する
+     */
+    "showTickerOnReplies": string;
+    /**
      * 検索MFMの検索エンジン
      */
     "searchEngine": string;
@@ -4373,6 +4377,14 @@ export interface Locale extends ILocale {
      * ファイルを折りたたむ
      */
     "collapseFiles": string;
+    /**
+     * CWを展開する
+     */
+    "uncollapseCW": string;
+    /**
+     * 長い投稿を常に展開する
+     */
+    "expandLongNote": string;
     /**
      * 会話スレッドを自動で読み込む
      */

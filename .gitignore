@@ -23,6 +23,9 @@ packages/sw/.yarn/cache
 # pnpm
 .pnpm-store
 
+# eslint
+**/.eslintcache
+
 # Cypress
 cypress/screenshots
 cypress/videos
