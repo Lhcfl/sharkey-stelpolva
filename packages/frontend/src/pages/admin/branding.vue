@@ -15,15 +15,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #label>{{ i18n.ts._serverSettings.iconUrl }}</template>
 					</MkInput>
 					
-					<MkInput v-model="sidebarLogoUrl" type="url">
-						<template #prefix><i class="ti ti-link"></i></template>
-						<template #label>{{ i18n.ts._serverSettings.iconUrl }} ({{ i18n.ts._serverSettings.sidebarLogoHint }})</template>
-						<template #caption>
-							<div>{{ i18n.ts._serverSettings.sidebarLogoDescription }}</div>
-							<div>({{ i18n.ts._serverSettings.sidebarLogoUsageExample }})</div>
-						</template>
-					</MkInput>
-
 					<MkInput v-model="app192IconUrl" type="url">
 						<template #prefix><i class="ti ti-link"></i></template>
 						<template #label>{{ i18n.ts._serverSettings.iconUrl }} (App/192px)</template>
@@ -43,6 +34,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<div>({{ i18n.ts._serverSettings.appIconUsageExample }})</div>
 							<div>{{ i18n.ts._serverSettings.appIconStyleRecommendation }}</div>
 							<div><strong>{{ i18n.tsx._serverSettings.appIconResolutionMustBe({ resolution: '512x512px' }) }}</strong></div>
+						</template>
+					</MkInput>
+
+					<MkInput v-model="sidebarLogoUrl" type="url">
+						<template #prefix><i class="ti ti-link"></i></template>
+						<template #label>{{ i18n.ts._serverSettings.iconUrl }} ({{ i18n.ts._serverSettings.sidebarLogoHint }})</template>
+						<template #caption>
+							<div>{{ i18n.ts._serverSettings.sidebarLogoDescription }}</div>
+							<div>({{ i18n.ts._serverSettings.sidebarLogoUsageExample }})</div>
 						</template>
 					</MkInput>
 

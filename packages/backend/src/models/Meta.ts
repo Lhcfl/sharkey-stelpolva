@@ -131,12 +131,6 @@ export class MiMeta {
 		length: 1024,
 		nullable: true,
 	})
-	public sidebarLogoUrl: string | null;
-
-	@Column('varchar', {
-		length: 1024,
-		nullable: true,
-	})
 	public app192IconUrl: string | null;
 
 	@Column('varchar', {
@@ -145,6 +139,12 @@ export class MiMeta {
 	})
 	public app512IconUrl: string | null;
 
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
+	public sidebarLogoUrl: string | null;
+	
 	@Column('varchar', {
 		length: 1024,
 		nullable: true,

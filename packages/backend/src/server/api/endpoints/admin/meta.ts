@@ -102,15 +102,15 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
-			sidebarLogoUrl: {
-				type: 'string',
-				optional: false, nullable: true,
-			},
 			app192IconUrl: {
 				type: 'string',
 				optional: false, nullable: true,
 			},
 			app512IconUrl: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			sidebarLogoUrl: {
 				type: 'string',
 				optional: false, nullable: true,
 			},
@@ -584,9 +584,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				notFoundImageUrl: instance.notFoundImageUrl,
 				infoImageUrl: instance.infoImageUrl,
 				iconUrl: instance.iconUrl,
-				sidebarLogoUrl: instance.sidebarLogoUrl,
 				app192IconUrl: instance.app192IconUrl,
 				app512IconUrl: instance.app512IconUrl,
+				sidebarLogoUrl: instance.sidebarLogoUrl,
 				backgroundImageUrl: instance.backgroundImageUrl,
 				logoImageUrl: instance.logoImageUrl,
 				defaultLightTheme: instance.defaultLightTheme,
