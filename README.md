@@ -39,6 +39,7 @@
 - 修复了SkDetailedNote帖子被编辑后不会更新MFM的问题
 - 允许多行 CW
 - 许多微小的可能影响体验的bug/feature修复
+- 允许切换界面字体，并添加了大量中文字体
 - 允许加载某些白名单远程服务器的 AvatarDecorations （仅限 Misskey系 ）
 
 <div>
