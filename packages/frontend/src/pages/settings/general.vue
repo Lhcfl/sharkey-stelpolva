@@ -180,7 +180,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div class="_gaps_s">
 				<MkRadios v-model="defaultFontFace">
 					<template #label>Default Font</template>
-					<template #caption>Some Chinese font files are large, please wait for a while for the font to load after switching.</template>
+					<template #caption>
+						Some Chinese font files are large, please wait for a while for the font to load after switching.
+						为了更好的体验，仅支持简体的峄山碑篆体和仅支持繁体的崇羲篆體会互相补充。
+					</template>
 					<option value="sharkey-default">Sharkey Default</option>
 					<option value="maokentangyuan">猫啃糖圆</option>
 					<option value="chillroundgothic">寒蝉圆黑</option>
@@ -193,6 +196,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<option value="arial">Arial</option>
 					<option value="times">Times</option>
 					<option value="yishanbeizhuan">峄山碑篆体</option>
+					<option value="chongxiseal">崇羲篆體</option>
 					<option value="fusion-pixel-8">缝合像素体8px</option>
 					<option value="fusion-pixel-10">缝合像素体10px</option>
 					<option value="fusion-pixel-12">缝合像素体12px</option>

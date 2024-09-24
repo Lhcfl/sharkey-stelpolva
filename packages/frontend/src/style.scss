@@ -36,6 +36,13 @@
 	font-weight: 400;
 	src: url('/static-assets/fonts/YiShanBeiZhuanTi.ttf') format('opentype');
 }
+@font-face {
+	font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+	font-family: "Chong Xi Small Seal";
+	font-style: normal;
+	font-weight: 400;
+	src: url('/static-assets/fonts/chongxi_seal.woff2') format('woff2');
+}
 
 @font-face {
   font-family: "fusion-pixel-8";
@@ -226,7 +233,10 @@ html {
 	}
 
 	&.default-font-yishanbeizhuan {
-		font-family: 'sharkey-theme-font-face', 'YiShanBeiZhuanTi', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+		font-family: 'sharkey-theme-font-face', 'YiShanBeiZhuanTi', "Chong Xi Small Seal",'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+	}
+	&.default-font-chongxiseal {
+		font-family: 'sharkey-theme-font-face', "Chong Xi Small Seal", 'YiShanBeiZhuanTi','Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
 	}
 
 	&.default-font-fusion-pixel-8 {
