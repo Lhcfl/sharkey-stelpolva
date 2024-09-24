@@ -13,7 +13,14 @@
 	font-family: 'MaoKenTangYuan';
 	font-style: normal;
 	font-weight: 400;
-	src: url('/static-assets/fonts/MaoKenTangYuan0.12.ttf') format('opentype');
+	src: url('/static-assets/fonts/MaoKenTangYuan0.12.woff2') format('woff2');
+}
+@font-face {
+	font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+	font-family: 'jf-openhuninn';
+	font-style: normal;
+	font-weight: 400;
+	src: url('/static-assets/fonts/jf-openhuninn-2.1.woff2') format("woff2");
 }
 
 @font-face {
@@ -190,7 +197,11 @@ html {
 	}
 
 	&.default-font-maokentangyuan {
-		font-family: 'sharkey-theme-font-face', 'Lexend', 'MaoKenTangYuan', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+		font-family: 'sharkey-theme-font-face', 'Lexend', 'MaoKenTangYuan', 'jf-openhuninn', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+		&[lang="zh-WY"],
+		&[lang="zh-TW"] {
+			font-family: 'sharkey-theme-font-face', 'Lexend', 'jf-openhuninn', 'MaoKenTangYuan', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+		}
 	}
 
 	&.default-font-chillroundgothic {
