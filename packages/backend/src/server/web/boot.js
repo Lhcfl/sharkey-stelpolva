@@ -164,7 +164,7 @@
 		document.documentElement.classList.add('useSystemFont');
 	}
 
-	const defaultFontFace = localStorage.getItem('defaultFontFace');
+	const defaultFontFace = localStorage.getItem('defaultFontFace') || 'maokentangyuan';
 	if (defaultFontFace) {
 		document.documentElement.classList.add(`default-font-${defaultFontFace}`);
 	}
