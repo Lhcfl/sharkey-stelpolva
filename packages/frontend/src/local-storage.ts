@@ -22,6 +22,7 @@ type Keys =
 	'theme' |
 	'colorScheme' |
 	'useSystemFont' |
+	'defaultFontFace' |
 	'fontSize' |
 	'cornerRadius' |
 	'ui' |

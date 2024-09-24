@@ -8,6 +8,27 @@
 	src: url('/static-assets/fonts/Lexend-VariableFont_wght.ttf') format('opentype');
 }
 
+@font-face {
+	font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+	font-family: 'MaoKenTangYuan';
+	font-style: normal;
+	font-weight: 400;
+	src: url('/static-assets/fonts/MaoKenTangYuan0.12.ttf') format('opentype');
+}
+
+@font-face {
+  font-family: "Clear Han Serif";
+  font-display: swap;
+  src:  local("Clear Han Serif"),
+        url("/static-assets/fonts/clearhanserif.subset.v1.07.gb2312.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "ChillRoundGothic";
+  font-display: swap;
+  src: url("/static-assets/fonts/ChillRoundGothic_Normal.woff") format("woff");
+}
+
 /*
  * SPDX-FileCopyrightText: syuilo and misskey-project
  *
@@ -119,6 +140,39 @@ html {
 
 	&.useSystemFont {
 		font-family: system-ui;
+	}
+
+	&.default-font-maokentangyuan {
+		font-family: 'sharkey-theme-font-face', 'Lexend', 'MaoKenTangYuan', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+	}
+
+	&.default-font-chillroundgothic {
+		font-family: 'sharkey-theme-font-face', 'Lexend', 'ChillRoundGothic', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+	}
+
+	&.default-font-lxgw-wenkai {
+		@import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css");
+		font-family: 'sharkey-theme-font-face', "LXGW WenKai", 'Times New Roman', Times, serif;
+	}
+
+	&.default-font-clearsans {
+		font-family: 'sharkey-theme-font-face', "Clear Han Serif", 'Times New Roman', Times, serif
+	}
+
+	&.default-font-misskey-biz {
+		font-family: 'sharkey-theme-font-face', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+	}
+
+	&.default-font-roboto {
+		font-family: 'sharkey-theme-font-face', Roboto, Arial, sans-serif;
+	}
+
+	&.default-font-arial {
+		font-family: 'sharkey-theme-font-face', Arial, sans-serif;
+	}
+
+	&.default-font-times {
+		font-family: 'sharkey-theme-font-face', 'Times New Roman', Times, serif;
 	}
 }
 

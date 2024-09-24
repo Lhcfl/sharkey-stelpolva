@@ -110,7 +110,7 @@
 	const themeFontFaceName = 'sharkey-theme-font-face';
 	if (theme) {
 		let existingFontFace;
-		document.fonts.forEach((v,k,s)=>{if (v.family === themeFontFaceName) existingFontFace=v;});
+		document.fonts.forEach((v, k, s) => {if (v.family === themeFontFaceName) existingFontFace = v;});
 		if (existingFontFace) document.fonts.delete(existingFontFace);
 
 		const themeProps = JSON.parse(theme);
@@ -124,8 +124,8 @@
 			document.fonts.add(fontFace);
 			fontFace.load().catch(
 				(failure) => {
-					console.log(failure)
-				}
+					console.log(failure);
+				},
 			);
 		}
 		for (const [k, v] of Object.entries(themeProps)) {
@@ -162,6 +162,11 @@
 	const useSystemFont = localStorage.getItem('useSystemFont');
 	if (useSystemFont) {
 		document.documentElement.classList.add('useSystemFont');
+	}
+
+	const defaultFontFace = localStorage.getItem('defaultFontFace');
+	if (defaultFontFace) {
+		document.documentElement.classList.add(`default-font-${defaultFontFace}`);
 	}
 
 	const wallpaper = localStorage.getItem('wallpaper');
@@ -346,6 +351,6 @@
 			#errorInfo {
 				width: 50%;
 			}
-		}`)
+		}`);
 	}
 })();
