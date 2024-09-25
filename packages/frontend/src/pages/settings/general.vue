@@ -178,6 +178,31 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<div class="_gaps_m">
 			<div class="_gaps_s">
+				<MkRadios v-model="defaultFontFace">
+					<template #label>Default Font</template>
+					<template #caption>
+						Some Chinese font files are large, please wait for a while for the font to load after switching.
+						为了更好的体验，仅支持简体的峄山碑篆体和仅支持繁体的崇羲篆體会互相补充。
+					</template>
+					<option value="sharkey-default">Sharkey Default</option>
+					<option value="maokentangyuan">猫啃糖圆</option>
+					<option value="chillroundgothic">寒蝉圆黑</option>
+					<option value="lxgw-wenkai">霞鹜文楷</option>
+					<option value="clearsans">思源屏显臻宋</option>
+					<option value="genryomin2">源流明體</option>
+					<option value="jinghualaosong">京華老宋體</option>
+					<option value="misskey-biz">BIZ UDGothic</option>
+					<option value="roboto">Roboto</option>
+					<option value="arial">Arial</option>
+					<option value="times">Times</option>
+					<option value="yishanbeizhuan">峄山碑篆体</option>
+					<option value="chongxiseal">崇羲篆體</option>
+					<option value="fusion-pixel-8">缝合像素体8px</option>
+					<option value="fusion-pixel-10">缝合像素体10px</option>
+					<option value="fusion-pixel-12">缝合像素体12px</option>
+				</MkRadios>
+			</div>
+			<div class="_gaps_s">
 				<MkSwitch v-model="reduceAnimation">{{ i18n.ts.reduceUiAnimation }}</MkSwitch>
 				<MkSwitch v-model="useBlurEffect">{{ i18n.ts.useBlurEffect }}</MkSwitch>
 				<MkSwitch v-model="useBlurEffectForModal">{{ i18n.ts.useBlurEffectForModal }}</MkSwitch>
@@ -354,6 +379,7 @@ const lang = ref(miLocalStorage.getItem('lang'));
 const fontSize = ref(miLocalStorage.getItem('fontSize'));
 const cornerRadius = ref(miLocalStorage.getItem('cornerRadius'));
 const useSystemFont = ref(miLocalStorage.getItem('useSystemFont') != null);
+const defaultFontFace = ref(miLocalStorage.getItem('defaultFontFace'));
 const dataSaver = ref(defaultStore.state.dataSaver);
 
 async function reloadAsk() {
@@ -463,6 +489,18 @@ watch(useSystemFont, () => {
 		miLocalStorage.setItem('useSystemFont', 't');
 	} else {
 		miLocalStorage.removeItem('useSystemFont');
+	}
+});
+
+watch(defaultFontFace, (nv, ov) => {
+	if (ov != null) {
+		document.documentElement.classList.remove(`default-font-${ov}`);
+	}
+	if (nv != null) {
+		document.documentElement.classList.add(`default-font-${nv}`);
+		miLocalStorage.setItem('defaultFontFace', nv);
+	} else {
+		miLocalStorage.removeItem('defaultFontFace');
 	}
 });
 

@@ -72,7 +72,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<span v-if="appearNote.updatedAt" ref="menuVersionsButton" style="margin-left: 0.5em;" title="Edited" @mousedown="menuVersions()"><i class="ph-pencil-simple ph-bold ph-lg"></i></span>
 						<span v-if="appearNote.localOnly" style="margin-left: 0.5em;" :title="i18n.ts._visibility['disableFederation']"><i class="ti ti-rocket-off"></i></span>
 					</div>
-					<SkInstanceTicker v-if="showTicker" :instance="appearNote.user.instance"/>
+					<SkInstanceTicker v-if="showTicker" :instance="appearNote.user.instance" :host="note.user.host"/>
 				</div>
 			</div>
 		</header>
@@ -329,9 +329,9 @@ const renoted = ref(false);
 const muted = ref($i ? checkWordMute(appearNote.value, $i, $i.mutedWords) : false);
 const translation = ref<Misskey.entities.NotesTranslateResponse | null>(null);
 const translating = ref(false);
-const parsed = appearNote.value.text ? mfm.parse(appearNote.value.text) : null;
-const urls = parsed ? extractUrlFromMfm(parsed).filter((url) => appearNote.value.renote?.url !== url && appearNote.value.renote?.uri !== url) : null;
-const animated = computed(() => parsed ? checkAnimationFromMfm(parsed) : null);
+const parsed = computed(() => appearNote.value.text ? mfm.parse(appearNote.value.text) : null);
+const urls = computed(() => parsed.value ? extractUrlFromMfm(parsed.value).filter((url) => appearNote.value.renote?.url !== url && appearNote.value.renote?.uri !== url) : null);
+const animated = computed(() => parsed.value ? checkAnimationFromMfm(parsed.value) : null);
 const allowAnim = ref(defaultStore.state.advancedMfm && defaultStore.state.animatedMfm ? true : false);
 const showTicker = (defaultStore.state.instanceTicker === 'always') || (defaultStore.state.instanceTicker === 'remote' && appearNote.value.user.instance);
 const conversation = ref<Misskey.entities.Note[]>([]);
@@ -505,7 +505,7 @@ if (appearNote.value.reactionAcceptance === 'likeOnly') {
 	});
 }
 
-function renote(visibility: Visibility, localOnly: boolean = false) {
+function renote(visibility: Visibility, localOnly = false) {
 	pleaseLogin(undefined, pleaseLoginContext.value);
 	showMovedDialog();
 

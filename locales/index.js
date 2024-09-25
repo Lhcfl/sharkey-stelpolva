@@ -40,6 +40,7 @@ const languages = [
 	'vi-VN',
 	'zh-CN',
 	'zh-TW',
+	'zh-WY',
 ];
 
 const primaries = {
