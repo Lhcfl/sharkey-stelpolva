@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <component :is="link ? MkA : 'span'" v-user-preview="preview ? user.id : undefined" v-bind="bound" class="_noSelect" :class="[$style.root, { [$style.animation]: animation, [$style.cat]: user.isCat, [$style.square]: squareAvatars }]" :style="{ color }" :title="acct(user)" @click="onClick">
-	<MkImgWithBlurhash :class="$style.inner" :src="url" :hash="user.avatarBlurhash" :cover="true" :onlyAvgColor="true"/>
+	<MkImgWithBlurhash :class="$style.inner" class="avatar-image" :src="url" :hash="user.avatarBlurhash" :cover="true" :onlyAvgColor="true" @click="tryOpenLightBox"/>
 	<MkUserOnlineIndicator v-if="indicator" :class="$style.indicator" :user="user"/>
 	<div v-if="user.isCat" :class="[$style.ears]">
 		<div :class="$style.earLeft">
@@ -40,8 +40,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { watch, ref, computed } from 'vue';
+import { watch, ref, computed, onMounted, onUnmounted } from 'vue';
 import * as Misskey from 'misskey-js';
+import PhotoSwipeLightbox from 'photoswipe/lightbox';
+import PhotoSwipe from 'photoswipe';
 import MkImgWithBlurhash from '../MkImgWithBlurhash.vue';
 import MkA from './MkA.vue';
 import { getStaticImageUrl } from '@/scripts/media-proxy.js';
@@ -62,6 +64,7 @@ const props = withDefaults(defineProps<{
 	indicator?: boolean;
 	decorations?: Omit<Misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>[];
 	forceShowDecoration?: boolean;
+	shouldOpenLightBox?: boolean;
 }>(), {
 	target: null,
 	link: false,
@@ -69,6 +72,7 @@ const props = withDefaults(defineProps<{
 	indicator: false,
 	decorations: undefined,
 	forceShowDecoration: false,
+	shouldOpenLightBox: false,
 });
 
 const emit = defineEmits<{
@@ -121,6 +125,77 @@ watch(() => props.user.avatarBlurhash, () => {
 }, {
 	immediate: true,
 });
+
+let lightbox: PhotoSwipeLightbox | null = null;
+
+function tryOpenLightBox() {
+	lightbox?.loadAndOpen(0);
+}
+
+const lightboxUrl = url.value;
+if (props.shouldOpenLightBox && lightboxUrl) {
+	const popstateHandler = (): void => {
+		if (lightbox?.pswp && lightbox.pswp.isOpen === true) {
+			lightbox.pswp.close();
+		}
+	};
+	onMounted(() => {
+		const size = Math.min(window.screen.availWidth, window.screen.availHeight) * 0.9;
+		lightbox = new PhotoSwipeLightbox({
+			dataSource: [{
+				src: lightboxUrl,
+				w: size,
+				h: size,
+			}],
+			// gallery: gallery.value,
+			mainClass: 'pswp',
+			children: '.avatar-image',
+			thumbSelector: '.avatar-image',
+			loop: false,
+			padding: window.innerWidth > 500 ? {
+				top: 32,
+				bottom: 90,
+				left: 32,
+				right: 32,
+			} : {
+				top: 0,
+				bottom: 78,
+				left: 0,
+				right: 0,
+			},
+			imageClickAction: 'close',
+			tapAction: 'close',
+			bgOpacity: 1,
+			showAnimationDuration: 100,
+			hideAnimationDuration: 100,
+			returnFocus: false,
+			pswpModule: PhotoSwipe,
+		});
+
+		lightbox.on('afterInit', () => {
+			lightbox?.pswp?.element?.focus({
+				preventScroll: true,
+			});
+			history.pushState(null, '', '#pswp');
+		});
+
+		lightbox.on('destroy', () => {
+			if (window.location.hash === '#pswp') {
+				history.back();
+			}
+		});
+
+		window.addEventListener('popstate', popstateHandler);
+
+		lightbox.init();
+	});
+
+	onUnmounted(() => {
+		window.removeEventListener('popstate', popstateHandler);
+		lightbox?.destroy();
+		lightbox = null;
+	});
+}
 </script>
 
 <style lang="scss" module>

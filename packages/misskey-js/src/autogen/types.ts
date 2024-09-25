@@ -3673,7 +3673,7 @@ export type paths = {
   '/sponsors': {
     /**
      * sponsors
-     * @description Get Sharkey GH Sponsors
+     * @description Get Sharkey Sponsors
      *
      * **Credential required**: *No*
      */
@@ -27988,7 +27988,7 @@ export type operations = {
   };
   /**
    * sponsors
-   * @description Get Sharkey GH Sponsors
+   * @description Get Sharkey Sponsors
    *
    * **Credential required**: *No*
    */

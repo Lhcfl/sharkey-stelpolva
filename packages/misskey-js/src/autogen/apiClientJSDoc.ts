@@ -4258,7 +4258,7 @@ declare module '../api.js' {
     ): Promise<SwitchCaseResponseType<E, P>>;
 
     /**
-     * Get Sharkey GH Sponsors
+     * Get Sharkey Sponsors
      * 
      * **Credential required**: *No*
      */
