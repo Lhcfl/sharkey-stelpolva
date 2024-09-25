@@ -56,8 +56,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkSwitch>
 				<MkSwitch v-model="collapseNotesRepliedTo">{{ i18n.ts.collapseNotesRepliedTo }}</MkSwitch>
 				<MkSwitch v-model="collapseFiles">{{ i18n.ts.collapseFiles }}</MkSwitch>
-				<MkSwitch v-model="uncollapseCW">Uncollapse CWs on notes</MkSwitch>
-				<MkSwitch v-model="expandLongNote">Always expand long notes</MkSwitch>
+				<MkSwitch v-model="uncollapseCW">{{ i18n.ts.uncollapseCW }}</MkSwitch>
+				<MkSwitch v-model="expandLongNote">{{ i18n.ts.expandLongNote }}</MkSwitch>
 				<MkSwitch v-model="showNoteActionsOnlyHover">{{ i18n.ts.showNoteActionsOnlyHover }}</MkSwitch>
 				<MkSwitch v-model="showClipButtonInNoteFooter">{{ i18n.ts.showClipButtonInNoteFooter }}</MkSwitch>
 				<MkSwitch v-model="autoloadConversation">{{ i18n.ts.autoloadConversation }}</MkSwitch>
@@ -67,7 +67,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkSwitch v-model="showReactionsCount">{{ i18n.ts.showReactionsCount }}</MkSwitch>
 				<MkSwitch v-model="showGapBetweenNotesInTimeline">{{ i18n.ts.showGapBetweenNotesInTimeline }}</MkSwitch>
 				<MkSwitch v-model="loadRawImages">{{ i18n.ts.loadRawImages }}</MkSwitch>
-				<MkSwitch v-model="showTickerOnReplies">Show instance ticker on replies</MkSwitch>
+				<MkSwitch v-model="showTickerOnReplies">{{ i18n.ts.showTickerOnReplies }}</MkSwitch>
 				<MkSelect v-model="searchEngine" placeholder="Other">
 					<template #label>{{ i18n.ts.searchEngine }}</template>
 					<option

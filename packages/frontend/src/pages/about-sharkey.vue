@@ -170,9 +170,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 							:key="sponsor"
 							style="margin-bottom: 0.5rem;"
 						>
-							<a :href="sponsor.profile" target="_blank" :class="$style.contributor">
-								<img :src="sponsor.avatar" :class="$style.contributorAvatar">
-								<span :class="$style.contributorUsername">{{ sponsor.details.name }}</span>
+							<a :href="sponsor.website || sponsor.profile" target="_blank" :class="$style.contributor">
+								<img :src="sponsor.image || `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${sponsor.name}`" :class="$style.contributorAvatar">
+								<span :class="$style.contributorUsername">{{ sponsor.name }}</span>
 							</a>
 						</span>
 					</div>
@@ -209,7 +209,7 @@ const easterEggEngine = ref(null);
 const sponsors = ref([]);
 const containerEl = shallowRef<HTMLElement>();
 
-await misskeyApi('sponsors', { forceUpdate: true }).then((res) => sponsors.value.push(res.sponsor_data));
+await misskeyApi('sponsors', { forceUpdate: false }).then((res) => sponsors.value.push(res.sponsor_data));
 
 function iconLoaded() {
 	const emojis = defaultStore.state.reactions;
