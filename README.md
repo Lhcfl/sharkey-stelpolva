@@ -40,6 +40,9 @@
 - 允许多行 CW
 - 许多微小的可能影响体验的bug/feature修复
 - 允许切换界面字体，并添加了大量中文字体
+- 在天线中添加特殊关键词
+	- `domain:xxx.com` 匹配来自 `xxx.com` 的任意帖子
+	- `domain:here` 匹配来自本实例的任意帖子
 - 允许加载某些白名单远程服务器的 AvatarDecorations （仅限 Misskey系 ）
   - 请在 .config/default.yml 中添加一个字符串数组 `avatarDecorationAllowedHosts`
 	- 它是允许加载 Misskey 的头像挂件的白名单实例

@@ -1327,6 +1327,10 @@ confirmWhenRevealingSensitiveMedia: "Confirm when revealing sensitive media"
 sensitiveMediaRevealConfirm: "This media might be sensitive. Are you sure you want to reveal it?"
 createdLists: "Created lists"
 createdAntennas: "Created antennas"
+stpvAntennaPatch: |
+  Sharkey Stelpolva Edition adds additional keyword syntax to the antenna settings.
+  That means, the special keyword `domain:example.com` will match all posts from `example.com`. This keyword can also be used in OR syntax.
+  Specifically, you must use `domain:here` to match posts in this instance.
 _delivery:
   status: "Delivery status"
   stop: "Suspend delivery"

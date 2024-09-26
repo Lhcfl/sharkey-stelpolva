@@ -1263,6 +1263,10 @@ confirmWhenRevealingSensitiveMedia: "显示敏感内容前需要确认"
 sensitiveMediaRevealConfirm: "这是敏感内容。是否显示？"
 createdLists: "已创建的列表"
 createdAntennas: "已创建的天线"
+stpvAntennaPatch: |
+  Sharkey Stelpolva Edition 为天线的设置添加了额外的关键词语法。
+  具体而言， `domain:example.com` 这个特殊关键词会匹配所有来自 `example.com` 的帖子。这个关键词同样能使用在 OR 语法中。
+  特别地，你必须用 `domain:here` 来匹配本实例的帖子。
 _delivery:
   status: "投递状态"
   stop: "停止投递"
