@@ -317,7 +317,7 @@ const renoteCollapsed = ref(
 	defaultStore.state.collapseRenotes && isRenote && (
 		($i && ($i.id === note.value.userId || $i.id === appearNote.value.userId)) || // `||` must be `||`! See https://github.com/misskey-dev/misskey/issues/13131
 		(appearNote.value.myReaction != null)
-	)
+	),
 );
 const inReplyToCollapsed = ref(defaultStore.state.collapseNotesRepliedTo);
 const defaultLike = computed(() => defaultStore.state.like ? defaultStore.state.like : null);
@@ -504,7 +504,7 @@ function boostVisibility() {
 	}
 }
 
-function renote(visibility: Visibility, localOnly: boolean = false) {
+function renote(visibility: Visibility, localOnly = false) {
 	pleaseLogin(undefined, pleaseLoginContext.value);
 	showMovedDialog();
 
@@ -1240,7 +1240,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 
 @container (max-width: 580px) {
 	.root {
-		font-size: 0.95em;
+		font-size: 1em;
 		--avatar: 46px;
 	}
 
@@ -1271,7 +1271,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 
 @container (max-width: 500px) {
 	.root {
-		font-size: 0.9em;
+		font-size: 1em;
 	}
 
 	.article {
