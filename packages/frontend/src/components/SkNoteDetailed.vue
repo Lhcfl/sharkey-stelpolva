@@ -1166,6 +1166,12 @@ onUnmounted(() => {
 	border-color: var(--accent);
 }
 
+@container (max-width: 380px) {
+	.root {
+		font-size: 0.9em;
+	}
+}
+
 @container (max-width: 450px) {
 	.renote {
 		padding: 8px 16px 0 16px;

@@ -1269,9 +1269,9 @@ function emitUpdReaction(emoji: string, delta: number) {
 	}
 }
 
-@container (max-width: 500px) {
+@container (max-width: 380px) {
 	.root {
-		font-size: 1em;
+		font-size: 0.9em;
 	}
 
 	.article {
