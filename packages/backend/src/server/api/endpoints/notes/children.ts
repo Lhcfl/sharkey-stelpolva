@@ -53,18 +53,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.andWhere(new Brackets(qb => {
 					qb
 						.where('note.replyId = :noteId', { noteId: ps.noteId });
-						if (ps.showQuotes) {
-							qb.orWhere(new Brackets(qb => {
-								qb
-									.where('note.renoteId = :noteId', { noteId: ps.noteId })
-									.andWhere(new Brackets(qb => {
-										qb
-											.where('note.text IS NOT NULL')
-											.orWhere('note.fileIds != \'{}\'')
-											.orWhere('note.hasPoll = TRUE');
-									}));
-							}));
-						}
+					if (ps.showQuotes) {
+						qb.orWhere(new Brackets(qb => {
+							qb
+								.where('note.renoteId = :noteId', { noteId: ps.noteId })
+								.andWhere(new Brackets(qb => {
+									qb
+										.where('note.text IS NOT NULL')
+										.orWhere('note.fileIds != \'{}\'')
+										.orWhere('note.hasPoll = TRUE');
+								}));
+						}));
+					}
 				}))
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('note.reply', 'reply')
@@ -74,6 +74,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			this.queryService.generateVisibilityQuery(query, me);
 			if (me) {
+				this.queryService.generateMutedUserQuery(query, me);
 				this.queryService.generateBlockedUserQuery(query, me);
 			}
 
