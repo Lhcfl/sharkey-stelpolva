@@ -16,12 +16,12 @@ import type { UsersRepository, NotesRepository, FollowingsRepository, PollsRepos
 import { bindThis } from '@/decorators.js';
 import { DebounceLoader } from '@/misc/loader.js';
 import { IdService } from '@/core/IdService.js';
+import type { Config } from '@/config.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { CustomEmojiService } from '../CustomEmojiService.js';
 import type { ReactionService } from '../ReactionService.js';
 import type { UserEntityService } from './UserEntityService.js';
 import type { DriveFileEntityService } from './DriveFileEntityService.js';
-import type { Config } from '@/config.js';
 
 @Injectable()
 export class NoteEntityService implements OnModuleInit {
@@ -119,7 +119,7 @@ export class NoteEntityService implements OnModuleInit {
 							followerId: meId,
 						},
 					});
-					
+
 					hide = !isFollowing;
 				} else {
 					// フォロワーかどうか
@@ -338,6 +338,12 @@ export class NoteEntityService implements OnModuleInit {
 		const packedFiles = options?._hint_?.packedFiles;
 		const packedUsers = options?._hint_?.packedUsers;
 
+		const renotedByMe = me
+			? this.notesRepository.createQueryBuilder('note')
+				.where('note.renoteId = :renoteId', { renoteId: note.id })
+				.andWhere('note.userId = :meId', { meId: me.id }).getExists()
+			: false;
+
 		const packed: Packed<'Note'> = await awaitAll({
 			id: note.id,
 			createdAt: this.idService.parse(note.id).date.toISOString(),
@@ -362,6 +368,7 @@ export class NoteEntityService implements OnModuleInit {
 			files: packedFiles != null ? this.packAttachedFiles(note.fileIds, packedFiles) : this.driveFileEntityService.packManyByIds(note.fileIds),
 			replyId: note.replyId,
 			renoteId: note.renoteId,
+			renotedByMe: renotedByMe,
 			channelId: note.channelId ?? undefined,
 			channel: channel ? {
 				id: channel.id,

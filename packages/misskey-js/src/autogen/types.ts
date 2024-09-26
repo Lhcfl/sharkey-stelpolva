@@ -4237,6 +4237,7 @@ export type components = {
       reactionAndUserPairCache?: string[];
       clippedCount?: number;
       myReaction?: string | null;
+			renotedByMe: boolean;
     };
     NoteReaction: {
       /**

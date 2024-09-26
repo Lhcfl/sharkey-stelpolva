@@ -460,13 +460,7 @@ if (!props.mock) {
 	});
 
 	if ($i) {
-		misskeyApi('notes/renotes', {
-			noteId: appearNote.value.id,
-			userId: $i.id,
-			limit: 1,
-		}).then((res) => {
-			renoted.value = res.length > 0;
-		});
+		renoted.value = appearNote.value.renotedByMe;
 	}
 
 	if (appearNote.value.reactionAcceptance === 'likeOnly') {
