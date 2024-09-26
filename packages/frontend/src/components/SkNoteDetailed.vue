@@ -1181,7 +1181,7 @@ onUnmounted(() => {
 	}
 }
 
-@container (max-width: 350px) {
+@container (max-width: 580px) {
 	.noteFooterButton {
 		&:not(:last-child) {
 			margin-right: 0.1em;

@@ -1334,7 +1334,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 	}
 }
 
-@container (max-width: 400px) {
+@container (max-width: 580px) {
 	.root:not(.showActionsOnlyHover) {
 		.footerButton {
 			&:not(:last-child) {
