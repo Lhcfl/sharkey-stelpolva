@@ -26,8 +26,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<!--<div v-if="appearNote._featuredId_" class="tip"><i class="ti ti-bolt"></i> {{ i18n.ts.featured }}</div>-->
 	<div v-if="isRenote" :class="$style.renote">
 		<div v-if="note.channel" :class="$style.colorBar" :style="{ background: note.channel.color }"></div>
-		<MkAvatar :class="$style.renoteAvatar" :user="note.user" link preview/>
 		<i class="ti ti-repeat" style="margin-right: 4px;"></i>
+		<MkAvatar :class="$style.renoteAvatar" :user="note.user" link preview/>
 		<I18n :src="i18n.ts.renotedBy" tag="span" :class="$style.renoteText">
 			<template #user>
 				<MkA v-user-preview="note.userId" :class="$style.renoteUserName" :to="userPage(note.user)">
@@ -1004,7 +1004,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 
 .renoteAvatar {
 	flex-shrink: 0;
-	display: none; /* same as Firefish, but keeping the element around in case someone wants to add it back via CSS override */
+	// display: none; /* same as Firefish ner version, but keeping the element around in case someone wants to add it back via CSS override */
 	width: 28px;
 	height: 28px;
 	margin: 0 8px 0 0;
