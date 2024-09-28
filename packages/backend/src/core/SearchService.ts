@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { In, SelectQueryBuilder } from 'typeorm';
+import { Brackets, In, SelectQueryBuilder } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
@@ -256,6 +256,13 @@ export class SearchService {
 					query.andWhere('note.userId = :userId', { userId: opts.userId });
 				} else if (opts.channelId) {
 					query.andWhere('note.channelId = :channelId', { channelId: opts.channelId });
+				} else {
+					query.andWhere(new Brackets((q) => {
+						q.orWhere('note.visibility = \'public\'');
+						if (me) {
+							q.orWhere('note.userId = :meId', { meId: me.id });
+						}
+					}));
 				}
 
 				makeQuery(query);
