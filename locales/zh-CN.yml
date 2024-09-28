@@ -1267,6 +1267,7 @@ stpvAntennaPatch: |
   Sharkey Stelpolva Edition 为天线的设置添加了额外的关键词语法。
   具体而言， `domain:example.com` 这个特殊关键词会匹配所有来自 `example.com` 的帖子。这个关键词同样能使用在 OR 语法中。
   特别地，你必须用 `domain:here` 来匹配本实例的帖子。
+stpvPgroongaSearchInstru: 可以使用 `A OR B` 的词法来搜索包含 A 或者 B 的帖子。`A B`（中间有空格）代表同时包含关键词 A 和 B 的帖子。
 _delivery:
   status: "投递状态"
   stop: "停止投递"

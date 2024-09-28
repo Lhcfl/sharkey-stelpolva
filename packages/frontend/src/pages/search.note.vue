@@ -8,6 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div class="_gaps">
 		<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" @enter.prevent="search">
 			<template #prefix><i class="ti ti-search"></i></template>
+			<template #caption><Mfm :text="i18n.ts.stpvPgroongaSearchInstru"/></template>
 		</MkInput>
 		<MkFoldableSection :expanded="true">
 			<template #header>{{ i18n.ts.options }}</template>
