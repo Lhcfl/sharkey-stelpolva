@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
+import { In, SelectQueryBuilder } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
@@ -190,7 +190,7 @@ export class SearchService {
 			if (opts.filetype) {
 				if (opts.filetype === 'image') {
 					filter.qs.push({ op: 'or', qs: [
-						{ op: '=', k: 'attachedFileTypes', v: 'image/webp' }, 
+						{ op: '=', k: 'attachedFileTypes', v: 'image/webp' },
 						{ op: '=', k: 'attachedFileTypes', v: 'image/png' },
 						{ op: '=', k: 'attachedFileTypes', v: 'image/jpeg' },
 						{ op: '=', k: 'attachedFileTypes', v: 'image/avif' },
@@ -199,14 +199,14 @@ export class SearchService {
 					] });
 				} else if (opts.filetype === 'video') {
 					filter.qs.push({ op: 'or', qs: [
-						{ op: '=', k: 'attachedFileTypes', v: 'video/mp4' }, 
+						{ op: '=', k: 'attachedFileTypes', v: 'video/mp4' },
 						{ op: '=', k: 'attachedFileTypes', v: 'video/webm' },
 						{ op: '=', k: 'attachedFileTypes', v: 'video/mpeg' },
 						{ op: '=', k: 'attachedFileTypes', v: 'video/x-m4v' },
 					] });
 				} else if (opts.filetype === 'audio') {
 					filter.qs.push({ op: 'or', qs: [
-						{ op: '=', k: 'attachedFileTypes', v: 'audio/mpeg' }, 
+						{ op: '=', k: 'attachedFileTypes', v: 'audio/mpeg' },
 						{ op: '=', k: 'attachedFileTypes', v: 'audio/flac' },
 						{ op: '=', k: 'attachedFileTypes', v: 'audio/wav' },
 						{ op: '=', k: 'attachedFileTypes', v: 'audio/aac' },
@@ -249,50 +249,83 @@ export class SearchService {
 			});
 			return notes.sort((a, b) => a.id > b.id ? -1 : 1);
 		} else {
-			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), pagination.sinceId, pagination.untilId);
+			const searchByPgroonga = async (makeQuery: (query: SelectQueryBuilder<MiNote>) => void) => {
+				const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), pagination.sinceId, pagination.untilId);
 
-			if (opts.userId) {
-				query.andWhere('note.userId = :userId', { userId: opts.userId });
-			} else if (opts.channelId) {
-				query.andWhere('note.channelId = :channelId', { channelId: opts.channelId });
-			}
-
-			query
-				.andWhere('note.text ILIKE :q', { q: `%${ sqlLikeEscape(q) }%` })
-				.innerJoinAndSelect('note.user', 'user')
-				.leftJoinAndSelect('note.reply', 'reply')
-				.leftJoinAndSelect('note.renote', 'renote')
-				.leftJoinAndSelect('reply.user', 'replyUser')
-				.leftJoinAndSelect('renote.user', 'renoteUser');
-
-			if (opts.host) {
-				if (opts.host === '.') {
-					query.andWhere('user.host IS NULL');
-				} else {
-					query.andWhere('user.host = :host', { host: opts.host });
+				if (opts.userId) {
+					query.andWhere('note.userId = :userId', { userId: opts.userId });
+				} else if (opts.channelId) {
+					query.andWhere('note.channelId = :channelId', { channelId: opts.channelId });
 				}
-			}
 
-			if (opts.filetype) {
-				/* this is very ugly, but the "correct" solution would
-				  be `and exists (select 1 from
-				  unnest(note."attachedFileTypes") x(t) where t like
-				  :type)` and I can't find a way to get TypeORM to
-				  generate that; this hack works because `~*` is
-				  "regexp match, ignoring case" and the stringified
-				  version of an array of varchars (which is what
-				  `attachedFileTypes` is) looks like `{foo,bar}`, so
-				  we're looking for opts.filetype as the first half of
-				  a MIME type, either at start of the array (after the
-				  `{`) or later (after a `,`) */
-				query.andWhere(`note."attachedFileTypes"::varchar ~* :type`, { type: `[{,]${opts.filetype}/` });
-			}
+				makeQuery(query);
 
-			this.queryService.generateVisibilityQuery(query, me);
-			if (me) this.queryService.generateMutedUserQuery(query, me);
-			if (me) this.queryService.generateBlockedUserQuery(query, me);
+				query
+					.innerJoinAndSelect('note.user', 'user')
+					.leftJoinAndSelect('note.reply', 'reply')
+					.leftJoinAndSelect('note.renote', 'renote')
+					.leftJoinAndSelect('reply.user', 'replyUser')
+					.leftJoinAndSelect('renote.user', 'renoteUser');
 
-			return await query.limit(pagination.limit).getMany();
+				if (opts.host) {
+					if (opts.host === '.') {
+						query.andWhere('user.host IS NULL');
+					} else {
+						query.andWhere('user.host = :host', { host: opts.host });
+					}
+				}
+
+				if (opts.filetype) {
+					// /* this is very ugly, but the "correct" solution would
+					// 	be `and exists (select 1 from
+					// 	unnest(note."attachedFileTypes") x(t) where t like
+					// 	:type)` and I can't find a way to get TypeORM to
+					// 	generate that; this hack works because `~*` is
+					// 	"regexp match, ignoring case" and the stringified
+					// 	version of an array of varchars (which is what
+					// 	`attachedFileTypes` is) looks like `{foo,bar}`, so
+					// 	we're looking for opts.filetype as the first half of
+					// 	a MIME type, either at start of the array (after the
+					// 	`{`) or later (after a `,`) */
+					// query.andWhere('note."attachedFileTypes"::varchar ~* :type', { type: `[{,]${opts.filetype}/` });
+					if (opts.filetype === 'image') {
+						query.andWhere('note."attachedFileTypes"::varchar ~* :type', { type: `[{,]${opts.filetype}/` });
+					} else if (opts.filetype === 'video') {
+						query.andWhere('note."attachedFileTypes"::varchar ~* :type', { type: `[{,]${opts.filetype}/` });
+					} else if (opts.filetype === 'audio') {
+						query.andWhere('note."attachedFileTypes"::varchar ~* :type', { type: `[{,]${opts.filetype}/` });
+					}
+				}
+
+				this.queryService.generateVisibilityQuery(query, me);
+				if (me) this.queryService.generateMutedUserQuery(query, me);
+				if (me) this.queryService.generateBlockedUserQuery(query, me);
+
+				return await query.limit(pagination.limit).getMany();
+			};
+
+			const searchWord = sqlLikeEscape(q);
+
+			const notes = [
+				...new Map(
+					(
+						await Promise.all([
+							searchByPgroonga((query) => {
+								query.andWhere('note.text &@~ :q', { q: searchWord });
+							}),
+							searchByPgroonga((query) => {
+								query.andWhere('note.cw &@~ :q', { q: searchWord });
+							}),
+						])
+					)
+						.flatMap((e) => e)
+						.map((note) => [note.id, note]),
+				).values(),
+			]
+				.sort((lhs, rhs) => Math.sign((rhs.updatedAt?.getTime() ?? 0) - (lhs.updatedAt?.getTime() ?? 0)))
+				.slice(0, pagination.limit);
+
+			return notes;
 		}
 	}
 }

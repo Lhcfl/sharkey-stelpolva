@@ -27,6 +27,12 @@
 
 ## 相对于 Sharkey 的修改：
 
+### DATABASE CHANGES
+
+- 添加了 pgroonga 用于全文搜索
+
+### Other
+
 - 添加了 Google Translation Fallback
 - 更好的中文翻译
 - 在 MkPostForm 上添加了 autosize （自动随着打字扩张文本框）
