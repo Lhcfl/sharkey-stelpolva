@@ -322,7 +322,7 @@ export class SearchService {
 						.map((note) => [note.id, note]),
 				).values(),
 			]
-				.sort((lhs, rhs) => Math.sign((rhs.updatedAt?.getTime() ?? 0) - (lhs.updatedAt?.getTime() ?? 0)))
+				.sort((lhs, rhs) => lhs.id < rhs.id ? 1 : -1)
 				.slice(0, pagination.limit);
 
 			return notes;
