@@ -444,6 +444,10 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'device',
 		default: false,
 	},
+	chineseAutospacing: {
+		where: 'device',
+		default: null as 'all' | 'special' | null,
+	},
 	mediaListWithOneImageAppearance: {
 		where: 'device',
 		default: 'expand' as 'expand' | '16_9' | '1_1' | '2_3',
@@ -524,10 +528,10 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'device',
 		default: false,
 	},
-  contextMenu: {
+	contextMenu: {
 		where: 'device',
 		default: 'app' as 'app' | 'appWithShift' | 'native',
-  },
+	},
 
 	sound_masterVolume: {
 		where: 'device',

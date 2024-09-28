@@ -279,6 +279,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<option value="appWithShift">{{ i18n.ts._contextMenu.appWithShift }}</option>
 				<option value="native">{{ i18n.ts._contextMenu.native }}</option>
 			</MkSelect>
+			<MkSelect v-model="autoSpacingBehaviour">
+				<template #label>自动空格</template>
+				<option :value="null">{{ i18n.ts.disabled }}</option>
+				<option value="all">{{ i18n.ts.all }}</option>
+				<option value="special">智能</option>
+				<template #caption>在帖子正文的中文与英文之间自动加入缺失的空格。当选择“智能”时，一部分通常认为是混合词的（B超，X光等）会被保留</template>
+			</MkSelect>
 			<MkRange v-model="numberOfPageCache" :min="1" :max="10" :step="1" easing>
 				<template #label>{{ i18n.ts.numberOfPageCache }}</template>
 				<template #caption>{{ i18n.ts.numberOfPageCacheDescription }}</template>
@@ -477,6 +484,7 @@ const useNativeUIForVideoAudioPlayer = computed(defaultStore.makeGetterSetter('u
 const alwaysConfirmFollow = computed(defaultStore.makeGetterSetter('alwaysConfirmFollow'));
 const confirmWhenRevealingSensitiveMedia = computed(defaultStore.makeGetterSetter('confirmWhenRevealingSensitiveMedia'));
 const contextMenu = computed(defaultStore.makeGetterSetter('contextMenu'));
+const autoSpacingBehaviour = computed(defaultStore.makeGetterSetter('chineseAutospacing'));
 
 watch(lang, () => {
 	miLocalStorage.setItem('lang', lang.value as string);

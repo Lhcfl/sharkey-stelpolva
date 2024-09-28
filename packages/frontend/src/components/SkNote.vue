@@ -235,6 +235,7 @@ import { isEnabledUrlPreview } from '@/instance.js';
 import { type Keymap } from '@/scripts/hotkey.js';
 import { focusPrev, focusNext } from '@/scripts/focus.js';
 import { getAppearNote } from '@/scripts/get-appear-note.js';
+import { spacingNote } from '@/scripts/autospacing';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note;
@@ -297,7 +298,7 @@ const reactButton = shallowRef<HTMLElement>();
 const quoteButton = shallowRef<HTMLElement>();
 const clipButton = shallowRef<HTMLElement>();
 const likeButton = shallowRef<HTMLElement>();
-const appearNote = computed(() => getAppearNote(note.value));
+const appearNote = computed(() => spacingNote(getAppearNote(note.value)));
 const galleryEl = shallowRef<InstanceType<typeof MkMediaList>>();
 const isMyRenote = $i && ($i.id === note.value.userId);
 const showContent = ref(defaultStore.state.uncollapseCW);
@@ -416,7 +417,7 @@ if (props.mock) {
 		isDeletedRef: isDeleted,
 		onReplyCallback: () => {
 			appearNote.value.repliesCount += 1;
-		}
+		},
 	});
 }
 

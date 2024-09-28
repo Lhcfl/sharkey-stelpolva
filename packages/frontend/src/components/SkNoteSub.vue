@@ -115,6 +115,7 @@ import { getNoteMenu } from '@/scripts/get-note-menu.js';
 import { useNoteCapture } from '@/scripts/use-note-capture.js';
 import { useRouter } from '@/router/supplier.js';
 import { boostMenuItems, type Visibility } from '@/scripts/boost-quote.js';
+import { spacingNote } from '@/scripts/autospacing';
 
 const canRenote = computed(() => ['public', 'home'].includes(props.note.visibility) || props.note.userId === $i.id);
 const hideLine = computed(() => { return props.detail ? true : false; });
@@ -149,7 +150,7 @@ const quoteButton = shallowRef<HTMLElement>();
 const menuButton = shallowRef<HTMLElement>();
 const likeButton = shallowRef<HTMLElement>();
 
-let appearNote = computed(() => isRenote ? props.note.renote as Misskey.entities.Note : props.note);
+let appearNote = computed(() => spacingNote(isRenote ? props.note.renote as Misskey.entities.Note : props.note));
 const defaultLike = computed(() => defaultStore.state.like ? defaultStore.state.like : null);
 const replies = ref<Misskey.entities.Note[]>([]);
 
