@@ -25,6 +25,8 @@ const NO_SPACEING_LIST = [
 const LIST_WINDOW =
 	NO_SPACEING_LIST.reduce((a, b) => Math.max(a, b.length), 0) + 1;
 
+const CJK_REGEXP = '[\\u4e00-\\u9fa5\\u0800-\\u4e00\\uac00-\\ud7ff]';
+
 export function autoSpacing(plainText: string) {
 	if (defaultStore.reactiveState.chineseAutospacing.value == null) return plainText;
 	const rep = (matched: string, c1: string, c2: string, position: number) => {
@@ -39,8 +41,9 @@ export function autoSpacing(plainText: string) {
 		}
 	};
 	return plainText
-		.replace(/([\u4e00-\u9fa5\u0800-\u4e00\uac00-\ud7ff])([a-zA-Z0-9])/g, rep)
-		.replace(/([a-zA-Z0-9,\.:])([\u4e00-\u9fa5\u0800-\u4e00\uac00-\ud7ff])/g, rep);
+		.replace(new RegExp(`(${CJK_REGEXP})\\(([^)]+)\\)(${CJK_REGEXP})?`, 'g'), (_, c1, c2, c3) => c3 ? `${c1} (${c2}) ${c3}` : `${c1} (${c2})`)
+		.replace(new RegExp(`(${CJK_REGEXP})([a-zA-Z0-9])`, 'g'), rep)
+		.replace(new RegExp(`([a-zA-Z0-9,\\.:%])(${CJK_REGEXP})`, 'g'), rep);
 }
 
 export function spacingNote(note: misskey.entities.Note) {
