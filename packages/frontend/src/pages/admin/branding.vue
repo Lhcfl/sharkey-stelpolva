@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #prefix><i class="ti ti-link"></i></template>
 						<template #label>{{ i18n.ts._serverSettings.iconUrl }}</template>
 					</MkInput>
-					
+
 					<MkInput v-model="app192IconUrl" type="url">
 						<template #prefix><i class="ti ti-link"></i></template>
 						<template #label>{{ i18n.ts._serverSettings.iconUrl }} (App/192px)</template>
@@ -39,7 +39,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<MkInput v-model="sidebarLogoUrl" type="url">
 						<template #prefix><i class="ti ti-link"></i></template>
-						<template #label>{{ i18n.ts._serverSettings.iconUrl }} ({{ i18n.ts._serverSettings.sidebarLogoHint }})</template>
+						<template #label>{{ i18n.ts._serverSettings.sidebarLogoUrl }}</template>
 						<template #caption>
 							<div>{{ i18n.ts._serverSettings.sidebarLogoDescription }}</div>
 							<div>({{ i18n.ts._serverSettings.sidebarLogoUsageExample }})</div>

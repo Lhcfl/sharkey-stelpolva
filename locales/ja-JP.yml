@@ -1459,13 +1459,13 @@ _serverRules:
 
 _serverSettings:
   iconUrl: "アイコン画像のURL"
-  sidebarLogoDescription: "高精細、ダイナミック幅のシナリオで通常のアイコンの代わりに使用するロゴを指定します。"
-  sidebarLogoUsageExample:  "例：サイドバー、訪問者用、「情報」ページ"
-  sidebarLogoHint: "サイドバー/ロゴ"
   appIconDescription: "{host}がアプリとして表示される際のアイコンを指定します。"
   appIconUsageExample: "例: PWAや、スマートフォンのホーム画面にブックマークとして追加された時など"
   appIconStyleRecommendation: "円形もしくは角丸にクロップされる場合があるため、塗り潰された余白のある背景を持つことが推奨されます。"
   appIconResolutionMustBe: "解像度は必ず{resolution}である必要があります。"
+  sidebarLogoUrl: "ロゴURL"
+  sidebarLogoDescription: "高精細、ダイナミック幅のシナリオで通常のアイコンの代わりに使用するロゴを指定します。"
+  sidebarLogoUsageExample:  "例：サイドバー、訪問者用、「情報」ページ"
   manifestJsonOverride: "manifest.jsonのオーバーライド"
   shortName: "略称"
   shortNameDescription: "サーバーの正式名称が長い場合に、代わりに表示することのできる略称や通称。"

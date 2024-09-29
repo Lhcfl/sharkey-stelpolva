@@ -5777,18 +5777,6 @@ export interface Locale extends ILocale {
          */
         "iconUrl": string;
         /**
-         * 高精細、ダイナミック幅のシナリオで通常のアイコンの代わりに使用するロゴを指定します。
-         */
-        "sidebarLogoDescription": string;
-        /**
-         * 例：サイドバー、訪問者用、「情報」ページ
-         */
-        "sidebarLogoUsageExample": string;
-        /**
-         * サイドバー/ロゴ
-         */
-        "sidebarLogoHint": string;
-        /**
          * {host}がアプリとして表示される際のアイコンを指定します。
          */
         "appIconDescription": ParameterizedString<"host">;
@@ -5804,6 +5792,18 @@ export interface Locale extends ILocale {
          * 解像度は必ず{resolution}である必要があります。
          */
         "appIconResolutionMustBe": ParameterizedString<"resolution">;
+        /**
+         * ロゴURL
+         */
+        "sidebarLogoUrl": string;
+        /**
+         * 高精細、ダイナミック幅のシナリオで通常のアイコンの代わりに使用するロゴを指定します。
+         */
+        "sidebarLogoDescription": string;
+        /**
+         * 例：サイドバー、訪問者用、「情報」ページ
+         */
+        "sidebarLogoUsageExample": string;
         /**
          * manifest.jsonのオーバーライド
          */
