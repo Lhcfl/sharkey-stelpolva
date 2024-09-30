@@ -32,6 +32,7 @@ export const meta = {
 export const paramDef = {
 	type: 'object',
 	properties: {
+		mutualsOnly: { type: 'boolean', default: false },
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
@@ -51,8 +52,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = this.notesRepository
+			let query = this.notesRepository
 				.createQueryBuilder('note')
+				.setParameter('me', me.id)
 
 				// Limit to latest notes
 				.innerJoin(LatestNote, 'latest', 'note.id = latest.note_id')
@@ -72,16 +74,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 				// Limit to followers
 				.innerJoin(MiFollowing, 'following', 'latest.user_id = following."followeeId"')
-				.andWhere('following."followerId" = :me', { me: me.id })
+				.andWhere('following."followerId" = :me');
 
-				// Support pagination
+			// Limit to mutuals, if requested
+			if (ps.mutualsOnly) {
+				query = query
+					.innerJoin(MiFollowing, 'mutuals', 'latest.user_id = mutuals."followerId" AND mutuals."followeeId" = :me');
+			}
+
+			// Support pagination
+			query = this.queryService
+				.makePaginationQuery(query, ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.orderBy('note.id', 'DESC')
 				.take(ps.limit);
 
 			// Query and return the next page
-			const notes = await this.queryService
-				.makePaginationQuery(query, ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
-				.getMany();
+			const notes = await query.getMany();
 			return await this.noteEntityService.packMany(notes, me);
 		});
 	}
