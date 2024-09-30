@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { PrimaryColumn, Entity, JoinColumn, Column, ManyToOne } from 'typeorm';
 import { MiUser } from '@/models/User.js';
 import { MiNote } from '@/models/Note.js';
