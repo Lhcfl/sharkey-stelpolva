@@ -39,7 +39,9 @@ export class LatestNote {
 	})
 	public note: MiNote | null;
 
-	constructor(data: Partial<LatestNote>) {
+	constructor(data?: Partial<LatestNote>) {
+		if (!data) return;
+
 		for (const [k, v] of Object.entries(data)) {
 			(this as Record<string, unknown>)[k] = v;
 		}
