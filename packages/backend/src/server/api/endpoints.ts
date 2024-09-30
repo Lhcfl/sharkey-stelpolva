@@ -296,6 +296,7 @@ import * as ep___notes_delete from './endpoints/notes/delete.js';
 import * as ep___notes_favorites_create from './endpoints/notes/favorites/create.js';
 import * as ep___notes_favorites_delete from './endpoints/notes/favorites/delete.js';
 import * as ep___notes_featured from './endpoints/notes/featured.js';
+import * as ep___notes_following from './endpoints/notes/following.js';
 import * as ep___notes_globalTimeline from './endpoints/notes/global-timeline.js';
 import * as ep___notes_bubbleTimeline from './endpoints/notes/bubble-timeline.js';
 import * as ep___notes_hybridTimeline from './endpoints/notes/hybrid-timeline.js';
@@ -690,6 +691,7 @@ const eps = [
 	['notes/favorites/create', ep___notes_favorites_create],
 	['notes/favorites/delete', ep___notes_favorites_delete],
 	['notes/featured', ep___notes_featured],
+	['notes/following', ep___notes_following],
 	['notes/global-timeline', ep___notes_globalTimeline],
 	['notes/bubble-timeline', ep___notes_bubbleTimeline],
 	['notes/hybrid-timeline', ep___notes_hybridTimeline],
