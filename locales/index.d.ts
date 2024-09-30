@@ -369,6 +369,10 @@ export interface Locale extends ILocale {
      */
     "followers": string;
     /**
+     * Mutuals
+     */
+    "mutuals": string;
+    /**
      * フォローされています
      */
     "followsYou": string;
