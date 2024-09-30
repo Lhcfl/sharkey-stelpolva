@@ -46,6 +46,7 @@ import { infoImageUrl } from '@/instance.js';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 import { defaultStore } from '@/store.js';
 import { Tab } from '@/components/global/MkPageHeader.tabs.vue';
+import { PageHeaderItem } from '@/types/page-header.js';
 
 // Load the correct note component
 const MkNote = defineAsyncComponent(
@@ -80,7 +81,14 @@ const pagination: Paging<'notes/following'> = {
 	})),
 };
 
-const headerActions = computed(() => []);
+const headerActions: PageHeaderItem[] = [
+	{
+		icon: 'ti ti-refresh',
+		text: i18n.ts.reload,
+		handler: () => reload(),
+	},
+];
+
 const headerTabs = computed(() => [
 	{
 		key: followingTab,
