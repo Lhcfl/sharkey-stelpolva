@@ -55,8 +55,11 @@ import { MenuItem } from '@/types/menu.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
 import type { BasicTimelineType } from '@/timelines.js';
+import { useRouter } from '@/router/supplier.js';
 
 provide('shouldOmitHeaderTitle', true);
+
+const router = useRouter();
 
 const tlComponent = shallowRef<InstanceType<typeof MkTimeline>>();
 const rootEl = shallowRef<HTMLElement>();
@@ -309,6 +312,11 @@ const headerTabs = computed(() => [...(defaultStore.reactiveState.pinnedUserList
 	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
 })), {
+	icon: 'ti ti-user-check',
+	title: i18n.ts.following,
+	iconOnly: true,
+	onClick: () => router.push('/following-feed'),
+}, {
 	icon: 'ti ti-list',
 	title: i18n.ts.lists,
 	iconOnly: true,

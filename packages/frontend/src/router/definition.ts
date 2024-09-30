@@ -228,6 +228,10 @@ const routes: RouteDef[] = [{
 	component: page(() => import('@/pages/explore.vue')),
 	hash: 'initialTab',
 }, {
+	path: '/following-feed',
+	component: page(() => import('@/pages/following-feed.vue')),
+	hash: 'initialTab',
+}, {
 	path: '/search',
 	component: page(() => import('@/pages/search.vue')),
 	query: {
