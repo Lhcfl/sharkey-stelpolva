@@ -19,7 +19,9 @@ export class LatestNote {
 	@ManyToOne(() => MiUser, {
 		onDelete: 'CASCADE',
 	})
-	@JoinColumn()
+	@JoinColumn({
+		name: 'user_id',
+	})
 	public user: MiUser | null;
 
 	@Column({
@@ -32,7 +34,9 @@ export class LatestNote {
 	@ManyToOne(() => MiNote, {
 		onDelete: 'CASCADE',
 	})
-	@JoinColumn()
+	@JoinColumn({
+		name: 'note_id',
+	})
 	public note: MiNote | null;
 
 	constructor(data: Partial<LatestNote>) {
