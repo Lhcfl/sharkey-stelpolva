@@ -63,6 +63,7 @@ import { isReply } from '@/misc/is-reply.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { isQuote, isRenote } from '@/misc/is-renote.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention';
 
@@ -1135,6 +1136,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 	private async updateLatestNote(note: MiNote) {
 		// Ignore DMs
 		if (note.visibility === 'specified') return;
+
+		// Ignore pure renotes
+		if (isRenote(note) && !isQuote(note)) return;
 
 		// Make sure that this isn't an *older* post.
 		// We can get older posts through replies, lookups, etc.

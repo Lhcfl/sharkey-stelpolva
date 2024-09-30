@@ -240,14 +240,25 @@ export class NoteDeleteService {
 		// If it's a DM, then it can't possibly be the latest note so we can safely skip this.
 		if (note.visibility === 'specified') return;
 
-		// Find the newest remaining note for the user
+		// Find the newest remaining note for the user.
+		// We exclude DMs and pure renotes.
 		const nextLatest = await this.notesRepository
-			.createQueryBuilder()
+			.createQueryBuilder('note')
 			.select()
 			.where({
 				userId: note.userId,
 				visibility: Not('specified'),
 			})
+			.andWhere(`
+				(
+					note."renoteId" IS NULL
+					OR note.text IS NOT NULL
+					OR note.cw IS NOT NULL
+					OR note."replyId" IS NOT NULL
+					OR note."hasPoll"
+					OR note."fileIds" != '{}'
+				)
+			`)
 			.orderBy({ id: 'DESC' })
 			.getOne();
 		if (!nextLatest) return;
