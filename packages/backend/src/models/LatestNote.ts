@@ -35,7 +35,6 @@ export class LatestNote {
 	@JoinColumn()
 	public note: MiNote | null;
 
-
 	constructor(data: Partial<LatestNote>) {
 		if (data == null) return;
 
