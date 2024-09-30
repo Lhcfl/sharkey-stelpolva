@@ -14,7 +14,8 @@ import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mf
 import { extractHashtags } from '@/misc/extract-hashtags.js';
 import type { IMentionedRemoteUsers } from '@/models/Note.js';
 import { MiNote } from '@/models/Note.js';
-import type { ChannelFollowingsRepository, ChannelsRepository, FollowingsRepository, InstancesRepository, MiFollowing, MutingsRepository, NotesRepository, NoteThreadMutingsRepository, UserListMembershipsRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
+import { LatestNote } from '@/models/LatestNote.js';
+import type { ChannelFollowingsRepository, ChannelsRepository, FollowingsRepository, InstancesRepository, LatestNotesRepository, MiFollowing, MutingsRepository, NotesRepository, NoteThreadMutingsRepository, UserListMembershipsRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import type { MiApp } from '@/models/App.js';
 import { concat } from '@/misc/prelude/array.js';
@@ -169,6 +170,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
+
+		@Inject(DI.latestNotesRepository)
+		private latestNotesRepository: LatestNotesRepository,
 
 		@Inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
@@ -513,6 +517,8 @@ export class NoteCreateService implements OnApplicationShutdown {
 			} else {
 				await this.notesRepository.insert(insert);
 			}
+
+			await this.updateLatestNote(insert);
 
 			return insert;
 		} catch (e) {
@@ -1124,5 +1130,22 @@ export class NoteCreateService implements OnApplicationShutdown {
 	@bindThis
 	public onApplicationShutdown(signal?: string | undefined): void {
 		this.dispose();
+	}
+
+	private async updateLatestNote(note: MiNote) {
+		// Ignore DMs
+		if (note.visibility === 'specified') return;
+
+		// Make sure that this isn't an *older* post.
+		// We can get older posts through replies, lookups, etc.
+		const currentLatest = await this.latestNotesRepository.findOneBy({ userId: note.userId });
+		if (currentLatest != null && currentLatest.userId >= note.id) return;
+
+		// Record this as the latest note for the given user
+		const latestNote = new LatestNote({
+			userId: note.userId,
+			noteId: note.id,
+		});
+		await this.latestNotesRepository.upsert(latestNote, ['userId']);
 	}
 }

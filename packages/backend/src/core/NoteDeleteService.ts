@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Brackets, In } from 'typeorm';
+import { Brackets, In, Not } from 'typeorm';
 import { Injectable, Inject } from '@nestjs/common';
 import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import type { MiNote, IMentionedRemoteUsers } from '@/models/Note.js';
-import type { InstancesRepository, NotesRepository, UsersRepository } from '@/models/_.js';
+import { LatestNote } from '@/models/LatestNote.js';
+import type { InstancesRepository, LatestNotesRepository, NotesRepository, UsersRepository } from '@/models/_.js';
 import { RelayService } from '@/core/RelayService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { DI } from '@/di-symbols.js';
@@ -37,6 +38,9 @@ export class NoteDeleteService {
 
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
+
+		@Inject(DI.latestNotesRepository)
+		private latestNotesRepository: LatestNotesRepository,
 
 		@Inject(DI.instancesRepository)
 		private instancesRepository: InstancesRepository,
@@ -148,6 +152,8 @@ export class NoteDeleteService {
 			userId: user.id,
 		});
 
+		await this.updateLatestNote(note);
+
 		if (deleter && (note.userId !== deleter.id)) {
 			const user = await this.usersRepository.findOneByOrFail({ id: note.userId });
 			this.moderationLogService.log(deleter, 'deleteNote', {
@@ -228,5 +234,36 @@ export class NoteDeleteService {
 		for (const remoteUser of remoteUsers) {
 			this.apDeliverManagerService.deliverToUser(user, content, remoteUser);
 		}
+	}
+
+	private async updateLatestNote(note: MiNote) {
+		// If it's a DM, then it can't possibly be the latest note so we can safely skip this.
+		if (note.visibility === 'specified') return;
+
+		// Find the newest remaining note for the user
+		const nextLatest = await this.notesRepository
+			.createQueryBuilder()
+			.select()
+			.where({
+				userId: note.userId,
+				visibility: Not('specified'),
+			})
+			.orderBy({ id: 'DESC' })
+			.getOne();
+		if (!nextLatest) return;
+
+		// Record it as the latest
+		const latestNote = new LatestNote({
+			userId: note.userId,
+			noteId: nextLatest.id,
+		});
+
+		// We use an upsert because this deleted note might not have been the newest.
+		// In that case, the latest note may already be populated for this user.
+		// We want postgres to do nothing instead of replacing the value or returning an error.
+		await this.latestNotesRepository.upsert(latestNote, {
+			conflictPaths: ['userId'],
+			skipUpdateIfNoValuesChanged: true,
+		});
 	}
 }
