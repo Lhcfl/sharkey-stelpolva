@@ -104,7 +104,7 @@ const headerTabs = computed(() => [
 
 definePageMetadata(() => ({
 	title: i18n.ts.following,
-	icon: 'ti ti-hash',
+	icon: 'ti ti-user-check',
 }));
 
 </script>
