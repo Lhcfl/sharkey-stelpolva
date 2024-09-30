@@ -1,0 +1,37 @@
+import { PrimaryColumn, Entity, JoinColumn, Column, ManyToOne } from 'typeorm';
+import { MiUser } from '@/models/User.js';
+import { MiNote } from '@/models/Note.js';
+
+/**
+ * Maps a user to the most recent post by that user.
+ * Public, home-only, and followers-only posts are included.
+ * DMs are not counted.
+ */
+@Entity('latest_note')
+export class LatestNote {
+	@PrimaryColumn({
+		name: 'user_id',
+		type: 'varchar' as const,
+		length: 32,
+	})
+	public userId: string;
+
+	@ManyToOne(() => MiUser, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn()
+	public user: MiUser | null;
+
+	@Column({
+		name: 'note_id',
+		type: 'varchar' as const,
+		length: 32,
+	})
+	public noteId: string;
+
+	@ManyToOne(() => MiNote, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn()
+	public note: MiNote | null;
+}
