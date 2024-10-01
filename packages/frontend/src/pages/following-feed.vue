@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<template #default="{ items: notes }">
 						<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.list" :noGap="true">
-							<MkNote :key="note.id" :note="note" :withHardMute="true" :collapseRenote="true" :collapseReplies="true"/>
+							<FollowingFeedEntry :note="note"/>
 						</MkDateSeparatedList>
 					</template>
 				</MkPagination>
@@ -36,7 +36,7 @@ export const mutualsTab = 'mutuals' as const;
 </script>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, ref, shallowRef } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { i18n } from '@/i18n.js';
 import MkHorizontalSwipe from '@/components/MkHorizontalSwipe.vue';
@@ -44,16 +44,9 @@ import MkPullToRefresh from '@/components/MkPullToRefresh.vue';
 import MkPagination, { Paging } from '@/components/MkPagination.vue';
 import { infoImageUrl } from '@/instance.js';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
-import { defaultStore } from '@/store.js';
 import { Tab } from '@/components/global/MkPageHeader.tabs.vue';
 import { PageHeaderItem } from '@/types/page-header.js';
-
-// Load the correct note component
-const MkNote = defineAsyncComponent(
-	() => defaultStore.state.noteDesign === 'sharkey'
-		? import('@/components/SkNote.vue')
-		: import('@/components/MkNote.vue'),
-);
+import FollowingFeedEntry from '@/components/FollowingFeedEntry.vue';
 
 const props = withDefaults(defineProps<{
 	initialTab?: FollowingFeedTab,
