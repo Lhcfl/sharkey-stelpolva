@@ -7,24 +7,30 @@ SPDX-License-Identifier: AGPL-3.0-only
 <MkStickyContainer>
 	<template #header><MkPageHeader v-model:tab="currentTab" :actions="headerActions" :tabs="headerTabs"/></template>
 	<MkHorizontalSwipe v-model:tab="currentTab" :tabs="headerTabs">
-		<MkPullToRefresh :refresher="() => reload()">
-			<MkSpacer :contentMax="1200">
-				<MkPagination ref="pagingComponent" :pagination="pagination">
-					<template #empty>
-						<div class="_fullinfo">
-							<img :src="infoImageUrl" class="_ghost" alt="No notes found" aria-hidden="true"/>
-							<div>{{ i18n.ts.noNotes }}</div>
-						</div>
-					</template>
+		<MkSpacer :contentMax="1200">
+			<div :class="$style.columns">
+				<MkPullToRefresh :refresher="() => reloadList()">
+					<MkPagination ref="listPaging" :pagination="listPagination">
+						<template #empty>
+							<div class="_fullinfo">
+								<img :src="infoImageUrl" class="_ghost" alt="No notes found" aria-hidden="true"/>
+								<div>{{ i18n.ts.noNotes }}</div>
+							</div>
+						</template>
 
-					<template #default="{ items: notes }">
-						<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.list" :noGap="true">
-							<FollowingFeedEntry :note="note"/>
-						</MkDateSeparatedList>
-					</template>
-				</MkPagination>
-			</MkSpacer>
-		</MkPullToRefresh>
+						<template #default="{ items: notes }">
+							<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.list" :noGap="true">
+								<FollowingFeedEntry :note="note" @select="selectUser"/>
+							</MkDateSeparatedList>
+						</template>
+					</MkPagination>
+				</MkPullToRefresh>
+
+				<MkPullToRefresh v-if="selectedUserId" :refresher="() => reloadUser()">
+					<MkNotes :noGap="true" :pagination="userPagination" :paginationComponent="userPaging"/>
+				</MkPullToRefresh>
+			</div>
+		</MkSpacer>
 	</MkHorizontalSwipe>
 </MkStickyContainer>
 </template>
@@ -47,6 +53,7 @@ import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 import { Tab } from '@/components/global/MkPageHeader.tabs.vue';
 import { PageHeaderItem } from '@/types/page-header.js';
 import FollowingFeedEntry from '@/components/FollowingFeedEntry.vue';
+import MkNotes from '@/components/MkNotes.vue';
 
 const props = withDefaults(defineProps<{
 	initialTab?: FollowingFeedTab,
@@ -60,13 +67,32 @@ const props = withDefaults(defineProps<{
 const currentTab = ref(props.initialTab);
 const mutualsOnly = computed(() => currentTab.value === mutualsTab);
 
-const pagingComponent = shallowRef<InstanceType<typeof MkPagination>>();
+const selectedUserId = ref('');
 
-async function reload() {
-	await pagingComponent.value?.reload();
+function selectUser(userId: string): void {
+	selectedUserId.value = userId;
+	console.log('userId', userId);
 }
 
-const pagination: Paging<'notes/following'> = {
+const listPaging = shallowRef<InstanceType<typeof MkPagination>>();
+const userPaging = shallowRef<InstanceType<typeof MkPagination>>();
+
+async function reloadList() {
+	await listPaging.value?.reload();
+}
+
+async function reloadUser() {
+	await userPaging.value?.reload();
+}
+
+async function reloadBoth() {
+	await Promise.all([
+		reloadList(),
+		reloadUser(),
+	]);
+}
+
+const listPagination: Paging<'notes/following'> = {
 	endpoint: 'notes/following' as const,
 	limit: 20,
 	params: computed(() => ({
@@ -74,11 +100,23 @@ const pagination: Paging<'notes/following'> = {
 	})),
 };
 
+const userPagination: Paging<'users/notes'> = {
+	endpoint: 'users/notes' as const,
+	limit: 10,
+	params: computed(() => ({
+		userId: selectedUserId.value,
+		withRenotes: false,
+		withReplies: true,
+		withChannelNotes: false,
+		withFiles: false,
+	})),
+};
+
 const headerActions: PageHeaderItem[] = [
 	{
 		icon: 'ti ti-refresh',
 		text: i18n.ts.reload,
-		handler: () => reload(),
+		handler: () => reloadBoth(),
 	},
 ];
 
@@ -105,5 +143,38 @@ definePageMetadata(() => ({
 <style lang="scss" module>
 .list {
 	background: var(--panel);
+}
+
+.columns {
+	display: flex;
+	flex-direction: row;
+
+	width: 100%;
+}
+
+.columns > * {
+	flex: 1;
+}
+
+.columns > :last-child {
+	min-width: 60%;
+}
+
+.columns > :not(:first-child) {
+	margin-left: 6px;
+}
+
+.columns > :not(:last-child) {
+	margin-right: 6px;
+}
+
+@container (min-width: 451px) {
+	.columns > :not(:first-child) {
+		margin-left: 12px;
+	}
+
+	.columns > :not(:last-child) {
+		margin-right: 12px;
+	}
 }
 </style>

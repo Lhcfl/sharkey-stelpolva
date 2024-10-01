@@ -4,23 +4,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root">
+<div :class="$style.root" @click="$emit('select', note.userId)">
 	<div :class="$style.head">
-		<MkAvatar :class="$style.icon" :user="note.user" link preview indictor/>
+		<MkAvatar :class="$style.icon" :user="note.user" preview indictor/>
 	</div>
 	<div :class="$style.tail">
 		<header :class="$style.header">
 			<MkA v-user-preview="note.user.id" :class="$style.headerName" :to="userPage(note.user)">
 				<MkUserName :user="note.user"/>
 			</MkA>
-			<MkA :to="notePage(note)">
-				<MkTime :time="note.createdAt" :class="$style.headerTime" colored/>
-			</MkA>
+			<MkTime :time="note.createdAt" :class="$style.headerTime" colored/>
 		</header>
 		<div>
-			<MkA :class="$style.text" :to="notePage(note)" :title="getNoteSummary(note)">
-				<Mfm :text="getNoteSummary(note)" :isBlock="true" :plain="true" :nowrap="true" :isNote="true" :author="note.user"/>
-			</MkA>
+			<Mfm :class="$style.text" :text="getNoteSummary(note)" :isBlock="false" :plain="true" :nowrap="true" :isNote="true" :author="note.user"/>
 		</div>
 	</div>
 </div>
@@ -29,11 +25,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import * as Misskey from 'misskey-js';
 import { getNoteSummary } from '@/scripts/get-note-summary.js';
-import { notePage } from '@/filters/note.js';
 import { userPage } from '@/filters/user.js';
 
 defineProps<{
 	note: Misskey.entities.Note
+}>();
+
+defineEmits<{
+	(event: 'select', userId: string): void
 }>();
 
 </script>
