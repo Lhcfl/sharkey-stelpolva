@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkSpacer :contentMax="1200">
 			<div :class="$style.columns">
 				<MkPullToRefresh :refresher="() => reloadList()">
-					<MkPagination ref="listPaging" :pagination="listPagination">
+					<MkPagination ref="listPaging" :pagination="listPagination" @init="onListReady">
 						<template #empty>
 							<div class="_fullinfo">
 								<img :src="infoImageUrl" class="_ghost" :alt="i18n.ts.noNotes" aria-hidden="true"/>
@@ -26,13 +26,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkPagination>
 				</MkPullToRefresh>
 
-				<MkPullToRefresh v-if="selectedUserId" :refresher="() => reloadUser()">
+				<MkPullToRefresh :refresher="() => reloadUser()">
 					<div v-if="selectedUser" :class="$style.userInfo">
 						<MkUserInfo class="user" :user="selectedUser"/>
 						<MkNotes :noGap="true" :pagination="userPagination"/>
 					</div>
 					<div v-else-if="selectedUserError" :class="$style.list">{{ selectedUserError }}</div>
-					<MkLoading v-else/>
+					<MkLoading v-else-if="selectedUserId"/>
 				</MkPullToRefresh>
 			</div>
 		</MkSpacer>
@@ -92,8 +92,8 @@ async function selectUser(userId: string): Promise<void> {
 
 				return selectedUserError.value =
 					typeof(error) === 'string'
-					? String(error)
-					: JSON.stringify(error);
+						? String(error)
+						: JSON.stringify(error);
 			});
 	}
 }
@@ -113,6 +113,18 @@ async function reloadBoth() {
 		reloadList(),
 		reloadUser(),
 	]);
+}
+
+async function onListReady(): Promise<void> {
+	if (!selectedUserId.value && listPaging.value?.items.size) {
+		// This just gets the first user ID
+		const selectedNote: Misskey.entities.Note = listPaging.value.items.values().next().value;
+
+		// Wait for 1 second to match the animation effects.
+		// Otherwise, the page appears to load "backwards".
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		await selectUser(selectedNote.userId);
+	}
 }
 
 const listPagination: Paging<'notes/following'> = {
@@ -166,6 +178,16 @@ definePageMetadata(() => ({
 <style lang="scss" module>
 .list {
 	background: var(--panel);
+}
+
+.info {
+	margin-bottom: 6px;
+}
+
+@container (min-width: 451px) {
+	.info {
+		margin-bottom: 12px;
+	}
 }
 
 .columns {
