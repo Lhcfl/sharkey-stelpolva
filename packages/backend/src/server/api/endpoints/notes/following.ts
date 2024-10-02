@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { LatestNote, MiFollowing, MiBlocking, MiMuting } from '@/models/_.js';
+import { LatestNote, MiFollowing, MiBlocking, MiMuting, MiUserProfile } from '@/models/_.js';
 import type { NotesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -54,6 +54,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		super(meta, paramDef, async (ps, me) => {
 			let query = this.notesRepository
 				.createQueryBuilder('note')
+				.innerJoin(MiUserProfile, 'user_profile', ':me = user_profile."userId"')
 				.setParameter('me', me.id)
 
 				// Limit to latest notes
@@ -70,7 +71,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				// Respect blocks and mutes
 				.leftJoin(MiBlocking, 'b', 'note."userId" = b."blockerId"')
 				.leftJoin(MiMuting, 'm', 'note."userId" = m."muteeId"')
-				.where('b.id IS NULL AND m.id IS NULL')
+				.andWhere('b.id IS NULL AND m.id IS NULL')
+				.andWhere('note."userHost" IS NULL OR NOT user_profile."mutedInstances" ? note."userHost"')
 
 				// Limit to followers
 				.innerJoin(MiFollowing, 'following', 'latest.user_id = following."followeeId"')
