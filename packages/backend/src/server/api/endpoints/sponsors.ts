@@ -49,31 +49,32 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			};
 			
 			if (ps.instance) {
-				return { sponsor_data: await maybeCached('instanceSponsors', ps.forceUpdate, async () => {
-					let totalSponsors;
-					const meta = await this.metaService.fetch();
-					
-					if (meta.donationUrl && !meta.donationUrl.includes('opencollective.com')) {
-						return [];
-					} else if (meta.donationUrl) {
+				const meta = await this.metaService.fetch();
+				if (meta.donationUrl && !meta.donationUrl.includes('opencollective.com')) {
+					return [];
+				} else if (meta.donationUrl) {
+					return { sponsor_data: await maybeCached('instanceSponsors', ps.forceUpdate, async () => {
+						let totalSponsors;
+						const meta = await this.metaService.fetch();
+						
 						try {
 							const backers = await fetch(`${meta.donationUrl}/members/users.json`).then((response) => response.json());
-		
+			
 							// Merge both together into one array and make sure it only has Active subscriptions
 							const allSponsors = [...backers].filter(sponsor => sponsor.isActive === true && sponsor.role === 'BACKER' && sponsor.tier);
-		
+			
 							// Remove possible duplicates
 							totalSponsors = [...new Map(allSponsors.map(v => [v.profile, v])).values()];
-								
+									
 							await this.redisClient.set('instanceSponsors', JSON.stringify(totalSponsors), 'EX', 3600);
 							return totalSponsors;
 						} catch (error) {
 							return [];
 						}
-					} else {
-						return [];
-					}
-				}) };
+					}) };
+				} else {
+					return [];
+				}
 			} else {
 				return { sponsor_data: await maybeCached('sponsors', ps.forceUpdate, async () => {
 					let totalSponsors;
