@@ -37,6 +37,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</template>
 					</MkInput>
 
+					<MkInput v-model="sidebarLogoUrl" type="url">
+						<template #prefix><i class="ti ti-link"></i></template>
+						<template #label>{{ i18n.ts._serverSettings.sidebarLogoUrl }}</template>
+						<template #caption>
+							<div>{{ i18n.ts._serverSettings.sidebarLogoDescription }}</div>
+							<div>({{ i18n.ts._serverSettings.sidebarLogoUsageExample }})</div>
+						</template>
+					</MkInput>
+
 					<MkInput v-model="bannerUrl" type="url">
 						<template #prefix><i class="ti ti-link"></i></template>
 						<template #label>{{ i18n.ts.bannerUrl }}</template>
@@ -128,6 +137,7 @@ import MkColorInput from '@/components/MkColorInput.vue';
 import { host } from '@/config.js';
 
 const iconUrl = ref<string | null>(null);
+const sidebarLogoUrl = ref<string | null>(null);
 const app192IconUrl = ref<string | null>(null);
 const app512IconUrl = ref<string | null>(null);
 const bannerUrl = ref<string | null>(null);
@@ -146,6 +156,7 @@ const manifestJsonOverride = ref<string>('{}');
 async function init() {
 	const meta = await misskeyApi('admin/meta');
 	iconUrl.value = meta.iconUrl;
+	sidebarLogoUrl.value = meta.sidebarLogoUrl;
 	app192IconUrl.value = meta.app192IconUrl;
 	app512IconUrl.value = meta.app512IconUrl;
 	bannerUrl.value = meta.bannerUrl;
@@ -165,6 +176,7 @@ async function init() {
 function save() {
 	os.apiWithDialog('admin/update-meta', {
 		iconUrl: iconUrl.value,
+		sidebarLogoUrl: sidebarLogoUrl.value,
 		app192IconUrl: app192IconUrl.value,
 		app512IconUrl: app512IconUrl.value,
 		bannerUrl: bannerUrl.value,

@@ -41,7 +41,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div class="divider"></div>
 	<div class="about">
 		<button v-click-anime class="item _button" @click="openInstanceMenu">
-			<img :src="instance.iconUrl ?? instance.faviconUrl ?? '/favicon.ico'" class="_ghost"/>
+			<img :src="instance.sidebarLogoUrl && !iconOnly ? instance.sidebarLogoUrl : instance.iconUrl ?? instance.faviconUrl ?? '/favicon.ico'" :class="{ wideIcon: instance.sidebarLogoUrl && !iconOnly }" class="_ghost" />
 		</button>
 	</div>
 	<!--<MisskeyLogo class="misskey"/>-->
@@ -180,12 +180,15 @@ watch(defaultStore.reactiveState.menuDisplay, () => {
 
 		> .item {
 			display: block;
-			width: 32px;
 			margin: 0 auto;
 
 			img {
 				display: block;
-				width: 100%;
+				width: 32px;
+				&.wideIcon {
+				    width: 80%;
+					margin: 0 auto;
+				}
 			}
 		}
 	}

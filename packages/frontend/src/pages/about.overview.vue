@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div class="_gaps_m">
 	<div :class="$style.banner" :style="{ backgroundImage: `url(${ instance.bannerUrl })` }">
 		<div style="overflow: clip;">
-			<img :src="instance.iconUrl ?? instance.faviconUrl ?? '/favicon.ico'" alt="" :class="$style.bannerIcon"/>
+			<img :src="instance.sidebarLogoUrl ?? instance.iconUrl ?? instance.faviconUrl ?? '/favicon.ico'" alt="" :class="$style.bannerIcon"/>
 			<div :class="$style.bannerName">
 				<b>{{ instance.name ?? host }}</b>
 			</div>
@@ -160,7 +160,7 @@ const initStats = () => misskeyApi('stats', {});
 .bannerIcon {
 	display: block;
 	margin: 16px auto 0 auto;
-	height: 64px;
+	max-height: 96px;
 	border-radius: var(--radius-sm);;
 }
 
