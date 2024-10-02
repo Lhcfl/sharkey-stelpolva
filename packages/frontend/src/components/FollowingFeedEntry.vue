@@ -13,7 +13,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA v-user-preview="note.user.id" :class="$style.headerName" :to="userPage(note.user)">
 				<MkUserName :user="note.user"/>
 			</MkA>
-			<MkTime :time="note.createdAt" :class="$style.headerTime" colored/>
+			<MkA :to="notePage(note)">
+				<MkTime :time="note.createdAt" :class="$style.headerTime" colored/>
+			</MkA>
 		</header>
 		<div>
 			<Mfm :class="$style.text" :text="getNoteSummary(note)" :isBlock="false" :plain="true" :nowrap="false" :isNote="true" :author="note.user"/>
@@ -26,6 +28,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import * as Misskey from 'misskey-js';
 import { getNoteSummary } from '@/scripts/get-note-summary.js';
 import { userPage } from '@/filters/user.js';
+import { notePage } from '@/filters/note.js';
 
 defineProps<{
 	note: Misskey.entities.Note
