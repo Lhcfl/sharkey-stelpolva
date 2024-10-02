@@ -68,11 +68,23 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('renote.user', 'renoteUser')
 				.leftJoinAndSelect('note.channel', 'channel')
 
-				// Respect blocks and mutes
-				.leftJoin(MiBlocking, 'b', 'note."userId" = b."blockerId"')
-				.leftJoin(MiMuting, 'm', 'note."userId" = m."muteeId"')
-				.andWhere('b.id IS NULL AND m.id IS NULL')
-				.andWhere('note."userHost" IS NULL OR NOT user_profile."mutedInstances" ? note."userHost"')
+				// Respect blocks and mutes for latest note
+				.leftJoin(MiBlocking, 'blocking_note', 'note."userId" = blocking_note."blockerId"')
+				.leftJoin(MiMuting, 'muting_note', 'note."userId" = muting_note."muteeId"')
+				.andWhere('blocking_note.id IS NULL AND muting_note.id IS NULL')
+				.andWhere('(note."userHost" IS NULL OR NOT user_profile."mutedInstances" ? note."userHost")')
+
+				// Respect blocks and mutes for renote
+				.leftJoin(MiBlocking, 'blocking_renote', 'renote."userId" IS NOT NULL AND renote."userId" = blocking_renote."blockerId"')
+				.leftJoin(MiMuting, 'muting_renote', 'renote."userId" IS NOT NULL AND renote."userId" = muting_renote."muteeId"')
+				.andWhere('blocking_renote.id IS NULL AND muting_renote.id IS NULL')
+				.andWhere('(renote."userHost" IS NULL OR NOT user_profile."mutedInstances" ? renote."userHost")')
+
+				// Respect blocks and mutes for reply
+				.leftJoin(MiBlocking, 'blocking_reply', 'reply."userId" IS NOT NULL AND reply."userId" = blocking_reply."blockerId"')
+				.leftJoin(MiMuting, 'muting_reply', 'reply."userId" IS NOT NULL AND reply."userId" = muting_reply."muteeId"')
+				.andWhere('blocking_reply.id IS NULL AND muting_reply.id IS NULL')
+				.andWhere('(reply."userHost" IS NULL OR NOT user_profile."mutedInstances" ? reply."userHost")')
 
 				// Limit to followers
 				.innerJoin(MiFollowing, 'following', 'latest.user_id = following."followeeId"')
