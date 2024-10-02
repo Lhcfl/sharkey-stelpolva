@@ -312,7 +312,7 @@ const headerTabs = computed(() => [...(defaultStore.reactiveState.pinnedUserList
 	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
 })), {
-	icon: 'ti ti-user-check',
+	icon: 'ph-user-check ph-bold ph-lg',
 	title: i18n.ts.following,
 	iconOnly: true,
 	onClick: () => router.push('/following-feed'),

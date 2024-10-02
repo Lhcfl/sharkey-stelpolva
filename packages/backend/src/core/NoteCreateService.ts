@@ -1134,7 +1134,8 @@ export class NoteCreateService implements OnApplicationShutdown {
 	}
 
 	private async updateLatestNote(note: MiNote) {
-		// Ignore DMs
+		// Ignore DMs.
+		// Followers-only posts are *included*, as this table is used to back the "following" feed.
 		if (note.visibility === 'specified') return;
 
 		// Ignore pure renotes
@@ -1143,7 +1144,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		// Make sure that this isn't an *older* post.
 		// We can get older posts through replies, lookups, etc.
 		const currentLatest = await this.latestNotesRepository.findOneBy({ userId: note.userId });
-		if (currentLatest != null && currentLatest.userId >= note.id) return;
+		if (currentLatest != null && currentLatest.noteId >= note.id) return;
 
 		// Record this as the latest note for the given user
 		const latestNote = new LatestNote({

@@ -70,7 +70,7 @@ export const navbarItemDef = reactive({
 	},
 	following: {
 		title: i18n.ts.following,
-		icon: 'ti ti-user-check',
+		icon: 'ph-user-check ph-bold ph-lg',
 		to: '/following-feed',
 	},
 	lists: {

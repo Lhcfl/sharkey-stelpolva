@@ -348,7 +348,6 @@ export function pluginReplaceIcons() {
 					'ti ti-user-circle': 'ph-user-circle ph-bold ph-lg',
 					'ti ti-user-edit': 'ph-user-list ph-bold ph-lg',
 					'ti ti-user-exclamation': 'ph-warning-circle ph-bold ph-lg',
-					'ti ti-user-heart': 'ph-user-switch ph-bold ph-lg',
 					'ti ti-user-off': 'ph-user-minus ph-bold ph-lg',
 					'ti ti-user-plus': 'ph-user-plus ph-bold ph-lg',
 					'ti ti-user-search': 'ph-user-circle ph-bold ph-lg',

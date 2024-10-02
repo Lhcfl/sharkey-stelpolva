@@ -240,6 +240,10 @@ export class NoteDeleteService {
 		// If it's a DM, then it can't possibly be the latest note so we can safely skip this.
 		if (note.visibility === 'specified') return;
 
+		// Check if the deleted note was possibly the latest for the user
+		const hasLatestNote = await this.latestNotesRepository.existsBy({ userId: note.userId });
+		if (hasLatestNote) return;
+
 		// Find the newest remaining note for the user.
 		// We exclude DMs and pure renotes.
 		const nextLatest = await this.notesRepository
@@ -269,12 +273,14 @@ export class NoteDeleteService {
 			noteId: nextLatest.id,
 		});
 
-		// We use an upsert because this deleted note might not have been the newest.
-		// In that case, the latest note may already be populated for this user.
-		// We want postgres to do nothing instead of replacing the value or returning an error.
-		await this.latestNotesRepository.upsert(latestNote, {
-			conflictPaths: ['userId'],
-			skipUpdateIfNoValuesChanged: true,
-		});
+		// When inserting the latest note, it's possible that another worker has "raced" the insert and already added a newer note.
+		// We must use orIgnore() to ensure that the query ignores conflicts, otherwise an exception may be thrown.
+		await this.latestNotesRepository
+			.createQueryBuilder('latest')
+			.insert()
+			.into(LatestNote)
+			.values(latestNote)
+			.orIgnore()
+			.execute();
 	}
 }

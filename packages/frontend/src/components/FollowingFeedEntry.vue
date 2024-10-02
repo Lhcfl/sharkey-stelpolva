@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkA>
 		</header>
 		<div>
-			<Mfm :class="$style.text" :text="getNoteSummary(note)" :isBlock="false" :plain="true" :nowrap="false" :isNote="true" :author="note.user"/>
+			<Mfm :class="$style.text" :text="getNoteSummary(note)" :isBlock="true" :plain="true" :nowrap="false" :isNote="true" nyaize="respect" :author="note.user"/>
 		</div>
 	</div>
 </div>

@@ -26,7 +26,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkPagination>
 				</MkPullToRefresh>
 
-				<MkPullToRefresh v-if="isDesktop" :refresher="() => reloadUserNotes()">
+				<MkPullToRefresh v-if="isWideViewport" :refresher="() => reloadUserNotes()">
 					<div v-if="selectedUser" :class="$style.userInfo">
 						<MkUserInfo class="user" :user="selectedUser"/>
 						<MkNotes :noGap="true" :pagination="userNotesPagination"/>
@@ -62,7 +62,7 @@ import FollowingFeedEntry from '@/components/FollowingFeedEntry.vue';
 import MkNotes from '@/components/MkNotes.vue';
 import MkUserInfo from '@/components/MkUserInfo.vue';
 import { misskeyApi } from '@/scripts/misskey-api.js';
-import {useRouter} from "@/router/supplier.js";
+import { useRouter } from '@/router/supplier.js';
 
 const props = withDefaults(defineProps<{
 	initialTab?: FollowingFeedTab,
@@ -79,17 +79,17 @@ const currentTab: Ref<FollowingFeedTab> = ref(props.initialTab);
 const mutualsOnly: Ref<boolean> = computed(() => currentTab.value === mutualsTab);
 
 // We have to disable the per-user feed on small displays, and it must be done through JS instead of CSS.
-// Otherwise, the second column will resources in the background.
-const desktopMediaQuery = window.matchMedia('(min-width: 750px)');
-const isDesktop: Ref<boolean> = ref(desktopMediaQuery.matches);
-desktopMediaQuery.addEventListener('change', () => isDesktop.value = desktopMediaQuery.matches);
+// Otherwise, the second column will waste resources in the background.
+const wideViewportQuery = window.matchMedia('(min-width: 750px)');
+const isWideViewport: Ref<boolean> = ref(wideViewportQuery.matches);
+wideViewportQuery.addEventListener('change', () => isWideViewport.value = wideViewportQuery.matches);
 
 const selectedUserError: Ref<string> = ref('');
 const selectedUserId: Ref<string> = ref('');
 const selectedUser: Ref<Misskey.entities.UserDetailed | null> = ref(null);
 
 async function userSelected(user: Misskey.entities.UserLite): Promise<void> {
-	if (isDesktop.value) {
+	if (isWideViewport.value) {
 		await showUserNotes(user.id);
 	} else {
 		if (user.host) {
@@ -139,7 +139,7 @@ async function onListReady(): Promise<void> {
 		// This just gets the first user ID
 		const selectedNote: Misskey.entities.Note = latestNotesPaging.value.items.values().next().value;
 
-		// Wait for 1 second to match the animation effects.
+		// Wait for 1 second to match the animation effects in MkHorizontalSwipe, MkPullToRefresh, and MkPagination.
 		// Otherwise, the page appears to load "backwards".
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		await showUserNotes(selectedNote.userId);
@@ -179,19 +179,19 @@ const headerActions: PageHeaderItem[] = [
 const headerTabs = computed(() => [
 	{
 		key: followingTab,
-		icon: 'ti ti-user-check',
+		icon: 'ph-user-check ph-bold ph-lg',
 		title: i18n.ts.following,
 	} satisfies Tab,
 	{
 		key: mutualsTab,
-		icon: 'ti ti-user-heart',
+		icon: 'ph-user-switch ph-bold ph-lg',
 		title: i18n.ts.mutuals,
 	} satisfies Tab,
 ]);
 
 definePageMetadata(() => ({
 	title: i18n.ts.following,
-	icon: 'ti ti-user-check',
+	icon: 'ph-user-check ph-bold ph-lg',
 }));
 
 </script>
