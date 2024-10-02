@@ -53,7 +53,7 @@ services:
 #    restart: always
 #    image: mcaptcha/mcaptcha:latest
 #    networks:
-#      shonks:
+#      shonk:
 #        aliases:
 #          - localhost
 #    ports:
@@ -63,6 +63,8 @@ services:
 #    environment:
 #      PORT: 7493
 #      MCAPTCHA_redis_URL: "redis://mcaptcha_redis/"
+#      MCAPTCHA_allow_registration: true
+#      MCAPTCHA_server_DOMAIN: "example.tld"
 #    depends_on:
 #      db:
 #        condition: service_healthy
@@ -72,7 +74,7 @@ services:
 #  mcaptcha_redis:
 #    image: mcaptcha/cache:latest
 #    networks:
-#      - shonks
+#      - shonk
 #    healthcheck:
 #      test: "redis-cli ping"
 #      interval: 5s
