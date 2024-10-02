@@ -5,10 +5,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <component
-	:is="self ? 'MkA' : 'a'" ref="el" style="word-break: break-all;" class="_link" :to="url.substring(local.length)" :rel="rel ?? 'nofollow noopener'" :target="target"
+	:is="self ? 'MkA' : 'a'" ref="el" style="word-break: break-all;" class="_link" :[attr]="self ? url.substring(local.length) : url" :rel="rel ?? 'nofollow noopener'" :target="target"
 	:behavior="props.navigationBehavior"
 	:title="url"
-	@click="self ? true : promptConfirm()"
+	@click.prevent="self ? true : promptConfirm()"
 	@click.stop
 >
 	<slot></slot>
@@ -33,6 +33,7 @@ const props = withDefaults(defineProps<{
 });
 
 const self = props.url.startsWith(local);
+const attr = self ? 'to' : 'href';
 const target = self ? null : '_blank';
 
 const el = ref<HTMLElement | { $el: HTMLElement }>();
