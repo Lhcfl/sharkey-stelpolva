@@ -62,7 +62,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						const backers = await fetch(`${meta.donationUrl}/members/users.json`).then((response) => response.json());
 
 						// Merge both together into one array and make sure it only has Active subscriptions
-						const allSponsors = [...backers].filter(sponsor => sponsor.isActive === true && sponsor.role === 'BACKER');
+						const allSponsors = [...backers].filter(sponsor => sponsor.isActive === true && sponsor.role === 'BACKER' && sponsor.tier);
 
 						// Remove possible duplicates
 						totalSponsors = [...new Map(allSponsors.map(v => [v.profile, v])).values()];
