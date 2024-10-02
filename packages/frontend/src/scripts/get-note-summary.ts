@@ -23,15 +23,13 @@ export const getNoteSummary = (note?: Misskey.entities.Note | null): string => {
 		return `(${i18n.ts.invisibleNote})`;
 	}
 
-	if (note.cw != null) {
-		return `CW: ${note.cw}`;
-	}
-
 	let summary = '';
 
 	// 本文
-	if (note.text) {
-		summary += note.text;
+	if (note.cw != null) {
+		summary += note.cw;
+	} else {
+		summary += note.text ? note.text : '';
 	}
 
 	// ファイルが添付されているとき

@@ -18,15 +18,13 @@ export const getNoteSummary = (note: Packed<'Note'>): string => {
 		return '(⛔)';
 	}
 
-	if (note.cw != null) {
-		return `CW: ${note.cw}`;
-	}
-
 	let summary = '';
 
 	// 本文
-	if (note.text) {
-		summary += note.text;
+	if (note.cw != null) {
+		summary += note.cw;
+	} else {
+		summary += note.text ? note.text : '';
 	}
 
 	// ファイルが添付されているとき
