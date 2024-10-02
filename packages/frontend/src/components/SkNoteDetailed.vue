@@ -235,6 +235,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { computed, inject, onMounted, onUnmounted, onUpdated, provide, ref, shallowRef, watch } from 'vue';
 import * as mfm from '@transfem-org/sfm-js';
 import * as Misskey from 'misskey-js';
+import { isPureRenote } from 'misskey-js/note.js';
 import SkNoteSub from '@/components/SkNoteSub.vue';
 import SkNoteSimple from '@/components/SkNoteSimple.vue';
 import MkReactionsViewer from '@/components/MkReactionsViewer.vue';
@@ -346,7 +347,7 @@ watch(() => props.expandAllCws, (expandAllCws) => {
 });
 
 if ($i) {
-	renoted.value = appearNote.value.renotedByMe;
+	renoted.value = appearNote.value.renotedByMe || (isPureRenote(note.value) && note.value.userId === $i.id);
 }
 
 let renoting = false;
@@ -523,6 +524,7 @@ function renote(visibility: Visibility, localOnly = false) {
 		}).then(() => {
 			os.toast(i18n.ts.renoted);
 			renoted.value = true;
+			appearNote.value.renoteCount += 1;
 		}).finally(() => { renoting = false; });
 	} else if (!appearNote.value.channel || appearNote.value.channel.allowRenoteToExternal) {
 		const el = renoteButton.value as HTMLElement | null | undefined;

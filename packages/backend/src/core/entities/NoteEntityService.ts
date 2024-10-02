@@ -341,7 +341,8 @@ export class NoteEntityService implements OnModuleInit {
 		const renotedByMe = me
 			? this.notesRepository.createQueryBuilder('note')
 				.where('note.renoteId = :renoteId', { renoteId: note.id })
-				.andWhere('note.userId = :meId', { meId: me.id }).getExists()
+				.andWhere('note.userId = :meId', { meId: me.id })
+				.andWhere('note.text IS NULL').getExists()
 			: false;
 
 		const packed: Packed<'Note'> = await awaitAll({

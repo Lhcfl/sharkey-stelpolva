@@ -93,6 +93,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { computed, ref, shallowRef, watch } from 'vue';
 import * as Misskey from 'misskey-js';
+import { isPureRenote } from 'misskey-js/note.js';
 import SkNoteHeader from '@/components/SkNoteHeader.vue';
 import MkReactionsViewer from '@/components/MkReactionsViewer.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
@@ -191,7 +192,7 @@ useNoteCapture({
 });
 
 if ($i) {
-	renoted.value = appearNote.value.renotedByMe;
+	renoted.value = appearNote.value.renotedByMe || (isPureRenote(props.note) && props.note.userId === $i.id);
 }
 
 function focus() {
@@ -325,6 +326,7 @@ function renote(visibility: Visibility, localOnly = false) {
 		}).then(() => {
 			os.toast(i18n.ts.renoted);
 			renoted.value = true;
+			appearNote.value.renoteCount += 1;
 		});
 	} else {
 		const el = renoteButton.value as HTMLElement | null | undefined;
