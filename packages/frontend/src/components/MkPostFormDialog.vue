@@ -51,7 +51,9 @@ function onPosted() {
 }
 
 function onCancel() {
+	// for some reason onModalClosed does not get called properly when closing the model through other functions.
 	modal.value?.close();
+	// emit is required so that the dialog gets properly disposed otherwise it will float around as a "zombie"
 	emit('closed', true);
 }
 
