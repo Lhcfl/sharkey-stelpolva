@@ -63,6 +63,7 @@ import MkNotes from '@/components/MkNotes.vue';
 import MkUserInfo from '@/components/MkUserInfo.vue';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { useRouter } from '@/router/supplier.js';
+import * as os from '@/os.js';
 
 const props = withDefaults(defineProps<{
 	initialTab?: FollowingFeedTab,
@@ -156,15 +157,15 @@ const latestNotesPagination: Paging<'notes/following'> = {
 	})),
 };
 
+const withUserRenotes = ref(false);
+const withUserReplies = ref(true);
 const userNotesPagination: Paging<'users/notes'> = {
 	endpoint: 'users/notes' as const,
 	limit: 10,
 	params: computed(() => ({
 		userId: selectedUserId.value,
-		withRenotes: false,
-		withReplies: true,
-		withChannelNotes: false,
-		withFiles: false,
+		withRenotes: withUserRenotes.value,
+		withReplies: withUserReplies.value,
 	})),
 };
 
@@ -174,6 +175,24 @@ const headerActions: PageHeaderItem[] = [
 		text: i18n.ts.reload,
 		handler: () => reload(),
 	},
+	{
+		icon: 'ti ti-dots',
+		text: i18n.ts.options,
+		handler: (ev) => {
+			os.popupMenu([
+				{
+					type: 'switch',
+					text: i18n.ts.showRenotes,
+					ref: withUserRenotes,
+				}, {
+					type: 'switch',
+					text: i18n.ts.showRepliesToOthersInTimeline,
+					ref: withUserReplies,
+				},
+			], ev.currentTarget ?? ev.target);
+		},
+	},
+
 ];
 
 const headerTabs = computed(() => [
