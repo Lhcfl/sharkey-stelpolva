@@ -20,13 +20,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 						<template #default="{ items: notes }">
 							<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.panel" :noGap="true">
-								<FollowingFeedEntry :note="note" @select="selectUser"/>
+								<FollowingFeedEntry :note="note" @select="userSelected"/>
 							</MkDateSeparatedList>
 						</template>
 					</MkPagination>
 				</MkPullToRefresh>
 
-				<MkPullToRefresh :refresher="() => reloadUserNotes()">
+				<MkPullToRefresh v-if="isDesktop" :refresher="() => reloadUserNotes()">
 					<div v-if="selectedUser" :class="$style.userInfo">
 						<MkUserInfo class="user" :user="selectedUser"/>
 						<MkNotes :noGap="true" :pagination="userNotesPagination"/>
@@ -62,6 +62,7 @@ import FollowingFeedEntry from '@/components/FollowingFeedEntry.vue';
 import MkNotes from '@/components/MkNotes.vue';
 import MkUserInfo from '@/components/MkUserInfo.vue';
 import { misskeyApi } from '@/scripts/misskey-api.js';
+import {useRouter} from "@/router/supplier.js";
 
 const props = withDefaults(defineProps<{
 	initialTab?: FollowingFeedTab,
@@ -69,17 +70,37 @@ const props = withDefaults(defineProps<{
 	initialTab: followingTab,
 });
 
+const router = useRouter();
+
 // Vue complains, but we *want* to lose reactivity here.
 // Otherwise, the user would be unable to change the tab.
 // eslint-disable-next-line vue/no-setup-props-reactivity-loss
 const currentTab: Ref<FollowingFeedTab> = ref(props.initialTab);
 const mutualsOnly: Ref<boolean> = computed(() => currentTab.value === mutualsTab);
 
+// We have to disable the per-user feed on small displays, and it must be done through JS instead of CSS.
+// Otherwise, the second column will resources in the background.
+const desktopMediaQuery = window.matchMedia('(min-width: 750px)');
+const isDesktop: Ref<boolean> = ref(desktopMediaQuery.matches);
+desktopMediaQuery.addEventListener('change', () => isDesktop.value = desktopMediaQuery.matches);
+
 const selectedUserError: Ref<string> = ref('');
 const selectedUserId: Ref<string> = ref('');
 const selectedUser: Ref<Misskey.entities.UserDetailed | null> = ref(null);
 
-async function selectUser(userId: string): Promise<void> {
+async function userSelected(user: Misskey.entities.UserLite): Promise<void> {
+	if (isDesktop.value) {
+		await showUserNotes(user.id);
+	} else {
+		if (user.host) {
+			router.push(`/@${user.username}@${user.host}`);
+		} else {
+			router.push(`/@${user.username}`);
+		}
+	}
+}
+
+async function showUserNotes(userId: string): Promise<void> {
 	selectedUserError.value = '';
 	selectedUserId.value = userId;
 	selectedUser.value = null;
@@ -103,7 +124,7 @@ async function reloadLatestNotes() {
 }
 
 async function reloadUserNotes() {
-	await selectUser(selectedUserId.value);
+	await showUserNotes(selectedUserId.value);
 }
 
 async function reload() {
@@ -121,7 +142,7 @@ async function onListReady(): Promise<void> {
 		// Wait for 1 second to match the animation effects.
 		// Otherwise, the page appears to load "backwards".
 		await new Promise(resolve => setTimeout(resolve, 1000));
-		await selectUser(selectedNote.userId);
+		await showUserNotes(selectedNote.userId);
 	}
 }
 

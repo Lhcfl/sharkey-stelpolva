@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root" @click="$emit('select', note.userId)">
+<div :class="$style.root" @click="$emit('select', note.user)">
 	<div :class="$style.avatar">
 		<MkAvatar :class="$style.icon" :user="note.user" indictor/>
 	</div>
@@ -35,7 +35,7 @@ defineProps<{
 }>();
 
 defineEmits<{
-	(event: 'select', userId: string): void
+	(event: 'select', user: Misskey.entities.UserLite): void
 }>();
 
 </script>
