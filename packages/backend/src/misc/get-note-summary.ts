@@ -39,7 +39,7 @@ export const getNoteSummary = (note: Packed<'Note'>): string => {
 
 	// 返信のとき
 	if (note.replyId) {
-		if (note.reply) {
+		if (note.reply && !note.cw) {
 			summary += `\n\nRE: ${getNoteSummary(note.reply)}`;
 		} else {
 			summary += '\n\nRE: ...';
@@ -48,7 +48,7 @@ export const getNoteSummary = (note: Packed<'Note'>): string => {
 
 	// Renoteのとき
 	if (note.renoteId) {
-		if (note.renote) {
+		if (note.renote && !note.cw) {
 			summary += `\n\nRN: ${getNoteSummary(note.renote)}`;
 		} else {
 			summary += '\n\nRN: ...';
