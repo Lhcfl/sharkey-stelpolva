@@ -18,12 +18,14 @@ export const getNoteSummary = (note: Packed<'Note'>): string => {
 		return '(⛔)';
 	}
 
+	if (note.cw != null) {
+		return `CW: ${note.cw}`;
+	}
+
 	let summary = '';
 
 	// 本文
-	if (note.cw != null) {
-		summary += `CW: ${note.cw}`;
-	} else if (note.text) {
+	if (note.text) {
 		summary += note.text;
 	}
 
