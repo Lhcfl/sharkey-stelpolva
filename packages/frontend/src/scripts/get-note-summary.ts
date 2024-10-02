@@ -35,7 +35,7 @@ export const getNoteSummary = (note?: Misskey.entities.Note | null): string => {
 	}
 
 	// ファイルが添付されているとき
-	if (note.files && note.files.length !== 0) {
+	if ((note.files || []).length !== 0) {
 		summary += ` (${i18n.tsx.withNFiles({ n: note.files.length })})`;
 	}
 

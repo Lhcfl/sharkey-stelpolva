@@ -30,8 +30,8 @@ export const getNoteSummary = (note: Packed<'Note'>): string => {
 	}
 
 	// ファイルが添付されているとき
-	if (note.files && note.files.length !== 0) {
-		summary += ` (📎${note.files.length})`;
+	if ((note.files ?? []).length !== 0) {
+		summary += ` (📎${note.files!.length})`;
 	}
 
 	// 投票が添付されているとき
