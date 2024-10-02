@@ -106,5 +106,8 @@ function nestedChosen(emoji: any, ev: MouseEvent) {
 .emoji-example {
 	margin-left: 2px;
 	margin-right: 2px;
+	> img {
+		height: 25px;
+	}
 }
 </style>
