@@ -5061,6 +5061,7 @@ export type components = {
       infoImageUrl: string | null;
       notFoundImageUrl: string | null;
       iconUrl: string | null;
+      sidebarLogoUrl: string | null;
       maxNoteTextLength: number;
       ads: {
           /**
