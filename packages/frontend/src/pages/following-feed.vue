@@ -89,7 +89,11 @@ async function selectUser(userId: string): Promise<void> {
 			.then(user => selectedUser.value = user)
 			.catch(error => {
 				console.error('Error fetching user info', error);
-				return selectedUserError.value = String(error);
+
+				return selectedUserError.value =
+					typeof(error) === 'string'
+					? String(error)
+					: JSON.stringify(error);
 			});
 	}
 }
