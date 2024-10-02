@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div :class="$style.root" @click="$emit('select', note.userId)">
 	<div :class="$style.head">
-		<MkAvatar :class="$style.icon" :user="note.user" preview indictor/>
+		<MkAvatar :class="$style.icon" :user="note.user" indictor/>
 	</div>
 	<div :class="$style.tail">
 		<header :class="$style.header">
