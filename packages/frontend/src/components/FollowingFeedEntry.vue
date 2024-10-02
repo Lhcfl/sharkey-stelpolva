@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkTime :time="note.createdAt" :class="$style.headerTime" colored/>
 		</header>
 		<div>
-			<Mfm :class="$style.text" :text="getNoteSummary(note)" :isBlock="false" :plain="true" :nowrap="true" :isNote="true" :author="note.user"/>
+			<Mfm :class="$style.text" :text="getNoteSummary(note)" :isBlock="false" :plain="true" :nowrap="false" :isNote="true" :author="note.user"/>
 		</div>
 	</div>
 </div>
@@ -49,8 +49,7 @@ defineEmits<{
 }
 
 .head {
-	position: sticky;
-	top: 0;
+	align-self: center;
 	flex-shrink: 0;
 	width: 42px;
 	height: 42px;
@@ -92,6 +91,8 @@ defineEmits<{
 	display: flex;
 	width: 100%;
 	overflow: clip;
+	line-height: 1.25em;
+	height: 2.5em;
 }
 
 @container (max-width: 600px) {
