@@ -27,7 +27,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkPullToRefresh>
 
 				<MkPullToRefresh v-if="selectedUserId" :refresher="() => reloadUser()">
-					<MkNotes :noGap="true" :pagination="userPagination" :paginationComponent="userPaging"/>
+					<div v-if="selectedUser" :class="$style.userInfo">
+						<MkUserInfo class="user" :user="selectedUser"/>
+						<MkNotes :noGap="true" :pagination="userPagination"/>
+					</div>
+					<div v-else-if="selectedUserError" :class="$style.list">{{ selectedUserError }}</div>
+					<MkLoading v-else/>
 				</MkPullToRefresh>
 			</div>
 		</MkSpacer>
@@ -42,7 +47,8 @@ export const mutualsTab = 'mutuals' as const;
 </script>
 
 <script lang="ts" setup>
-import { computed, ref, shallowRef } from 'vue';
+import { computed, Ref, ref, shallowRef } from 'vue';
+import * as Misskey from 'misskey-js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { i18n } from '@/i18n.js';
 import MkHorizontalSwipe from '@/components/MkHorizontalSwipe.vue';
@@ -54,6 +60,8 @@ import { Tab } from '@/components/global/MkPageHeader.tabs.vue';
 import { PageHeaderItem } from '@/types/page-header.js';
 import FollowingFeedEntry from '@/components/FollowingFeedEntry.vue';
 import MkNotes from '@/components/MkNotes.vue';
+import MkUserInfo from '@/components/MkUserInfo.vue';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 
 const props = withDefaults(defineProps<{
 	initialTab?: FollowingFeedTab,
@@ -64,25 +72,36 @@ const props = withDefaults(defineProps<{
 // Vue complains, but we *want* to lose reactivity here.
 // Otherwise the use would be unable to change the tab.
 // eslint-disable-next-line vue/no-setup-props-reactivity-loss
-const currentTab = ref(props.initialTab);
-const mutualsOnly = computed(() => currentTab.value === mutualsTab);
+const currentTab: Ref<FollowingFeedTab> = ref(props.initialTab);
+const mutualsOnly: Ref<boolean> = computed(() => currentTab.value === mutualsTab);
 
-const selectedUserId = ref('');
+const selectedUserError: Ref<string> = ref('');
+const selectedUserId: Ref<string> = ref('');
+const selectedUser: Ref<Misskey.entities.UserDetailed | null> = ref(null);
 
-function selectUser(userId: string): void {
+async function selectUser(userId: string): Promise<void> {
+	selectedUserError.value = '';
 	selectedUserId.value = userId;
-	console.log('userId', userId);
+	selectedUser.value = null;
+
+	if (userId) {
+		await misskeyApi('users/show', { userId })
+			.then(user => selectedUser.value = user)
+			.catch(error => {
+				console.error('Error fetching user info', error);
+				return selectedUserError.value = String(error);
+			});
+	}
 }
 
 const listPaging = shallowRef<InstanceType<typeof MkPagination>>();
-const userPaging = shallowRef<InstanceType<typeof MkPagination>>();
 
 async function reloadList() {
 	await listPaging.value?.reload();
 }
 
 async function reloadUser() {
-	await userPaging.value?.reload();
+	await selectUser(selectedUserId.value);
 }
 
 async function reloadBoth() {
@@ -175,6 +194,30 @@ definePageMetadata(() => ({
 
 	.columns > :not(:last-child) {
 		margin-right: 12px;
+	}
+}
+
+.userInfo {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+.userInfo > :not(:first-child) {
+	margin-top: 6px;
+}
+
+.userInfo > :not(:last-child) {
+	margin-bottom: 6px;
+}
+
+@container (min-width: 451px) {
+	.userInfo > :not(:first-child) {
+		margin-top: 12px;
+	}
+
+	.userInfo > :not(:last-child) {
+		margin-bottom: 12px;
 	}
 }
 </style>
