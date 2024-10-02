@@ -186,7 +186,7 @@ watch(defaultStore.reactiveState.menuDisplay, () => {
 				display: block;
 				width: 32px;
 				&.wideIcon {
-				    width: 80%;
+					width: 80%;
 					margin: 0 auto;
 				}
 			}
