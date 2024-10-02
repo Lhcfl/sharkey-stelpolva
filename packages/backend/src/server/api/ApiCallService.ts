@@ -260,6 +260,11 @@ export class ApiCallService implements OnApplicationShutdown {
 		const meta = await this.metaService.fetch();
 		if (!meta.enableIpLogging) return;
 		const ip = request.ip;
+		if (!ip) {
+			this.logger.warn(`user ${user.id} has a null IP address; please check your network configuration.`);
+			return;
+		}
+
 		const ips = this.userIpHistories.get(user.id);
 		if (ips == null || !ips.has(ip)) {
 			if (ips == null) {
