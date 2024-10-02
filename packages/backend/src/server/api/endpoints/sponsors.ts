@@ -34,10 +34,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			let totalSponsors;
-			const cachedSponsors = await this.redisClient.get('sponsors');	
+			const cachedSponsors = await this.redisClient.get('sponsors');
+			const cachedInstanceSponsors = await this.redisClient.get('instanceSponsors');	
 
 			if (!ps.forceUpdate && !ps.instance && cachedSponsors) {
 				totalSponsors = JSON.parse(cachedSponsors);
+			} else if (ps.instance && !ps.forceUpdate && cachedInstanceSponsors) {
+				totalSponsors = JSON.parse(cachedInstanceSponsors);
 			} else if (!ps.instance) {
 				try {
 					const backers = await fetch('https://opencollective.com/sharkey/tiers/backer/all.json').then((response) => response.json());
@@ -66,6 +69,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 						// Remove possible duplicates
 						totalSponsors = [...new Map(allSponsors.map(v => [v.profile, v])).values()];
+						
+						await this.redisClient.set('instanceSponsors', JSON.stringify(totalSponsors), 'EX', 3600);
 					} else {
 						totalSponsors = [];
 					}
