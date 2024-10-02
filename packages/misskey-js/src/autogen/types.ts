@@ -3673,7 +3673,7 @@ export type paths = {
   '/sponsors': {
     /**
      * sponsors
-     * @description Get Sharkey GH Sponsors
+     * @description Get Sharkey Sponsors or Instance Sponsors
      *
      * **Credential required**: *No*
      */
@@ -5191,9 +5191,9 @@ export type operations = {
             infoImageUrl: string | null;
             notFoundImageUrl: string | null;
             iconUrl: string | null;
-            sidebarLogoUrl: string | null;
             app192IconUrl: string | null;
             app512IconUrl: string | null;
+            sidebarLogoUrl: string | null;
             enableEmail: boolean;
             enableServiceWorker: boolean;
             translatorAvailable: boolean;
@@ -9705,9 +9705,9 @@ export type operations = {
           infoImageUrl?: string | null;
           notFoundImageUrl?: string | null;
           iconUrl?: string | null;
-          sidebarLogoUrl?: string | null;
           app192IconUrl?: string | null;
           app512IconUrl?: string | null;
+          sidebarLogoUrl?: string | null;
           backgroundImageUrl?: string | null;
           logoImageUrl?: string | null;
           name?: string | null;
@@ -27990,7 +27990,7 @@ export type operations = {
   };
   /**
    * sponsors
-   * @description Get Sharkey GH Sponsors
+   * @description Get Sharkey Sponsors or Instance Sponsors
    *
    * **Credential required**: *No*
    */
@@ -28000,6 +28000,8 @@ export type operations = {
         'application/json': {
           /** @default false */
           forceUpdate?: boolean;
+          /** @default false */
+          instance?: boolean;
         };
       };
     };
