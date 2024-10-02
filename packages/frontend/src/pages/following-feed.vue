@@ -70,7 +70,7 @@ const props = withDefaults(defineProps<{
 });
 
 // Vue complains, but we *want* to lose reactivity here.
-// Otherwise the use would be unable to change the tab.
+// Otherwise, the user would be unable to change the tab.
 // eslint-disable-next-line vue/no-setup-props-reactivity-loss
 const currentTab: Ref<FollowingFeedTab> = ref(props.initialTab);
 const mutualsOnly: Ref<boolean> = computed(() => currentTab.value === mutualsTab);
