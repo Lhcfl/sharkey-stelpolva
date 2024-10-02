@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkPagination ref="listPaging" :pagination="listPagination">
 						<template #empty>
 							<div class="_fullinfo">
-								<img :src="infoImageUrl" class="_ghost" alt="No notes found" aria-hidden="true"/>
+								<img :src="infoImageUrl" class="_ghost" :alt="i18n.ts.noNotes" aria-hidden="true"/>
 								<div>{{ i18n.ts.noNotes }}</div>
 							</div>
 						</template>
