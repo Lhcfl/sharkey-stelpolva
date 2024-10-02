@@ -5793,6 +5793,18 @@ export interface Locale extends ILocale {
          */
         "appIconResolutionMustBe": ParameterizedString<"resolution">;
         /**
+         * ロゴURL
+         */
+        "sidebarLogoUrl": string;
+        /**
+         * 高精細、ダイナミック幅のシナリオで通常のアイコンの代わりに使用するロゴを指定します。
+         */
+        "sidebarLogoDescription": string;
+        /**
+         * 例：サイドバー、訪問者用、「情報」ページ
+         */
+        "sidebarLogoUsageExample": string;
+        /**
          * manifest.jsonのオーバーライド
          */
         "manifestJsonOverride": string;
