@@ -169,12 +169,12 @@ const userNotesPagination: Paging<'users/notes'> = {
 	})),
 };
 
-const headerActions: PageHeaderItem[] = [
+const headerActions = computed(() => isWideViewport.value ? [
 	{
 		icon: 'ti ti-refresh',
 		text: i18n.ts.reload,
 		handler: () => reload(),
-	},
+	} satisfies PageHeaderItem,
 	{
 		icon: 'ti ti-dots',
 		text: i18n.ts.options,
@@ -191,9 +191,8 @@ const headerActions: PageHeaderItem[] = [
 				},
 			], ev.currentTarget ?? ev.target);
 		},
-	},
-
-];
+	} satisfies PageHeaderItem,
+] : []);
 
 const headerTabs = computed(() => [
 	{
