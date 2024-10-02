@@ -104,6 +104,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
 	(ev: 'queue', count: number): void;
 	(ev: 'status', error: boolean): void;
+	(ev: 'init'): void;
 }>();
 
 const rootEl = shallowRef<HTMLElement>();
@@ -232,6 +233,8 @@ async function init(): Promise<void> {
 		offset.value = res.length;
 		error.value = false;
 		fetching.value = false;
+
+		emit('init');
 	}, err => {
 		error.value = true;
 		fetching.value = false;
