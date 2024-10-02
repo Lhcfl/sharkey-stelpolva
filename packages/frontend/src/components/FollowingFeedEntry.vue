@@ -5,10 +5,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div :class="$style.root" @click="$emit('select', note.userId)">
-	<div :class="$style.head">
+	<div :class="$style.avatar">
 		<MkAvatar :class="$style.icon" :user="note.user" indictor/>
 	</div>
-	<div :class="$style.tail">
+	<div :class="$style.contents">
 		<header :class="$style.header">
 			<MkA v-user-preview="note.user.id" :class="$style.headerName" :to="userPage(note.user)">
 				<MkUserName :user="note.user"/>
@@ -51,7 +51,7 @@ defineEmits<{
 	contain: content;
 }
 
-.head {
+.avatar {
 	align-self: center;
 	flex-shrink: 0;
 	width: 42px;
@@ -59,7 +59,7 @@ defineEmits<{
 	margin-right: 8px;
 }
 
-.tail {
+.contents {
 	flex: 1;
 	min-width: 0;
 }

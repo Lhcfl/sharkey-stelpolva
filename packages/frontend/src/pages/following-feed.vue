@@ -9,8 +9,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkHorizontalSwipe v-model:tab="currentTab" :tabs="headerTabs">
 		<MkSpacer :contentMax="1200">
 			<div :class="$style.columns">
-				<MkPullToRefresh :refresher="() => reloadList()">
-					<MkPagination ref="listPaging" :pagination="listPagination" @init="onListReady">
+				<MkPullToRefresh :refresher="() => reloadLatestNotes()">
+					<MkPagination ref="latestNotesPaging" :pagination="latestNotesPagination" @init="onListReady">
 						<template #empty>
 							<div class="_fullinfo">
 								<img :src="infoImageUrl" class="_ghost" :alt="i18n.ts.noNotes" aria-hidden="true"/>
@@ -19,19 +19,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</template>
 
 						<template #default="{ items: notes }">
-							<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.list" :noGap="true">
+							<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.panel" :noGap="true">
 								<FollowingFeedEntry :note="note" @select="selectUser"/>
 							</MkDateSeparatedList>
 						</template>
 					</MkPagination>
 				</MkPullToRefresh>
 
-				<MkPullToRefresh :refresher="() => reloadUser()">
+				<MkPullToRefresh :refresher="() => reloadUserNotes()">
 					<div v-if="selectedUser" :class="$style.userInfo">
 						<MkUserInfo class="user" :user="selectedUser"/>
-						<MkNotes :noGap="true" :pagination="userPagination"/>
+						<MkNotes :noGap="true" :pagination="userNotesPagination"/>
 					</div>
-					<div v-else-if="selectedUserError" :class="$style.list">{{ selectedUserError }}</div>
+					<div v-else-if="selectedUserError" :class="$style.panel">{{ selectedUserError }}</div>
 					<MkLoading v-else-if="selectedUserId"/>
 				</MkPullToRefresh>
 			</div>
@@ -98,27 +98,25 @@ async function selectUser(userId: string): Promise<void> {
 	}
 }
 
-const listPaging = shallowRef<InstanceType<typeof MkPagination>>();
-
-async function reloadList() {
-	await listPaging.value?.reload();
+async function reloadLatestNotes() {
+	await latestNotesPaging.value?.reload();
 }
 
-async function reloadUser() {
+async function reloadUserNotes() {
 	await selectUser(selectedUserId.value);
 }
 
-async function reloadBoth() {
+async function reload() {
 	await Promise.all([
-		reloadList(),
-		reloadUser(),
+		reloadLatestNotes(),
+		reloadUserNotes(),
 	]);
 }
 
 async function onListReady(): Promise<void> {
-	if (!selectedUserId.value && listPaging.value?.items.size) {
+	if (!selectedUserId.value && latestNotesPaging.value?.items.size) {
 		// This just gets the first user ID
-		const selectedNote: Misskey.entities.Note = listPaging.value.items.values().next().value;
+		const selectedNote: Misskey.entities.Note = latestNotesPaging.value.items.values().next().value;
 
 		// Wait for 1 second to match the animation effects.
 		// Otherwise, the page appears to load "backwards".
@@ -127,7 +125,9 @@ async function onListReady(): Promise<void> {
 	}
 }
 
-const listPagination: Paging<'notes/following'> = {
+const latestNotesPaging = shallowRef<InstanceType<typeof MkPagination>>();
+
+const latestNotesPagination: Paging<'notes/following'> = {
 	endpoint: 'notes/following' as const,
 	limit: 20,
 	params: computed(() => ({
@@ -135,7 +135,7 @@ const listPagination: Paging<'notes/following'> = {
 	})),
 };
 
-const userPagination: Paging<'users/notes'> = {
+const userNotesPagination: Paging<'users/notes'> = {
 	endpoint: 'users/notes' as const,
 	limit: 10,
 	params: computed(() => ({
@@ -151,7 +151,7 @@ const headerActions: PageHeaderItem[] = [
 	{
 		icon: 'ti ti-refresh',
 		text: i18n.ts.reload,
-		handler: () => reloadBoth(),
+		handler: () => reload(),
 	},
 ];
 
@@ -176,7 +176,7 @@ definePageMetadata(() => ({
 </script>
 
 <style lang="scss" module>
-.list {
+.panel {
 	background: var(--panel);
 }
 
