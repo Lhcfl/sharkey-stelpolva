@@ -50,9 +50,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			
 			if (ps.instance) {
 				const meta = await this.metaService.fetch();
-				if (meta.donationUrl && !meta.donationUrl.includes('opencollective.com')) {
-					return [];
-				} else if (meta.donationUrl) {
+				if (meta.donationUrl && meta.donationUrl.includes('opencollective.com')) {
 					return { sponsor_data: await maybeCached('instanceSponsors', ps.forceUpdate, async () => {
 						let totalSponsors;
 						const meta = await this.metaService.fetch();
@@ -73,7 +71,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						}
 					}) };
 				} else {
-					return [];
+					return { sponsor_data: [] };
 				}
 			} else {
 				return { sponsor_data: await maybeCached('sponsors', ps.forceUpdate, async () => {
