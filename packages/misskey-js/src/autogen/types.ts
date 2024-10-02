@@ -5077,6 +5077,7 @@ export type components = {
       infoImageUrl: string | null;
       notFoundImageUrl: string | null;
       iconUrl: string | null;
+      sidebarLogoUrl: string | null;
       maxNoteTextLength: number;
       ads: {
           /**
@@ -5207,9 +5208,9 @@ export type operations = {
             infoImageUrl: string | null;
             notFoundImageUrl: string | null;
             iconUrl: string | null;
-            sidebarLogoUrl: string | null;
             app192IconUrl: string | null;
             app512IconUrl: string | null;
+            sidebarLogoUrl: string | null;
             enableEmail: boolean;
             enableServiceWorker: boolean;
             translatorAvailable: boolean;
@@ -9721,9 +9722,9 @@ export type operations = {
           infoImageUrl?: string | null;
           notFoundImageUrl?: string | null;
           iconUrl?: string | null;
-          sidebarLogoUrl?: string | null;
           app192IconUrl?: string | null;
           app512IconUrl?: string | null;
+          sidebarLogoUrl?: string | null;
           backgroundImageUrl?: string | null;
           logoImageUrl?: string | null;
           name?: string | null;
