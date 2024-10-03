@@ -184,7 +184,7 @@ flagAsBotDescription: "Enable this option if this account is controlled by a pro
 flagAsCat: "Mark this account as a cat"
 flagAsCatDescription: "Enable this option to mark this account as a cat."
 flagSpeakAsCat: "Speak as a cat"
-flagSpeakAsCatDescription: "Your posts will get nyanified when in cat mode. If this isn't working please check that you dont have 'Disable cat speak' on under General/Note Display"
+flagSpeakAsCatDescription: "Your posts will get nyanified when in cat mode. If this isn't working, then please check that you dont have 'Disable cat speak' on under General/Note Display"
 flagShowTimelineReplies: "Show replies in timeline"
 flagShowTimelineRepliesDescription: "Shows replies of users to notes of other users in the timeline if turned on."
 autoAcceptFollowed: "Automatically approve follow requests from users you're following"
