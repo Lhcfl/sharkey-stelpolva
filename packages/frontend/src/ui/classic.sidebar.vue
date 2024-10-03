@@ -166,7 +166,6 @@ watch(defaultStore.reactiveState.menuDisplay, () => {
 		top: 0;
 		z-index: 1;
 		padding: 16px 0;
-		background: var(--bg);
 
 		> .button {
 			min-width: 0;

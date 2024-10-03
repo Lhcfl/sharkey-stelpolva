@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <MkModal ref="modal" :preferType="'dialog'" @click="modal?.close()" @closed="onModalClosed()" @esc="modal?.close()">
-	<MkPostForm ref="form" :class="$style.form" v-bind="props" autofocus freezeAfterPosted @posted="onPosted" @cancel="modal?.close()" @esc="modal?.close()"/>
+	<MkPostForm ref="form" :class="$style.form" v-bind="props" autofocus freezeAfterPosted @posted="onPosted" @cancel="onCancel" @esc="onCancel"/>
 </MkModal>
 </template>
 
@@ -37,7 +37,7 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-	(ev: 'closed'): void;
+	(ev: 'closed', cancelled: boolean): void;
 }>();
 
 const modal = shallowRef<InstanceType<typeof MkModal>>();
@@ -47,10 +47,18 @@ function onPosted() {
 	modal.value?.close({
 		useSendAnimation: true,
 	});
+	emit('closed', false);
+}
+
+function onCancel() {
+	// for some reason onModalClosed does not get called properly when closing the model through other functions.
+	modal.value?.close();
+	// emit is required so that the dialog gets properly disposed otherwise it will float around as a "zombie"
+	emit('closed', true);
 }
 
 function onModalClosed() {
-	emit('closed');
+	emit('closed', true);
 }
 </script>
 
