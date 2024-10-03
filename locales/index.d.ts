@@ -5126,6 +5126,10 @@ export interface Locale extends ILocale {
      */
     "flip": string;
     /**
+     * アイコンの後ろに表示
+     */
+    "showBelowAvatar": string;
+    /**
      * アイコンのデコレーションを表示
      */
     "showAvatarDecorations": string;
