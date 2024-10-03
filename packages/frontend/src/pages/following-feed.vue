@@ -4,40 +4,43 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkStickyContainer>
-	<template #header><MkPageHeader v-model:tab="currentTab" :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkHorizontalSwipe v-model:tab="currentTab" :tabs="headerTabs">
-		<MkSpacer :contentMax="1200">
-			<div :class="$style.columns">
-				<MkPullToRefresh :refresher="() => reloadLatestNotes()">
-					<MkPagination ref="latestNotesPaging" :pagination="latestNotesPagination" @init="onListReady">
-						<template #empty>
-							<div class="_fullinfo">
-								<img :src="infoImageUrl" class="_ghost" :alt="i18n.ts.noNotes" aria-hidden="true"/>
-								<div>{{ i18n.ts.noNotes }}</div>
-							</div>
-						</template>
+<div :class="$style.root">
+	<MkPageHeader :class="$style.header" v-model:tab="currentTab" :tabs="headerTabs" :actions="headerActions"/>
 
-						<template #default="{ items: notes }">
-							<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.panel" :noGap="true">
-								<FollowingFeedEntry :note="note" @select="userSelected"/>
-							</MkDateSeparatedList>
-						</template>
-					</MkPagination>
-				</MkPullToRefresh>
+	<div :class="$style.notes">
+		<MkHorizontalSwipe v-model:tab="currentTab" :tabs="headerTabs">
+			<MkPullToRefresh :refresher="() => reloadLatestNotes()">
+				<MkPagination ref="latestNotesPaging" :pagination="latestNotesPagination" @init="onListReady">
+					<template #empty>
+						<div class="_fullinfo">
+							<img :src="infoImageUrl" class="_ghost" :alt="i18n.ts.noNotes" aria-hidden="true"/>
+							<div>{{ i18n.ts.noNotes }}</div>
+						</div>
+					</template>
 
-				<MkPullToRefresh v-if="isWideViewport" :refresher="() => reloadUserNotes()">
-					<div v-if="selectedUser" :class="$style.userInfo">
-						<MkUserInfo class="user" :user="selectedUser"/>
-						<MkNotes :noGap="true" :pagination="userNotesPagination"/>
-					</div>
-					<div v-else-if="selectedUserError" :class="$style.panel">{{ selectedUserError }}</div>
-					<MkLoading v-else-if="selectedUserId"/>
-				</MkPullToRefresh>
-			</div>
-		</MkSpacer>
-	</MkHorizontalSwipe>
-</MkStickyContainer>
+					<template #default="{ items: notes }">
+						<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.panel" :noGap="true">
+							<FollowingFeedEntry :note="note" @select="userSelected"/>
+						</MkDateSeparatedList>
+					</template>
+				</MkPagination>
+			</MkPullToRefresh>
+		</MkHorizontalSwipe>
+	</div>
+
+	<div v-if="isWideViewport" :class="$style.user">
+		<MkHorizontalSwipe v-model:tab="currentTab" :tabs="headerTabs">
+			<MkPullToRefresh :refresher="() => reloadUserNotes()">
+				<div v-if="selectedUser" :class="$style.userInfo">
+					<MkUserInfo :class="$style.userInfo" class="user" :user="selectedUser"/>
+					<MkNotes :noGap="true" :pagination="userNotesPagination"/>
+				</div>
+				<div v-else-if="selectedUserError" :class="$style.panel">{{ selectedUserError }}</div>
+				<MkLoading v-else-if="selectedUserId"/>
+			</MkPullToRefresh>
+		</MkHorizontalSwipe>
+	</div>
+</div>
 </template>
 
 <script lang="ts">
@@ -106,6 +109,10 @@ async function showUserNotes(userId: string): Promise<void> {
 	selectedUserId.value = userId;
 	selectedUser.value = null;
 
+	// Wait for 1 second to match the animation effects in MkHorizontalSwipe, MkPullToRefresh, and MkPagination.
+	// Otherwise, the page appears to load "backwards".
+	await new Promise(resolve => setTimeout(resolve, 1000));
+
 	if (userId) {
 		await misskeyApi('users/show', { userId })
 			.then(user => selectedUser.value = user)
@@ -140,9 +147,6 @@ async function onListReady(): Promise<void> {
 		// This just gets the first user ID
 		const selectedNote: Misskey.entities.Note = latestNotesPaging.value.items.values().next().value;
 
-		// Wait for 1 second to match the animation effects in MkHorizontalSwipe, MkPullToRefresh, and MkPagination.
-		// Otherwise, the page appears to load "backwards".
-		await new Promise(resolve => setTimeout(resolve, 1000));
 		await showUserNotes(selectedNote.userId);
 	}
 }
@@ -215,74 +219,55 @@ definePageMetadata(() => ({
 </script>
 
 <style lang="scss" module>
-.panel {
-	background: var(--panel);
+.root {
+	display: grid;
+	grid-template-columns: min-content 1fr min-content;
+	grid-template-rows: min-content 1fr;
+	grid-template-areas:
+		"header header header"
+	  "lm notes rm";
+	gap: 12px;
+
+	height: 100vh;
+	max-width: 1200px;
+
+	overflow: hidden;
 }
 
-.info {
-	margin-bottom: 6px;
+.header {
+	grid-area: header;
 }
 
-@container (min-width: 451px) {
-	.info {
-		margin-bottom: 12px;
-	}
+.notes {
+	grid-area: notes;
+	overflow: auto;
 }
 
-.columns {
-	display: flex;
-	flex-direction: row;
-
-	width: 100%;
-}
-
-.columns > * {
-	flex: 1;
-}
-
-.columns > :last-child {
-	min-width: 60%;
-}
-
-.columns > :not(:first-child) {
-	margin-left: 6px;
-}
-
-.columns > :not(:last-child) {
-	margin-right: 6px;
-}
-
-@container (min-width: 451px) {
-	.columns > :not(:first-child) {
-		margin-left: 12px;
-	}
-
-	.columns > :not(:last-child) {
-		margin-right: 12px;
-	}
+.user {
+	grid-area: user;
+	overflow: auto;
 }
 
 .userInfo {
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
+	margin-bottom: 12px;
 }
 
-.userInfo > :not(:first-child) {
-	margin-top: 6px;
-}
-
-.userInfo > :not(:last-child) {
-	margin-bottom: 6px;
-}
-
-@container (min-width: 451px) {
-	.userInfo > :not(:first-child) {
-		margin-top: 12px;
+@container (min-width: 751px) {
+	.root {
+		grid-template-columns: min-content 4fr 6fr min-content;
+		grid-template-rows: min-content 1fr;
+		grid-template-areas:
+			"header header header header"
+			"lm notes user rm";
+		gap: 24px;
 	}
 
-	.userInfo > :not(:last-child) {
-		margin-bottom: 12px;
+	.userInfo {
+		margin-bottom: 24px;
 	}
+}
+
+.panel {
+	background: var(--panel);
 }
 </style>
