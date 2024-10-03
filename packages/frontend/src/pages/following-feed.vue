@@ -174,6 +174,8 @@ function buildMutePatterns(mutedWords: (string | string[])[] | undefined): RegEx
 		let flags: string;
 		let patterns: string[];
 
+		// Translate the pattern, which can be a raw string or a regular expression.
+		// For unknown reasons, raw strings are expressed as an array and expressions are plain strings.
 		if (!mute) {
 			continue;
 		} else if (Array.isArray(mute)) {
@@ -189,6 +191,7 @@ function buildMutePatterns(mutedWords: (string | string[])[] | undefined): RegEx
 			}
 		}
 
+		// Group the patterns based on shared flags
 		let flagPatterns = patternMap.get(flags);
 		if (!flagPatterns) {
 			flagPatterns = new Set<string>();
@@ -200,6 +203,7 @@ function buildMutePatterns(mutedWords: (string | string[])[] | undefined): RegEx
 		}
 	}
 
+	// Parse all the patterns into regular expressions
 	return Array
 		.from(patternMap)
 		.map(([flag, patterns]) => {
