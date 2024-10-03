@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div :class="$style.root">
-	<MkPageHeader :class="$style.header" v-model:tab="currentTab" :tabs="headerTabs" :actions="headerActions"/>
+	<MkPageHeader :class="$style.header" v-model:tab="currentTab" :tabs="headerTabs" :actions="headerActions" @update:tab="onChangeTab"/>
 
 	<div :class="$style.notes">
 		<MkHorizontalSwipe v-model:tab="currentTab" :tabs="headerTabs">
@@ -109,11 +109,13 @@ async function showUserNotes(userId: string): Promise<void> {
 	selectedUserId.value = userId;
 	selectedUser.value = null;
 
-	// Wait for 1 second to match the animation effects in MkHorizontalSwipe, MkPullToRefresh, and MkPagination.
-	// Otherwise, the page appears to load "backwards".
-	await new Promise(resolve => setTimeout(resolve, 1000));
-
 	if (userId) {
+		// Wait for 1 second to match the animation effects in MkHorizontalSwipe, MkPullToRefresh, and MkPagination.
+		// Otherwise, the page appears to load "backwards".
+		await new Promise(resolve => setTimeout(resolve, 1000));
+
+		// We need a User entity, but the pagination returns only UserLite.
+		// An additional request is needed to "upgrade" the object.
 		await misskeyApi('users/show', { userId })
 			.then(user => selectedUser.value = user)
 			.catch(error => {
@@ -146,9 +148,12 @@ async function onListReady(): Promise<void> {
 	if (!selectedUserId.value && latestNotesPaging.value?.items.size) {
 		// This just gets the first user ID
 		const selectedNote: Misskey.entities.Note = latestNotesPaging.value.items.values().next().value;
-
 		await showUserNotes(selectedNote.userId);
 	}
+}
+
+async function onChangeTab(): Promise<void> {
+	await showUserNotes('');
 }
 
 const latestNotesPaging = shallowRef<InstanceType<typeof MkPagination>>();
