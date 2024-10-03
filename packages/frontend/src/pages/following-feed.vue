@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div :class="$style.root">
-	<MkPageHeader v-model:tab="currentTab" :class="$style.header" :tabs="headerTabs" :actions="headerActions" @update:tab="onChangeTab"/>
+	<MkPageHeader v-model:tab="currentTab" :class="$style.header" :tabs="headerTabs" :actions="headerActions" :displayBackButton="true" @update:tab="onChangeTab"/>
 
 	<div :class="$style.notes">
 		<MkHorizontalSwipe v-model:tab="currentTab" :tabs="headerTabs">
@@ -29,15 +29,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 
 	<div v-if="isWideViewport" :class="$style.user">
-		<MkHorizontalSwipe v-model:tab="currentTab" :tabs="headerTabs">
-			<MkPullToRefresh :refresher="() => reloadUserNotes()">
-				<div v-if="selectedUser" :class="$style.userInfo">
-					<MkUserInfo :class="$style.userInfo" class="user" :user="selectedUser"/>
-					<MkNotes :noGap="true" :pagination="userNotesPagination"/>
-				</div>
-				<div v-else-if="selectedUserError" :class="$style.panel">{{ selectedUserError }}</div>
-				<MkLoading v-else-if="selectedUserId"/>
-			</MkPullToRefresh>
+		<MkHorizontalSwipe v-if="selectedUserId" v-model:tab="currentTab" :tabs="headerTabs">
+			<UserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withRenotes="withUserRenotes" :withReplies="withUserReplies" :onlyFiles="withOnlyFiles"/>
 		</MkHorizontalSwipe>
 	</div>
 </div>
@@ -62,15 +55,12 @@ import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 import { Tab } from '@/components/global/MkPageHeader.tabs.vue';
 import { PageHeaderItem } from '@/types/page-header.js';
 import FollowingFeedEntry from '@/components/FollowingFeedEntry.vue';
-import MkNotes from '@/components/MkNotes.vue';
-import MkUserInfo from '@/components/MkUserInfo.vue';
-import { misskeyApi } from '@/scripts/misskey-api.js';
 import { useRouter } from '@/router/supplier.js';
 import * as os from '@/os.js';
 import MkPageHeader from '@/components/global/MkPageHeader.vue';
 import { $i } from '@/account.js';
-import MkLoading from '@/components/global/MkLoading.vue';
 import { checkWordMute } from '@/scripts/check-word-mute.js';
+import UserRecentNotes from '@/components/UserRecentNotes.vue';
 
 const props = withDefaults(defineProps<{
 	initialTab?: FollowingFeedTab,
@@ -85,6 +75,7 @@ const router = useRouter();
 // eslint-disable-next-line vue/no-setup-props-reactivity-loss
 const currentTab: Ref<FollowingFeedTab> = ref(props.initialTab);
 const mutualsOnly: Ref<boolean> = computed(() => currentTab.value === mutualsTab);
+const userRecentNotes = shallowRef<InstanceType<typeof UserRecentNotes>>();
 
 // We have to disable the per-user feed on small displays, and it must be done through JS instead of CSS.
 // Otherwise, the second column will waste resources in the background.
@@ -92,47 +83,13 @@ const wideViewportQuery = window.matchMedia('(min-width: 750px)');
 const isWideViewport: Ref<boolean> = ref(wideViewportQuery.matches);
 wideViewportQuery.addEventListener('change', () => isWideViewport.value = wideViewportQuery.matches);
 
-const selectedUserError: Ref<string> = ref('');
-const selectedUserId: Ref<string> = ref('');
-const selectedUser: Ref<Misskey.entities.UserDetailed | null> = ref(null);
+const selectedUserId: Ref<string | null> = ref(null);
 
-async function userSelected(user: Misskey.entities.UserLite): Promise<void> {
+function userSelected(user: Misskey.entities.UserLite): void {
 	if (isWideViewport.value) {
-		await showUserNotes(user.id);
+		selectedUserId.value = user.id;
 	} else {
-		if (user.host) {
-			router.push(`/@${user.username}@${user.host}`);
-		} else {
-			router.push(`/@${user.username}`);
-		}
-	}
-}
-
-async function showUserNotes(userId: string): Promise<void> {
-	selectedUserError.value = '';
-	selectedUserId.value = userId;
-	selectedUser.value = null;
-
-	if (userId) {
-		await Promise
-			.all([
-				// We need a User entity, but the pagination returns only UserLite.
-				// An additional request is needed to "upgrade" the object.
-				misskeyApi('users/show', { userId }),
-
-				// Wait for 1 second to match the animation effects in MkHorizontalSwipe, MkPullToRefresh, and MkPagination.
-				// Otherwise, the page appears to load "backwards".
-				new Promise(resolve => setTimeout(resolve, 1000)),
-			])
-			.then(([user]) => selectedUser.value = user)
-			.catch(error => {
-				console.error('Error fetching user info', error);
-
-				return selectedUserError.value =
-					typeof(error) === 'string'
-						? String(error)
-						: JSON.stringify(error);
-			});
+		router.push(`/following-feed/${user.id}`);
 	}
 }
 
@@ -141,7 +98,7 @@ async function reloadLatestNotes() {
 }
 
 async function reloadUserNotes() {
-	await showUserNotes(selectedUserId.value);
+	await userRecentNotes.value?.reload();
 }
 
 async function reload() {
@@ -155,12 +112,12 @@ async function onListReady(): Promise<void> {
 	if (!selectedUserId.value && latestNotesPaging.value?.items.size) {
 		// This just gets the first user ID
 		const selectedNote: Misskey.entities.Note = latestNotesPaging.value.items.values().next().value;
-		await showUserNotes(selectedNote.userId);
+		selectedUserId.value = selectedNote.userId;
 	}
 }
 
 async function onChangeTab(): Promise<void> {
-	await showUserNotes('');
+	selectedUserId.value = null;
 }
 
 function isSoftMuted(note: Misskey.entities.Note): boolean {
@@ -207,16 +164,6 @@ const latestNotesPagination: Paging<'notes/following'> = {
 const withUserRenotes = ref(false);
 const withUserReplies = ref(true);
 const withOnlyFiles = ref(false);
-const userNotesPagination: Paging<'users/notes'> = {
-	endpoint: 'users/notes' as const,
-	limit: 10,
-	params: computed(() => ({
-		userId: selectedUserId.value,
-		withRenotes: withUserRenotes.value,
-		withReplies: withUserReplies.value,
-		withFiles: withOnlyFiles.value,
-	})),
-};
 
 const headerActions = computed(() => isWideViewport.value ? [
 	{
