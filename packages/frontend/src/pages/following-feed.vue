@@ -205,6 +205,7 @@ const latestNotesPagination: Paging<'notes/following'> = {
 
 const withUserRenotes = ref(false);
 const withUserReplies = ref(true);
+const withOnlyFiles = ref(false);
 const userNotesPagination: Paging<'users/notes'> = {
 	endpoint: 'users/notes' as const,
 	limit: 10,
@@ -212,6 +213,7 @@ const userNotesPagination: Paging<'users/notes'> = {
 		userId: selectedUserId.value,
 		withRenotes: withUserRenotes.value,
 		withReplies: withUserReplies.value,
+		withFiles: withOnlyFiles.value,
 	})),
 };
 
@@ -234,6 +236,16 @@ const headerActions = computed(() => isWideViewport.value ? [
 					type: 'switch',
 					text: i18n.ts.showRepliesToOthersInTimeline,
 					ref: withUserReplies,
+					disabled: withOnlyFiles,
+				},
+				{
+					type: 'divider',
+				},
+				{
+					type: 'switch',
+					text: i18n.ts.fileAttachedOnly,
+					ref: withOnlyFiles,
+					disabled: withUserReplies,
 				},
 			], ev.currentTarget ?? ev.target);
 		},
