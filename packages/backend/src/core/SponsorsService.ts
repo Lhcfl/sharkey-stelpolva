@@ -12,13 +12,15 @@ import { bindThis } from '@/decorators.js';
 
 @Injectable()
 export class SponsorsService implements OnApplicationShutdown {
-	private cache: RedisKVCache<any>;
+	private cache: RedisKVCache<void[]>;
 
 	constructor(
-    @Inject(DI.redis) private redisClient: Redis.Redis,
+		@Inject(DI.redis)
+		private redisClient: Redis.Redis,
+		
 		private metaService: MetaService,
 	) {
-		this.cache = new RedisKVCache<any>(this.redisClient, 'sponsors', {
+		this.cache = new RedisKVCache<void[]>(this.redisClient, 'sponsors', {
 			lifetime: 1000 * 60 * 60,
 			memoryCacheLifetime: 1000 * 60,
 			fetcher: (key) => {
@@ -26,7 +28,7 @@ export class SponsorsService implements OnApplicationShutdown {
 				return this.fetchSharkeySponsors();
 			},
 			toRedisConverter: (value) => JSON.stringify(value),
-			fromRedisConverter: (value) => JSON.parse(value)
+			fromRedisConverter: (value) => JSON.parse(value),
 		});
 	}
 
