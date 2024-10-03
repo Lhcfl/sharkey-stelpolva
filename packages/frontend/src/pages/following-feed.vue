@@ -67,6 +67,7 @@ import MkUserInfo from '@/components/MkUserInfo.vue';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { useRouter } from '@/router/supplier.js';
 import * as os from '@/os.js';
+import MkPageHeader from '@/components/global/MkPageHeader.vue';
 
 const props = withDefaults(defineProps<{
 	initialTab?: FollowingFeedTab,
