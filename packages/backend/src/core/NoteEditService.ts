@@ -247,6 +247,11 @@ export class NoteEditService implements OnApplicationShutdown {
 			data.reply = undefined;
 		}
 
+		// changing visibility on an edit is ill-defined, let's try to
+		// keep the same visibility as the original note
+		data.visibility = oldnote.visibility;
+		data.localOnly = oldnote.localOnly;
+
 		// チャンネル外にリプライしたら対象のスコープに合わせる
 		// (クライアントサイドでやっても良い処理だと思うけどとりあえずサーバーサイドで)
 		if (data.reply && data.channel && data.reply.channelId !== data.channel.id) {
@@ -428,9 +433,6 @@ export class NoteEditService implements OnApplicationShutdown {
 		}
 		if (data.cw !== oldnote.cw) {
 			update.cw = data.cw;
-		}
-		if (data.localOnly !== oldnote.localOnly) {
-			update.localOnly = data.localOnly;
 		}
 		if (oldnote.hasPoll !== !!data.poll) {
 			update.hasPoll = !!data.poll;
