@@ -29,6 +29,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkRange v-model="offsetY" continuousUpdate :min="-0.25" :max="0.25" :step="0.025" :textConverter="(v) => `${Math.floor(v * 100)}%`">
 					<template #label>Y {{ i18n.ts.position }}</template>
 				</MkRange>
+				<MkSwitch v-model="showBelow">
+					<template #label>{{ i18n.ts.showBelowAvatar }}</template>
+				</MkSwitch>
 				<MkSwitch v-model="flipH">
 					<template #label>{{ i18n.ts.flip }}</template>
 				</MkSwitch>
@@ -71,12 +74,14 @@ const emit = defineEmits<{
 		flipH: boolean;
 		offsetX: number;
 		offsetY: number;
+		showBelow: boolean;
 	}): void;
 	(ev: 'update', payload: {
 		angle: number;
 		flipH: boolean;
 		offsetX: number;
 		offsetY: number;
+		showBelow: boolean;
 	}): void;
 	(ev: 'detach'): void;
 }>();
@@ -87,6 +92,7 @@ const angle = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIn
 const flipH = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].flipH : null) ?? false);
 const offsetX = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].offsetX : null) ?? 0);
 const offsetY = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].offsetY : null) ?? 0);
+const showBelow = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].showBelow : null) ?? false);
 
 const decorationsForPreview = computed(() => {
 	const decoration = {
@@ -96,6 +102,7 @@ const decorationsForPreview = computed(() => {
 		flipH: flipH.value,
 		offsetX: offsetX.value,
 		offsetY: offsetY.value,
+		showBelow: showBelow.value,
 	};
 	const decorations = [...$i.avatarDecorations];
 	if (props.usingIndex != null) {
@@ -116,6 +123,7 @@ async function update() {
 		flipH: flipH.value,
 		offsetX: offsetX.value,
 		offsetY: offsetY.value,
+		showBelow: showBelow.value,
 	});
 	dialog.value.close();
 }
@@ -126,6 +134,7 @@ async function attach() {
 		flipH: flipH.value,
 		offsetX: offsetX.value,
 		offsetY: offsetY.value,
+		showBelow: showBelow.value,
 	});
 	dialog.value.close();
 }
