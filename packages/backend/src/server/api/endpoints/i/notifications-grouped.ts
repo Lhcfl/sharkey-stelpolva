@@ -151,8 +151,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					} else if (type === 'reaction') {
 						return {
 							type: 'reaction:grouped',
-							id: ns[ns.length - 1].id,
-							createdAt: ns[ns.length - 1].createdAt,
+							id: ns[0].id,
+							createdAt: ns[0].createdAt,
 							noteId: id,
 							reactions: (ns as FilterUnionByProperty<MiNotification, 'type', 'reaction'>[]).map(n => ({
 								userId: n.notifierId,
@@ -162,8 +162,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					} else if (type === 'renote') {
 						return {
 							type: 'renote:grouped',
-							id: ns[ns.length - 1].id,
-							createdAt: ns[ns.length - 1].createdAt,
+							id: ns[0].id,
+							createdAt: ns[0].createdAt,
 							noteId: (ns as FilterUnionByProperty<MiNotification, 'type', 'renote'>[])[0].noteId,
 							userIds: (ns as FilterUnionByProperty<MiNotification, 'type', 'renote'>[]).map(n => n.notifierId),
 						};
