@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-	<div class="bcekxzvu _margin _panel" :class="{ resolved: resolved }">
+	<div class="bcekxzvu _margin _panel">
 		<div class="target">
 			<MkA v-user-preview="report.targetUserId" class="info" :to="`/admin/user/${report.targetUserId}`" :behavior="'window'">
 				<MkAvatar class="avatar" :user="report.targetUser" indicator/>
@@ -70,7 +70,6 @@ const emit = defineEmits<{
 }>();
 
 const forward = ref(props.report.forwarded);
-const resolved = ref(props.report.resolved);
 
 function resolve() {
 	os.apiWithDialog('admin/resolve-abuse-user-report', {
@@ -87,10 +86,6 @@ function resolve() {
 	display: flex;
 	flex-direction: column;
 	transition: .1s;
-
-	&.resolved:not(:hover,:focus) {
-		opacity: 50%;
-	}
 
 	> .target {
 		box-sizing: border-box;
