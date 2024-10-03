@@ -245,6 +245,7 @@ export function confirm(props: {
 	text?: string;
 	okText?: string;
 	cancelText?: string;
+	plain?: boolean;
 }): Promise<{ canceled: boolean }> {
 	return new Promise(resolve => {
 		const { dispose } = popup(MkDialog, {
@@ -691,7 +692,7 @@ export function contextMenu(items: MenuItem[], ev: MouseEvent): Promise<void> {
 	}));
 }
 
-export function post(props: Record<string, any> = {}): Promise<void> {
+export function post(props: Record<string, any> = {}): Promise<void | boolean> {
 	pleaseLogin(undefined, (props.initialText || props.initialNote ? {
 		type: 'share',
 		params: {
@@ -709,8 +710,8 @@ export function post(props: Record<string, any> = {}): Promise<void> {
 		//       複数のpost formを開いたときに場合によってはエラーになる
 		//       もちろん複数のpost formを開けること自体Misskeyサイドのバグなのだが
 		const { dispose } = popup(MkPostFormDialog, props, {
-			closed: () => {
-				resolve();
+			closed: (cancelled) => {
+				resolve(cancelled);
 				dispose();
 			},
 		});
