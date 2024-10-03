@@ -3673,7 +3673,7 @@ export type paths = {
   '/sponsors': {
     /**
      * sponsors
-     * @description Get Sharkey GH Sponsors
+     * @description Get Sharkey Sponsors
      *
      * **Credential required**: *No*
      */
@@ -3814,6 +3814,7 @@ export type components = {
           url: string;
           offsetX?: number;
           offsetY?: number;
+          showBelow?: boolean;
         }[];
       /** @default false */
       isAdmin?: boolean;
@@ -20224,6 +20225,7 @@ export type operations = {
               flipH?: boolean | null;
               offsetX?: number | null;
               offsetY?: number | null;
+              showBelow?: boolean | null;
             })[];
           /** Format: misskey:id */
           bannerId?: string | null;
@@ -27988,7 +27990,7 @@ export type operations = {
   };
   /**
    * sponsors
-   * @description Get Sharkey GH Sponsors
+   * @description Get Sharkey Sponsors
    *
    * **Credential required**: *No*
    */
