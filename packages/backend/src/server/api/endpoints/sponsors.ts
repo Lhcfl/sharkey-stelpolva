@@ -4,10 +4,9 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import * as Redis from 'ioredis';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
-import { MetaService } from '@/core/MetaService.js';
+import { SponsorsService } from '@/core/SponsorsService.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -29,70 +28,13 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-        @Inject(DI.redis) private redisClient: Redis.Redis,
-		private metaService: MetaService,
+		private sponsorsService: SponsorsService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const maybeCached = async (key: string, forcedUpdate: boolean, fetch_cb: () => void) => {
-				// get Key first before doing the if statement as it can be defined as either string or null
-				const cached = await this.redisClient.get(key);
-				
-				if (!forcedUpdate && cached) {
-					return JSON.parse(cached);
-				}
-
-				try {
-					const result = await fetch_cb();
-					await this.redisClient.set(key, JSON.stringify(result), 'EX', 3600);
-					return result;
-				} catch (e) { return []; }
-			};
-			
 			if (ps.instance) {
-				const meta = await this.metaService.fetch();
-				if (meta.donationUrl && meta.donationUrl.includes('opencollective.com')) {
-					return { sponsor_data: await maybeCached('instanceSponsors', ps.forceUpdate, async () => {
-						let totalSponsors;
-						const meta = await this.metaService.fetch();
-						
-						try {
-							const backers = await fetch(`${meta.donationUrl}/members/users.json`).then((response) => response.json());
-			
-							// Merge both together into one array and make sure it only has Active subscriptions
-							const allSponsors = [...backers].filter(sponsor => sponsor.isActive === true && sponsor.role === 'BACKER' && sponsor.tier);
-			
-							// Remove possible duplicates
-							totalSponsors = [...new Map(allSponsors.map(v => [v.profile, v])).values()];
-									
-							await this.redisClient.set('instanceSponsors', JSON.stringify(totalSponsors), 'EX', 3600);
-							return totalSponsors;
-						} catch (error) {
-							return [];
-						}
-					}) };
-				} else {
-					return { sponsor_data: [] };
-				}
+				return { sponsor_data: await this.sponsorsService.instanceSponsors(ps.forceUpdate) };
 			} else {
-				return { sponsor_data: await maybeCached('sponsors', ps.forceUpdate, async () => {
-					let totalSponsors;
-
-					try {
-						const backers = await fetch('https://opencollective.com/sharkey/tiers/backer/all.json').then((response) => response.json());
-						const sponsorsOC = await fetch('https://opencollective.com/sharkey/tiers/sponsor/all.json').then((response) => response.json());
-	
-						// Merge both together into one array and make sure it only has Active subscriptions
-						const allSponsors = [...sponsorsOC, ...backers].filter(sponsor => sponsor.isActive === true);
-	
-						// Remove possible duplicates
-						totalSponsors = [...new Map(allSponsors.map(v => [v.profile, v])).values()];
-	
-						await this.redisClient.set('sponsors', JSON.stringify(totalSponsors), 'EX', 3600);
-						return totalSponsors;
-					} catch (error) {
-						return [];
-					}
-				}) };
+				return { sponsor_data: await this.sponsorsService.sharkeySponsors(ps.forceUpdate) };
 			}
 		});
 	}
