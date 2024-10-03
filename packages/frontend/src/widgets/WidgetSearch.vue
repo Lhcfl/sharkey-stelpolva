@@ -24,6 +24,7 @@ import { misskeyApi } from '@/scripts/misskey-api.js';
 import * as os from '@/os.js';
 import { useRouter } from '@/router/supplier.js';
 import { GetFormResultType } from '@/scripts/form.js';
+import { notesSearchAvailable } from '@/scripts/check-permissions.js';
 
 const name = 'search';
 
@@ -125,6 +126,14 @@ async function search() {
 
 	if (query.startsWith('#')) {
 		router.push(`/tags/${encodeURIComponent(query.substring(1))}`);
+		return;
+	}
+
+	if (!notesSearchAvailable) {
+		os.alert({
+			type: 'warning',
+			text: i18n.ts.notesSearchNotAvailable,
+		});
 		return;
 	}
 
