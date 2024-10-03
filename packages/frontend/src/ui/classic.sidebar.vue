@@ -66,7 +66,6 @@ import { i18n } from '@/i18n.js';
 const WINDOW_THRESHOLD = 1400;
 
 const menu = ref(defaultStore.state.menu);
-const menuDisplay = computed(defaultStore.makeGetterSetter('menuDisplay'));
 const otherNavItemIndicated = computed<boolean>(() => {
 	for (const def in navbarItemDef) {
 		if (menu.value.includes(def)) continue;
@@ -81,9 +80,11 @@ const iconOnly = ref(false);
 const settingsWindowed = ref(false);
 
 function calcViewState() {
-	iconOnly.value = (window.innerWidth <= WINDOW_THRESHOLD) || (menuDisplay.value === 'sideIcon');
+	iconOnly.value = (window.innerWidth <= WINDOW_THRESHOLD) || (defaultStore.state.menuDisplay === 'sideIcon');
 	settingsWindowed.value = (window.innerWidth > WINDOW_THRESHOLD);
 }
+
+calcViewState();
 
 function more(ev: MouseEvent) {
 	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkLaunchPad.vue')), {
