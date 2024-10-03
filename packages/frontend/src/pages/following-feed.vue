@@ -114,24 +114,25 @@ async function showUserNotes(userId: string): Promise<void> {
 	selectedUser.value = null;
 
 	if (userId) {
-		await Promise.all([
-			// Wait for 1 second to match the animation effects in MkHorizontalSwipe, MkPullToRefresh, and MkPagination.
-			// Otherwise, the page appears to load "backwards".
-			new Promise(resolve => setTimeout(resolve, 1000)),
+		await Promise
+			.all([
+				// We need a User entity, but the pagination returns only UserLite.
+				// An additional request is needed to "upgrade" the object.
+				misskeyApi('users/show', { userId }),
 
-			// We need a User entity, but the pagination returns only UserLite.
-			// An additional request is needed to "upgrade" the object.
-			misskeyApi('users/show', { userId })
-				.then(user => selectedUser.value = user)
-				.catch(error => {
-					console.error('Error fetching user info', error);
+				// Wait for 1 second to match the animation effects in MkHorizontalSwipe, MkPullToRefresh, and MkPagination.
+				// Otherwise, the page appears to load "backwards".
+				new Promise(resolve => setTimeout(resolve, 1000)),
+			])
+			.then(([user]) => selectedUser.value = user)
+			.catch(error => {
+				console.error('Error fetching user info', error);
 
-					return selectedUserError.value =
-						typeof(error) === 'string'
-							? String(error)
-							: JSON.stringify(error);
-				}),
-		]);
+				return selectedUserError.value =
+					typeof(error) === 'string'
+						? String(error)
+						: JSON.stringify(error);
+			});
 	}
 }
 
