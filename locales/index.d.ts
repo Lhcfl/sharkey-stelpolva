@@ -5632,6 +5632,10 @@ export interface Locale extends ILocale {
              */
             "global": string;
             /**
+             * 管理者が選択した他の接続サーバーの投稿を見ることができます。
+             */
+            "bubble": string;
+            /**
              * それぞれのタイムラインは、画面上部でいつでも切り替えられます。
              */
             "description2": string;
@@ -5764,6 +5768,10 @@ export interface Locale extends ILocale {
          * ソーシャルタイムラインには、ホームタイムラインとローカルタイムラインの投稿が両方表示されます。
          */
         "social": string;
+        /**
+         * バッッブルタイムラインでは、管理者が選択した接続サーバーからのメモを表示できます。
+         */
+        "bubble": string;
         /**
          * グローバルタイムラインでは、接続している他のすべてのサーバーからの投稿を見られます。
          */
