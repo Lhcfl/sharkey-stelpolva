@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<Mfm :text="report.comment" :isBlock="true" :linkNavigationBehavior="'window'"/>
 			</div>
 			<hr/>
-			<div class="assignee" v-if="report.assignee">
+			<div v-if="report.assignee" class="assignee">
 				{{ i18n.ts.moderator }}:
 				<MkA :to="`/admin/user/${report.assignee.id}`" class="_link" :behavior="'window'">@{{ report.assignee.username }}</MkA>
 			</div>
