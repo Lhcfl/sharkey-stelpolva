@@ -231,7 +231,7 @@ definePageMetadata(() => ({
 	grid-template-rows: min-content 1fr;
 	grid-template-areas:
 		"header header header"
-	  "lm notes rm";
+		"lm notes rm";
 	gap: 12px;
 
 	height: 100vh;
