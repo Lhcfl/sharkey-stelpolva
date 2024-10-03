@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div :class="$style.root">
-	<MkPageHeader :class="$style.header" v-model:tab="currentTab" :tabs="headerTabs" :actions="headerActions" @update:tab="onChangeTab"/>
+	<MkPageHeader v-model:tab="currentTab" :class="$style.header" :tabs="headerTabs" :actions="headerActions" @update:tab="onChangeTab"/>
 
 	<div :class="$style.notes">
 		<MkHorizontalSwipe v-model:tab="currentTab" :tabs="headerTabs">

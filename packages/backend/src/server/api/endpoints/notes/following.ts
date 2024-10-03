@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { LatestNote, MiFollowing, MiBlocking, MiMuting, MiUserProfile } from '@/models/_.js';
+import { LatestNote, MiFollowing } from '@/models/_.js';
 import type { NotesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -78,7 +78,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			// Respect blocks and mutes
-			this.queryService.generateBlockedUserQuery(query, me)
+			this.queryService.generateBlockedUserQuery(query, me);
 			this.queryService.generateMutedUserQuery(query, me);
 
 			// Support pagination
