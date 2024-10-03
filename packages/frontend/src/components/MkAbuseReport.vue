@@ -13,7 +13,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkAcct class="acct" :user="report.targetUser" style="display: block;"/>
 				</div>
 			</MkA>
-			<br>
 			<div class="keyvalCtn">
 				<MkKeyValue>
 					<template #key>{{ i18n.ts.registeredDate }}</template>
@@ -35,17 +34,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<Mfm :text="report.comment" :isBlock="true" :linkNavigationBehavior="'window'"/>
 			</div>
 			<hr/>
-			<div v-if="report.assignee">
+			<div class="assignee" v-if="report.assignee">
 				{{ i18n.ts.moderator }}:
 				<MkA :to="`/admin/user/${report.assignee.id}`" class="_link" :behavior="'window'">@{{ report.assignee.username }}</MkA>
-				<br>
 			</div>
 			<div class="action">
 				<MkSwitch v-model="forward" c:disabled="report.targetUser.host == null || report.resolved">
 					{{ i18n.ts.forwardReport }}
 					<template #caption>{{ i18n.ts.forwardReportIsAnonymous }}</template>
 				</MkSwitch>
-				<br v-if="!report.resolved">
 				<MkButton v-if="!report.resolved" primary @click="resolve">{{ i18n.ts.abuseMarkAsResolved }}</MkButton>
 			</div>
 		</div>
@@ -124,12 +121,24 @@ function resolve() {
 		> .keyvalCtn {
 			display: inline-flex;
 			gap: 15px;
+			margin-top: 15px;
 		}
 	}
 
 	> .detail {
-		flex: 1;
+		display: flex;
+		flex-direction: column;
 		padding: 0px 24px 24px 24px;
+
+		.assignee {
+			margin-bottom: 15px;
+		}
+
+		.action {
+			display: flex;
+			flex-direction: column;
+			gap: 15px;
+		}
 	}
 }
 </style>
