@@ -2801,6 +2801,10 @@ export interface Locale extends ILocale {
      */
     "userSaysSomething": ParameterizedString<"name">;
     /**
+     * post is hidden by a filter
+     */
+    "postFiltered": string;
+    /**
      * アクティブにする
      */
     "makeActive": string;

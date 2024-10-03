@@ -18,7 +18,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkA>
 		</header>
 		<div>
-			<Mfm :class="$style.text" :text="getNoteSummary(note)" :isBlock="true" :plain="true" :nowrap="false" :isNote="true" nyaize="respect" :author="note.user"/>
+			<div v-if="isMuted" :class="[$style.text, $style.muted]">({{ i18n.ts.postFiltered }})</div>
+			<Mfm v-else :class="$style.text" :text="getNoteSummary(note)" :isBlock="true" :plain="true" :nowrap="false" :isNote="true" nyaize="respect" :author="note.user"/>
 		</div>
 	</div>
 </div>
@@ -29,10 +30,14 @@ import * as Misskey from 'misskey-js';
 import { getNoteSummary } from '@/scripts/get-note-summary.js';
 import { userPage } from '@/filters/user.js';
 import { notePage } from '@/filters/note.js';
+import { i18n } from '@/i18n.js';
 
-defineProps<{
-	note: Misskey.entities.Note
-}>();
+withDefaults(defineProps<{
+	note: Misskey.entities.Note,
+	isMuted: boolean
+}>(), {
+	isMuted: false,
+});
 
 defineEmits<{
 	(event: 'select', user: Misskey.entities.UserLite): void
@@ -96,6 +101,10 @@ defineEmits<{
 	overflow: clip;
 	line-height: 1.25em;
 	height: 2.5em;
+}
+
+.muted {
+	font-style: italic;
 }
 
 @container (max-width: 600px) {

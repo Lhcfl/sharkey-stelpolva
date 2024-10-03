@@ -43,7 +43,7 @@ export function checkWordMute(note: Note, me: MeDetailed | null | undefined, mut
 	return false;
 }
 
-function getNoteText(note: Note): string {
+export function getNoteText(note: Note): string {
 	const textParts: string[] = [];
 
 	if (note.cw) textParts.push(note.cw);

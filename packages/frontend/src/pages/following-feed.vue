@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<template #default="{ items: notes }">
 						<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.panel" :noGap="true">
-							<FollowingFeedEntry :note="note" @select="userSelected"/>
+							<FollowingFeedEntry v-if="!isHardMuted(note)" :isMuted="isSoftMuted(note)" :note="note" @select="userSelected"/>
 						</MkDateSeparatedList>
 					</template>
 				</MkPagination>
@@ -68,7 +68,9 @@ import { misskeyApi } from '@/scripts/misskey-api.js';
 import { useRouter } from '@/router/supplier.js';
 import * as os from '@/os.js';
 import MkPageHeader from '@/components/global/MkPageHeader.vue';
+import { $i } from '@/account.js';
 import MkLoading from '@/components/global/MkLoading.vue';
+import { getNoteText } from '@/scripts/check-word-mute.js';
 
 const props = withDefaults(defineProps<{
 	initialTab?: FollowingFeedTab,
@@ -156,6 +158,81 @@ async function onListReady(): Promise<void> {
 
 async function onChangeTab(): Promise<void> {
 	await showUserNotes('');
+}
+
+const softMutePatterns = ref(buildMutePatterns($i?.mutedWords));
+const hardMutePatterns = ref(buildMutePatterns($i?.hardMutedWords));
+
+function buildMutePatterns(mutedWords: (string | string[])[] | undefined): RegExp[] {
+	if (!mutedWords || mutedWords.length < 1) {
+		return [];
+	}
+
+	// flags -> pattern[]
+	const patternMap = new Map<string, Set<string>>();
+	for (const mute of mutedWords) {
+		let flags: string;
+		let patterns: string[];
+
+		if (!mute) {
+			continue;
+		} else if (Array.isArray(mute)) {
+			patterns = mute;
+			flags = 'i';
+		} else {
+			const match = mute.match(/^\/(.+)\/(.*)$/);
+			if (!match) {
+				continue;
+			} else {
+				patterns = [match[1]];
+				flags = match[2];
+			}
+		}
+
+		let flagPatterns = patternMap.get(flags);
+		if (!flagPatterns) {
+			flagPatterns = new Set<string>();
+			patternMap.set(flags, flagPatterns);
+		}
+
+		for (const pattern of patterns) {
+			flagPatterns.add(pattern);
+		}
+	}
+
+	return Array
+		.from(patternMap)
+		.map(([flag, patterns]) => {
+			const pattern = Array.from(patterns).map(p => `(${p})`).join('|');
+			return new RegExp(pattern, flag);
+		});
+}
+
+// Adapted from MkNote.ts
+function isSoftMuted(note: Misskey.entities.Note): boolean {
+	return isMuted(note, softMutePatterns.value);
+}
+
+function isHardMuted(note: Misskey.entities.Note): boolean {
+	return isMuted(note, hardMutePatterns.value);
+}
+
+function isMuted(note: Misskey.entities.Note, mutes: RegExp[]): boolean {
+	if (mutes.length < 1) return false;
+
+	return checkMute(note, mutes)
+		|| checkMute(note.reply, mutes)
+		|| checkMute(note.renote, mutes);
+}
+
+// Adapted from check-word-mute.ts
+function checkMute(note: Misskey.entities.Note | undefined | null, mutes: RegExp[]): boolean {
+	if (!note) {
+		return false;
+	}
+
+	const noteText = getNoteText(note);
+	return mutes.some(p => p.test(noteText));
 }
 
 const latestNotesPaging = shallowRef<InstanceType<typeof MkPagination>>();
