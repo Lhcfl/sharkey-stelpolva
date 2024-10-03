@@ -4,40 +4,52 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div class="bcekxzvu _margin _panel">
-	<div class="target">
-		<MkA v-user-preview="report.targetUserId" class="info" :to="`/admin/user/${report.targetUserId}`" :behavior="'window'">
-			<MkAvatar class="avatar" :user="report.targetUser" indicator/>
-			<div class="names">
-				<MkUserName class="name" :user="report.targetUser"/>
-				<MkAcct class="acct" :user="report.targetUser" style="display: block;"/>
+	<div class="bcekxzvu _margin _panel" :class="{ resolved: resolved }">
+		<div class="target">
+			<MkA v-user-preview="report.targetUserId" class="info" :to="`/admin/user/${report.targetUserId}`" :behavior="'window'">
+				<MkAvatar class="avatar" :user="report.targetUser" indicator/>
+				<div class="names">
+					<MkUserName class="name" :user="report.targetUser"/>
+					<MkAcct class="acct" :user="report.targetUser" style="display: block;"/>
+				</div>
+			</MkA>
+			<br>
+			<div class="keyvalCtn">
+				<MkKeyValue>
+					<template #key>{{ i18n.ts.registeredDate }}</template>
+					<template #value>{{ dateString(report.targetUser.createdAt) }} (<MkTime :time="report.targetUser.createdAt"/>)</template>
+				</MkKeyValue>
+				<MkKeyValue>
+					<template #key>{{ i18n.ts.reporter }}</template>
+					<template #value><MkA :to="`/admin/user/${report.reporter.id}`" class="_link" :behavior="'window'">@{{ report.reporter.username }}</MkA></template>
+				</MkKeyValue>
+				<MkKeyValue>
+					<template #key>{{ i18n.ts.createdAt }}</template>
+					<template #value><MkTime :time="report.createdAt" mode="absolute"/> (<MkTime :time="report.createdAt" mode="relative"/>)</template>
+				</MkKeyValue>
 			</div>
-		</MkA>
-		<MkKeyValue>
-			<template #key>{{ i18n.ts.registeredDate }}</template>
-			<template #value>{{ dateString(report.targetUser.createdAt) }} (<MkTime :time="report.targetUser.createdAt"/>)</template>
-		</MkKeyValue>
-	</div>
-	<div class="detail">
-		<div>
-			<Mfm :text="report.comment" :isBlock="true" :linkNavigationBehavior="'window'"/>
+			<hr>
 		</div>
-		<hr/>
-		<div>{{ i18n.ts.reporter }}: <MkA :to="`/admin/user/${report.reporter.id}`" class="_link" :behavior="'window'">@{{ report.reporter.username }}</MkA></div>
-		<div v-if="report.assignee">
-			{{ i18n.ts.moderator }}:
-			<MkAcct :user="report.assignee"/>
-		</div>
-		<div><MkTime :time="report.createdAt"/></div>
-		<div class="action">
-			<MkSwitch v-model="forward" :disabled="report.targetUser.host == null || report.resolved">
-				{{ i18n.ts.forwardReport }}
-				<template #caption>{{ i18n.ts.forwardReportIsAnonymous }}</template>
-			</MkSwitch>
-			<MkButton v-if="!report.resolved" primary @click="resolve">{{ i18n.ts.abuseMarkAsResolved }}</MkButton>
+		<div class="detail">
+			<div>
+				<Mfm :text="report.comment" :isBlock="true" :linkNavigationBehavior="'window'"/>
+			</div>
+			<hr/>
+			<div v-if="report.assignee">
+				{{ i18n.ts.moderator }}:
+				<MkA :to="`/admin/user/${report.assignee.id}`" class="_link" :behavior="'window'">@{{ report.assignee.username }}</MkA>
+				<br>
+			</div>
+			<div class="action">
+				<MkSwitch v-model="forward" c:disabled="report.targetUser.host == null || report.resolved">
+					{{ i18n.ts.forwardReport }}
+					<template #caption>{{ i18n.ts.forwardReportIsAnonymous }}</template>
+				</MkSwitch>
+				<br v-if="!report.resolved">
+				<MkButton v-if="!report.resolved" primary @click="resolve">{{ i18n.ts.abuseMarkAsResolved }}</MkButton>
+			</div>
 		</div>
 	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
@@ -58,6 +70,7 @@ const emit = defineEmits<{
 }>();
 
 const forward = ref(props.report.forwarded);
+const resolved = ref(props.report.resolved);
 
 function resolve() {
 	os.apiWithDialog('admin/resolve-abuse-user-report', {
@@ -72,13 +85,17 @@ function resolve() {
 <style lang="scss" scoped>
 .bcekxzvu {
 	display: flex;
+	flex-direction: column;
+	transition: .1s;
+
+	&.resolved:not(:hover,:focus) {
+		opacity: 50%;
+	}
 
 	> .target {
-		width: 35%;
 		box-sizing: border-box;
 		text-align: left;
-		padding: 24px;
-		border-right: solid 1px var(--divider);
+		padding: 24px 24px 0px 24px;
 
 		> .info {
 			display: flex;
@@ -100,16 +117,24 @@ function resolve() {
 				padding: 0 8px;
 				flex: 1;
 
+				white-space: pre;
+				overflow: hidden;
+
 				> .name {
 					font-weight: bold;
 				}
 			}
 		}
+
+		> .keyvalCtn {
+			display: inline-flex;
+			gap: 15px;
+		}
 	}
 
 	> .detail {
 		flex: 1;
-		padding: 24px;
+		padding: 0px 24px 24px 24px;
 	}
 }
 </style>
