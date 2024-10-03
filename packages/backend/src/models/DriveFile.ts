@@ -7,6 +7,7 @@ import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typ
 import { id } from './util/id.js';
 import { MiUser } from './User.js';
 import { MiDriveFolder } from './DriveFolder.js';
+import {DB_MAX_IMAGE_COMMENT_LENGTH} from "@/const.js";
 
 @Entity('drive_file')
 @Index(['userId', 'folderId', 'id'])
@@ -61,7 +62,7 @@ export class MiDriveFile {
 	public size: number;
 
 	@Column('varchar', {
-		length: 8192,
+		length: DB_MAX_IMAGE_COMMENT_LENGTH,
 		nullable: true,
 		comment: 'The comment of the DriveFile.',
 	})

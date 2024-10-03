@@ -13,15 +13,16 @@ export const USER_ACTIVE_THRESHOLD = 1000 * 60 * 60 * 24 * 3; // 3days
 
 /**
  * Maximum note text length that can be stored in DB.
+ * Content Warnings are included in this limit.
  * Surrogate pairs count as one
  */
-export const DB_MAX_NOTE_TEXT_LENGTH = 8192;
+export const DB_MAX_NOTE_TEXT_LENGTH = 100_000;
 
 /**
  * Maximum image description length that can be stored in DB.
  * Surrogate pairs count as one
  */
-export const DB_MAX_IMAGE_COMMENT_LENGTH = 8192;
+export const DB_MAX_IMAGE_COMMENT_LENGTH = 100_000;
 //#endregion
 
 // ブラウザで直接表示することを許可するファイルの種類のリスト
