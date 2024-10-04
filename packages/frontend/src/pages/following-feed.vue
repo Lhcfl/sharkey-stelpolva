@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div :class="$style.root">
 	<MkPageHeader v-model:tab="currentTab" :class="$style.header" :tabs="headerTabs" :actions="headerActions" :displayBackButton="true" @update:tab="onChangeTab"/>
 
-	<div :class="$style.notes">
+	<div ref="noteScroll" :class="$style.notes">
 		<MkHorizontalSwipe v-model:tab="currentTab" :tabs="headerTabs">
 			<MkPullToRefresh :refresher="() => reloadLatestNotes()">
 				<MkPagination ref="latestNotesPaging" :pagination="latestNotesPagination" @init="onListReady">
@@ -28,7 +28,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</MkHorizontalSwipe>
 	</div>
 
-	<div v-if="isWideViewport" :class="$style.user">
+	<div v-if="isWideViewport" ref="userScroll" :class="$style.user">
 		<MkHorizontalSwipe v-if="selectedUserId" v-model:tab="currentTab" :tabs="headerTabs">
 			<UserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withRenotes="withUserRenotes" :withReplies="withUserReplies" :onlyFiles="withOnlyFiles"/>
 		</MkHorizontalSwipe>
@@ -61,6 +61,8 @@ import MkPageHeader from '@/components/global/MkPageHeader.vue';
 import { $i } from '@/account.js';
 import { checkWordMute } from '@/scripts/check-word-mute.js';
 import UserRecentNotes from '@/components/UserRecentNotes.vue';
+import { useScrollPositionManager } from '@/nirax.js';
+import { getScrollContainer } from '@/scripts/scroll.js';
 
 const props = withDefaults(defineProps<{
 	initialTab?: FollowingFeedTab,
@@ -76,6 +78,8 @@ const router = useRouter();
 const currentTab: Ref<FollowingFeedTab> = ref(props.initialTab);
 const mutualsOnly: Ref<boolean> = computed(() => currentTab.value === mutualsTab);
 const userRecentNotes = shallowRef<InstanceType<typeof UserRecentNotes>>();
+const userScroll = shallowRef<HTMLElement>();
+const noteScroll = shallowRef<HTMLElement>();
 
 // We have to disable the per-user feed on small displays, and it must be done through JS instead of CSS.
 // Otherwise, the second column will waste resources in the background.
@@ -213,6 +217,8 @@ const headerTabs = computed(() => [
 	} satisfies Tab,
 ]);
 
+useScrollPositionManager(() => getScrollContainer(userScroll.value ?? null), router);
+useScrollPositionManager(() => getScrollContainer(noteScroll.value ?? null), router);
 definePageMetadata(() => ({
 	title: i18n.ts.following,
 	icon: 'ph-user-check ph-bold ph-lg',
@@ -254,12 +260,12 @@ definePageMetadata(() => ({
 
 .notes {
 	grid-area: notes;
-	overflow: auto;
+	overflow-y: auto;
 }
 
 .user {
 	grid-area: user;
-	overflow: auto;
+	overflow-y: auto;
 }
 
 .userInfo {
