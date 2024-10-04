@@ -4,10 +4,10 @@
  */
 
 import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typeorm';
+import { DB_MAX_IMAGE_COMMENT_LENGTH } from '@/const.js';
 import { id } from './util/id.js';
 import { MiUser } from './User.js';
 import { MiDriveFolder } from './DriveFolder.js';
-import {DB_MAX_IMAGE_COMMENT_LENGTH} from "@/const.js";
 
 @Entity('drive_file')
 @Index(['userId', 'folderId', 'id'])
