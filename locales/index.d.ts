@@ -261,6 +261,18 @@ export interface Locale extends ILocale {
      */
     "copyProfileUrl": string;
     /**
+     * 外部サイトへのリンク警告 除外リスト
+     */
+    "trustedLinkUrlPatterns": string;
+    /**
+     * スペースで区切るとAND指定になり、改行で区切るとOR指定になります。スラッシュで囲むと正規表現になります。ドメイン名だけ書くと後方一致になります。
+     */
+    "trustedLinkUrlPatternsDescription": string;
+    /**
+     * 開く
+     */
+    "open": string;
+    /**
      * ユーザーを検索
      */
     "searchUser": string;
@@ -3129,6 +3141,10 @@ export interface Locale extends ILocale {
      */
     "showTickerOnReplies": string;
     /**
+     * 猫の話し方を無効にする
+     */
+    "disableCatSpeak": string;
+    /**
      * 検索MFMの検索エンジン
      */
     "searchEngine": string;
@@ -4429,10 +4445,6 @@ export interface Locale extends ILocale {
      * 連合なしにする
      */
     "disableFederationOk": string;
-    /**
-     * 猫の話し方を無効にする
-     */
-    "disableCatSpeak": string;
     /**
      * 現在このサーバーは招待制です。招待コードをお持ちの方のみ登録できます。
      */
@@ -5777,7 +5789,7 @@ export interface Locale extends ILocale {
          */
         "social": string;
         /**
-         * バッッブルタイムラインでは、管理者が選択した接続サーバーからのメモを表示できます。
+         * バブルタイムラインでは、管理者が選択した接続サーバーからの投稿を表示できます。
          */
         "bubble": string;
         /**
@@ -9139,7 +9151,7 @@ export interface Locale extends ILocale {
          */
         "global": string;
         /**
-         * バッッブル
+         * バブル
          */
         "bubble": string;
     };
@@ -10912,6 +10924,20 @@ export interface Locale extends ILocale {
          * ブラウザのUI
          */
         "native": string;
+    };
+    "_externalNavigationWarning": {
+        /**
+         * 外部サイトに移動します
+         */
+        "title": string;
+        /**
+         * {host}を離れて外部サイトに移動します
+         */
+        "description": ParameterizedString<"host">;
+        /**
+         * このデバイスで今後このドメインを信頼する
+         */
+        "trustThisDomain": string;
     };
 }
 declare const locales: {

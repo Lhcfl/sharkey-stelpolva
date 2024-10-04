@@ -5098,6 +5098,7 @@ export type components = {
        * @enum {string}
        */
       noteSearchableScope: 'local' | 'global';
+      trustedLinkUrlPatterns: string[];
     };
     MetaDetailedOnly: {
       features?: {
@@ -5294,6 +5295,7 @@ export type operations = {
             urlPreviewRequireContentLength: boolean;
             urlPreviewUserAgent: string | null;
             urlPreviewSummaryProxyUrl: string | null;
+            trustedLinkUrlPatterns: string[];
           };
         };
       };
@@ -9815,6 +9817,7 @@ export type operations = {
           urlPreviewRequireContentLength?: boolean;
           urlPreviewUserAgent?: string | null;
           urlPreviewSummaryProxyUrl?: string | null;
+          trustedLinkUrlPatterns?: string[] | null;
         };
       };
     };
