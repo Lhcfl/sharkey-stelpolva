@@ -807,7 +807,7 @@ onUnmounted(() => {
 }
 
 .tab {
-	margin: calc(var(--margin) / 2) 0;
+	margin-bottom: calc(var(--margin) / 2);
 	padding: calc(var(--margin) / 2) 0;
 	background: color-mix(in srgb, var(--bg) 65%, transparent);
 	backdrop-filter: var(--blur, blur(15px));
