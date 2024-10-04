@@ -33,6 +33,7 @@
 
 ### Other
 
+- 许多微小的可能影响体验的bug/feature修复
 - 添加了 Google Translation Fallback
 - 更好的中文翻译
 - 在 MkPostForm 上添加了 autosize （自动随着打字扩张文本框）
@@ -44,7 +45,6 @@
 - 注册dialog上面可以写多行文本和MFM
 - 修复了SkDetailedNote帖子被编辑后不会更新MFM的问题
 - 允许多行 CW
-- 许多微小的可能影响体验的bug/feature修复
 - 允许切换界面字体，并添加了大量中文字体
 - 允许的界面字体范围大大增加，默认字体从14px改为16px
 - 在天线中添加特殊关键词
@@ -55,6 +55,10 @@
 	- 它是允许加载 Misskey 的头像挂件的白名单实例
 	- 启用了 MediaProxy，因此应该不用担心安全风险
 - 添加功能允许自动在中文与英文之间添加空格
+- 限制了非meilisearch使用搜索可以搜到的visibility，防止随意搜到他人的unlisted/home帖子
+- 对于含有需要高亮的代码的帖子，fallback显示非高亮的代码而非MkLoading
+- 在 EmojiPicker 添加预览表情
+- 在 Sharkey Stelpolva 中，递归地 fetch 被回复帖子时如果出错不再会递归地将错误抛下，导致整个任务失败，而是会静默吞下该错误
 
 <div>
 
