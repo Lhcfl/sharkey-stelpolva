@@ -21,8 +21,11 @@ export async function warningExternalWebsite(url: string) {
 
 		if (r) {
 			return new RegExp(r[1], r[2]).test(url);
-		} else if (expression.includes(' ')) return expression.split(' ').every(keyword => url.includes(keyword));
-		else return domain.endsWith(expression);
+		} else if (expression.includes(' ')) {
+			return expression.split(' ').every(keyword => url.includes(keyword));
+		} else {
+			return domain.endsWith(expression);
+		}
 	});
 
 	const isTrustedByUser = defaultStore.reactiveState.trustedDomains.value.includes(domain);
@@ -33,7 +36,7 @@ export async function warningExternalWebsite(url: string) {
 				url,
 			}, {
 				done: result => {
-					resolve(result ? result : { canceled: true });
+					resolve(result ?? { canceled: true });
 				},
 				closed: () => dispose(),
 			});
