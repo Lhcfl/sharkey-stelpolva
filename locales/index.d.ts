@@ -521,6 +521,10 @@ export interface Locale extends ILocale {
      */
     "pinnedNote": string;
     /**
+     * Pinned
+     */
+    "pinnedOnly": string;
+    /**
      * ピン留め
      */
     "pinned": string;

@@ -125,10 +125,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 
 			<div class="contents _gaps">
-				<div v-if="user.pinnedNotes.length > 0" class="_gaps">
-					<MkNote v-for="note in user.pinnedNotes" :key="note.id" class="note _panel" :note="note" :pinned="true"/>
-				</div>
-				<MkInfo v-else-if="$i && $i.id === user.id">{{ i18n.ts.userPagePinTip }}</MkInfo>
+				<MkInfo v-if="user.pinnedNotes.length === 0 && $i?.id === user.id">{{ i18n.ts.userPagePinTip }}</MkInfo>
 				<template v-if="narrow">
 					<MkLazy>
 						<XFiles :key="user.id" :user="user"/>
@@ -147,14 +144,27 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div> -->
 				<MkStickyContainer>
 					<template #header>
+						<!-- You can't use v-if on these, as MkTab first *deletes* and replaces all children with native HTML elements. -->
+						<!-- Instead, we add a "no notes" placeholder and default to null (all notes) if there's nothing pinned. -->
+						<!-- It also converts all comments into text! -->
 						<MkTab v-model="noteview" :class="$style.tab">
+							<option value="pinned">{{ i18n.ts.pinnedOnly }}</option>
 							<option :value="null">{{ i18n.ts.notes }}</option>
 							<option value="all">{{ i18n.ts.all }}</option>
 							<option value="files">{{ i18n.ts.withFiles }}</option>
 						</MkTab>
 					</template>
 					<MkLazy>
-						<MkNotes :class="$style.tl" :noGap="true" :pagination="AllPagination"/>
+						<div v-if="noteview === 'pinned'" class="_gaps">
+							<div v-if="user.pinnedNotes.length < 1" class="_fullinfo">
+								<img :src="infoImageUrl" class="_ghost" aria-hidden="true" :alt="i18n.ts.noNotes"/>
+								<div>{{ i18n.ts.noNotes }}</div>
+							</div>
+							<MkDateSeparatedList v-else v-slot="{ item: note }" :items="user.pinnedNotes" :noGap="true" :ad="true" class="_panel">
+								<MkNote :key="note.id" class="note" :note="note" :pinned="true"/>
+							</MkDateSeparatedList>
+						</div>
+						<MkNotes v-else :class="$style.tl" :noGap="true" :pagination="AllPagination"/>
 					</MkLazy>
 				</MkStickyContainer>
 			</div>
@@ -194,6 +204,8 @@ import { misskeyApi } from '@/scripts/misskey-api.js';
 import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/scripts/isFfVisibleForMe.js';
 import { useRouter } from '@/router/supplier.js';
 import { getStaticImageUrl } from '@/scripts/media-proxy.js';
+import { infoImageUrl } from "@/instance.js";
+import MkDateSeparatedList from "@/components/MkDateSeparatedList.vue";
 
 const MkNote = defineAsyncComponent(() =>
 	(defaultStore.state.noteDesign === 'misskey') ? import('@/components/MkNote.vue') :
@@ -241,7 +253,7 @@ const memoDraft = ref(props.user.memo);
 const isEditingMemo = ref(false);
 const moderationNote = ref(props.user.moderationNote);
 const editModerationNote = ref(false);
-const noteview = ref<string | null>(null);
+const noteview = ref<string | null>(props.user.pinnedNotes.length > 0 ? 'pinned' : null);
 
 const listenbrainzdata = ref(false);
 if (props.user.listenbrainz) {
