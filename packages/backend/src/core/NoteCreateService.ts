@@ -346,6 +346,18 @@ export class NoteCreateService implements OnApplicationShutdown {
 			data.text = null;
 		}
 
+		if (data.cw) {
+			if (data.cw.length > DB_MAX_NOTE_TEXT_LENGTH) {
+				data.cw = data.cw.slice(0, DB_MAX_NOTE_TEXT_LENGTH);
+			}
+			data.cw = data.cw.trim();
+			if (data.cw === '') {
+				data.cw = null;
+			}
+		} else {
+			data.cw = null;
+		}
+
 		let tags = data.apHashtags;
 		let emojis = data.apEmojis;
 		let mentionedUsers = data.apMentions;
