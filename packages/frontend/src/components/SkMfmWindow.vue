@@ -90,6 +90,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</div>
 				<div class="section _block">
+					<div class="title">划线</div>
+					<div class="content">
+						<p>使用两个英文波浪号可以给文字中间划线</p>
+						<div class="preview">
+							<Mfm :text="preview_cross"/>
+							<MkTextarea v-model="preview_cross"><template #label>MFM</template></MkTextarea>
+						</div>
+					</div>
+				</div>
+				<div class="section _block">
 					<div class="title">{{ i18n.ts._mfm.center }}</div>
 					<div class="content">
 						<p>{{ i18n.ts._mfm.centerDescription }}</p>
@@ -136,6 +146,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div class="preview">
 							<Mfm :text="preview_blockMath"/>
 							<MkTextarea v-model="preview_blockMath"><template #label>MFM</template></MkTextarea>
+						</div>
+					</div>
+				</div>
+				<div class="section _block">
+					<div class="title">Ruby</div>
+					<div class="content">
+						<p>在文字上方显示小文字</p>
+						<div class="preview">
+							<Mfm :text="preview_ruby"/>
+							<MkTextarea v-model="preview_ruby"><template #label>MFM</template></MkTextarea>
+						</div>
+					</div>
+				</div>
+				<div class="section _block">
+					<div class="title">边框</div>
+					<div class="content">
+						<p>在文字外面加入边框</p>
+						<div class="preview">
+							<Mfm :text="preview_border"/>
+							<MkTextarea v-model="preview_border"><template #label>MFM</template></MkTextarea>
 						</div>
 					</div>
 				</div>
@@ -314,7 +344,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div class="content">
 						<p>{{ i18n.ts._mfm.cropDescription }}</p>
 						<div class="preview">
-							<Mfm :text="preview_crop" />
+							<Mfm :text="preview_crop"/>
 							<MkTextarea v-model="preview_crop"><span>MFM</span></MkTextarea>
 						</div>
 					</div>
@@ -356,7 +386,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div class="content">
 						<p>{{ i18n.ts._mfm.fadeDescription }}</p>
 						<div class="preview">
-							<Mfm :text="preview_fade" />
+							<Mfm :text="preview_fade"/>
 							<MkTextarea v-model="preview_fade"><span>MFM</span></MkTextarea>
 						</div>
 					</div>
@@ -471,7 +501,7 @@ const preview_rotate = ref(
 );
 const preview_position = ref('$[position.y=-1 🍮]\n$[position.x=-1 🍮]');
 const preview_crop = ref(
-	"$[crop.top=50 🍮] $[crop.right=50 🍮] $[crop.bottom=50 🍮] $[crop.left=50 🍮]",
+	'$[crop.top=50 🍮] $[crop.right=50 🍮] $[crop.bottom=50 🍮] $[crop.left=50 🍮]',
 );
 const preview_followmouse = ref('$[followmouse.x 🍮]\n$[followmouse.x,y,rotateByVelocity,speed=0.4 🍮]');
 const preview_scale = ref(
@@ -482,7 +512,20 @@ const preview_bg = ref('$[bg.color=31748f Background color]');
 const preview_plain = ref(
 	'<plain>**bold** @mention #hashtag `code` $[x2 🍮]</plain>',
 );
-const preview_fade = ref(`$[fade 🍮] $[fade.out 🍮] $[fade.speed=3s 🍮] $[fade.delay=3s 🍮]`);
+const preview_fade = ref('$[fade 🍮] $[fade.out 🍮] $[fade.speed=3s 🍮] $[fade.delay=3s 🍮]');
+const preview_cross = ref('~~Hello world~~');
+const preview_ruby = ref('$[ruby 無名星屑 むめいほしくず]');
+const preview_border = ref(
+	`$[border a default border]
+
+$[border.width=2 a thick border]
+
+$[border.style=double,width=5 a double border]
+
+$[border.color=0f0 a green border]
+
+$[border.radius=10 a rounded border]`,
+);
 </script>
 
 <style lang="scss" scoped>
@@ -494,6 +537,7 @@ const preview_fade = ref(`$[fade 🍮] $[fade.out 🍮] $[fade.speed=3s 🍮] $[
 			top: var(--stickyTop, 0px);
 			padding: 16px;
 			font-weight: bold;
+			font-size: 1.1em;
 			-webkit-backdrop-filter: var(--blur, blur(10px));
 			backdrop-filter: var(--blur, blur(10px));
 			background-color: var(--X16);
