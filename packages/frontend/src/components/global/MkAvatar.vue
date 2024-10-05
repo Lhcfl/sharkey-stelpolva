@@ -32,6 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				rotate: getDecorationAngle(decoration),
 				scale: getDecorationScale(decoration),
 				translate: getDecorationOffset(decoration),
+				zIndex: getDecorationZIndex(decoration),
 			}"
 			alt=""
 		>
@@ -115,6 +116,10 @@ function getDecorationOffset(decoration: Omit<Misskey.entities.UserDetailed['ava
 	const offsetX = decoration.offsetX ?? 0;
 	const offsetY = decoration.offsetY ?? 0;
 	return offsetX === 0 && offsetY === 0 ? undefined : `${offsetX * 100}% ${offsetY * 100}%`;
+}
+
+function getDecorationZIndex(decoration: Omit<Misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>) {
+	return decoration.showBelow ? '-1' : undefined;
 }
 
 const color = ref<string | undefined>();
@@ -234,6 +239,7 @@ if (props.shouldOpenLightBox && lightboxUrl) {
 	flex-shrink: 0;
 	border-radius: 100%; // sharkey: controlled by square avatars setting!
 	line-height: 16px;
+	z-index: 0; // sharkey: starts stacking context to help with showing decorations behind the avatar
 }
 
 .inner {

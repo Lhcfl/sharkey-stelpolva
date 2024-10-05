@@ -68,6 +68,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkSwitch v-model="showGapBetweenNotesInTimeline">{{ i18n.ts.showGapBetweenNotesInTimeline }}</MkSwitch>
 				<MkSwitch v-model="loadRawImages">{{ i18n.ts.loadRawImages }}</MkSwitch>
 				<MkSwitch v-model="showTickerOnReplies">{{ i18n.ts.showTickerOnReplies }}</MkSwitch>
+				<MkSwitch v-model="disableCatSpeak">{{ i18n.ts.disableCatSpeak }}</MkSwitch>
 				<MkSelect v-model="searchEngine" placeholder="Other">
 					<template #label>{{ i18n.ts.searchEngine }}</template>
 					<option
@@ -449,6 +450,7 @@ const disableShowingAnimatedImages = computed(defaultStore.makeGetterSetter('dis
 const forceShowAds = computed(defaultStore.makeGetterSetter('forceShowAds'));
 const oneko = computed(defaultStore.makeGetterSetter('oneko'));
 const loadRawImages = computed(defaultStore.makeGetterSetter('loadRawImages'));
+const disableCatSpeak = computed(defaultStore.makeGetterSetter('disableCatSpeak'));
 const highlightSensitiveMedia = computed(defaultStore.makeGetterSetter('highlightSensitiveMedia'));
 const imageNewTab = computed(defaultStore.makeGetterSetter('imageNewTab'));
 const enableFaviconNotificationDot = computed(defaultStore.makeGetterSetter('enableFaviconNotificationDot'));

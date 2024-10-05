@@ -8,6 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	:is="self ? 'MkA' : 'a'" ref="el" style="word-break: break-all;" class="_link" :[attr]="self ? url.substring(local.length) : url" :rel="rel ?? 'nofollow noopener'" :target="target"
 	:behavior="props.navigationBehavior"
 	:title="url"
+	@click.prevent="self ? true : promptConfirm()"
 	@click.stop
 >
 	<slot></slot>
@@ -22,6 +23,7 @@ import { useTooltip } from '@/scripts/use-tooltip.js';
 import * as os from '@/os.js';
 import { isEnabledUrlPreview } from '@/instance.js';
 import { MkABehavior } from '@/components/global/MkA.vue';
+import { i18n } from '@/i18n.js';
 
 const props = withDefaults(defineProps<{
 	url: string;
@@ -46,6 +48,16 @@ if (isEnabledUrlPreview.value) {
 			closed: () => dispose(),
 		});
 	});
+}
+
+async function promptConfirm() {
+	const { canceled } = await os.confirm({
+		type: 'question',
+		text: i18n.tsx.confirmRemoteUrl({ x: props.url }),
+		plain: true,
+	});
+	if (canceled) return;
+	window.open(props.url, '_blank', 'nofollow noopener popup=false');
 }
 </script>
 

@@ -41,7 +41,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div class="divider"></div>
 	<div class="about">
 		<button v-click-anime class="item _button" @click="openInstanceMenu">
-			<img :src="instance.iconUrl ?? instance.faviconUrl ?? '/favicon.ico'" class="_ghost"/>
+			<img :src="instance.sidebarLogoUrl && !iconOnly ? instance.sidebarLogoUrl : instance.iconUrl ?? instance.faviconUrl ?? '/favicon.ico'" :class="{ wideIcon: instance.sidebarLogoUrl && !iconOnly }" class="_ghost" />
 		</button>
 	</div>
 	<!--<MisskeyLogo class="misskey"/>-->
@@ -66,7 +66,6 @@ import { i18n } from '@/i18n.js';
 const WINDOW_THRESHOLD = 1400;
 
 const menu = ref(defaultStore.state.menu);
-const menuDisplay = computed(defaultStore.makeGetterSetter('menuDisplay'));
 const otherNavItemIndicated = computed<boolean>(() => {
 	for (const def in navbarItemDef) {
 		if (menu.value.includes(def)) continue;
@@ -81,9 +80,11 @@ const iconOnly = ref(false);
 const settingsWindowed = ref(false);
 
 function calcViewState() {
-	iconOnly.value = (window.innerWidth <= WINDOW_THRESHOLD) || (menuDisplay.value === 'sideIcon');
+	iconOnly.value = (window.innerWidth <= WINDOW_THRESHOLD) || (defaultStore.state.menuDisplay === 'sideIcon');
 	settingsWindowed.value = (window.innerWidth > WINDOW_THRESHOLD);
 }
+
+calcViewState();
 
 function more(ev: MouseEvent) {
 	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkLaunchPad.vue')), {
@@ -166,7 +167,6 @@ watch(defaultStore.reactiveState.menuDisplay, () => {
 		top: 0;
 		z-index: 1;
 		padding: 16px 0;
-		background: var(--bg);
 
 		> .button {
 			min-width: 0;
@@ -180,12 +180,15 @@ watch(defaultStore.reactiveState.menuDisplay, () => {
 
 		> .item {
 			display: block;
-			width: 32px;
 			margin: 0 auto;
 
 			img {
 				display: block;
-				width: 100%;
+				width: 32px;
+				&.wideIcon {
+					width: 80%;
+					margin: 0 auto;
+				}
 			}
 		}
 	}

@@ -1181,6 +1181,10 @@ export interface Locale extends ILocale {
      */
     "areYouSure": string;
     /**
+     * 「{x}」を開きますか？
+     */
+    "confirmRemoteUrl": ParameterizedString<"x">;
+    /**
      * 保存しました
      */
     "saved": string;
@@ -4426,6 +4430,10 @@ export interface Locale extends ILocale {
      */
     "disableFederationOk": string;
     /**
+     * 猫の話し方を無効にする
+     */
+    "disableCatSpeak": string;
+    /**
      * 現在このサーバーは招待制です。招待コードをお持ちの方のみ登録できます。
      */
     "invitationRequiredToRegister": string;
@@ -5126,6 +5134,10 @@ export interface Locale extends ILocale {
      */
     "flip": string;
     /**
+     * アイコンの後ろに表示
+     */
+    "showBelowAvatar": string;
+    /**
      * アイコンのデコレーションを表示
      */
     "showAvatarDecorations": string;
@@ -5628,6 +5640,10 @@ export interface Locale extends ILocale {
              */
             "global": string;
             /**
+             * 管理者が選択した他の接続サーバーの投稿を見ることができます。
+             */
+            "bubble": string;
+            /**
              * それぞれのタイムラインは、画面上部でいつでも切り替えられます。
              */
             "description2": string;
@@ -5761,6 +5777,10 @@ export interface Locale extends ILocale {
          */
         "social": string;
         /**
+         * バッッブルタイムラインでは、管理者が選択した接続サーバーからのメモを表示できます。
+         */
+        "bubble": string;
+        /**
          * グローバルタイムラインでは、接続している他のすべてのサーバーからの投稿を見られます。
          */
         "global": string;
@@ -5792,6 +5812,18 @@ export interface Locale extends ILocale {
          * 解像度は必ず{resolution}である必要があります。
          */
         "appIconResolutionMustBe": ParameterizedString<"resolution">;
+        /**
+         * ロゴURL
+         */
+        "sidebarLogoUrl": string;
+        /**
+         * 高精細、ダイナミック幅のシナリオで通常のアイコンの代わりに使用するロゴを指定します。
+         */
+        "sidebarLogoDescription": string;
+        /**
+         * 例：サイドバー、訪問者用、「情報」ページ
+         */
+        "sidebarLogoUsageExample": string;
         /**
          * manifest.jsonのオーバーライド
          */
