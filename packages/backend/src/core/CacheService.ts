@@ -23,6 +23,7 @@ type StpvRemoteUserDecorationsCacheType = {
 	offsetX?: number;
 	offsetY?: number;
 	url?: string;
+	showBelow?: boolean;
 }[];
 
 @Injectable()
@@ -157,6 +158,7 @@ export class CacheService implements OnApplicationShutdown {
 							offsetX: ad.offsetX ? Number(ad.offsetX) : undefined,
 							offsetY: ad.offsetY ? Number(ad.offsetY) : undefined,
 							flipH: ad.flipH ? Boolean(ad.flipH) : undefined,
+							showBelow: ad.showBelow ? Boolean(ad.showBelow) : undefined,
 							url: ad.url,
 						})) ?? [],
 					)
