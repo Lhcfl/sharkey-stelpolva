@@ -43,9 +43,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 								{{ i18n.ts._delivery._type[suspensionState] }}
 							</template>
 						</MkKeyValue>
-						<MkButton :disabled="!instance" danger @click="deleteAllFiles">{{ i18n.ts.deleteAllFilesConfirm }}</MkButton>
-						<MkButton :disabled="!instance" danger @click="severAllFollowRelations">{{ i18n.ts.severAllFollowRelations }}</MkButton>
-						<MkButton v-if="suspensionState === 'none'" :disabled="!instance" danger @click="stopDelivery">{{ i18n.ts._delivery.stop }}</MkButton>
+						<div class="_buttons">
+							<MkButton inline :disabled="!instance" danger @click="deleteAllFiles">{{ i18n.ts.deleteAllFiles }}</MkButton>
+							<MkButton inline :disabled="!instance" danger @click="severAllFollowRelations">{{ i18n.ts.severAllFollowRelations }}</MkButton>
+							<MkButton v-if="suspensionState === 'none'" inline :disabled="!instance" danger @click="stopDelivery">{{ i18n.ts._delivery.stop }}</MkButton>
+						</div>
 						<MkButton v-if="suspensionState !== 'none'" :disabled="!instance" @click="resumeDelivery">{{ i18n.ts._delivery.resume }}</MkButton>
 						<MkSwitch v-model="isBlocked" :disabled="!meta || !instance" @update:modelValue="toggleBlock">{{ i18n.ts.blockThisInstance }}</MkSwitch>
 						<MkSwitch v-model="isSilenced" :disabled="!meta || !instance" @update:modelValue="toggleSilenced">{{ i18n.ts.silenceThisInstance }}</MkSwitch>
@@ -277,7 +279,8 @@ async function deleteAllFiles(): void {
 		type: 'danger',
 		text: i18n.ts.deleteAllFilesConfirm,
 	});
-	if (!confirm) return;
+	if (confirm.canceled) return;
+
 	if (!instance.value) throw new Error('No instance?');
 	await misskeyApi('admin/federation/delete-all-files', {
 		host: instance.value.host,
@@ -292,9 +295,10 @@ async function severAllFollowRelations(): void {
 
 	const confirm = await os.confirm({
 		type: 'danger',
-		text: i18n.ts.severAllFollowRelationsConfirm,
+		text: `${i18n.ts.severAllFollowRelationsConfirm} This will break ${instance.value.followingCount} following and ${instance.value.followersCount} follower relations on ${meta.value.name}.`,
 	});
-	if (!confirm) return;
+	if (confirm.canceled) return;
+
 	await misskeyApi('admin/federation/remove-all-following', {
 		host: instance.value.host,
 	});
