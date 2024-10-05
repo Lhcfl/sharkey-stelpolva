@@ -637,6 +637,7 @@ async function onPaste(ev: ClipboardEvent) {
 				{
 					value: 'yes',
 					text: i18n.ts.yes,
+					primary: true,
 				},
 				{
 					value: 'no',
