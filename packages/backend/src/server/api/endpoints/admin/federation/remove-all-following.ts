@@ -37,9 +37,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queueService: QueueService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const followings = await this.followingsRepository.findBy({
-				followerHost: ps.host,
-			});
+			const followings = await this.followingsRepository.findBy([
+				{
+					followeeHost: ps.host,
+				},
+				{
+					followerHost: ps.host,
+				},
+			]);
 
 			const pairs = await Promise.all(followings.map(f => Promise.all([
 				this.usersRepository.findOneByOrFail({ id: f.followerId }),
