@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkNoteHeader :class="$style.header" :classic="true" :note="note" :mini="true"/>
 		<div>
 			<p v-if="note.cw != null" :class="$style.cw">
-				<Mfm v-if="note.cw != ''" style="margin-right: 8px;" :text="note.cw" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
+				<Mfm v-if="note.cw != ''" style="margin-right: 8px;" :text="note.cw" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis" @click.stop="defaultStore.state.clickToOpen ? noteclick(note.id) : undefined"/>
 				<MkCwButton v-model="showContent" :text="note.text" :files="note.files" :poll="note.poll" @click.stop/>
 			</p>
 			<div v-show="note.cw == null || showContent">
@@ -28,6 +28,7 @@ import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
 import { defaultStore } from '@/store.js';
+import { useRouter } from '@/router/supplier.js';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -40,6 +41,13 @@ let showContent = ref(defaultStore.state.uncollapseCW);
 watch(() => props.expandAllCws, (expandAllCws) => {
 	if (expandAllCws !== showContent.value) showContent.value = expandAllCws;
 });
+
+function noteclick(id: string) {
+	const selection = document.getSelection();
+	if (selection?.toString().length === 0) {
+		useRouter().push(`/notes/${id}`);
+	}
+}
 </script>
 
 <style lang="scss" module>
