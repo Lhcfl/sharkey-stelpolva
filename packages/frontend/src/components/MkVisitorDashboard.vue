@@ -142,6 +142,7 @@ function showMenu(ev: MouseEvent) {
 	height: 32px;
 	border-radius: var(--radius-sm);
 	font-size: 18px;
+	z-index: 50;
 }
 
 .mainFg {
