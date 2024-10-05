@@ -43,6 +43,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 								{{ i18n.ts._delivery._type[suspensionState] }}
 							</template>
 						</MkKeyValue>
+						<MkButton :disabled="!instance" danger @click="deleteAllFiles">{{ i18n.ts.deleteAllFilesConfirm }}</MkButton>
+						<MkButton :disabled="!instance" danger @click="severAllFollowRelations">{{ i18n.ts.severAllFollowRelations }}</MkButton>
 						<MkButton v-if="suspensionState === 'none'" :disabled="!instance" danger @click="stopDelivery">{{ i18n.ts._delivery.stop }}</MkButton>
 						<MkButton v-if="suspensionState !== 'none'" :disabled="!instance" @click="resumeDelivery">{{ i18n.ts._delivery.resume }}</MkButton>
 						<MkSwitch v-model="isBlocked" :disabled="!meta || !instance" @update:modelValue="toggleBlock">{{ i18n.ts.blockThisInstance }}</MkSwitch>
@@ -267,6 +269,37 @@ function refreshMetadata(): void {
 	});
 	os.alert({
 		text: 'Refresh requested',
+	});
+}
+
+async function deleteAllFiles(): void {
+	const confirm = await os.confirm({
+		type: 'danger',
+		text: i18n.ts.deleteAllFilesConfirm,
+	});
+	if (!confirm) return;
+	if (!instance.value) throw new Error('No instance?');
+	await misskeyApi('admin/federation/delete-all-files', {
+		host: instance.value.host,
+	});
+	await os.alert({
+		text: 'Deletion of all files queued',
+	});
+}
+
+async function severAllFollowRelations(): void {
+	if (!instance.value) throw new Error('No instance?');
+
+	const confirm = await os.confirm({
+		type: 'danger',
+		text: i18n.ts.severAllFollowRelationsConfirm,
+	});
+	if (!confirm) return;
+	await misskeyApi('admin/federation/remove-all-following', {
+		host: instance.value.host,
+	});
+	await os.alert({
+		text: 'Severing all follow relations queued',
 	});
 }
 

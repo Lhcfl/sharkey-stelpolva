@@ -3129,6 +3129,10 @@ export interface Locale extends ILocale {
      */
     "showTickerOnReplies": string;
     /**
+     * 猫の話し方を無効にする
+     */
+    "disableCatSpeak": string;
+    /**
      * 検索MFMの検索エンジン
      */
     "searchEngine": string;
@@ -4430,10 +4434,6 @@ export interface Locale extends ILocale {
      */
     "disableFederationOk": string;
     /**
-     * 猫の話し方を無効にする
-     */
-    "disableCatSpeak": string;
-    /**
      * 現在このサーバーは招待制です。招待コードをお持ちの方のみ登録できます。
      */
     "invitationRequiredToRegister": string;
@@ -5337,6 +5337,14 @@ export interface Locale extends ILocale {
      * 作成したアンテナ
      */
     "createdAntennas": string;
+    /**
+     * 以下の関係をすべて断ち切る
+     */
+    "severAllFollowRelations": string;
+    /**
+     * 本当にすべての関係を断ち切りたいのですか？これは不可逆的だ。
+     */
+    "severAllFollowRelationsConfirm": string;
     "_delivery": {
         /**
          * 配信状態
@@ -5777,7 +5785,7 @@ export interface Locale extends ILocale {
          */
         "social": string;
         /**
-         * バッッブルタイムラインでは、管理者が選択した接続サーバーからのメモを表示できます。
+         * バブルタイムラインでは、管理者が選択した接続サーバーからの投稿を表示できます。
          */
         "bubble": string;
         /**
@@ -9139,7 +9147,7 @@ export interface Locale extends ILocale {
          */
         "global": string;
         /**
-         * バッッブル
+         * バブル
          */
         "bubble": string;
     };

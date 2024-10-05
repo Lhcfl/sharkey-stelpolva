@@ -1330,6 +1330,8 @@ confirmWhenRevealingSensitiveMedia: "センシティブなメディアを表示�
 sensitiveMediaRevealConfirm: "センシティブなメディアです。表示しますか？"
 createdLists: "作成したリスト"
 createdAntennas: "作成したアンテナ"
+severAllFollowRelations: "以下の関係をすべて断ち切る"
+severAllFollowRelationsConfirm: "本当にすべての関係を断ち切りたいのですか？これは不可逆的だ。"
 
 _delivery:
   status: "配信状態"

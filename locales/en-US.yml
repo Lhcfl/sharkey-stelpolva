@@ -1330,6 +1330,8 @@ confirmWhenRevealingSensitiveMedia: "Confirm when revealing sensitive media"
 sensitiveMediaRevealConfirm: "This media might be sensitive. Are you sure you want to reveal it?"
 createdLists: "Created lists"
 createdAntennas: "Created antennas"
+severAllFollowRelations: "Break follow relationships"
+severAllFollowRelationsConfirm: "Really break all follow relationships? This is irreversible!"
 _delivery:
   status: "Delivery status"
   stop: "Suspend delivery"
