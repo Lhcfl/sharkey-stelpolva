@@ -252,12 +252,9 @@ function updatePaginationQuery(untilDate?: Date) {
 		query = null;
 	}
 
-	if (untilDate) {
+	if (untilDate && Number(untilDate)) {
 		query = query ?? {};
 		query.untilDate = Number(untilDate);
-	} else {
-		query = query ?? {};
-		query.untilDate = undefined;
 	}
 
 	if (endpoint && query) {
