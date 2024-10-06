@@ -589,6 +589,10 @@ export interface Locale extends ILocale {
      */
     "mute": string;
     /**
+     * Muted
+     */
+    "muted": string;
+    /**
      * ミュート解除
      */
     "unmute": string;
@@ -596,6 +600,10 @@ export interface Locale extends ILocale {
      * ブーストをミュート
      */
     "renoteMute": string;
+    /**
+     * Boosts muted
+     */
+    "renoteMuted": string;
     /**
      * ブーストのミュートを解除
      */
