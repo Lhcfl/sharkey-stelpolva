@@ -81,6 +81,12 @@ export class NoteDeleteService {
 				deletedAt: deletedAt,
 			});
 
+			for (const cascadingNote of cascadingNotes) {
+				this.globalEventService.publishNoteStream(cascadingNote.id, 'deleted', {
+					deletedAt: deletedAt,
+				});
+			}
+
 			//#region ローカルの投稿なら削除アクティビティを配送
 			if (this.userEntityService.isLocalUser(user) && !note.localOnly) {
 				let renote: MiNote | null = null;
