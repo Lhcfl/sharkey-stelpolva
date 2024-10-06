@@ -77,8 +77,12 @@ export const moderationLogTypes = [
 	'deleteGlobalAnnouncement',
 	'deleteUserAnnouncement',
 	'resetPassword',
+	'setRemoteInstanceNSFW',
+	'unsetRemoteInstanceNSFW',
 	'suspendRemoteInstance',
 	'unsuspendRemoteInstance',
+	'rejectRemoteInstanceReports',
+	'acceptRemoteInstanceReports',
 	'updateRemoteInstanceNote',
 	'markSensitiveDriveFile',
 	'unmarkSensitiveDriveFile',
@@ -227,11 +231,27 @@ export type ModerationLogPayloads = {
 		userUsername: string;
 		userHost: string | null;
 	};
+	setRemoteInstanceNSFW: {
+		id: string;
+		host: string;
+	};
+	unsetRemoteInstanceNSFW: {
+		id: string;
+		host: string;
+	};
 	suspendRemoteInstance: {
 		id: string;
 		host: string;
 	};
 	unsuspendRemoteInstance: {
+		id: string;
+		host: string;
+	};
+	rejectRemoteInstanceReports: {
+		id: string;
+		host: string;
+	};
+	acceptRemoteInstanceReports: {
 		id: string;
 		host: string;
 	};

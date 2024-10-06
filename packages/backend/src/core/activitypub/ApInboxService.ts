@@ -5,6 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
+import * as Bull from 'bullmq';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
@@ -29,6 +30,7 @@ import { bindThis } from '@/decorators.js';
 import type { MiRemoteUser } from '@/models/User.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { AbuseReportService } from '@/core/AbuseReportService.js';
+import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { getApHrefNullable, getApId, getApIds, getApType, isAccept, isActor, isAdd, isAnnounce, isBlock, isCollection, isCollectionOrOrderedCollection, isCreate, isDelete, isFlag, isFollow, isLike, isMove, isPost, isReject, isRemove, isTombstone, isUndo, isUpdate, validActor, validPost } from './type.js';
 import { ApNoteService } from './models/ApNoteService.js';
 import { ApLoggerService } from './ApLoggerService.js';
@@ -83,6 +85,7 @@ export class ApInboxService {
 		private apQuestionService: ApQuestionService,
 		private queueService: QueueService,
 		private globalEventService: GlobalEventService,
+		private federatedInstanceService: FederatedInstanceService,
 	) {
 		this.logger = this.apLoggerService.logger;
 	}
@@ -530,6 +533,12 @@ export class ApInboxService {
 
 	@bindThis
 	private async flag(actor: MiRemoteUser, activity: IFlag): Promise<string> {
+		// Make sure the source instance is allowed to send reports.
+		const instance = await this.federatedInstanceService.fetch(actor.host);
+		if (instance.rejectReports) {
+			throw new Bull.UnrecoverableError(`Rejecting report from instance: ${actor.host}`);
+		}
+
 		// objectは `(User|Note) | (User|Note)[]` だけど、全パターンDBスキーマと対応させられないので
 		// 対象ユーザーは一番最初のユーザー として あとはコメントとして格納する
 		const uris = getApIds(activity.object);

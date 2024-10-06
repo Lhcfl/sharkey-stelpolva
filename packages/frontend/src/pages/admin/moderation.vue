@@ -50,6 +50,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #caption>{{ i18n.ts.preservedUsernamesDescription }}</template>
 					</MkTextarea>
 
+					<MkTextarea v-model="trustedLinkUrlPatterns">
+						<template #prefix><i class="ti ti-link"></i></template>
+						<template #label>{{ i18n.ts.trustedLinkUrlPatterns }}</template>
+						<template #caption>{{ i18n.ts.trustedLinkUrlPatternsDescription }}</template>
+					</MkTextarea>
+
 					<MkTextarea v-model="sensitiveWords">
 						<template #label>{{ i18n.ts.sensitiveWords }}</template>
 						<template #caption>{{ i18n.ts.sensitiveWordsDescription }}<br>{{ i18n.ts.sensitiveWordsDescription2 }}</template>
@@ -105,6 +111,7 @@ const bubbleTimeline = ref<string>('');
 const tosUrl = ref<string | null>(null);
 const privacyPolicyUrl = ref<string | null>(null);
 const inquiryUrl = ref<string | null>(null);
+const trustedLinkUrlPatterns = ref<string>('');
 
 async function init() {
 	const meta = await misskeyApi('admin/meta');
@@ -120,6 +127,7 @@ async function init() {
 	bubbleTimeline.value = meta.bubbleInstances.join('\n');
 	bubbleTimelineEnabled.value = meta.policies.btlAvailable;
 	inquiryUrl.value = meta.inquiryUrl;
+	trustedLinkUrlPatterns.value = meta.trustedLinkUrlPatterns.join('\n');
 }
 
 function save() {
@@ -135,6 +143,7 @@ function save() {
 		hiddenTags: hiddenTags.value.split('\n'),
 		preservedUsernames: preservedUsernames.value.split('\n'),
 		bubbleInstances: bubbleTimeline.value.split('\n'),
+		trustedLinkUrlPatterns: trustedLinkUrlPatterns.value.split('\n'),
 	}).then(() => {
 		fetchInstance(true);
 	});
