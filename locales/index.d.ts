@@ -1085,6 +1085,10 @@ export interface Locale extends ILocale {
      */
     "silencedByBase": string;
     /**
+     * This host's media is silenced implicitly because a base domain's media is silenced. To un-silence this host, first un-silence the base domain(s).
+     */
+    "mediaSilencedByBase": string;
+    /**
      * 配信停止
      */
     "suspended": string;
