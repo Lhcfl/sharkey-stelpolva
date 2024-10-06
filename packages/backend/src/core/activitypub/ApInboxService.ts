@@ -39,6 +39,8 @@ import { ApPersonService } from './models/ApPersonService.js';
 import { ApQuestionService } from './models/ApQuestionService.js';
 import type { Resolver } from './ApResolverService.js';
 import type { IAccept, IAdd, IAnnounce, IBlock, ICreate, IDelete, IFlag, IFollow, ILike, IObject, IReject, IRemove, IUndo, IUpdate, IMove, IPost } from './type.js';
+import * as Bull from 'bullmq';
+import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 
 @Injectable()
 export class ApInboxService {
@@ -83,6 +85,7 @@ export class ApInboxService {
 		private apQuestionService: ApQuestionService,
 		private queueService: QueueService,
 		private globalEventService: GlobalEventService,
+		private federatedInstanceService: FederatedInstanceService,
 	) {
 		this.logger = this.apLoggerService.logger;
 	}
@@ -530,6 +533,12 @@ export class ApInboxService {
 
 	@bindThis
 	private async flag(actor: MiRemoteUser, activity: IFlag): Promise<string> {
+		// Make sure the source instance is allowed to send reports.
+		const instance = await this.federatedInstanceService.fetch(actor.host);
+		if (instance.rejectReports) {
+			throw new Bull.UnrecoverableError(`Rejecting report from instance: ${actor.host}`);
+		}
+
 		// objectは `(User|Note) | (User|Note)[]` だけど、全パターンDBスキーマと対応させられないので
 		// 対象ユーザーは一番最初のユーザー として あとはコメントとして格納する
 		const uris = getApIds(activity.object);

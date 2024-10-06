@@ -158,7 +158,12 @@ export class MiInstance {
 		default: false,
 	})
 	public isNSFW: boolean;
-	
+
+	@Column('boolean', {
+		default: false,
+	})
+	public rejectReports: boolean;
+
 	@Column('varchar', {
 		length: 16384, default: '',
 	})

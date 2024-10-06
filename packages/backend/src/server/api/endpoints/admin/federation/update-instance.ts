@@ -25,6 +25,7 @@ export const paramDef = {
 		host: { type: 'string' },
 		isSuspended: { type: 'boolean' },
 		isNSFW: { type: 'boolean' },
+		rejectReports: { type: 'boolean' },
 		moderationNote: { type: 'string' },
 	},
 	required: ['host'],
@@ -57,6 +58,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.federatedInstanceService.update(instance.id, {
 				suspensionState,
 				isNSFW: ps.isNSFW,
+				rejectReports: ps.rejectReports,
 				moderationNote: ps.moderationNote,
 			});
 
@@ -72,6 +74,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						host: instance.host,
 					});
 				}
+			}
+
+			if (ps.rejectReports != null && instance.rejectReports !== ps.rejectReports) {
+				const message = ps.rejectReports ? 'rejectRemoteInstanceReports' : 'acceptRemoteInstanceReports';
+				this.moderationLogService.log(me, message, {
+					id: instance.id,
+					host: instance.host,
+				});
 			}
 
 			if (ps.moderationNote != null && instance.moderationNote !== ps.moderationNote) {

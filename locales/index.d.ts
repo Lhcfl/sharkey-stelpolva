@@ -909,6 +909,10 @@ export interface Locale extends ILocale {
      */
     "mediaSilenceThisInstance": string;
     /**
+     * Reject reports from this instance
+     */
+    "rejectReports": string;
+    /**
      * 操作
      */
     "operations": string;
@@ -3128,6 +3132,10 @@ export interface Locale extends ILocale {
      * 返信にサーバー情報を表示する
      */
     "showTickerOnReplies": string;
+    /**
+     * 猫の話し方を無効にする
+     */
+    "disableCatSpeak": string;
     /**
      * 検索MFMの検索エンジン
      */
@@ -9972,6 +9980,14 @@ export interface Locale extends ILocale {
          * リモートサーバーを再開
          */
         "unsuspendRemoteInstance": string;
+        /**
+         * Rejected reports from remote instance
+         */
+        "rejectRemoteInstanceReports": string;
+        /**
+         * Accepted reports from remote instance
+         */
+        "acceptRemoteInstanceReports": string;
         /**
          * リモートサーバーのモデレーションノート更新
          */
