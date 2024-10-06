@@ -169,40 +169,47 @@ const withUserRenotes = ref(false);
 const withUserReplies = ref(true);
 const withOnlyFiles = ref(false);
 
-const headerActions = computed(() => isWideViewport.value ? [
-	{
-		icon: 'ti ti-refresh',
-		text: i18n.ts.reload,
-		handler: () => reload(),
-	} satisfies PageHeaderItem,
-	{
-		icon: 'ti ti-dots',
-		text: i18n.ts.options,
-		handler: (ev) => {
-			os.popupMenu([
-				{
-					type: 'switch',
-					text: i18n.ts.showRenotes,
-					ref: withUserRenotes,
-				}, {
-					type: 'switch',
-					text: i18n.ts.showRepliesToOthersInTimeline,
-					ref: withUserReplies,
-					disabled: withOnlyFiles,
-				},
-				{
-					type: 'divider',
-				},
-				{
-					type: 'switch',
-					text: i18n.ts.fileAttachedOnly,
-					ref: withOnlyFiles,
-					disabled: withUserReplies,
-				},
-			], ev.currentTarget ?? ev.target);
+const headerActions = computed(() => {
+	const actions: PageHeaderItem[] = [
+		{
+			icon: 'ti ti-refresh',
+			text: i18n.ts.reload,
+			handler: () => reload(),
 		},
-	} satisfies PageHeaderItem,
-] : []);
+	];
+
+	if (isWideViewport.value) {
+		actions.push({
+			icon: 'ti ti-dots',
+			text: i18n.ts.options,
+			handler: (ev) => {
+				os.popupMenu([
+					{
+						type: 'switch',
+						text: i18n.ts.showRenotes,
+						ref: withUserRenotes,
+					}, {
+						type: 'switch',
+						text: i18n.ts.showRepliesToOthersInTimeline,
+						ref: withUserReplies,
+						disabled: withOnlyFiles,
+					},
+					{
+						type: 'divider',
+					},
+					{
+						type: 'switch',
+						text: i18n.ts.fileAttachedOnly,
+						ref: withOnlyFiles,
+						disabled: withUserReplies,
+					},
+				], ev.currentTarget ?? ev.target);
+			},
+		});
+	}
+
+	return actions;
+});
 
 const headerTabs = computed(() => [
 	{
