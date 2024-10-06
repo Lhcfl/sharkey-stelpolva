@@ -286,7 +286,7 @@ async function deleteAllFiles(): void {
 		host: instance.value.host,
 	});
 	await os.alert({
-		text: 'Deletion of all files queued',
+		text: i18n.ts.deleteAllFilesQueued,
 	});
 }
 
@@ -295,7 +295,11 @@ async function severAllFollowRelations(): void {
 
 	const confirm = await os.confirm({
 		type: 'danger',
-		text: `${i18n.ts.severAllFollowRelationsConfirm} This will break ${instance.value.followingCount} following and ${instance.value.followersCount} follower relations on ${meta.value.name}.`,
+		text: i18n.tsx.severAllFollowRelationsConfirm({
+			instanceName: meta.value.shortName ?? meta.value.name,
+			followingCount: instance.value.followingCount,
+			followersCount: instance.value.followersCount,
+		}),
 	});
 	if (confirm.canceled) return;
 
@@ -303,7 +307,7 @@ async function severAllFollowRelations(): void {
 		host: instance.value.host,
 	});
 	await os.alert({
-		text: 'Severing all follow relations queued',
+		text: i18n.tsx.severAllFollowRelationsQueued({ host: instance.value.host }),
 	});
 }
 

@@ -621,6 +621,7 @@ unsetUserBanner: "バナーを解除"
 unsetUserBannerConfirm: "バナーを解除しますか？"
 deleteAllFiles: "すべてのファイルを削除"
 deleteAllFilesConfirm: "すべてのファイルを削除しますか？"
+deleteAllFilesQueued: "キューに入れられたすべてのファイルの削除"
 removeAllFollowing: "フォローを全解除"
 removeAllFollowingDescription: "{host}からのフォローをすべて解除します。そのサーバーがもう存在しなくなった場合などに実行してください。"
 userSuspended: "このユーザーは凍結されています。"
@@ -1331,7 +1332,8 @@ sensitiveMediaRevealConfirm: "センシティブなメディアです。表示�
 createdLists: "作成したリスト"
 createdAntennas: "作成したアンテナ"
 severAllFollowRelations: "以下の関係をすべて断ち切る"
-severAllFollowRelationsConfirm: "本当にすべての関係を断ち切りたいのですか？これは不可逆的だ。"
+severAllFollowRelationsConfirm: "すべての人間関係を壊す？これは不可逆です！これは{instanceName}の{followingCount}フォローと{followersCount}フォロワーの関係を壊す！"
+severAllFollowRelationsQueued: "キューに入れられた{host}とのすべてのフォロー関係を切断する。"
 
 _delivery:
   status: "配信状態"

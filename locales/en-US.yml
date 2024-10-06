@@ -621,6 +621,7 @@ unsetUserBanner: "Unset banner"
 unsetUserBannerConfirm: "Are you sure you want to unset the banner?"
 deleteAllFiles: "Delete all files"
 deleteAllFilesConfirm: "Are you sure that you want to delete all files?"
+deleteAllFilesQueued: "Deletion of all files queued"
 removeAllFollowing: "Unfollow all followed users"
 removeAllFollowingDescription: "Executing this unfollows all accounts from {host}. Please run this if the instance e.g. no longer exists."
 userSuspended: "This user has been suspended."
@@ -1331,7 +1332,9 @@ sensitiveMediaRevealConfirm: "This media might be sensitive. Are you sure you wa
 createdLists: "Created lists"
 createdAntennas: "Created antennas"
 severAllFollowRelations: "Break following relationships"
-severAllFollowRelationsConfirm: "Really break all follow relationships? This is irreversible!"
+severAllFollowRelationsConfirm: "Really break all follow relationships? This is irreversible! This will break {followingCount} following and {followersCount} follower relations on {instanceName}!"
+severAllFollowRelationsQueued: "Severing all follow relations with {host} queued."
+
 _delivery:
   status: "Delivery status"
   stop: "Suspend delivery"
