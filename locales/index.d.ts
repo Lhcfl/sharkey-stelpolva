@@ -633,6 +633,10 @@ export interface Locale extends ILocale {
      */
     "markAsNSFW": string;
     /**
+     * Mark as NSFW
+     */
+    "markInstanceAsNSFW": string;
+    /**
      * 凍結
      */
     "suspend": string;
@@ -928,6 +932,10 @@ export interface Locale extends ILocale {
      * サーバーをメディアサイレンス
      */
     "mediaSilenceThisInstance": string;
+    /**
+     * Reject reports from this instance
+     */
+    "rejectReports": string;
     /**
      * 操作
      */
@@ -10000,6 +10008,22 @@ export interface Locale extends ILocale {
          * リモートサーバーを再開
          */
         "unsuspendRemoteInstance": string;
+        /**
+         * Set remote instance as NSFW
+         */
+        "setRemoteInstanceNSFW": string;
+        /**
+         * Set remote instance as NSFW
+         */
+        "unsetRemoteInstanceNSFW": string;
+        /**
+         * Rejected reports from remote instance
+         */
+        "rejectRemoteInstanceReports": string;
+        /**
+         * Accepted reports from remote instance
+         */
+        "acceptRemoteInstanceReports": string;
         /**
          * リモートサーバーのモデレーションノート更新
          */

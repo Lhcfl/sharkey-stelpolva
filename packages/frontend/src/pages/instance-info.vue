@@ -49,7 +49,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkSwitch v-model="isBlocked" :disabled="!meta || !instance || isBaseBlocked" @update:modelValue="toggleBlock">{{ i18n.ts.blockThisInstance }}</MkSwitch>
 						<MkInfo v-if="isBaseSilenced" warn>{{ i18n.ts.silencedByBase }}</MkInfo>
 						<MkSwitch v-model="isSilenced" :disabled="!meta || !instance || isBaseSilenced" @update:modelValue="toggleSilenced">{{ i18n.ts.silenceThisInstance }}</MkSwitch>
-						<MkSwitch v-model="isNSFW" :disabled="!instance" @update:modelValue="toggleNSFW">Mark as NSFW</MkSwitch>
+						<MkSwitch v-model="isNSFW" :disabled="!instance" @update:modelValue="toggleNSFW">{{ i18n.ts.markInstanceAsNSFW }}</MkSwitch>
+						<MkSwitch v-model="rejectReports" :disabled="!instance" @update:modelValue="toggleRejectReports">{{ i18n.ts.rejectReports }}</MkSwitch>
 						<MkInfo v-if="isBaseMediaSilenced" warn>{{ i18n.ts.mediaSilencedByBase }}</MkInfo>
 						<MkSwitch v-model="isMediaSilenced" :disabled="!meta || !instance || isBaseMediaSilenced" @update:modelValue="toggleMediaSilenced">{{ i18n.ts.mediaSilenceThisInstance }}</MkSwitch>
 						<MkButton @click="refreshMetadata"><i class="ti ti-refresh"></i> Refresh metadata</MkButton>
@@ -174,6 +175,7 @@ const suspensionState = ref<'none' | 'manuallySuspended' | 'goneSuspended' | 'au
 const isBlocked = ref(false);
 const isSilenced = ref(false);
 const isNSFW = ref(false);
+const rejectReports = ref(false);
 const isMediaSilenced = ref(false);
 const faviconUrl = ref<string | null>(null);
 const moderationNote = ref('');
@@ -219,6 +221,7 @@ async function fetch(): Promise<void> {
 	isBlocked.value = instance.value?.isBlocked ?? false;
 	isSilenced.value = instance.value?.isSilenced ?? false;
 	isNSFW.value = instance.value?.isNSFW ?? false;
+	rejectReports.value = instance.value?.rejectReports ?? false;
 	isMediaSilenced.value = instance.value?.isMediaSilenced ?? false;
 	faviconUrl.value = getProxiedImageUrlNullable(instance.value?.faviconUrl, 'preview') ?? getProxiedImageUrlNullable(instance.value?.iconUrl, 'preview');
 	moderationNote.value = instance.value?.moderationNote ?? '';
@@ -276,6 +279,14 @@ async function toggleNSFW(): Promise<void> {
 	await misskeyApi('admin/federation/update-instance', {
 		host: instance.value.host,
 		isNSFW: isNSFW.value,
+	});
+}
+
+async function toggleRejectReports(): Promise<void> {
+	if (!instance.value) throw new Error('No instance?');
+	await misskeyApi('admin/federation/update-instance', {
+		host: instance.value.host,
+		rejectReports: rejectReports.value,
 	});
 }
 
