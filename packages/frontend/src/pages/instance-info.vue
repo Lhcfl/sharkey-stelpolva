@@ -50,7 +50,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkInfo v-if="isBaseSilenced" warn>{{ i18n.ts.silencedByBase }}</MkInfo>
 						<MkSwitch v-model="isSilenced" :disabled="!meta || !instance || isBaseSilenced" @update:modelValue="toggleSilenced">{{ i18n.ts.silenceThisInstance }}</MkSwitch>
 						<MkSwitch v-model="isNSFW" :disabled="!instance" @update:modelValue="toggleNSFW">Mark as NSFW</MkSwitch>
-						<MkSwitch v-model="isMediaSilenced" :disabled="!meta || !instance" @update:modelValue="toggleMediaSilenced">{{ i18n.ts.mediaSilenceThisInstance }}</MkSwitch>
+						<MkInfo v-if="isBaseMediaSilenced" warn>{{ i18n.ts.mediaSilencedByBase }}</MkInfo>
+						<MkSwitch v-model="isMediaSilenced" :disabled="!meta || !instance || isBaseMediaSilenced" @update:modelValue="toggleMediaSilenced">{{ i18n.ts.mediaSilenceThisInstance }}</MkSwitch>
 						<MkButton @click="refreshMetadata"><i class="ti ti-refresh"></i> Refresh metadata</MkButton>
 						<MkTextarea v-model="moderationNote" manualSave>
 							<template #label>{{ i18n.ts.moderationNote }}</template>
@@ -190,6 +191,7 @@ const baseDomains = computed(() => {
 });
 const isBaseBlocked = computed(() => meta.value && baseDomains.value.some(d => meta.value?.blockedHosts.includes(d)));
 const isBaseSilenced = computed(() => meta.value && meta.value.silencedHosts && baseDomains.value.some(d => meta.value?.silencedHosts?.includes(d)));
+const isBaseMediaSilenced = computed(() => meta.value && meta.value.mediaSilencedHosts && baseDomains.value.some(d => meta.value?.mediaSilencedHosts.includes(d)));
 
 const usersPagination = {
 	endpoint: iAmModerator ? 'admin/show-users' : 'users' as const,
