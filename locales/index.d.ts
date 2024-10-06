@@ -2537,6 +2537,10 @@ export interface Locale extends ILocale {
      */
     "deleteAllFilesConfirm": string;
     /**
+     * キューに入れられたすべてのファイルの削除
+     */
+    "deleteAllFilesQueued": string;
+    /**
      * フォローを全解除
      */
     "removeAllFollowing": string;
@@ -5373,6 +5377,18 @@ export interface Locale extends ILocale {
      * 作成したアンテナ
      */
     "createdAntennas": string;
+    /**
+     * 以下の関係をすべて断ち切る
+     */
+    "severAllFollowRelations": string;
+    /**
+     * すべての人間関係を壊す？これは不可逆です！これは{instanceName}の{followingCount}フォローと{followersCount}フォロワーの関係を壊す！
+     */
+    "severAllFollowRelationsConfirm": ParameterizedString<"instanceName" | "followingCount" | "followersCount">;
+    /**
+     * キューに入れられた{host}とのすべてのフォロー関係を切断する。
+     */
+    "severAllFollowRelationsQueued": ParameterizedString<"host">;
     "_delivery": {
         /**
          * 配信状態

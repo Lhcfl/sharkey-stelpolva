@@ -43,8 +43,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 								{{ i18n.ts._delivery._type[suspensionState] }}
 							</template>
 						</MkKeyValue>
-						<MkButton v-if="suspensionState === 'none'" :disabled="!instance" danger @click="stopDelivery">{{ i18n.ts._delivery.stop }}</MkButton>
-						<MkButton v-if="suspensionState !== 'none'" :disabled="!instance" @click="resumeDelivery">{{ i18n.ts._delivery.resume }}</MkButton>
+						<div class="_buttons">
+							<MkButton inline :disabled="!instance" danger @click="deleteAllFiles">{{ i18n.ts.deleteAllFiles }}</MkButton>
+							<MkButton inline :disabled="!instance" danger @click="severAllFollowRelations">{{ i18n.ts.severAllFollowRelations }}</MkButton>
+							<MkButton v-if="suspensionState === 'none'" inline :disabled="!instance" danger @click="stopDelivery">{{ i18n.ts._delivery.stop }}</MkButton>
+							<MkButton v-if="suspensionState !== 'none'" inline :disabled="!instance" @click="resumeDelivery">{{ i18n.ts._delivery.resume }}</MkButton>
+						</div>
 						<MkInfo v-if="isBaseBlocked" warn>{{ i18n.ts.blockedByBase }}</MkInfo>
 						<MkSwitch v-model="isBlocked" :disabled="!meta || !instance || isBaseBlocked" @update:modelValue="toggleBlock">{{ i18n.ts.blockThisInstance }}</MkSwitch>
 						<MkInfo v-if="isBaseSilenced" warn>{{ i18n.ts.silencedByBase }}</MkInfo>
@@ -297,6 +301,43 @@ function refreshMetadata(): void {
 	});
 	os.alert({
 		text: 'Refresh requested',
+	});
+}
+
+async function deleteAllFiles(): void {
+	const confirm = await os.confirm({
+		type: 'danger',
+		text: i18n.ts.deleteAllFilesConfirm,
+	});
+	if (confirm.canceled) return;
+
+	if (!instance.value) throw new Error('No instance?');
+	await misskeyApi('admin/federation/delete-all-files', {
+		host: instance.value.host,
+	});
+	await os.alert({
+		text: i18n.ts.deleteAllFilesQueued,
+	});
+}
+
+async function severAllFollowRelations(): void {
+	if (!instance.value) throw new Error('No instance?');
+
+	const confirm = await os.confirm({
+		type: 'danger',
+		text: i18n.tsx.severAllFollowRelationsConfirm({
+			instanceName: meta.value.shortName ?? meta.value.name,
+			followingCount: instance.value.followingCount,
+			followersCount: instance.value.followersCount,
+		}),
+	});
+	if (confirm.canceled) return;
+
+	await misskeyApi('admin/federation/remove-all-following', {
+		host: instance.value.host,
+	});
+	await os.alert({
+		text: i18n.tsx.severAllFollowRelationsQueued({ host: instance.value.host }),
 	});
 }
 
