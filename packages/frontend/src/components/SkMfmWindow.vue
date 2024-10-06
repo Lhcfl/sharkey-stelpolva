@@ -70,6 +70,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</div>
 				<div class="section _block">
+					<div class="title">斜体</div>
+					<div class="content">
+						<p>使用一个星号或者html i标记可以将文字标记为斜体</p>
+						<div class="preview">
+							<Mfm :text="preview_italic"/>
+							<MkTextarea v-model="preview_italic"><template #label>MFM</template></MkTextarea>
+						</div>
+					</div>
+				</div>
+				<div class="section _block">
 					<div class="title">{{ i18n.ts._mfm.small }}</div>
 					<div class="content">
 						<p>{{ i18n.ts._mfm.smallDescription }}</p>
@@ -515,6 +525,7 @@ const preview_plain = ref(
 const preview_fade = ref('$[fade 🍮] $[fade.out 🍮] $[fade.speed=3s 🍮] $[fade.delay=3s 🍮]');
 const preview_cross = ref('~~Hello world~~');
 const preview_ruby = ref('$[ruby 無名星屑 むめいほしくず]');
+const preview_italic = ref('<i>斜体</i> *这也是斜体*');
 const preview_border = ref(
 	`$[border a default border]
 
