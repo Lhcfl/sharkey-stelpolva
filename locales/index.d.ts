@@ -593,6 +593,10 @@ export interface Locale extends ILocale {
      */
     "mute": string;
     /**
+     * Muted
+     */
+    "muted": string;
+    /**
      * ミュート解除
      */
     "unmute": string;
@@ -600,6 +604,10 @@ export interface Locale extends ILocale {
      * ブーストをミュート
      */
     "renoteMute": string;
+    /**
+     * Boosts muted
+     */
+    "renoteMuted": string;
     /**
      * ブーストのミュートを解除
      */
@@ -3137,6 +3145,10 @@ export interface Locale extends ILocale {
      */
     "showTickerOnReplies": string;
     /**
+     * 猫の話し方を無効にする
+     */
+    "disableCatSpeak": string;
+    /**
      * 検索MFMの検索エンジン
      */
     "searchEngine": string;
@@ -5138,6 +5150,10 @@ export interface Locale extends ILocale {
      */
     "flip": string;
     /**
+     * アイコンの後ろに表示
+     */
+    "showBelowAvatar": string;
+    /**
      * アイコンのデコレーションを表示
      */
     "showAvatarDecorations": string;
@@ -5777,7 +5793,7 @@ export interface Locale extends ILocale {
          */
         "social": string;
         /**
-         * バッッブルタイムラインでは、管理者が選択した接続サーバーからのメモを表示できます。
+         * バブルタイムラインでは、管理者が選択した接続サーバーからの投稿を表示できます。
          */
         "bubble": string;
         /**
@@ -9139,7 +9155,7 @@ export interface Locale extends ILocale {
          */
         "global": string;
         /**
-         * バッッブル
+         * バブル
          */
         "bubble": string;
     };

@@ -630,11 +630,22 @@ async function onPaste(ev: ClipboardEvent) {
 
 	if (paste.length > 1000) {
 		ev.preventDefault();
-		os.confirm({
-			type: 'info',
+		os.actions({
+			type: 'question',
 			text: i18n.ts.attachAsFileQuestion,
-		}).then(({ canceled }) => {
-			if (canceled) {
+			actions: [
+				{
+					value: 'yes',
+					text: i18n.ts.yes,
+					primary: true,
+				},
+				{
+					value: 'no',
+					text: i18n.ts.no,
+				},
+			],
+		}).then(({ result }) => {
+			if (result !== 'yes') {
 				insertTextAtCursor(textareaEl.value, paste);
 				return;
 			}

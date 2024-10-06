@@ -77,6 +77,7 @@ const defaultStoreSaveKeys: (keyof typeof defaultStore['state'])[] = [
 	'enableFaviconNotificationDot',
 	'imageNewTab',
 	'dataSaver',
+	'disableCatSpeak',
 	'disableShowingAnimatedImages',
 	'emojiStyle',
 	'disableDrawer',
