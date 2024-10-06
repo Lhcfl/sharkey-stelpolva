@@ -76,6 +76,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}
 			}
 
+			if (ps.isNSFW != null && instance.isNSFW !== ps.isNSFW) {
+				const message = ps.rejectReports ? 'setRemoteInstanceNSFW' : 'unsetRemoteInstanceNSFW';
+				this.moderationLogService.log(me, message, {
+					id: instance.id,
+					host: instance.host,
+				});
+			}
+
 			if (ps.rejectReports != null && instance.rejectReports !== ps.rejectReports) {
 				const message = ps.rejectReports ? 'rejectRemoteInstanceReports' : 'acceptRemoteInstanceReports';
 				this.moderationLogService.log(me, message, {

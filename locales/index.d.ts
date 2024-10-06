@@ -613,6 +613,10 @@ export interface Locale extends ILocale {
      */
     "markAsNSFW": string;
     /**
+     * Mark as NSFW
+     */
+    "markInstanceAsNSFW": string;
+    /**
      * 凍結
      */
     "suspend": string;
@@ -9980,6 +9984,14 @@ export interface Locale extends ILocale {
          * リモートサーバーを再開
          */
         "unsuspendRemoteInstance": string;
+        /**
+         * Set remote instance as NSFW
+         */
+        "setRemoteInstanceNSFW": string;
+        /**
+         * Set remote instance as NSFW
+         */
+        "unsetRemoteInstanceNSFW": string;
         /**
          * Rejected reports from remote instance
          */
