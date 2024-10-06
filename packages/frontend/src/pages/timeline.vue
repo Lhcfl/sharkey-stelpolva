@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div :class="$style.tl">
 					<MkTimeline
 						ref="tlComponent"
-						:key="src + withRenotes + withReplies + onlyFiles"
+						:key="src + withRenotes + withBots + withReplies + onlyFiles"
 						:src="src.split(':')[0]"
 						:list="src.split(':')[1]"
 						:withRenotes="withRenotes"
@@ -37,6 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { computed, watch, provide, shallowRef, ref, onMounted, onActivated } from 'vue';
 import type { Tab } from '@/components/global/MkPageHeader.tabs.vue';
+import type { BasicTimelineType } from '@/timelines.js';
 import MkTimeline from '@/components/MkTimeline.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkPostForm from '@/components/MkPostForm.vue';
@@ -54,7 +55,6 @@ import { deepMerge } from '@/scripts/merge.js';
 import { MenuItem } from '@/types/menu.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
-import type { BasicTimelineType } from '@/timelines.js';
 
 provide('shouldOmitHeaderTitle', true);
 
@@ -264,25 +264,33 @@ const headerActions = computed(() => {
 			icon: 'ti ti-dots',
 			text: i18n.ts.options,
 			handler: (ev) => {
-				os.popupMenu([{
-					type: 'switch',
-					text: i18n.ts.showRenotes,
-					ref: withRenotes,
-				}, isBasicTimeline(src.value) && hasWithReplies(src.value) ? {
-					type: 'switch',
-					text: i18n.ts.showRepliesToOthersInTimeline,
-					ref: withReplies,
-					disabled: onlyFiles,
-				} : undefined, {
-					type: 'switch',
-					text: i18n.ts.withSensitive,
-					ref: withSensitive,
-				}, {
-					type: 'switch',
-					text: i18n.ts.fileAttachedOnly,
-					ref: onlyFiles,
-					disabled: isBasicTimeline(src.value) && hasWithReplies(src.value) ? withReplies : false,
-				}], ev.currentTarget ?? ev.target);
+				os.popupMenu([
+					{
+						type: 'switch',
+						text: i18n.ts.showRenotes,
+						ref: withRenotes,
+					},
+					{
+						type: 'switch',
+						text: i18n.ts.showBots,
+						ref: withBots,
+					},
+					isBasicTimeline(src.value) && hasWithReplies(src.value) ? {
+						type: 'switch',
+						text: i18n.ts.showRepliesToOthersInTimeline,
+						ref: withReplies,
+						disabled: onlyFiles,
+					} : undefined, {
+						type: 'switch',
+						text: i18n.ts.withSensitive,
+						ref: withSensitive,
+					}, {
+						type: 'switch',
+						text: i18n.ts.fileAttachedOnly,
+						ref: onlyFiles,
+						disabled: isBasicTimeline(src.value) && hasWithReplies(src.value) ? withReplies : false,
+					},
+				], ev.currentTarget ?? ev.target);
 			},
 		},
 	];
