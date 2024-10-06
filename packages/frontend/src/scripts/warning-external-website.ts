@@ -43,9 +43,9 @@ export async function warningExternalWebsite(url: string) {
 		});
 
 		if (confirm.canceled) return false;
-
-		window.open(url, '_blank', 'nofollow noopener popup=false');
+ 
+		return window.open(url, '_blank', 'nofollow noopener popup=false');
 	}
 
-	return true;
+	return window.open(url, '_blank', 'nofollow noopener popup=false');
 }
