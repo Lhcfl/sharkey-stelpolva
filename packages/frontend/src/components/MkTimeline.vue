@@ -64,7 +64,8 @@ type TimelineQueryType = {
   visibility?: string,
   listId?: string,
   channelId?: string,
-  roleId?: string
+  roleId?: string,
+	untilDate?: number,
 }
 
 const prComponent = shallowRef<InstanceType<typeof MkPullToRefresh>>();
@@ -92,7 +93,7 @@ function prepend(note) {
 
 let connection: Misskey.ChannelConnection | null = null;
 let connection2: Misskey.ChannelConnection | null = null;
-let paginationQuery: Paging | null = null;
+const paginationQuery = ref<Paging | null>(null);
 
 const stream = useStream();
 
@@ -136,7 +137,7 @@ function connectChannel() {
 		});
 	} else if (props.src === 'mentions') {
 		connection = stream.useChannel('main');
-		connection.on('mention', prepend);
+		connection?.on('mention', prepend);
 	} else if (props.src === 'directs') {
 		const onNote = note => {
 			if (note.visibility === 'specified') {
@@ -144,7 +145,7 @@ function connectChannel() {
 			}
 		};
 		connection = stream.useChannel('main');
-		connection.on('mention', onNote);
+		connection?.on('mention', onNote);
 	} else if (props.src === 'list') {
 		if (props.list == null) return;
 		connection = stream.useChannel('userList', {
@@ -173,7 +174,7 @@ function disconnectChannel() {
 	if (connection2) connection2.dispose();
 }
 
-function updatePaginationQuery() {
+function updatePaginationQuery(untilDate?: Date) {
 	let endpoint: keyof Misskey.Endpoints | null;
 	let query: TimelineQueryType | null;
 
@@ -251,14 +252,22 @@ function updatePaginationQuery() {
 		query = null;
 	}
 
+	if (untilDate) {
+		query = query ?? {};
+		query.untilDate = Number(untilDate);
+	} else {
+		query = query ?? {};
+		query.untilDate = undefined;
+	}
+
 	if (endpoint && query) {
-		paginationQuery = {
+		paginationQuery.value = {
 			endpoint: endpoint,
 			limit: 10,
 			params: query,
 		};
 	} else {
-		paginationQuery = null;
+		paginationQuery.value = null;
 	}
 }
 
@@ -294,7 +303,12 @@ function reloadTimeline() {
 	});
 }
 
+function timetravel(date: Date) {
+	updatePaginationQuery(date);
+}
+
 defineExpose({
 	reloadTimeline,
+	timetravel,
 });
 </script>

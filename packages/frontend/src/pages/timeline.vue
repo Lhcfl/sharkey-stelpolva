@@ -37,6 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { computed, watch, provide, shallowRef, ref, onMounted, onActivated } from 'vue';
 import type { Tab } from '@/components/global/MkPageHeader.tabs.vue';
+import type { BasicTimelineType } from '@/timelines.js';
 import MkTimeline from '@/components/MkTimeline.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkPostForm from '@/components/MkPostForm.vue';
@@ -54,7 +55,6 @@ import { deepMerge } from '@/scripts/merge.js';
 import { MenuItem } from '@/types/menu.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
-import type { BasicTimelineType } from '@/timelines.js';
 
 provide('shouldOmitHeaderTitle', true);
 
@@ -227,11 +227,12 @@ function saveTlFilter(key: keyof typeof defaultStore.state.tl.filter, newValue: 
 
 async function timetravel(): Promise<void> {
 	const { canceled, result: date } = await os.inputDate({
-		title: i18n.ts.date,
+		title: i18n.ts.timeTravel as string,
+		text: i18n.ts.timeTravelDescription as string,
 	});
 	if (canceled) return;
 
-	tlComponent.value.timetravel(date);
+	tlComponent.value?.timetravel(date);
 }
 
 function focus(): void {
@@ -282,6 +283,15 @@ const headerActions = computed(() => {
 					text: i18n.ts.fileAttachedOnly,
 					ref: onlyFiles,
 					disabled: isBasicTimeline(src.value) && hasWithReplies(src.value) ? withReplies : false,
+				}, {
+					type: 'divider',
+				}, {
+					type: 'button',
+					text: i18n.ts.timeTravel,
+					icon: 'ti ti-calendar-time',
+					action: () => {
+						timetravel();
+					},
 				}], ev.currentTarget ?? ev.target);
 			},
 		},

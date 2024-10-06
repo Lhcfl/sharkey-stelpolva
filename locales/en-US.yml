@@ -1335,6 +1335,8 @@ stpvAntennaPatch: |
   That means, the special keyword `domain:example.com` will match all posts from `example.com`. This keyword can also be used in OR syntax.
   Specifically, you must use `domain:here` to match posts in this instance.
 stpvPgroongaSearchInstru: Use the `A OR B` syntax to search for notes containing either A or B. `A B` (with a space in between) means posts containing both keywords A and B.
+timeTravel: Time Travel
+timeTravelDescription: Show posts before this date
 _delivery:
   status: "Delivery status"
   stop: "Suspend delivery"
