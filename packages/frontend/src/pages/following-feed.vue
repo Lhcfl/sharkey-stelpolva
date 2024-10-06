@@ -272,7 +272,7 @@ definePageMetadata(() => ({
 	margin-bottom: 12px;
 }
 
-@container (min-width: 751px) {
+@media (min-width: 750px) {
 	.root {
 		grid-template-columns: min-content 4fr 6fr min-content;
 		grid-template-rows: min-content 1fr;
