@@ -9,6 +9,7 @@ import { aiScriptReadline, createAiScriptEnv } from '@/scripts/aiscript/api.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 import { Plugin, noteActions, notePostInterruptors, noteViewInterruptors, postFormActions, userActions, pageViewInterruptors } from '@/store.js';
+import { warningExternalWebsite } from '@/scripts/warning-external-website.js';
 
 const parser = new Parser();
 const pluginContexts = new Map<string, Interpreter>();
@@ -92,16 +93,8 @@ function createPluginEnv(opts: { plugin: Plugin; storageKey: string }): Record<s
 			registerPageViewInterruptor({ pluginId: opts.plugin.id, handler });
 		}),
 		'Plugin:open_url': values.FN_NATIVE(([url]) => {
-			(async () => {
-				utils.assertString(url);
-				const { canceled } = await os.confirm({
-					type: 'question',
-					text: i18n.tsx.confirmRemoteUrl({ x: url.value }),
-					plain: true,
-				});
-				if (canceled) return;
-				window.open(url.value, '_blank', 'noopener');
-			})();
+			utils.assertString(url);
+			warningExternalWebsite(url.value);
 		}),
 		'Plugin:config': values.OBJ(config),
 	};
