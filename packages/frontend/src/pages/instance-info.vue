@@ -190,8 +190,8 @@ const baseDomains = computed(() => {
 	return domains;
 });
 const isBaseBlocked = computed(() => meta.value && baseDomains.value.some(d => meta.value?.blockedHosts.includes(d)));
-const isBaseSilenced = computed(() => meta.value && meta.value.silencedHosts && baseDomains.value.some(d => meta.value?.silencedHosts?.includes(d)));
-const isBaseMediaSilenced = computed(() => meta.value && meta.value.mediaSilencedHosts && baseDomains.value.some(d => meta.value?.mediaSilencedHosts.includes(d)));
+const isBaseSilenced = computed(() => meta.value && baseDomains.value.some(d => meta.value?.silencedHosts.includes(d)));
+const isBaseMediaSilenced = computed(() => meta.value && baseDomains.value.some(d => meta.value?.mediaSilencedHosts.includes(d)));
 
 const usersPagination = {
 	endpoint: iAmModerator ? 'admin/show-users' : 'users' as const,
