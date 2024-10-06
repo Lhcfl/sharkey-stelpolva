@@ -5,6 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
+import * as Bull from 'bullmq';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
@@ -29,6 +30,7 @@ import { bindThis } from '@/decorators.js';
 import type { MiRemoteUser } from '@/models/User.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { AbuseReportService } from '@/core/AbuseReportService.js';
+import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { getApHrefNullable, getApId, getApIds, getApType, isAccept, isActor, isAdd, isAnnounce, isBlock, isCollection, isCollectionOrOrderedCollection, isCreate, isDelete, isFlag, isFollow, isLike, isMove, isPost, isReject, isRemove, isTombstone, isUndo, isUpdate, validActor, validPost } from './type.js';
 import { ApNoteService } from './models/ApNoteService.js';
 import { ApLoggerService } from './ApLoggerService.js';
@@ -39,8 +41,6 @@ import { ApPersonService } from './models/ApPersonService.js';
 import { ApQuestionService } from './models/ApQuestionService.js';
 import type { Resolver } from './ApResolverService.js';
 import type { IAccept, IAdd, IAnnounce, IBlock, ICreate, IDelete, IFlag, IFollow, ILike, IObject, IReject, IRemove, IUndo, IUpdate, IMove, IPost } from './type.js';
-import * as Bull from 'bullmq';
-import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 
 @Injectable()
 export class ApInboxService {
