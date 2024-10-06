@@ -589,6 +589,10 @@ export interface Locale extends ILocale {
      */
     "mute": string;
     /**
+     * Muted
+     */
+    "muted": string;
+    /**
      * ミュート解除
      */
     "unmute": string;
@@ -596,6 +600,10 @@ export interface Locale extends ILocale {
      * ブーストをミュート
      */
     "renoteMute": string;
+    /**
+     * Boosts muted
+     */
+    "renoteMuted": string;
     /**
      * ブーストのミュートを解除
      */
@@ -1076,6 +1084,18 @@ export interface Locale extends ILocale {
      * ブロック中
      */
     "blocked": string;
+    /**
+     * This host is blocked implicitly because a base domain is blocked. To unblock this host, first unblock the base domain(s).
+     */
+    "blockedByBase": string;
+    /**
+     * This host is silenced implicitly because a base domain is silenced. To un-silence this host, first un-silence the base domain(s).
+     */
+    "silencedByBase": string;
+    /**
+     * This host's media is silenced implicitly because a base domain's media is silenced. To un-silence this host, first un-silence the base domain(s).
+     */
+    "mediaSilencedByBase": string;
     /**
      * 配信停止
      */
@@ -4442,10 +4462,6 @@ export interface Locale extends ILocale {
      */
     "disableFederationOk": string;
     /**
-     * 猫の話し方を無効にする
-     */
-    "disableCatSpeak": string;
-    /**
      * 現在このサーバーは招待制です。招待コードをお持ちの方のみ登録できます。
      */
     "invitationRequiredToRegister": string;
@@ -5789,7 +5805,7 @@ export interface Locale extends ILocale {
          */
         "social": string;
         /**
-         * バッッブルタイムラインでは、管理者が選択した接続サーバーからのメモを表示できます。
+         * バブルタイムラインでは、管理者が選択した接続サーバーからの投稿を表示できます。
          */
         "bubble": string;
         /**
@@ -9151,7 +9167,7 @@ export interface Locale extends ILocale {
          */
         "global": string;
         /**
-         * バッッブル
+         * バブル
          */
         "bubble": string;
     };

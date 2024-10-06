@@ -5199,7 +5199,7 @@ export type operations = {
             enableEmail: boolean;
             enableServiceWorker: boolean;
             translatorAvailable: boolean;
-            silencedHosts?: string[];
+            silencedHosts: string[];
             mediaSilencedHosts: string[];
             pinnedUsers: string[];
             hiddenTags: string[];
