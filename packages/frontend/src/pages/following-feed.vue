@@ -241,7 +241,6 @@ definePageMetadata(() => ({
 
 	height: 100vh;
 	height: 100dvh;
-	max-width: 1200px;
 
 	// The universal layout inserts a "spacer" thing that causes a stray scroll bar.
 	// We have to create fake "space" for it to "roll up" and back into the viewport, which removes the scrollbar.
