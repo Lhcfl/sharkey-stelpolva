@@ -116,14 +116,6 @@ export class NoteDeleteService {
 				this.perUserNotesChart.update(user, note, false);
 			}
 
-			if (note.renoteId && note.text) {
-				// Decrement notes count (user)
-				this.decNotesCountOfUser(user);
-			} else if (!note.renoteId) {
-				// Decrement notes count (user)
-				this.decNotesCountOfUser(user);
-			}
-
 			if (this.userEntityService.isRemoteUser(user)) {
 				this.federatedInstanceService.fetch(user.host).then(async i => {
 					if (note.renoteId && note.text) {
@@ -148,6 +140,16 @@ export class NoteDeleteService {
 			userId: user.id,
 		});
 
+		if (!quiet) {
+			if (note.renoteId && note.text) {
+				// Decrement notes count (user)
+				this.decNotesCountOfUser(user);
+			} else if (!note.renoteId) {
+				// Decrement notes count (user)
+				this.decNotesCountOfUser(user);
+			}
+		}
+
 		if (deleter && (note.userId !== deleter.id)) {
 			const user = await this.usersRepository.findOneByOrFail({ id: note.userId });
 			this.moderationLogService.log(deleter, 'deleteNote', {
@@ -161,14 +163,24 @@ export class NoteDeleteService {
 	}
 
 	@bindThis
-	private decNotesCountOfUser(user: { id: MiUser['id']; }) {
-		this.usersRepository.createQueryBuilder().update()
-			.set({
-				updatedAt: new Date(),
-				notesCount: () => '"notesCount" - 1',
-			})
-			.where('id = :id', { id: user.id })
-			.execute();
+	private decNotesCountOfUser(user: { id: MiUser['id']; host: MiUser['host'] }) {
+		if (this.userEntityService.isLocalUser(user)) {
+			this.notesRepository.createQueryBuilder().where(
+				'"userId" = :userId', { userId: user.id },
+			).andWhere(
+				'NOT ("renoteId" IS NOT NULL AND text is NULL)',
+			).getCount().then((newCount: number) => {
+				this.usersRepository.update(user.id, { updatedAt: new Date(), notesCount: newCount });
+			});
+		} else {
+			this.usersRepository.createQueryBuilder().update()
+				.set({
+					updatedAt: new Date(),
+					notesCount: () => '"notesCount" - 1',
+				})
+				.where('id = :id', { id: user.id })
+				.execute();
+		}
 	}
 
 	@bindThis
