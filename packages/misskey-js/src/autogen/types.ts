@@ -9062,6 +9062,7 @@ export type operations = {
           'application/json': {
             email: string | null;
             emailVerified: boolean;
+            approved: boolean;
             autoAcceptFollowed: boolean;
             noCrawle: boolean;
             preventAiLearning: boolean;
