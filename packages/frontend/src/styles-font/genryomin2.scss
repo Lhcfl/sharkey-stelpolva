@@ -1,4 +1,10 @@
+@font-face {
+  font-family: "GenRyuMin2 TC R";
+  font-display: swap;
+  src:  local("GenRyuMin2 TC R"),
+        url("/static-assets/fonts/GenRyuMin/GenRyuMin2TC-R.woff2") format("woff2");
+}
+
 html.default-font-genryomin2 {
-	@import url('https://static.zeoseven.com/cn/301/main/result.css');
-	font-family: 'sharkey-theme-font-face', "GenWanMin2 TC R", "Times New Roman", Times, serif
+	font-family: 'sharkey-theme-font-face', "GenRyuMin2 TC R", "Times New Roman", Times, serif
 }

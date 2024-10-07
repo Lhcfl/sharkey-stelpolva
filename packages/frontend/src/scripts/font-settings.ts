@@ -8,6 +8,7 @@ const fontList = [
 	{ id: 'lxgw-wenkai', name: '霞鹜文楷' },
 	{ id: 'clearsans', name: '思源屏显臻宋' },
 	{ id: 'genryomin2', name: '源流明體' },
+	{ id: 'genwanmin2', name: '源雲明體' },
 	{ id: 'jinghualaosong', name: '京華老宋體' },
 	{ id: 'fusion-pixel', name: '缝合像素体' },
 	{ id: 'misskey-biz', name: 'BIZ UDGothic' },
