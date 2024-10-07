@@ -334,6 +334,8 @@ export class ApRendererService {
 
 	@bindThis
 	public async renderNote(note: MiNote, dive = true): Promise<IPost> {
+		note = { ...note };
+
 		const getPromisedFiles = async (ids: string[]): Promise<MiDriveFile[]> => {
 			if (ids.length === 0) return [];
 			const items = await this.driveFilesRepository.findBy({ id: In(ids) });
@@ -418,7 +420,7 @@ export class ApRendererService {
 		}
 
 		if (note.channel) {
-			apAppend += `\n\n📺 #sc${note.channel.name}`;
+			note.text += `\n\n📺 sc #${note.channel.name}`;
 		}
 
 		const summary = note.cw === '' ? String.fromCharCode(0x200B) : note.cw;

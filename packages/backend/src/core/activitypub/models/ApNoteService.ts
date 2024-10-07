@@ -304,7 +304,7 @@ export class ApNoteService {
 
 		const channel = await (async () => {
 			if (visibility === 'public') {
-				const channelPosc = text?.indexOf('\n📺 #sc');
+				const channelPosc = text?.indexOf('\n📺 sc #');
 				let channelName = channelPosc !== -1 ? text?.slice(channelPosc).trim() : null;
 				if (channelName?.includes('\n')) channelName = null;
 				return channelName
