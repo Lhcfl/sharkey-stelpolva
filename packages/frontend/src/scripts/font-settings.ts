@@ -36,7 +36,6 @@ function getFontOptionsList(val: string): { id: string, name: string, default?: 
 				{ name: 'Regular', id: 'R' },
 				{ name: 'Middle', id: 'M' },
 				{ name: 'Bold', id: 'B' },
-				{ name: 'Heavy', id: 'H' },
 			];
 		default:
 			return [];
