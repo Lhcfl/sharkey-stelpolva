@@ -68,6 +68,11 @@ export const navbarItemDef = reactive({
 			lookup();
 		},
 	},
+	following: {
+		title: i18n.ts.following,
+		icon: 'ph-user-check ph-bold ph-lg',
+		to: '/following-feed',
+	},
 	lists: {
 		title: i18n.ts.lists,
 		icon: 'ti ti-list',

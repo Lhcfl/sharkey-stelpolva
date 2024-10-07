@@ -344,7 +344,7 @@ export function pluginReplaceIcons() {
 					'ti ti-universe': 'ph-rocket-launch ph-bold ph-lg',
 					'ti ti-upload': 'ph-upload ph-bold ph-lg',
 					'ti ti-user': 'ph-user ph-bold ph-lg',
-					'ti ti-user-check': 'ph-check ph-bold ph-lg',
+					'ti ti-user-check': 'ph-user-check ph-bold ph-lg',
 					'ti ti-user-circle': 'ph-user-circle ph-bold ph-lg',
 					'ti ti-user-edit': 'ph-user-list ph-bold ph-lg',
 					'ti ti-user-exclamation': 'ph-warning-circle ph-bold ph-lg',
