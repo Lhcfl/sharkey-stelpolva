@@ -54,7 +54,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.limit(ps.limit)
 				.getMany();
 
-			return await this.followingEntityService.packMany(followings, me, { populateFollowee: true });
+			return await this.followingEntityService.packMany(followings, me, { populateFollowee: true, populateFollower: true });
 		});
 	}
 }
