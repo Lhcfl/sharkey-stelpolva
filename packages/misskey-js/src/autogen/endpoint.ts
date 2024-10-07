@@ -420,6 +420,8 @@ import type {
 	NotesFavoritesDeleteRequest,
 	NotesFeaturedRequest,
 	NotesFeaturedResponse,
+	NotesFollowingRequest,
+	NotesFollowingResponse,
 	NotesGlobalTimelineRequest,
 	NotesGlobalTimelineResponse,
 	NotesBubbleTimelineRequest,
@@ -873,6 +875,7 @@ export type Endpoints = {
 	'notes/favorites/create': { req: NotesFavoritesCreateRequest; res: EmptyResponse };
 	'notes/favorites/delete': { req: NotesFavoritesDeleteRequest; res: EmptyResponse };
 	'notes/featured': { req: NotesFeaturedRequest; res: NotesFeaturedResponse };
+	'notes/following': { req: NotesFollowingRequest; res: NotesFollowingResponse };
 	'notes/global-timeline': { req: NotesGlobalTimelineRequest; res: NotesGlobalTimelineResponse };
 	'notes/bubble-timeline': { req: NotesBubbleTimelineRequest; res: NotesBubbleTimelineResponse };
 	'notes/hybrid-timeline': { req: NotesHybridTimelineRequest; res: NotesHybridTimelineResponse };
@@ -1268,6 +1271,7 @@ export const endpointReqTypes: Record<keyof Endpoints, 'application/json' | 'mul
 	'notes/favorites/create': 'application/json',
 	'notes/favorites/delete': 'application/json',
 	'notes/featured': 'application/json',
+	'notes/following': 'application/json',
 	'notes/global-timeline': 'application/json',
 	'notes/bubble-timeline': 'application/json',
 	'notes/hybrid-timeline': 'application/json',

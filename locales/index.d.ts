@@ -381,6 +381,10 @@ export interface Locale extends ILocale {
      */
     "followers": string;
     /**
+     * Mutuals
+     */
+    "mutuals": string;
+    /**
      * フォローされています
      */
     "followsYou": string;
@@ -2840,6 +2844,10 @@ export interface Locale extends ILocale {
      * {name}が何かを言いました
      */
     "userSaysSomething": ParameterizedString<"name">;
+    /**
+     * post is hidden by a filter
+     */
+    "postFiltered": string;
     /**
      * アクティブにする
      */
