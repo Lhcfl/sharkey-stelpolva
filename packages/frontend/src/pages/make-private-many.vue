@@ -122,11 +122,18 @@ async function makePrivateMany() {
 	await misskeyApi('notes/make-private-many', {
 		untilDate: untilNumber.value,
 		sinceDate: sinceNumber.value,
-	});
-	os.alert({
-		type: 'info',
-		title: i18n.ts.ok,
-		text: i18n.ts.makePrivate.didStart,
+	}).then(() => {
+		os.alert({
+			type: 'info',
+			title: i18n.ts.ok,
+			text: i18n.ts.makePrivate.didStart,
+		});
+	}).catch(() => {
+		os.alert({
+			type: 'error',
+			title: 'Error',
+			text: '还在冷却中！',
+		});
 	});
 }
 
