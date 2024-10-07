@@ -63,6 +63,22 @@
 - 私密化：可以批量/单独私密化某些帖子
 - 允许用户查看她们发送但对方还没批准的关注请求
 
+## 从 Sharkey 迁移？
+
+> [!NOTE]
+> Sharkey Stelpolva Edition 不提供 Docker 安装方式。如果需要 Docker 安装你可以自己编辑 Docker Compose 并添加下面的额外依赖。
+
+Sharkey Stelpolva 和 Sharkey 是完全兼容的，并且跟随 Sharkey 的最新 develop 分支，对于已有的 Sharkey 迁移到 Sharkey Stelpolva 你只需要额外安装一些依赖即可：
+
+- Pgroonga: 按照 https://pgroonga.github.io/install/ 的说明进行安装，随后进入到 Sharkey 的数据库执行：
+```SQL
+CREATE EXTENSION pgroonga;
+```
+
+## 从 Sharkey Stelpolva 迁移回 Sharkey？
+
+不需要做任何额外处理，直接更换分支即可
+
 <div>
 
 <a href="https://joinsharkey.org/"><img src="https://cdn.shonk.social/files/b671c81c-58cf-4f13-bc96-af0b0c96c667.webp" align="right" height="520px"/></a>
