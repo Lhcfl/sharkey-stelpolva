@@ -123,6 +123,36 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkA>
 				</MkPagination>
 			</div>
+			<div v-else-if="tab === 'following'" key="following" class="_gaps_m">
+				<MkPagination v-slot="{items}" :pagination="followingPagination">
+					<div class="follow-relations-list">
+						<div v-for="followRelationship in items" :key="followRelationship.id" class="follow-relation">
+							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.followee.updatedAt)}`" :to="`/admin/user/${followRelationship.followee.id}`">
+								<MkUserCardMini :user="followRelationship.followee" :withChart="false" />
+							</MkA>
+							<span class="arrow">→</span>
+							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.follower.updatedAt)}`" :to="`/admin/user/${followRelationship.follower.id}`">
+								<MkUserCardMini :user="followRelationship.follower" :withChart="false" />
+							</MkA>
+						</div>
+					</div>
+				</MkPagination>
+			</div>
+			<div v-else-if="tab === 'followers'" key="followers" class="_gaps_m">
+				<MkPagination v-slot="{items}" :pagination="followersPagination">
+					<div class="follow-relations-list">
+						<div v-for="followRelationship in items" :key="followRelationship.id" class="follow-relation">
+							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.followee.updatedAt)}`" :to="`/admin/user/${followRelationship.followee.id}`">
+								<MkUserCardMini :user="followRelationship.followee" :withChart="false" />
+							</MkA>
+							<span class="arrow">←</span>
+							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.follower.updatedAt)}`" :to="`/admin/user/${followRelationship.follower.id}`">
+								<MkUserCardMini :user="followRelationship.follower" :withChart="false" />
+							</MkA>
+						</div>
+					</div>
+				</MkPagination>
+			</div>
 			<div v-else-if="tab === 'raw'" key="raw" class="_gaps_m">
 				<MkObjectView tall :value="instance">
 				</MkObjectView>
@@ -183,6 +213,24 @@ const usersPagination = {
 		hostname: props.host,
 	},
 	offsetMode: true,
+};
+
+const followingPagination = {
+	endpoint: 'federation/following' as const,
+	limit: 10,
+	params: {
+		host: props.host,
+	},
+	offsetMode: false,
+};
+
+const followersPagination = {
+	endpoint: 'federation/followers' as const,
+	limit: 10,
+	params: {
+		host: props.host,
+	},
+	offsetMode: false,
 };
 
 watch(moderationNote, async () => {
@@ -293,6 +341,14 @@ const headerTabs = computed(() => [{
 	title: i18n.ts.users,
 	icon: 'ti ti-users',
 }, {
+	key: 'following',
+	title: i18n.ts.following,
+	icon: 'ti ti-arrow-right',
+}, {
+	key: 'followers',
+	title: i18n.ts.followers,
+	icon: 'ti ti-arrow-left',
+}, {
 	key: 'raw',
 	title: 'Raw',
 	icon: 'ti ti-code',
@@ -333,5 +389,32 @@ definePageMetadata(() => ({
 			font-weight: bold;
 		}
 	}
+}
+
+.follow-relations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .follow-relation {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+
+    .user {
+      flex: 1;
+      max-width: 45%;
+      flex-shrink: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .arrow {
+      font-size: 1.5em;
+      flex-shrink: 0;
+    }
+  }
 }
 </style>
