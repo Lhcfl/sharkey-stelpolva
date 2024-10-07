@@ -220,6 +220,7 @@ const followingPagination = {
 	limit: 10,
 	params: {
 		host: props.host,
+		includeFollower: true,
 	},
 	offsetMode: false,
 };
@@ -229,6 +230,7 @@ const followersPagination = {
 	limit: 10,
 	params: {
 		host: props.host,
+		includeFollower: true,
 	},
 	offsetMode: false,
 };
