@@ -227,16 +227,16 @@ const tab = ref(props.initialTab);
 const chartSrc = ref('per-user-notes');
 const user = ref<null | Misskey.entities.UserDetailed>();
 const init = ref<ReturnType<typeof createFetcher>>();
-const info = ref<any>();
+const info = ref<Misskey.entities.AdminShowUserResponse | null>(null);
 const ips = ref<Misskey.entities.AdminGetUserIpsResponse | null>(null);
-const ap = ref<any>(null);
+const ap = ref<Misskey.entities.ApGetResponse | null>(null);
 const moderator = ref(false);
 const silenced = ref(false);
 const approved = ref(false);
 const suspended = ref(false);
 const markedAsNSFW = ref(false);
 const moderationNote = ref('');
-const isSystem = computed(() => user.value?.isSystem ?? false);
+const isSystem = computed(() => info.value?.isSystem ?? false);
 const filesPagination = {
 	endpoint: 'admin/drive/files' as const,
 	limit: 10,
