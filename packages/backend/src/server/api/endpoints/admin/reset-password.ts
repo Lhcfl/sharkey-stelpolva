@@ -11,6 +11,7 @@ import type { UsersRepository, UserProfilesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { isSystemAccount } from '@/misc/is-system-account.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -61,6 +62,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (user.isRoot) {
 				throw new Error('cannot reset password of root');
+			}
+
+			if (isSystemAccount(user)) {
+				throw new Error('cannot reset password of system account');
 			}
 
 			const passwd = secureRndstr(8);
