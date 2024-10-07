@@ -5114,6 +5114,7 @@ export type components = {
        * @enum {string}
        */
       noteSearchableScope: 'local' | 'global';
+      trustedLinkUrlPatterns: string[];
     };
     MetaDetailedOnly: {
       features?: {
@@ -5215,7 +5216,7 @@ export type operations = {
             enableEmail: boolean;
             enableServiceWorker: boolean;
             translatorAvailable: boolean;
-            silencedHosts?: string[];
+            silencedHosts: string[];
             mediaSilencedHosts: string[];
             pinnedUsers: string[];
             hiddenTags: string[];
@@ -5310,6 +5311,7 @@ export type operations = {
             urlPreviewRequireContentLength: boolean;
             urlPreviewUserAgent: string | null;
             urlPreviewSummaryProxyUrl: string | null;
+            trustedLinkUrlPatterns: string[];
           };
         };
       };
@@ -9831,6 +9833,7 @@ export type operations = {
           urlPreviewRequireContentLength?: boolean;
           urlPreviewUserAgent?: string | null;
           urlPreviewSummaryProxyUrl?: string | null;
+          trustedLinkUrlPatterns?: string[] | null;
         };
       };
     };

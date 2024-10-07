@@ -674,4 +674,12 @@ export class MiMeta {
 		nullable: true,
 	})
 	public urlPreviewUserAgent: string | null;
+
+	@Column('varchar', {
+		length: 3072,
+		array: true,
+		default: '{}',
+		comment: 'An array of URL strings or regex that can be used to omit warnings about redirects to external sites. Separate them with spaces to specify AND, and enclose them with slashes to specify regular expressions. Each item is regarded as an OR.',
+	})
+	public trustedLinkUrlPatterns: string[];
 }
