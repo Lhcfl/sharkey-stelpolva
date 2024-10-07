@@ -1,0 +1,143 @@
+introMisskey: "¡Bienvenido/a! Misskey es un servicio de microblogging descentralizado de código abierto.\nEscribe \"notas\" para compartir lo que te ocurre ahora o para contar sobre ti a todos 📡\nCon la función de \"reacciones\", puedes también añadir una reacción rápida a las notas de todos 👍\n¡Exploremos juntos un nuevo mundo! 🚀"
+poweredByMisskeyDescription: "{name} es uno de los servicios (también llamado instancia) que usa la plataforma de código abierto <b>Misskey</b>"
+renotedBy: "Renotado por {user}"
+copyLinkRenote: "Copiar enlace de renota"
+deleteAndEditConfirm: "¿Estás seguro de que quieres borrar esta nota y editarla? Perderás todas las reacciones, renotas y respuestas."
+renote: "Renotar"
+unrenote: "Quitar renota"
+renoted: "Renotado"
+cantRenote: "No se puede renotar este post"
+cantReRenote: "No se puede renotar una renota"
+inChannelRenote: "Renota sólo del canal"
+renoteMute: "Silenciar renota"
+renoteUnmute: "Desilenciar renota"
+flagAsBotDescription: "En caso de que esta cuenta fuera usada por un programa, active esta opción. Al hacerlo, esta opción servirá para otros desarrolladores para evitar cadenas infinitas de reacciones, y ajustará los sistemas internos de Misskey para que trate a esta cuenta como un bot."
+silencedInstancesDescription: "Listar los hostname de las instancias que quieres silenciar. Todas las cuentas de las instancias listadas serán tratadas como silenciadas, solo podrán hacer peticiones de seguimiento, y no podrán mencionar cuentas locales si no las siguen. Esto no afecta a las instancias bloqueadas."
+intro: "¡La instalación de Misskey ha terminado! Crea el usuario administrador."
+antennaUsersDescription: "Elegir nombres de usuarios separados por una linea nueva. Utilice \"*@instance.com\" para especificar todos los usuarios de una instancia."
+aboutMisskey: "Sobre Misskey"
+disableDrawer: "No mostrar los menús en cajones"
+showReactionsCount: "Mostrar el número de reacciones en las notas"
+useSoundOnlyWhenActive: "Sonar solo cuando Misskey esté activo"
+scratchpadDescription: "Scratchpad proporciona un entorno experimental para AiScript. Puede escribir, ejecutar y verificar los resultados que interactúan con Misskey."
+reportAbuseRenote: "Reportar renota"
+forwardReport: "Transferir un informe a una instancia remota"
+forwardReportIsAnonymous: "No puede ver su información de la instancia remota y aparecerá como una cuenta anónima del sistema"
+abuseMarkAsResolved: "Marcar reporte como resuelto"
+i18nInfo: "Misskey está siendo traducido a varios idiomas gracias a voluntarios. Se puede colaborar traduciendo en {link}"
+renotesCount: "Cantidad de renotas hechas"
+renotedCount: "Cantidad de renotas recibidas"
+sendErrorReportsDescription: "Si habilita esta opción, ayudará a mejorar la calidad de Misskey compartiendo información detallada sobre los errores cuando se produzca un problema.\nEsto incluye información como la versión de su sistema operativo, el tipo de navegador que utiliza, su historial de actividad, etc."
+misskeyUpdated: "¡Misskey ha sido actualizado!"
+usernameInfo: "Un nombre que identifique su cuenta de otras en este servidor. Puede utilizar el alfabeto (a~z, A~Z), dígitos (0~9) o guiones bajos (_). Los nombres de usuario no se pueden cambiar posteriormente."
+didYouLikeMisskey: "¿Te gusta Misskey?"
+pleaseDonate: "{host} usa el software gratuito Misskey. Por favor ¡Considera donar al proyecto principal para que podamos continuar!"
+collapseRenotes: "Colapsar renotas que ya hayas visto"
+limitWidthOfReaction: "Limitar ancho de las reacciones"
+renotesList: "Renotas"
+goToMisskey: "ir a Misskey"
+replies: "Respuestas"
+renotes: "Renotas"
+showRenotes: "Mostrar renotas"
+sourceCodeIsNotYetProvided: "El código fuente aún no está disponible. Contacta con el administrador para solucionarlo."
+repositoryUrlDescription: "Si estás usando Misskey tal cual (sin cambios en el código fuente), entra en https://github.com/misskey-dev/misskey"
+seasonalScreenEffect: "Efectos de pantalla asociados a estaciones"
+noDescription: "No hay descripción"
+_delivery:
+  stop: "Suspendido"
+_initialAccountSetting:
+  youCanContinueTutorial: "Puedes proceder a un tutorial sobre cómo usar {name} (Misskey) o puedes terminar la instalación aquí y empezar a usarlo ya mismo."
+_initialTutorial:
+  _landing:
+    description: "Aquí podrás aprender las nociones básicas sobre cómo usar Misskey y sus funciones."
+  _note:
+    description: "Las publicaciones en Misskey se llaman 'Notas'. Las notas se ordenan de forma cronológica en la línea de tiempo y se actualizan en tiempo real."
+  _reaction:
+    letsTryReacting: "Puedes añadir reacciones pulsando en el botón '{reaction}' de la nota. ¡Intenta reaccionar a esta nota de ejemplo!"
+    reactDone: "Puedes deshacer una reacción pulsando en el botón '{undo}'."
+  _timeline:
+    description1: "Misskey proporciona múltiples líneas de tiempo basadas en su uso (algunas pueden no estar disponibles dependiendo de las políticas de la instancia)."
+  _postNote:
+    description1: "Cuando publicas una nota en Misskey, hay varias opciones disponibles. El formulario tiene este aspecto."
+    _visibility:
+      home: "Publicar solo en la línea de tiempo de Inicio. La nota se verá en tu perfil, la verán tus seguidores y también cuando sea renotada."
+      followers: "Visible solo para seguidores. Sólo tus seguidores podrán ver la nota, y no podrá ser renotada por otras personas."
+  _done:
+    title: "¡Has completado el tutorial! 🎉"
+    description: "Las funciones que mostramos aquí son sólo una pequeña parte. Para más detalles sobre el funcionamiento de Misskey, pulsa en este enlace: {link}"
+_timelineDescription:
+_serverSettings:
+_accountMigration:
+  moveAccountDescription: "Esta operación no puede deshacerse. En primer lugar, asegúrese de haber creado un alias para esta cuenta en la cuenta a la que se va a trasladar. Después de crear el alias, introduzca la cuenta a la que se está trasladando de la siguiente manera: @person@instance.com"
+_achievements:
+  _types:
+    _notes1:
+      title: "¡Hola Misskey!"
+      flavor: "¡Pasándola bien con Misskey!"
+    _login1000:
+      flavor: "¡Gracias por usar Misskey!"
+    _iLoveMisskey:
+      title: "¡AMO Misskey!"
+      description: "\"I ❤ #Misskey\" Publicado"
+      flavor: "El equipo de desarrollo de Misskey, en verdad, ¡aprecia tu apoyo!"
+    _client30min:
+      description: "30 minutos dedicados a Misskey"
+    _client60min:
+      title: "Viendo mucho Misskey."
+      description: "Dejar abierto Misskey por al menos 60 minutos"
+    _brainDiver:
+      flavor: "Misskey-Misskey La-Tu-Ma"
+    _tutorialCompleted:
+      title: "Diploma del Curso Básico de Misskey"
+_role:
+  _options:
+  _condition:
+    isLocked: "Cuentas privadas"
+_emailUnavailable:
+  banned: "Email no disponible"
+_signup:
+_aboutMisskey:
+  about: "Misskey es un software de código abierto, desarrollado por syuilo desde el 2014"
+  original: "Original"
+  thisIsModifiedVersion: "{name} usa una versión modificada de Misskey."
+  translation: "Traducir Misskey"
+_serverDisconnectedBehavior:
+_channel:
+  allowRenoteToExternal: "Permitir renotas y menciones fuera del canal"
+_instanceMute:
+  instanceMuteDescription: "Silencia todas las notas y reposts de la instancias seleccionadas, incluyendo respuestas a los usuarios de las mismas"
+_theme:
+  keys:
+    renote: "Renotar"
+_soundSettings:
+  driveFileDurationWarnDescription: "Usar un audio de larga duración puede llegar a molestar mientras usas Misskey. ¿Quieres continuar?"
+_2fa:
+  moreDetailedGuideHere: "Guía detallada"
+_widgets:
+_poll:
+  multiple: "Opciones múltiples"
+_profile:
+_timelines:
+_pages:
+  blocks:
+    dynamicDescription: "Los bloques dinámicos están obsoletos. A partir de ahora, utiliza {play} por favor."
+_notification:
+  youRenoted: "Renotado por {name}"
+  renotedBySomeUsers: "{n} usuarios han renotado"
+  _types:
+    renote: "Renotar"
+  _actions:
+    renote: "Renotar"
+_webhookSettings:
+  _events:
+    renote: "Cuando reciba un \"re-note\""
+_abuseReport:
+  _notificationRecipient:
+    _recipientType:
+_moderationLogTypes:
+  url: "URL"
+  title: "Instalar desde sitio externo"
+_dataSaver:
+  _avatar:
+    description: "Desactiva la animación de los avatares. Las imágenes animadas pueden llegar a ser de mayor tamaño que las normales, por lo que al desactivarlas puedes reducir el consumo de datos."
+_urlPreviewSetting:

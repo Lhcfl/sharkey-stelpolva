@@ -1,0 +1,41 @@
+introMisskey: "Xush kelibsiz! Misskey ochiq kodli, markazlashmagan mikroblogging xizmati.\nO'zingizni fikrlaringizni atrofingizdagilar bilan ulashish uchun \"Qaydlar\" yarating. 📡\nUstiga-ustak, \"Reaktsiyalar\" yordamida siz boshqalarning xatlari haqidagi o'zingizni xissiyotlaringizni bildiring. 👍\nQani, yangi dunyoni kashf qilaylik! 🚀"
+poweredByMisskeyDescription: "{name} ochiq manbali <b>Misskey</b>(\"Misskey instance\" deb ataladi) platformasi tomonidan qurilgan servislardan biri. "
+renotedBy: "{user} tomonidan qayta qayd etildi"
+deleteAndEditConfirm: "O'chirib, tahrirlamoqchiligingizga ishonchingiz komilmi? Siz bu qaydga tegishli barcha reaktsiyalar va javoblarni yo'qotasiz."
+renote: "Qayta qayd etish"
+unrenote: "Qayta qayd etishni bekor qilish"
+renoted: "Qayta qayd etildi"
+cantRenote: "Qayta qayd etish mumkin emas"
+cantReRenote: "Repostni qayta joylashtirish mumkin emas."
+inChannelRenote: "Faqat kanalga qayta qayd etish"
+renoteMute: "Qayta qaydlarni ovozini o'chirish"
+renoteUnmute: "Qayta qaydlarni ovozini yoqish"
+flagAsBotDescription: "Agar bu akkaunt bot tomonidan boshqaralayotgan bo'lsa, bu sozlamani yoqing. Sozlama yoqilganda, boshqa foydalanuvchilar uchun belgi sifatida ishlaydi, va Misskey ichki tizimlari bu akkauntni bot ekanini biladi."
+intro: "Misskeyni o'rnatish tugallandi! Iltimos, administrator foydalanuvchi yarating."
+antennaUsersDescription: "Har bir foydalunvchi nomini alohida qatorga yozing"
+aboutMisskey: "Misskey haqida"
+disableDrawer: "Slayd menyusidan foydalanmang"
+forwardReport: "Xabarni masofadagi serverga yuborish"
+forwardReportIsAnonymous: "Sizning yuborayotgan xabaringiz o'z akkountingiz emas balki anonim tarzda qoladi"
+abuseMarkAsResolved: "Yuborilgan xabarni hal qilingan deb belgilash"
+i18nInfo: "Misskey bir qancha volontyorlar yordamida bir qancha tillarga tarjima qilingan. Ushbu {link} orqali ularga yordam berishingiz mumkin."
+renotesCount: "Qayta yuborilgan xatlar soni"
+renotedCount: "Qayta yuborilgan xatlar soni"
+misskeyUpdated: "Misskey yangilandi!"
+replies: "Javoblar"
+renotes: "Qayta qayd etish"
+_delivery:
+  stop: "To'xtatilgan"
+    title: "sizga obuna bo'ldi"
+  _types:
+    renote: "Qayta qayd etish"
+    renote: "Qayta qayd etish"
+  _actions:
+    renote: "Qayta qayd qilish"
+_webhookSettings:
+  _events:
+    renote: "Qayta qayd qilinganda"
+_abuseReport:
+  _notificationRecipient:
+    _recipientType:
+_moderationLogTypes:

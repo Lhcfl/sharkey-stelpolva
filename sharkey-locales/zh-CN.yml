@@ -1,0 +1,174 @@
+introMisskey: "欢迎！Misskey是一个开源的、去中心化的“微博客”服务。\n通过编写「帖文」来和大家分享你的以及你周围的事情吧！📡\n通过「回应」功能，可以让你快速地对大家的帖文表达反馈👍\n来探索新的世界吧！🚀"
+poweredByMisskeyDescription: "{name} 是开源平台 <b>Misskey</b> 的服务器之一。"
+renotedBy: "{user} 转发了"
+copyLinkRenote: "复制转帖链接"
+deleteAndEditConfirm: "要删除此帖并再次编辑吗？对此帖的所有回应、转发和回复也将被删除。"
+renote: "转发"
+unrenote: "取消转发"
+renoted: "已转发。"
+renotedToX: "转帖给 {name}"
+cantRenote: "该帖无法转发。"
+cantReRenote: "转发无法被再次转发。"
+inChannelRenote: "在频道内转发"
+renoteMute: "屏蔽转帖"
+renoteUnmute: "解除屏蔽转帖"
+flagAsBotDescription: "如果此账户由程序控制，请启用此项。启用后，此标志可以帮助其他开发人员防止机器人之间产生无限互动的行为，并让 Misskey 的内部系统将此账户识别为机器人。"
+continueOnRemote: "转到所在服务器继续"
+chooseServerOnMisskeyHub: "从 Misskey Hub 选择服务器"
+mediaSilenceThisInstance: "隐藏此服务器的媒体文件"
+silencedInstancesDescription: "设置要静音的服务器，以换行分隔。被静音的服务器内所有的账户将默认处于「静音」状态，仅能发送关注请求，并且在未关注状态下无法提及本地账户。被阻止的实例不受影响。"
+mediaSilencedInstances: "已隐藏媒体文件的服务器"
+mediaSilencedInstancesDescription: "设置要隐藏媒体文件的服务器，以换行分隔。被设置为隐藏媒体文件服务器内所有账号的文件均按照「敏感内容」处理，且将无法使用自定义表情符号。被阻止的实例不受影响。"
+intro: "Misskey 的部署结束啦！创建管理员账号吧！"
+fileNotSelected: "未选择文件"
+antennaUsersDescription: "指定用户名，一行一个"
+aboutMisskey: "关于 Misskey"
+attachAsFileQuestion: "剪贴板内的文字过长。要转换为文本文件并添加吗？"
+signinOrContinueOnRemote: "若要继续，需要转到您所使用的实例，或者在此服务器上注册或登录。"
+disableDrawer: "不显示抽屉菜单"
+showReactionsCount: "显示帖子的回应数"
+useSoundOnlyWhenActive: "仅在 Misskey 活跃时输出声音"
+scratchpadDescription: "AiScript 控制台为 AiScript 提供了实验环境。您可以编写代码与 Misskey 交互，运行并查看结果。"
+reportAbuseRenote: "举报转帖"
+forwardReport: "将该举报信息转发给远程服务器"
+forwardReportIsAnonymous: "在远程实例上显示的报告者是匿名的系统账号，而不是您的账号。"
+abuseMarkAsResolved: "处理完毕"
+i18nInfo: "Misskey 已经被志愿者们翻译成了各种语言。如果你也有兴趣，可以通过 {link} 帮助翻译。"
+renotesCount: "转帖数量"
+renotedCount: "转发数"
+sendErrorReportsDescription: "启用后，如果出现问题，可以与 Misskey 共享详细的错误信息，从而帮助提高软件的质量。错误信息包括操作系统版本、浏览器类型、行为历史记录等。"
+noInquiryUrlWarning: "尚未设置联络地址。"
+misskeyUpdated: "Misskey 更新完成！"
+usernameInfo: "在服务器上唯一标识您的帐户的名称。您可以使用字母 (a ~ z, A ~ Z)、数字 (0 ~ 9) 和下划线 (_)。用户名以后不能更改。"
+didYouLikeMisskey: "您喜欢 Misskey 吗？"
+pleaseDonate: "Misskey 是 {host} 所使用的免费软件。为了今后也能够维持 Misskey 的开发，请在有余力的情况下进行捐助！"
+collapseRenotes: "省略显示已经看过的转发内容"
+collapseRenotesDescription: "将回应过或转贴过的贴子折叠表示。"
+limitWidthOfReaction: "限制回应的最大宽度，并将其缩小显示"
+renotesList: "转发列表"
+lookupConfirm: "确定查询？"
+openTagPageConfirm: "确定打开话题标签页面？"
+specifyHost: "指定主机名"
+goToMisskey: "去往 Misskey"
+replies: "回复"
+renotes: "转发"
+showRenotes: "显示转帖"
+sourceCodeIsNotYetProvided: "还未提供源代码。要解决此问题请联系管理员。"
+repositoryUrlDescription: "若源代码所在的仓库是公开的，请填入对应的 URL。若并未追加或者修改 Misskey 的代码，请填入 https://github.com/misskey-dev/misskey。"
+seasonalScreenEffect: "符合当前季节的画面效果"
+noDescription: "没有描述"
+sensitiveMediaRevealConfirm: "这是敏感内容。是否显示？"
+_delivery:
+  stop: "停止投递"
+  resume: "继续投递"
+_initialAccountSetting:
+  youCanContinueTutorial: "您可以继续了解 {name}(Misskey) 的使用教程，也可以在此停止教程并立即开始使用它。\n"
+_initialTutorial:
+  _landing:
+    description: "在这里，您可以查看 Misskey 的基本使用方法和功能。"
+  _note:
+    description: "在 Misskey 上发表的文章称为「帖子」。帖子在时间线上按照时间顺序排列，并实时更新。"
+  _reaction:
+    letsTryReacting: "回应可以通过点击帖子中的「{reaction}」按钮来添加。试着给这个示例帖子添加一个回应！"
+    reactDone: "通过按下「{undo}」按钮，可以取消已经添加的回应"
+  _timeline:
+    description1: "Misskey 根据使用方式提供了多个时间线（根据服务器的设定，可能有一些被禁用）。"
+  _postNote:
+    description1: "在 Misskey 发布帖子时，您可以设置各种选项。发帖窗口看起来是这样的。\n"
+    _visibility:
+      home: "仅在首页时间线上发布。 关注者、从个人资料页查看过来的用户、以及通过转帖也能被别的用户看见。"
+      followers: "仅对关注者可见。 除了您自己之外，没有人可以转贴，并且只有您的关注者可以查看它。\n"
+  _done:
+    title: "恭喜您，已经完成了教程🎉\n"
+    description: "这里介绍的只是其中一小部分的功能。 要了解更多有关如何使用 Misskey 的更多信息，请访问 {link}。"
+_timelineDescription:
+_serverSettings:
+  inquiryUrl: "联络地址"
+  inquiryUrlDescription: "用来指定诸如向服务运营商咨询的论坛地址，或记载了运营商联系方式之类的网页地址。"
+_accountMigration:
+  moveAccountDescription: "\n迁移到新帐户。\n　・现有的关注者自动关注新帐户\n　・此帐户的所有关注者都将被删除\n　・您将无法再使用此帐户发帖。\n关注者迁移是自动的，但关注中迁移必须手动完成。请在迁移前在此帐户上导出关注列表，并在迁移后立即在目标帐户上执行导入。\n屏蔽列表也是如此，因此您必须手动迁移它。\n（此描述适用于该服务器（Misskey v13.12.0 或更高版本）。其他 ActivityPub 软件（例如 Mastodon）的行为可能有所不同。）"
+_achievements:
+  _types:
+    _notes1:
+      title: "初来乍到"
+      flavor: "祝您在 Misskey 玩的愉快～"
+    _login1000:
+      flavor: "感谢您使用 Misskey！"
+    _iLoveMisskey:
+      title: "I Love Misskey"
+      description: "发布 \"I ❤ #Misskey\" 帖子"
+      flavor: "感谢您使用 Misskey ！ by 开发团队"
+    _client30min:
+      description: "启动客户端超过 30 分钟"
+    _client60min:
+      title: "Misskey 重度依赖"
+      description: "启动客户端超过 60 分钟"
+    _brainDiver:
+      flavor: "Misskey-Misskey La-Tu-Ma"
+    _tutorialCompleted:
+      title: "Misskey 初学者课程 结业证书"
+_role:
+  _options:
+    canUpdateBioMedia: "可以更新头像和横幅"
+  _condition:
+    isLocked: "锁推用户"
+    isExplorable: "启用“使账号可见”的用户"
+_emailUnavailable:
+  banned: "无法使用此邮件地址注册"
+_signup:
+_aboutMisskey:
+  about: "Misskey 是由 syuilo 于 2014 年开发的开源软件。"
+  original: "原版"
+  thisIsModifiedVersion: "{name}正在使用修改后的 Misskey。"
+  translation: "翻译 Misskey"
+_serverDisconnectedBehavior:
+_channel:
+  allowRenoteToExternal: "允许在频道外转帖及引用"
+_instanceMute:
+  instanceMuteDescription: "屏蔽服务器中的所有帖子和转帖，包括这些服务器上的用户回复。"
+_theme:
+  keys:
+    renote: "转发"
+_soundSettings:
+  driveFileDurationWarnDescription: "使用长音频可能会影响 Misskey 的使用。即使这样也要继续吗？"
+  driveFileError: "无法读取声音。请更改设置。"
+_2fa:
+  moreDetailedGuideHere: "此处为详细指南"
+_widgets:
+_poll:
+_profile:
+_timelines:
+_pages:
+  blocks:
+    dynamicDescription: "这个区块已经废弃。以后请使用{play}。"
+_notification:
+  youRenoted: "来自{name}的转发"
+  renotedBySomeUsers: "{n} 人转发了"
+  _types:
+    renote: "转发"
+  _actions:
+    renote: "转发"
+_webhookSettings:
+  _events:
+    renote: "被转发时"
+  _systemEvents:
+    abuseReportResolved: "当举报被处理时"
+_abuseReport:
+  _notificationRecipient:
+    _recipientType:
+      _captions:
+        mail: "当收到新举报时，向持有监察员权限的用户发送通知邮件"
+        webhook: "当收到新举报及举报被处理时，使用指定的 SystemWebhook 发送通知"
+_moderationLogTypes:
+  url: "URL"
+  title: "从外部站点安装"
+_dataSaver:
+  _avatar:
+    description: "停止播放头像的动画。 由于动画图片的文件大小可能比普通图像大，这可以进一步减少数据流量。"
+_urlPreviewSetting:
+  timeoutDescription: "如果获取预览所用时间超过这个值，则不生成预览。"
+  requireContentLength: "仅在能取得 Content-Length 时生成预览"
+  summaryProxy: "用来生成预览的代理的 endpoint。"
+  summaryProxyDescription: "不使用 Misskey 本体，而是通过 Summaly Proxy 生成预览。"
+  summaryProxyDescription2: "下面的参数将作为查询字符串发送至代理。代理侧如果不支持此设置，则忽略设定值。"
+  title: "上下文菜单"

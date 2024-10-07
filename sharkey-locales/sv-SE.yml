@@ -1,0 +1,32 @@
+introMisskey: "Välkommen! Misskey är en öppen och decentraliserad mikrobloggningstjänst.\nSkapa en \"not\" och dela dina tankar med alla runtomkring dig. 📡\nMed \"reaktioner\" kan du snabbt uttrycka dina känslor kring andras noter. 👍\nLåt oss utforska en ny värld! 🚀"
+poweredByMisskeyDescription: "{name} är en tjänst driven av den öppna källkodsplatformen <b>Misskey</b> (benämns \"Misskey instans\")."
+renotedBy: "Omnoterad av {user}"
+deleteAndEditConfirm: "Är du säker att du vill radera denna not och ändra den? Du kommer förlora alla reaktioner, omnoteringar och svar till den."
+renote: "Omnotera"
+unrenote: "Ta tillbaka omnotering"
+renoted: "Omnoterad."
+cantRenote: "Inlägget kunde inte bli omnoterat."
+cantReRenote: "En omnotering kan inte bli omnoterad."
+inChannelRenote: "Omnotera inom kanalen"
+flagAsBotDescription: "Aktivera det här alternativet om kontot är kontrollerat av ett program. Om aktiverat kommer den fungera som en flagga för andra utvecklare för att hindra ändlösa kedjor med andra bottar. Det kommer också få Misskeys interna system att hantera kontot som en bot."
+intro: "Misskey har installerats! Vänligen skapa en adminanvändare."
+antennaUsersDescription: "Ange ett användarnamn per linje"
+aboutMisskey: "Om Misskey"
+i18nInfo: "Misskey översätts till många olika språk av volontärer. Du kan hjälpa till med översättningen på {link}."
+misskeyUpdated: "Misskey har uppdaterats!"
+pleaseDonate: "Misskey är en gratis programvara som används på {host}. Donera gärna för att göra utvecklingen ständigt, tack!"
+replies: "Svar"
+renotes: "Omnotera"
+_delivery:
+  stop: "Suspenderad"
+    title: "följde dig"
+  _types:
+    renote: "Omnotera"
+    renote: "Omnotera"
+  _actions:
+    renote: "Omnotera"
+_webhookSettings:
+_abuseReport:
+  _notificationRecipient:
+    _recipientType:
+_moderationLogTypes:

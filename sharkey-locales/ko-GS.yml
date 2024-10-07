@@ -1,0 +1,60 @@
+introMisskey: "어서 오이소! Misskey넌 오픈소스 분산헹 마이크로 블로그 서비스입니다.\n‘노트’럴 맨걸어서 지검 일나넌 일얼 노누던가 내 이바구럴 남한데 서 보이소.📡\n‘리액션’ 기넝서 남으 노트에 억수로 빠리게 답할 수 잇십니다.👍\n새롭운 세게럴 탐험해 보입시다.🚀"
+poweredByMisskeyDescription: "{name} 서버넌 오픈소스 플랫폼 <b>Misskey</b>으 서버 가운데 하나입니다."
+renotedBy: "{user}님이 리노트햇어예"
+copyLinkRenote: "리노트 링크 복사"
+deleteAndEditConfirm: "요 노트럴 뭉캐고 새로 적십니꺼? 요 노트서 리액션하고 리노트, 답하기도 말캉 뭉캐집니다."
+renote: "리노트"
+unrenote: "리노트 무루기"
+renoted: "리노트럴 햇십니다."
+cantRenote: "요 걸언 리노트럴 몬 합니다."
+cantReRenote: "리노트넌 지럴 리노트 몬 합니다."
+inChannelRenote: "채널 안 리노트"
+renoteMute: "리노트 수ᇚ후기"
+renoteUnmute: "리노트 수ᇚ훈 거 무루기"
+flagAsBotDescription: "요 게정얼 프로그램서 설라먼 키야 합니다. 키모 다런 개발자가 반엉얼 끋어ᇝ이 데풀이하지 몬 하게 도아 줄 수 잇고 Misskey으 시스템서 자동 게정이 뎁니다."
+silencedInstancesDescription: "수ᇚ훌라넌 서버으 호스트럴 줄 바꿈해서로 비이 줍니다. 수ᇚ훈 서버으 게정언 말캉 ‘수ᇚ후기’가 데서 팔로잉 요청만 데고 팔로워가 아인 로컬 게정서 멘션얼 몬 합니다. 차단한 서버넌 상간 어ᇝ십니다."
+intro: "Misskey럴 다 깔앗십니다! 간리자 게정얼 맨걸어 보입시다."
+antennaUsersDescription: "사용자 이럼얼 줄 바꿈해서로 섭니다"
+aboutMisskey: "Misskey넌예"
+disableDrawer: "드로어 메뉴 쓰지 않기"
+useSoundOnlyWhenActive: "Misskey가 활성화되어 있을 때만 소리 내기"
+scratchpadDescription: "스크래치 패드는 AiScript를 끼적거리는 창입니더. Misskey랑 갖다 이리저리 상호작용하는 코드를 서가 굴리멘은 그 결과도 바로 확인할 수 있십니다."
+reportAbuseRenote: "리노트 신고하기"
+forwardReport: "웬겍 서버에 신고 보내기"
+renotesCount: "리노트한 수"
+renotedCount: "리노트덴 수"
+replies: "답하기"
+renotes: "리노트"
+_delivery:
+  stop: "고만 보내예"
+_initialAccountSetting:
+_initialTutorial:
+  _landing:
+  _done:
+    title: "길라잡이가 껕낫십니다!🎉"
+_achievements:
+  _types:
+    _notes1:
+    _iLoveMisskey:
+      description: "“I ❤ #Misskey”럴 섰어예"
+      description: "“I ❤ #Misskey”럴 섰어예"
+      description: "“I ❤ #Misskey”럴 섰어예"
+    _tutorialCompleted:
+_serverDisconnectedBehavior:
+_channel:
+_theme:
+  keys:
+_2fa:
+_widgets:
+_profile:
+_timelines:
+_pages:
+  blocks:
+_notification:
+  _types:
+  _actions:
+_webhookSettings:
+_abuseReport:
+  _notificationRecipient:
+    _recipientType:
+_moderationLogTypes:

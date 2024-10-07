@@ -1,0 +1,32 @@
+introMisskey: "Velkommen! Misskey er en desentralisert mikrobloggtjeneste med åpen kildekode.\nOpprett \"Notes\" for å dele tankene dine med alle rundt deg. 📡\nMed \"reaksjoner\" kan du også raskt gi uttrykk for hva du synes om alles Notes. 👍\nLa oss utforske en ny verden! 🚀"
+renotedBy: "Renotes av {user}"
+deleteAndEditConfirm: "Er du sikker på at du vil slette denne Noten og redigere den? Du vil miste alle reaksjoner, Renotes og svar på den."
+renote: "Renote"
+renoted: "Renotet."
+cantRenote: "Dette innlegget kan ikke renotes."
+cantReRenote: "En Renote kan ikke renotes."
+inChannelRenote: "Renote kun for kanal"
+renoteMute: "Skjul Renotes"
+renoteUnmute: "Vis Renotes"
+flagAsBotDescription: "Aktiver dette alternativet hvis denne kontoen styres av et program. Hvis det er aktivert, vil det fungere som et flagg for andre utviklere for å forhindre endeløse interaksjonskjeder med andre roboter og justere Misskeys interne systemer til å behandle denne kontoen som en bot."
+intro: "Installasjonen av Misskey er ferdig! Vennligst opprett en administratorkonto."
+aboutMisskey: "Om Misskey"
+i18nInfo: "Misskey oversettes til flere språk av frivillige. Du kan hjelpe til på {link}."
+misskeyUpdated: "Misskey har blitt oppdatert!"
+didYouLikeMisskey: "Likte du Misskey?"
+replies: "Svar"
+renotes: "Renote"
+_delivery:
+  stop: "Suspendert"
+_initialAccountSetting:
+    title: "fulgte deg"
+  _types:
+    renote: "Renotes"
+    renote: "Renotes"
+  _actions:
+    renote: "Renote"
+_webhookSettings:
+_abuseReport:
+  _notificationRecipient:
+    _recipientType:
+_moderationLogTypes:

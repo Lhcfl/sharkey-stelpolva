@@ -1,0 +1,50 @@
+introMisskey: "Vítejte! Misskey je otevřený a decentralizovaný microblogový servis.\n\"Poznámkami\" můžete sdílet co se zrovna děje se všemi ve Vašem okolí. 📡\nPomocí \"reakcí\" můžete sdílet své názory a pocity na ostatní poznámky. 👍\nPojďte objevovat nový svět! 🚀"
+poweredByMisskeyDescription: "{name} je jeden ze serverů využívající open source platformu <b>Misskey<b> (nazývaná \"Misskey instance\")."
+renotedBy: "{user} přeposla/a"
+deleteAndEditConfirm: "Jste si jistí že chcete smazat tuto poznámku a editovat ji? Ztratíte tím všechny reakce, sdílení a odpovědi na ni."
+renote: "Přeposlat"
+unrenote: "Zrušit přeposlání"
+renoted: "Přeposláno"
+cantRenote: "Tento příspěvek nelze přeposlat."
+cantReRenote: "Odpověď nemůže být odstraněna."
+inChannelRenote: "Přeposlání v kanálu"
+renoteMute: "Ztlumit poznámky"
+renoteUnmute: "Zrušit ztlumení poznámek"
+flagAsBotDescription: "Pokud je tento účet kontrolován programem zaškrtněte tuto možnost. To označí tento účet jako bot pro ostatní vývojáře a zabrání tak nekonečným interakcím s ostatními boty a upraví Misskey systém aby se choval k tomuhle účtu jako bot."
+intro: "Instalace Misskey byla dokončena! Prosím vytvořte admina."
+antennaUsersDescription: "Vypsat jednoho uživatele na řádek"
+aboutMisskey: "O Misskey"
+disableDrawer: "Nepoužívat šuplíkové menu"
+scratchpadDescription: "Scratchpad poskytuje rozhraní pro AiScript experimenty. Můžete psát, spustit či zkontrolovat výsledky jeho interakce s Misskey."
+forwardReport: "Přeposlat nahlášení do vzdálené instance"
+forwardReportIsAnonymous: "Místo vašeho účtu se ve vzdálené instanci zobrazí anonymní systémový účet jako nahlašovač."
+abuseMarkAsResolved: "Označit nahlášení jako vyřešené"
+i18nInfo: "Misskey je překládán do jiných jazyků dobrovolníkama. Můžete pomoci na {link}."
+renotesCount: "Počet přeposlaných poznámek"
+renotedCount: "Počet přijatých přeposlaných poznámek"
+sendErrorReportsDescription: "Pokud je tato funkce zapnutá, budou se při výskytu problému sdílet podrobné informace o chybách se službou Misskey, což pomůže zlepšit kvalitu služby Misskey. Tyto informace budou zahrnovat například verzi operačního systému, jaký prohlížeč používáte, vaši aktivitu v Misskey atd."
+misskeyUpdated: "Misskey byl aktualizován!"
+usernameInfo: "Jméno které identifikuje váš účet od jiných na tomhle serveru. Můžete použít abecedu (a~z, A~Z), čísla (0~9) nebo podtržítka (_). Uživatelské jména nemůžou být změněna později."
+didYouLikeMisskey: "Oblíbili jste si Misskey?"
+pleaseDonate: "{host} používá bezplatný software Misskey. Velmi bychom ocenili vaše dary, aby mohl vývoj Misskey pokračovat!"
+collapseRenotes: "Sbalit poznámky, které jste již viděli"
+renotesList: "Poznámky"
+goToMisskey: "Jít na Misskey"
+replies: "Odpovědi"
+renotes: "Přeposlat"
+_delivery:
+  stop: "Suspendováno"
+_initialAccountSetting:
+    title: "Máte nového následovníka"
+  _types:
+    renote: "Přeposlat"
+    renote: "Přeposlat"
+  _actions:
+    renote: "Přeposlat"
+_webhookSettings:
+  _events:
+    renote: "Při renotaci poznámky"
+_abuseReport:
+  _notificationRecipient:
+    _recipientType:
+_moderationLogTypes:

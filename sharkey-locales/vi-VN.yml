@@ -1,0 +1,50 @@
+introMisskey: "Xin chào! Misskey là một nền tảng tiểu blog phi tập trung mã nguồn mở.\nViết \"tút\" để chia sẻ những suy nghĩ của bạn 📡\nBằng \"biểu cảm\", bạn có thể bày tỏ nhanh chóng cảm xúc của bạn với các tút 👍\nHãy khám phá một thế giới mới! 🚀"
+poweredByMisskeyDescription: "{name} là một trong những chủ máy của <b>Misskey</b> là nền tảng mã nguồn mở"
+renotedBy: "Chia sẻ bởi {user}"
+copyLinkRenote: "Sao chép liên kết ghi chú"
+deleteAndEditConfirm: "Bạn có chắc muốn sửa tút này? Những biểu cảm, lượt trả lời và đăng lại sẽ bị mất."
+renote: "Đăng lại"
+unrenote: "Hủy đăng lại"
+renoted: "Đã đăng lại."
+cantRenote: "Không thể đăng lại tút này."
+cantReRenote: "Không thể đăng lại một tút đăng lại."
+inChannelRenote: "Chia sẻ trong kênh này"
+renoteMute: "Mute Renotes"
+renoteUnmute: "Unmute Renotes"
+flagAsBotDescription: "Bật tùy chọn này nếu tài khoản này được kiểm soát bởi một chương trình. Nếu được bật, nó sẽ được đánh dấu để các nhà phát triển khác ngăn chặn chuỗi tương tác vô tận với các bot khác và điều chỉnh hệ thống nội bộ của Misskey để coi tài khoản này như một bot."
+intro: "Đã cài đặt Misskey! Xin hãy tạo tài khoản admin."
+antennaUsersDescription: "Liệt kê mỗi hàng một tên người dùng"
+aboutMisskey: "Về Misskey"
+attachAsFileQuestion: "Văn bản ở trong bộ nhớ tạm rất dài. Bạn có muốn đăng nó dưới dạng một tệp văn bản không?"
+disableDrawer: "Không dùng menu thanh bên"
+scratchpadDescription: "Scratchpad cung cấp môi trường cho các thử nghiệm AiScript. Bạn có thể viết, thực thi và kiểm tra kết quả tương tác với Misskey trong đó."
+forwardReport: "Chuyển tiếp báo cáo cho máy chủ từ xa"
+forwardReportIsAnonymous: "Thay vì tài khoản của bạn, một tài khoản hệ thống ẩn danh sẽ được hiển thị dưới dạng người báo cáo ở máy chủ từ xa."
+abuseMarkAsResolved: "Đánh dấu đã xử lý"
+i18nInfo: "Misskey đang được các tình nguyện viên dịch sang nhiều thứ tiếng khác nhau. Bạn có thể hỗ trợ tại {link}."
+renotesCount: "Số lượt đăng lại đã gửi"
+renotedCount: "Lượt chia sẻ"
+sendErrorReportsDescription: "Khi được bật, thông tin chi tiết về lỗi sẽ được chia sẻ với Misskey khi xảy ra sự cố, giúp nâng cao chất lượng của Misskey.\nBao gồm thông tin như phiên bản hệ điều hành của bạn, trình duyệt bạn đang sử dụng, hoạt động của bạn trong Misskey, v.v."
+misskeyUpdated: "Misskey vừa được cập nhật!"
+usernameInfo: "Bạn có thể sử dụng chữ cái (a ~ z, A ~ Z), chữ số (0 ~ 9) hoặc dấu gạch dưới (_). Tên người dùng không thể thay đổi sau này."
+didYouLikeMisskey: "Bạn có ưa thích Mískey không?"
+pleaseDonate: "Misskey là phần mềm miễn phí mà {host} đang sử dụng. Xin mong bạn quyên góp cho chúng tôi để chúng tôi có thể tiếp tục phát triển dịch vụ này. Xin cảm ơn!!"
+collapseRenotes: "Không hiển thị bài viết đã từng xem"
+goToMisskey: "Tới Misskey"
+replies: "Trả lời"
+renotes: "Đăng lại"
+_delivery:
+  stop: "Đã vô hiệu hóa"
+_initialAccountSetting:
+    title: "đã theo dõi bạn"
+  _types:
+    renote: "Đăng lại"
+    renote: "Đăng lại"
+  _actions:
+    renote: "Đăng lại"
+_webhookSettings:
+  _events:
+_abuseReport:
+  _notificationRecipient:
+    _recipientType:
+_moderationLogTypes:

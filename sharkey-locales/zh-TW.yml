@@ -1,0 +1,174 @@
+introMisskey: "歡迎！Misskey 是一個開放原始碼且去中心化的社群網路服務。\n發布「貼文」向身邊的人分享您的想法！📡\n利用「反應」表達您對貼文的感覺！👍\n讓我們一起探索新的世界吧！🚀"
+poweredByMisskeyDescription: "{name}是開放原始碼平臺 <b>Misskey</b> 的伺服器之一。"
+renotedBy: "{user} 轉發了"
+copyLinkRenote: "複製轉發的連結"
+deleteAndEditConfirm: "要刪除並再次編輯嗎？此貼文的所有反應、轉發和回覆也將會消失。"
+renote: "轉發"
+unrenote: "取消轉發"
+renoted: "轉發成功。"
+renotedToX: "轉發給 {name} 了。"
+cantRenote: "無法轉發此貼文。"
+cantReRenote: "無法轉發之前已經轉發過的內容。"
+inChannelRenote: "在頻道內轉發"
+renoteMute: "將轉發貼文靜音"
+renoteUnmute: "解除轉發貼文的靜音"
+flagAsBotDescription: "如果本帳戶是由程式控制，請啟用此選項。啟用後，會作為標示幫助其他開發者防止機器人之間產生無限互動的行為，並會調整 Misskey 內部系統將本帳戶識別為機器人。"
+continueOnRemote: "在遠端伺服器繼續"
+chooseServerOnMisskeyHub: "從 Misskey Hub 選擇伺服器"
+mediaSilenceThisInstance: "將這個伺服器的媒體設為禁言"
+silencedInstancesDescription: "設定要禁言的伺服器主機名稱，以換行分隔。隸屬於禁言伺服器的所有帳戶都將被視為「禁言帳戶」，只能發出「追隨請求」，而且無法提及未追隨的本地帳戶。這不會影響已封鎖的實例。"
+mediaSilencedInstances: "媒體被禁言的伺服器"
+mediaSilencedInstancesDescription: "設定您想要對媒體設定禁言的伺服器，以換行符號區隔。來自被媒體禁言的伺服器所屬帳戶的所有檔案都會被視為敏感檔案，且自訂表情符號不能使用。被封鎖的伺服器不受影響。"
+intro: "Misskey 部署完成！請建立管理員帳戶。"
+fileNotSelected: "尚未選擇檔案"
+antennaUsersDescription: "填寫使用者名稱，以換行分隔"
+aboutMisskey: "關於 Misskey"
+attachAsFileQuestion: "剪貼簿的文字較長。請問是否要將其以文字檔的方式附加呢？"
+signinOrContinueOnRemote: "若要繼續，需前往您所在的伺服器，或者註冊並登入此伺服器"
+disableDrawer: "不顯示下拉式選單"
+showReactionsCount: "顯示貼文的反應數目"
+useSoundOnlyWhenActive: "瀏覽器在前景運作時，Misskey 才會發出音效"
+scratchpadDescription: "AiScript 控制臺為 AiScript 的實驗環境。您可以在此編寫、執行和確認程式碼與 Misskey 互動的結果。"
+reportAbuseRenote: "檢舉轉發貼文"
+forwardReport: "將報告轉送給遠端伺服器"
+forwardReportIsAnonymous: "在遠端實例上看不到您的資訊，顯示的報告者是匿名的系统帳戶。"
+abuseMarkAsResolved: "處理完畢"
+i18nInfo: "Misskey 已被志願者們翻譯成各種語言版本。您可以瀏覽 {link} 幫助翻譯。"
+renotesCount: "轉發數量"
+renotedCount: "轉發次數"
+sendErrorReportsDescription: "傳送問題報告至開發者以提升軟體品質。問題報告可能包括作業系統版本，瀏覽器類型，行為歷史記錄等。"
+noInquiryUrlWarning: "尚未設定聯絡表單網址。"
+misskeyUpdated: "Misskey 更新完成！"
+usernameInfo: "在伺服器上您的帳戶是唯一的識別名稱。您可以使用字母 (a ~ z, A ~ Z)、數字 (0 ~ 9) 和下底線 (_)。之後帳戶名是不能更改的。"
+didYouLikeMisskey: "您喜歡 Misskey 嗎？"
+pleaseDonate: "Misskey 是由 {host} 使用的免費軟體。請贊助我們，讓開發得以持續！"
+collapseRenotes: "省略顯示已看過的轉發貼文"
+collapseRenotesDescription: "將已做過反應和轉發的貼文折疊顯示。"
+limitWidthOfReaction: "限制反應的最大寬度，並縮小顯示尺寸。"
+renotesList: "轉發貼文列表"
+lookupConfirm: "要查詢嗎？"
+openTagPageConfirm: "要開啟標籤的頁面嗎？"
+specifyHost: "指定主機"
+goToMisskey: "往 Misskey"
+replies: "回覆"
+renotes: "轉發"
+showRenotes: "顯示其他人的轉發貼文"
+sourceCodeIsNotYetProvided: "尚未提供原始碼，請洽詢管理員解決這個問題。"
+repositoryUrlDescription: "如果存在可公開取得原始碼的儲存庫，請輸入其 URL。 如果您按原樣使用 Misskey（不對原始碼進行任何更改），請輸入 https://github.com/misskey-dev/misskey。"
+seasonalScreenEffect: "隨季節變換畫面的呈現"
+noDescription: "沒有說明文字"
+sensitiveMediaRevealConfirm: "這是敏感媒體。確定要顯示嗎？"
+_delivery:
+  stop: "停止發送"
+  resume: "恢復發送"
+_initialAccountSetting:
+  youCanContinueTutorial: "您可以繼續學習如何使用{name}(Misskey)，也可以就此打住，立即開始使用。"
+_initialTutorial:
+  _landing:
+    description: "在這裡您可以查看 Misskey 的基本使用方法和功能。"
+  _note:
+    description: "在Misskey上發布的內容稱為「貼文」。貼文在時間軸上按時間順序排列，並即時更新。"
+  _reaction:
+    letsTryReacting: "可以透過點擊貼文上的「{reaction}」按鈕來添加反應。請嘗試在此範例貼文添加反應！"
+    reactDone: "按下「{undo}」按鈕可以取消反應。"
+  _timeline:
+    description1: "Misskey根據使用方式提供了多個時間軸（伺服器可能會將部份時間軸停用）。"
+  _postNote:
+    description1: "在Misskey上發布貼文時，可以設定各種選項。發布表單如下所示。"
+    _visibility:
+      home: "僅在首頁時間軸上發布。其他使用者只在下列情況可看見該貼文：追隨者、觀看使用者的個人資料頁面，以及貼文被轉發時。"
+      followers: "僅追隨者可見。只有發文者本人可轉發，未追隨發文者的使用者無法看見。"
+  _done:
+    title: "教學課程已結束"
+    description: "這裡介紹的功能只是其中的一小部分。要了解更多有關如何使用Misskey的資訊，請瀏覽{link}。"
+_timelineDescription:
+_serverSettings:
+  inquiryUrl: "聯絡表單網址"
+  inquiryUrlDescription: "指定伺服器運營者的聯絡表單網址，或包含運營者聯絡資訊網頁的網址。"
+_accountMigration:
+  moveAccountDescription: "遷移至新帳戶。\n　・此帳戶的追隨者將自動追隨新帳戶；\n　・此帳戶的所有追隨者將被取消追隨；\n　・此帳戶不能再發文。\n\n雖然會自動遷移您的追隨者，但必須手動遷移您追隨的帳戶。請在遷移前匯出此帳戶的「追隨中」名單，並在遷移後自行匯入。\n列表名單、靜音名單及封鎖名單也必須如此處理。\n\n（此說明適用於本伺服器，以及運行 Misskey v13.12.0 或更新版本的其他伺服器；如 Mastodon 等使用 ActivityPub 協定的其他軟體或有不同的處理方式。）"
+_achievements:
+  _types:
+    _notes1:
+      title: "歡迎！"
+      flavor: "祝您的 Misskey 生活愉快！"
+    _login1000:
+      flavor: "感謝您使用 Misskey！"
+    _iLoveMisskey:
+      title: "I Love Misskey"
+      description: "發佈「I ❤ #Misskey」"
+      flavor: "感謝您使用 Misskey！by 開發團隊"
+    _client30min:
+      description: "客戶端啟動已超過30分鐘"
+    _client60min:
+      title: "Misskey 看太多"
+      description: "客戶端啟動已超過60分鐘"
+    _brainDiver:
+      flavor: "Misskey-Misskey La-Tu-Ma"
+    _tutorialCompleted:
+      title: "Misskey新手講座 結業證書"
+_role:
+  _options:
+    canUpdateBioMedia: "允許更新大頭貼和橫幅"
+  _condition:
+    isLocked: "上鎖的使用者"
+    isExplorable: "開啟了「使您的帳戶更容易被找到」功能的使用者"
+_emailUnavailable:
+  banned: "無法使用此電子郵件地址註冊"
+_signup:
+_aboutMisskey:
+  about: "Misskey 是由 syuilo 自 2014 年起開發的開放原始碼軟體。"
+  original: "原始"
+  thisIsModifiedVersion: "{name} 使用原始 Misskey 的修改版本。"
+  translation: "翻譯 Misskey"
+_serverDisconnectedBehavior:
+_channel:
+  allowRenoteToExternal: "允許在頻道外轉發和引用"
+_instanceMute:
+  instanceMuteDescription: "包括對被靜音伺服器上的使用者的回覆，被設定的伺服器上所有貼文及轉發都會被靜音。"
+_theme:
+  keys:
+    renote: "轉發貼文"
+_soundSettings:
+  driveFileDurationWarnDescription: "使用長音效檔可能會影響 Misskey 的使用體驗。仍要使用此檔案嗎？"
+  driveFileError: "無法載入語音。請變更設定"
+_2fa:
+  moreDetailedGuideHere: "請點擊此處查看詳細說明。"
+_widgets:
+_poll:
+_profile:
+_timelines:
+_pages:
+  blocks:
+    dynamicDescription: "這個方塊已經廢止，現在開始請使用 {play}。"
+_notification:
+  youRenoted: "{name} 轉發了你的貼文"
+  renotedBySomeUsers: "{n}人做了轉發"
+  _types:
+    renote: "轉發貼文"
+  _actions:
+    renote: "轉發"
+_webhookSettings:
+  _events:
+    renote: "當被轉發時"
+  _systemEvents:
+    abuseReportResolved: "當處理了使用者的檢舉時"
+_abuseReport:
+  _notificationRecipient:
+    _recipientType:
+      _captions:
+        mail: "寄送到擁有監察員權限的使用者電子郵件地址（僅在收到檢舉時）"
+        webhook: "向指定的 SystemWebhook 發送通知（在收到檢舉和解決檢舉時發送）"
+_moderationLogTypes:
+  url: "URL"
+  title: "從外部網站安裝"
+_dataSaver:
+  _avatar:
+    description: "停止顯示大頭貼的動畫。由於動畫圖片的檔案大小可能比普通圖片大，這可以進一步減少資料流量。"
+_urlPreviewSetting:
+  timeoutDescription: "若取得預覽所需的時間超過這個值，則不會產生預覽。"
+  requireContentLength: "僅在能夠取得 Content-Length 時，才產生預覽。"
+  summaryProxy: "產生預覽的代理端點"
+  summaryProxyDescription: "使用摘要代理程式而不是 Misskey 本身產生預覽。"
+  summaryProxyDescription2: "以下參數會作為查詢字串連結到代理。如果代理端不支援，這些設定將被忽略。"
+  title: "內容功能表"

@@ -1,0 +1,15 @@
+renotedBy: "{user} Renotolta"
+deleteAndEditConfirm: "Biztosan törlöd ezt a jegyzetet és újrafogalmazza? Így eveszíted az összes reakciót, renote-ot és választ."
+renote: "Renote"
+unrenote: "Renote visszavonása"
+renoted: "Renotolva"
+cantRenote: "Nem lehet Renotolni"
+cantReRenote: "A Renote nem renotálható"
+inChannelRenote: "Csak csatornán bellüli Renote"
+renotes: "Renote"
+  _types:
+    renote: "Renote"
+    renote: "Renote"
+  _actions:
+    renote: "Renote"
+    renote: "Renote"
