@@ -297,9 +297,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteEditService: NoteEditService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			if (ps.text && (ps.text.length > this.config.maxNoteLength)) {
+			const contentLength = (ps.text?.length ?? 0) + (ps.cw?.length ?? 0);
+			if (contentLength > this.config.maxNoteLength) {
 				throw new ApiError(meta.errors.maxLength);
 			}
+
 			let visibleUsers: MiUser[] = [];
 			if (ps.visibleUserIds) {
 				visibleUsers = await this.usersRepository.findBy({

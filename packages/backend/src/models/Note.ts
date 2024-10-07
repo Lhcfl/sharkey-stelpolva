@@ -66,8 +66,8 @@ export class MiNote {
 	})
 	public name: string | null;
 
-	@Column('varchar', {
-		length: 512, nullable: true,
+	@Column('text', {
+		nullable: true,
 	})
 	public cw: string | null;
 
