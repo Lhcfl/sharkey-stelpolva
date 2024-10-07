@@ -6,7 +6,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { PollsRepository, EmojisRepository, NotesRepository } from '@/models/_.js';
+import type { PollsRepository, EmojisRepository, NotesRepository, ChannelsRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import type { MiRemoteUser } from '@/models/User.js';
 import type { MiNote } from '@/models/Note.js';
@@ -55,6 +55,9 @@ export class ApNoteService {
 
 		@Inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
+
+		@Inject(DI.channelsRepository)
+		private channelsRepository: ChannelsRepository,
 
 		private idService: IdService,
 		private apMfmService: ApMfmService,
@@ -299,6 +302,18 @@ export class ApNoteService {
 
 		const apEmojis = emojis.map(emoji => emoji.name);
 
+		const channel = await (async () => {
+			if (visibility === 'public') {
+				const channelPosc = text?.indexOf('\n📺 #sc');
+				let channelName = channelPosc !== -1 ? text?.slice(channelPosc).trim() : null;
+				if (channelName?.includes('\n')) channelName = null;
+				return channelName
+					?	await this.channelsRepository.findOneBy({ name: channelName })
+					: null;
+			}
+			return null;
+		})();
+
 		try {
 			return await this.noteCreateService.create(actor, {
 				createdAt: note.published ? new Date(note.published) : null,
@@ -317,6 +332,7 @@ export class ApNoteService {
 				poll,
 				uri: note.id,
 				url: url,
+				channel,
 			}, silent);
 		} catch (err: any) {
 			if (err.name !== 'duplicated') {

@@ -417,6 +417,10 @@ export class ApRendererService {
 			apAppend += `\n\nRE: ${quote}`;
 		}
 
+		if (note.channel) {
+			apAppend += `\n\n📺 #sc${note.channel.name}`;
+		}
+
 		const summary = note.cw === '' ? String.fromCharCode(0x200B) : note.cw;
 
 		const { content, noMisskeyContent } = this.apMfmService.getNoteHtml(note, apAppend);

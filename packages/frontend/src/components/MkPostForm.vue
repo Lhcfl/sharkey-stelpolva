@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span :class="$style.headerRightButtonText">{{ channel.name }}</span>
 				</button>
 			</template>
-			<button v-click-anime v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="channel != null || visibility === 'specified' || editId != null" @click="toggleLocalOnly">
+			<button v-click-anime v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="visibility === 'specified' || editId != null" @click="toggleLocalOnly">
 				<span v-if="!localOnly"><i class="ti ti-rocket"></i></span>
 				<span v-else><i class="ti ti-rocket-off"></i></span>
 			</button>
@@ -326,7 +326,7 @@ if ($i.isSilenced && visibility.value === 'public') {
 
 if (props.channel) {
 	visibility.value = 'public';
-	localOnly.value = true; // TODO: チャンネルが連合するようになった折には消す
+	// localOnly.value = true; // TODO: チャンネルが連合するようになった折には消す
 }
 
 // 公開以外へのリプライ時は元の公開範囲を引き継ぐ
@@ -500,11 +500,11 @@ function setVisibility() {
 }
 
 async function toggleLocalOnly() {
-	if (props.channel) {
-		visibility.value = 'public';
-		localOnly.value = true; // TODO: チャンネルが連合するようになった折には消す
-		return;
-	}
+	// if (props.channel) {
+	// 	visibility.value = 'public';
+	// 	localOnly.value = true; // TODO: チャンネルが連合するようになった折には消す
+	// 	return;
+	// }
 
 	const neverShowInfo = miLocalStorage.getItem('neverShowLocalOnlyInfo');
 
