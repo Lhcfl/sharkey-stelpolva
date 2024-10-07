@@ -11,6 +11,7 @@ import { RoleService } from '@/core/RoleService.js';
 import { RoleEntityService } from '@/core/entities/RoleEntityService.js';
 import { IdService } from '@/core/IdService.js';
 import { notificationRecieveConfig } from '@/models/json-schema/user.js';
+import { isSystemAccount } from '@/misc/is-system-account.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -28,6 +29,10 @@ export const meta = {
 				optional: false, nullable: true,
 			},
 			emailVerified: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			approved: {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
@@ -108,6 +113,10 @@ export const meta = {
 				},
 			},
 			isModerator: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			isSystem: {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
@@ -240,6 +249,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				mutedInstances: profile.mutedInstances,
 				notificationRecieveConfig: profile.notificationRecieveConfig,
 				isModerator: isModerator,
+				isSystem: isSystemAccount(user),
 				isSilenced: isSilenced,
 				isSuspended: user.isSuspended,
 				isHibernated: user.isHibernated,

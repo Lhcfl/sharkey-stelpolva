@@ -77,6 +77,7 @@ import { misskeyApi } from '@/scripts/misskey-api.js';
 import { query, extractDomain } from '@/scripts/url.js';
 import { login } from '@/account.js';
 import { i18n } from '@/i18n.js';
+import { showSystemAccountDialog } from '@/scripts/show-system-account-dialog.js';
 
 const signing = ref(false);
 const user = ref<Misskey.entities.UserDetailed | null>(null);
@@ -202,6 +203,10 @@ function loginFailed(err: any): void {
 		}
 		case 'e03a5f46-d309-4865-9b69-56282d94e1eb': {
 			showSuspendedDialog();
+			break;
+		}
+		case 's8dhsj9s-a93j-493j-ja9k-kas9sj20aml2': {
+			showSystemAccountDialog();
 			break;
 		}
 		case '22d05606-fbcf-421a-a2db-b32610dcfd1b': {

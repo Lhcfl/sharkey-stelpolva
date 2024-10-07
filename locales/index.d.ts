@@ -2569,6 +2569,14 @@ export interface Locale extends ILocale {
      */
     "yourAccountSuspendedDescription": string;
     /**
+     * This is a system account
+     */
+    "systemAccountTitle": string;
+    /**
+     * This account is created and managed automatically by the system, and cannot be logged into.
+     */
+    "systemAccountDescription": string;
+    /**
      * トークンが無効です
      */
     "tokenRevoked": string;

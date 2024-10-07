@@ -24,7 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</div>
 
-				<MkInfo v-if="['instance.actor', 'relay.actor'].includes(user.username)">{{ i18n.ts.isSystemAccount }}</MkInfo>
+				<MkInfo v-if="isSystem">{{ i18n.ts.isSystemAccount }}</MkInfo>
 
 				<FormLink v-if="user.host" :to="`/instance-info/${user.host}`">{{ i18n.ts.instanceInfo }}</FormLink>
 
@@ -79,11 +79,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<FormSection>
 					<div class="_gaps">
 						<MkSwitch v-model="silenced" @update:modelValue="toggleSilence">{{ i18n.ts.silence }}</MkSwitch>
-						<MkSwitch v-model="suspended" @update:modelValue="toggleSuspend">{{ i18n.ts.suspend }}</MkSwitch>
+						<MkSwitch v-if="!isSystem" v-model="suspended" @update:modelValue="toggleSuspend">{{ i18n.ts.suspend }}</MkSwitch>
 						<MkSwitch v-model="markedAsNSFW" @update:modelValue="toggleNSFW">{{ i18n.ts.markAsNSFW }}</MkSwitch>
 
 						<div>
-							<MkButton v-if="user.host == null" inline style="margin-right: 8px;" @click="resetPassword"><i class="ti ti-key"></i> {{ i18n.ts.resetPassword }}</MkButton>
+							<MkButton v-if="user.host == null && !isSystem" inline style="margin-right: 8px;" @click="resetPassword"><i class="ti ti-key"></i> {{ i18n.ts.resetPassword }}</MkButton>
 						</div>
 
 						<MkFolder>
@@ -114,7 +114,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkButton v-if="iAmModerator" inline danger style="margin-right: 8px;" @click="unsetUserBanner"><i class="ti ti-photo"></i> {{ i18n.ts.unsetUserBanner }}</MkButton>
 							<MkButton v-if="iAmModerator" inline danger @click="deleteAllFiles"><i class="ph-cloud ph-bold ph-lg"></i> {{ i18n.ts.deleteAllFiles }}</MkButton>
 						</div>
-						<MkButton v-if="$i.isAdmin" inline danger @click="deleteAccount">{{ i18n.ts.deleteAccount }}</MkButton>
+						<MkButton v-if="$i.isAdmin && !isSystem" inline danger @click="deleteAccount">{{ i18n.ts.deleteAccount }}</MkButton>
 					</div>
 				</FormSection>
 			</div>
@@ -227,15 +227,16 @@ const tab = ref(props.initialTab);
 const chartSrc = ref('per-user-notes');
 const user = ref<null | Misskey.entities.UserDetailed>();
 const init = ref<ReturnType<typeof createFetcher>>();
-const info = ref<any>();
+const info = ref<Misskey.entities.AdminShowUserResponse | null>(null);
 const ips = ref<Misskey.entities.AdminGetUserIpsResponse | null>(null);
-const ap = ref<any>(null);
+const ap = ref<Misskey.entities.ApGetResponse | null>(null);
 const moderator = ref(false);
 const silenced = ref(false);
 const approved = ref(false);
 const suspended = ref(false);
 const markedAsNSFW = ref(false);
 const moderationNote = ref('');
+const isSystem = computed(() => info.value?.isSystem ?? false);
 const filesPagination = {
 	endpoint: 'admin/drive/files' as const,
 	limit: 10,

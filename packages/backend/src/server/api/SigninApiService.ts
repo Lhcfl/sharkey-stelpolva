@@ -26,6 +26,7 @@ import { RateLimiterService } from './RateLimiterService.js';
 import { SigninService } from './SigninService.js';
 import type { AuthenticationResponseJSON } from '@simplewebauthn/types';
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { isSystemAccount } from '@/misc/is-system-account.js';
 
 @Injectable()
 export class SigninApiService {
@@ -122,6 +123,12 @@ export class SigninApiService {
 		if (user.isSuspended) {
 			return error(403, {
 				id: 'e03a5f46-d309-4865-9b69-56282d94e1eb',
+			});
+		}
+
+		if (isSystemAccount(user)) {
+			return error(403, {
+				id: 's8dhsj9s-a93j-493j-ja9k-kas9sj20aml2',
 			});
 		}
 

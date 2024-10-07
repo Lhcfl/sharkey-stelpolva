@@ -15,6 +15,7 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { RelationshipJobData } from '@/queue/types.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { isSystemAccount } from '@/misc/is-system-account.js';
 
 @Injectable()
 export class UserSuspendService {
@@ -38,6 +39,8 @@ export class UserSuspendService {
 
 	@bindThis
 	public async suspend(user: MiUser, moderator: MiUser): Promise<void> {
+		if (isSystemAccount(user)) throw new Error('cannot suspend a system account');
+
 		await this.usersRepository.update(user.id, {
 			isSuspended: true,
 		});
