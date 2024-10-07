@@ -406,6 +406,10 @@ export class ApRendererService {
 
 		const files = await getPromisedFiles(note.fileIds);
 
+		if (note.channel) {
+			note.text += `\n\n📺 sc #${note.channel.name}`;
+		}
+
 		const text = note.text ?? '';
 		let poll: MiPoll | null = null;
 
@@ -417,10 +421,6 @@ export class ApRendererService {
 
 		if (quote) {
 			apAppend += `\n\nRE: ${quote}`;
-		}
-
-		if (note.channel) {
-			note.text += `\n\n📺 sc #${note.channel.name}`;
 		}
 
 		const summary = note.cw === '' ? String.fromCharCode(0x200B) : note.cw;
