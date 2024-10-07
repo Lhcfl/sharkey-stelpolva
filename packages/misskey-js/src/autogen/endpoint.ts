@@ -418,6 +418,10 @@ import type {
 	NotesCreateRequest,
 	NotesCreateResponse,
 	NotesDeleteRequest,
+	NotesMakePrivateRequest,
+	NotesMakePrivateManyRequest,
+	NotesMakePrivateManyCountRequest,
+	NotesMakePrivateManyCountResponse,
 	NotesFavoritesCreateRequest,
 	NotesFavoritesDeleteRequest,
 	NotesFeaturedRequest,
@@ -873,6 +877,9 @@ export type Endpoints = {
 	'notes/conversation': { req: NotesConversationRequest; res: NotesConversationResponse };
 	'notes/create': { req: NotesCreateRequest; res: NotesCreateResponse };
 	'notes/delete': { req: NotesDeleteRequest; res: EmptyResponse };
+	'notes/make-private': { req: NotesMakePrivateRequest; res: EmptyResponse };
+	'notes/make-private-many': { req: NotesMakePrivateManyRequest; res: EmptyResponse };
+	'notes/make-private-many-count': { req: NotesMakePrivateManyCountRequest; res: NotesMakePrivateManyCountResponse };
 	'notes/favorites/create': { req: NotesFavoritesCreateRequest; res: EmptyResponse };
 	'notes/favorites/delete': { req: NotesFavoritesDeleteRequest; res: EmptyResponse };
 	'notes/featured': { req: NotesFeaturedRequest; res: NotesFeaturedResponse };
@@ -1269,6 +1276,9 @@ export const endpointReqTypes: Record<keyof Endpoints, 'application/json' | 'mul
 	'notes/conversation': 'application/json',
 	'notes/create': 'application/json',
 	'notes/delete': 'application/json',
+	'notes/make-private': 'application/json',
+	'notes/make-private-many': 'application/json',
+	'notes/make-private-many-count': 'application/json',
 	'notes/favorites/create': 'application/json',
 	'notes/favorites/delete': 'application/json',
 	'notes/featured': 'application/json',

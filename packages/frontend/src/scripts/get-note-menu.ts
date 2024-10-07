@@ -209,6 +209,19 @@ export function getNoteMenu(props: {
 		});
 	}
 
+	function makePrivate(): void {
+		os.confirm({
+			type: 'warning',
+			text: `${i18n.ts.makePrivate.description} ${i18n.ts.makePrivate.confirm}`,
+		}).then(({ canceled }) => {
+			if (canceled) return;
+
+			misskeyApi('notes/make-private', {
+				noteId: appearNote.id,
+			});
+		});
+	}
+
 	function edit(): void {
 		os.post({
 			initialNote: appearNote,
@@ -323,7 +336,7 @@ export function getNoteMenu(props: {
 			}, getCopyNoteLinkMenu(appearNote, i18n.ts.copyLink)
 			, (appearNote.url || appearNote.uri) ?
 				getCopyNoteOriginLinkMenu(appearNote, 'Copy link (Origin)')
-			: undefined,
+				: undefined,
 			(appearNote.url || appearNote.uri) ? {
 				icon: 'ti ti-external-link',
 				text: i18n.ts.showOnRemote,
@@ -452,6 +465,12 @@ export function getNoteMenu(props: {
 					action: delEdit,
 				},
 				{
+					icon: 'ph-eye-slash ph-bold ph-lg',
+					text: i18n.ts.makePrivate.text,
+					danger: true,
+					action: makePrivate,
+				},
+				{
 					icon: 'ti ti-trash',
 					text: i18n.ts.delete,
 					danger: true,
@@ -472,19 +491,19 @@ export function getNoteMenu(props: {
 		}, getCopyNoteLinkMenu(appearNote, i18n.ts.copyLink)
 		, (appearNote.url || appearNote.uri) ?
 			getCopyNoteOriginLinkMenu(appearNote, 'Copy link (Origin)')
-		: undefined,
-		(appearNote.url || appearNote.uri) ? {
-			icon: 'ti ti-external-link',
-			text: i18n.ts.showOnRemote,
-			action: () => {
-				window.open(appearNote.url ?? appearNote.uri, '_blank', 'noopener');
-			},
-		} : undefined]
+			: undefined,
+										(appearNote.url || appearNote.uri) ? {
+											icon: 'ti ti-external-link',
+											text: i18n.ts.showOnRemote,
+											action: () => {
+												window.open(appearNote.url ?? appearNote.uri, '_blank', 'noopener');
+											},
+										} : undefined]
 			.filter(x => x !== undefined);
 	}
 
 	if (noteActions.length > 0) {
-		menu = menu.concat([{ type: "divider" }, ...noteActions.map(action => ({
+		menu = menu.concat([{ type: 'divider' }, ...noteActions.map(action => ({
 			icon: 'ti ti-plug',
 			text: action.title,
 			action: () => {
@@ -494,7 +513,7 @@ export function getNoteMenu(props: {
 	}
 
 	if (defaultStore.state.devMode) {
-		menu = menu.concat([{ type: "divider" }, {
+		menu = menu.concat([{ type: 'divider' }, {
 			icon: 'ti ti-id',
 			text: i18n.ts.copyNoteId,
 			action: () => {

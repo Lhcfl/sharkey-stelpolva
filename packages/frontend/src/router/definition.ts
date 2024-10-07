@@ -584,6 +584,10 @@ const routes: RouteDef[] = [{
 	component: page(() => import('@/pages/reversi/game.vue')),
 	loginRequired: false,
 }, {
+	path: '/make-private-many',
+	component: page(() => import('@/pages/make-private-many.vue')),
+	loginRequired: true,
+}, {
 	path: '/timeline',
 	component: page(() => import('@/pages/timeline.vue')),
 }, {

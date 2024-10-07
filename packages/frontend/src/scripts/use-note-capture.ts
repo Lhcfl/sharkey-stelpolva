@@ -5,10 +5,10 @@
 
 import { onUnmounted, Ref, ShallowRef } from 'vue';
 import * as Misskey from 'misskey-js';
+import { misskeyApi } from './misskey-api.js';
 import { useStream } from '@/stream.js';
 import { $i } from '@/account.js';
 import * as os from '@/os.js';
-import { misskeyApi } from './misskey-api.js';
 
 export function useNoteCapture(props: {
 	rootEl: ShallowRef<HTMLElement | undefined>;
@@ -39,7 +39,7 @@ export function useNoteCapture(props: {
 
 					await props.onReplyCallback(replyNote);
 				} catch { /* empty */ }
-				
+
 				break;
 			}
 
@@ -101,12 +101,24 @@ export function useNoteCapture(props: {
 				break;
 			}
 
+			case 'madePrivate': {
+				if ($i?.id === note.value.userId) {
+					note.value.visibility = 'specified';
+				} else {
+					// perform delete
+					props.isDeletedRef.value = true;
+
+					if (props.onDeleteCallback) await props.onDeleteCallback(id);
+				}
+				break;
+			}
+
 			case 'updated': {
 				try {
 					const editedNote = await misskeyApi('notes/show', {
 						noteId: id,
 					});
-					
+
 					const keys = new Set<string>();
 					Object.keys(editedNote)
 						.concat(Object.keys(note.value))

@@ -288,6 +288,9 @@ import * as ep___notes_clips from './endpoints/notes/clips.js';
 import * as ep___notes_conversation from './endpoints/notes/conversation.js';
 import * as ep___notes_create from './endpoints/notes/create.js';
 import * as ep___notes_delete from './endpoints/notes/delete.js';
+import * as ep___notes_makePrivate from './endpoints/notes/make-private.js';
+import * as ep___notes_makePrivateMany from './endpoints/notes/make-private-many.js';
+import * as ep___notes_makePrivateManyCount from './endpoints/notes/make-private-many-count.js';
 import * as ep___notes_favorites_create from './endpoints/notes/favorites/create.js';
 import * as ep___notes_favorites_delete from './endpoints/notes/favorites/delete.js';
 import * as ep___notes_featured from './endpoints/notes/featured.js';
@@ -685,6 +688,9 @@ const $notes_clips: Provider = { provide: 'ep:notes/clips', useClass: ep___notes
 const $notes_conversation: Provider = { provide: 'ep:notes/conversation', useClass: ep___notes_conversation.default };
 const $notes_create: Provider = { provide: 'ep:notes/create', useClass: ep___notes_create.default };
 const $notes_delete: Provider = { provide: 'ep:notes/delete', useClass: ep___notes_delete.default };
+const $notes_makePrivate: Provider = { provide: 'ep:notes/make-private', useClass: ep___notes_makePrivate.default };
+const $notes_makePrivateMany: Provider = { provide: 'ep:notes/make-private-many', useClass: ep___notes_makePrivateMany.default };
+const $notes_makePrivateManyCount: Provider = { provide: 'ep:notes/make-private-many-count', useClass: ep___notes_makePrivateManyCount.default };
 const $notes_favorites_create: Provider = { provide: 'ep:notes/favorites/create', useClass: ep___notes_favorites_create.default };
 const $notes_favorites_delete: Provider = { provide: 'ep:notes/favorites/delete', useClass: ep___notes_favorites_delete.default };
 const $notes_featured: Provider = { provide: 'ep:notes/featured', useClass: ep___notes_featured.default };
@@ -1086,6 +1092,9 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$notes_conversation,
 		$notes_create,
 		$notes_delete,
+		$notes_makePrivate,
+		$notes_makePrivateMany,
+		$notes_makePrivateManyCount,
 		$notes_favorites_create,
 		$notes_favorites_delete,
 		$notes_featured,
@@ -1480,6 +1489,9 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$notes_conversation,
 		$notes_create,
 		$notes_delete,
+		$notes_makePrivate,
+		$notes_makePrivateMany,
+		$notes_makePrivateManyCount,
 		$notes_favorites_create,
 		$notes_favorites_delete,
 		$notes_featured,

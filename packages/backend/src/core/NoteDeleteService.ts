@@ -25,6 +25,7 @@ import { MetaService } from '@/core/MetaService.js';
 import { SearchService } from '@/core/SearchService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
+import { IdService } from '@/core/IdService.js';
 
 @Injectable()
 export class NoteDeleteService {
@@ -41,6 +42,7 @@ export class NoteDeleteService {
 		@Inject(DI.instancesRepository)
 		private instancesRepository: InstancesRepository,
 
+		private idService: IdService,
 		private userEntityService: UserEntityService,
 		private noteEntityService: NoteEntityService,
 		private globalEventService: GlobalEventService,
@@ -165,6 +167,84 @@ export class NoteDeleteService {
 				noteUserHost: user.host,
 				note: note,
 			});
+		}
+	}
+
+	/**
+	 * 投稿をmake privateします。
+	 * @param user 投稿者
+	 * @param note 投稿
+	 */
+	async makePrivate(user: { id: MiUser['id']; uri: MiUser['uri']; host: MiUser['host']; isBot: MiUser['isBot']; }, note: MiNote, quiet = false, deleter?: MiUser) {
+		if (this.userEntityService.isRemoteUser(user)) {
+			// SKIP: should not make private for remote user
+			return;
+		}
+		if (note.visibility === 'specified') {
+			// SKIP: should not make private for already private note
+			return;
+		}
+		const deletedAt = new Date();
+
+		if (!quiet) {
+			//#region ローカルの投稿なら削除アクティビティを配送
+			if (this.userEntityService.isLocalUser(user) && !note.localOnly) {
+				let renote: MiNote | null = null;
+
+				this.globalEventService.publishNoteStream(note.id, 'madePrivate', {
+					deletedAt: deletedAt,
+				});
+
+				// if deleted note is renote
+				if (isRenote(note) && !isQuote(note)) {
+					renote = await this.notesRepository.findOneBy({
+						id: note.renoteId,
+					});
+				}
+
+				const content = this.apRendererService.addContext(renote
+					? this.apRendererService.renderUndo(this.apRendererService.renderAnnounce(renote.uri ?? `${this.config.url}/notes/${renote.id}`, note), user)
+					: this.apRendererService.renderDelete(this.apRendererService.renderTombstone(`${this.config.url}/notes/${note.id}`), user));
+
+				this.deliverToConcerned(user, note, content);
+			}
+		}
+
+		this.searchService.unindexNote(note);
+
+		await this.notesRepository.update(note.id, {
+			visibility: 'specified',
+		});
+
+		// if (deleter && (note.userId !== deleter.id)) {
+		// 	const user = await this.usersRepository.findOneByOrFail({ id: note.userId });
+		// 	this.moderationLogService.log(deleter, 'deleteNote', {
+		// 		noteId: note.id,
+		// 		noteUserId: note.userId,
+		// 		noteUserUsername: user.username,
+		// 		noteUserHost: user.host,
+		// 		note: note,
+		// 	});
+		// }
+	}
+
+	async makePrivateMany(user: { id: MiUser['id']; uri: MiUser['uri']; host: MiUser['host']; isBot: MiUser['isBot']; }, sinceDate: number, untilDate: number, countOnly = false) {
+		const untilId = this.idService.gen(untilDate);
+		const sinceId = this.idService.gen(sinceDate);
+		const query = this.notesRepository.createQueryBuilder()
+			.where('"userId" = :userId', { userId: user.id })
+			.andWhere('NOT visibility = \'specified\'')
+			.andWhere('id < :untilId', { untilId })
+			.andWhere('id > :sinceId', { sinceId });
+
+		if (countOnly) {
+			return query.getCount();
+		} else {
+			const shouldMakePrivateNotes = await query.getMany();
+			for (const note of shouldMakePrivateNotes) {
+				this.makePrivate(user, note);
+			}
+			return shouldMakePrivateNotes.length;
 		}
 	}
 
