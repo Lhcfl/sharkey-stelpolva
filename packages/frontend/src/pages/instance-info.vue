@@ -127,12 +127,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkPagination v-slot="{items}" :pagination="followingPagination">
 					<div class="follow-relations-list">
 						<div v-for="followRelationship in items" :key="followRelationship.id" class="follow-relation">
-							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.followee.updatedAt)}`" :to="`/admin/user/${followRelationship.followee.id}`">
-								<MkUserCardMini :user="followRelationship.followee" :withChart="false" />
+							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.followee.updatedAt)}`" :to="`/admin/user/${followRelationship.followee.id}`" class="user">
+								<MkUserCardMini :user="followRelationship.followee" :withChart="false"/>
 							</MkA>
 							<span class="arrow">→</span>
-							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.follower.updatedAt)}`" :to="`/admin/user/${followRelationship.follower.id}`">
-								<MkUserCardMini :user="followRelationship.follower" :withChart="false" />
+							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.follower.updatedAt)}`" :to="`/admin/user/${followRelationship.follower.id}`" class="user">
+								<MkUserCardMini :user="followRelationship.follower" :withChart="false"/>
 							</MkA>
 						</div>
 					</div>
@@ -142,12 +142,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkPagination v-slot="{items}" :pagination="followersPagination">
 					<div class="follow-relations-list">
 						<div v-for="followRelationship in items" :key="followRelationship.id" class="follow-relation">
-							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.followee.updatedAt)}`" :to="`/admin/user/${followRelationship.followee.id}`">
-								<MkUserCardMini :user="followRelationship.followee" :withChart="false" />
+							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.followee.updatedAt)}`" :to="`/admin/user/${followRelationship.followee.id}`" class="user">
+								<MkUserCardMini :user="followRelationship.followee" :withChart="false"/>
 							</MkA>
 							<span class="arrow">←</span>
-							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.follower.updatedAt)}`" :to="`/admin/user/${followRelationship.follower.id}`">
-								<MkUserCardMini :user="followRelationship.follower" :withChart="false" />
+							<MkA v-tooltip.mfm="`Last posted: ${dateString(followRelationship.follower.updatedAt)}`" :to="`/admin/user/${followRelationship.follower.id}`" class="user">
+								<MkUserCardMini :user="followRelationship.follower" :withChart="false"/>
 							</MkA>
 						</div>
 					</div>
