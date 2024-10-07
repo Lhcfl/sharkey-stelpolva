@@ -1,0 +1,10 @@
+@font-face {
+  font-family: "Clear Han Serif";
+  font-display: swap;
+  src:  local("Clear Han Serif"),
+        url("/static-assets/fonts/clearhanserif.original.v1.07.woff2") format("woff2");
+}
+
+html.default-font-clearsans {
+	font-family: 'sharkey-theme-font-face', "Clear Han Serif", "Times New Roman", Times, serif
+}

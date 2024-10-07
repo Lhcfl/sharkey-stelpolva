@@ -8,77 +8,6 @@
 	src: url('/static-assets/fonts/Lexend-VariableFont_wght.ttf') format('opentype');
 }
 
-@font-face {
-	font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-	font-family: 'MaoKenTangYuan';
-	font-style: normal;
-	font-weight: 400;
-	src: url('/static-assets/fonts/MaoKenTangYuan0.12.woff2') format('woff2');
-}
-@font-face {
-	font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-	font-family: 'jf-openhuninn';
-	font-style: normal;
-	font-weight: 400;
-	src: url('/static-assets/fonts/jf-openhuninn-2.1.woff2') format("woff2");
-}
-
-@font-face {
-  font-family: "Clear Han Serif";
-  font-display: swap;
-  src:  local("Clear Han Serif"),
-        url("/static-assets/fonts/clearhanserif.original.v1.07.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "ChillRoundGothic";
-  font-display: swap;
-  src: url("/static-assets/fonts/ChillRoundGothic_Normal.woff") format("woff");
-}
-
-@font-face {
-	font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-	font-family: 'YiShanBeiZhuanTi';
-	font-style: normal;
-	font-weight: 400;
-	src: url('/static-assets/fonts/YiShanBeiZhuanTi.ttf') format('opentype');
-}
-@font-face {
-	font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-	font-family: "Chong Xi Small Seal";
-	font-style: normal;
-	font-weight: 400;
-	src: url('/static-assets/fonts/chongxi_seal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: "fusion-pixel-8";
-  font-display: swap;
-  src: url("/static-assets/fonts/fusion-pixel/fusion-pixel-8px-proportional-ja.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-8px-proportional-ko.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-8px-proportional-latin.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-8px-proportional-zh_hans.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-8px-proportional-zh_hant.woff2") format("woff2");
-}
-@font-face {
-  font-family: "fusion-pixel-10";
-  font-display: swap;
-  src: url("/static-assets/fonts/fusion-pixel/fusion-pixel-10px-proportional-ja.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-10px-proportional-ko.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-10px-proportional-latin.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-10px-proportional-zh_hans.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-10px-proportional-zh_hant.woff2") format("woff2");
-}
-@font-face {
-  font-family: "fusion-pixel-12";
-  font-display: swap;
-  src: url("/static-assets/fonts/fusion-pixel/fusion-pixel-12px-proportional-ja.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-12px-proportional-ko.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-12px-proportional-latin.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-12px-proportional-zh_hans.woff2") format("woff2"),
-		url("/static-assets/fonts/fusion-pixel/fusion-pixel-12px-proportional-zh_hant.woff2") format("woff2");
-}
-
 /*
  * SPDX-FileCopyrightText: syuilo and misskey-project
  *
@@ -213,80 +142,17 @@ html {
 	&.useSystemFont {
 		font-family: system-ui;
 	}
-
-	&.default-font-sharkey-default {
-		font-family: 'sharkey-theme-font-face', 'Lexend', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
-	}
-
-	&.default-font-maokentangyuan {
-		font-family: 'sharkey-theme-font-face', 'Lexend', 'MaoKenTangYuan', 'jf-openhuninn', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
-		&[lang="zh-WY"],
-		&[lang="zh-TW"] {
-			font-family: 'sharkey-theme-font-face', 'Lexend', 'jf-openhuninn', 'MaoKenTangYuan', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
-		}
-	}
-
-	&.default-font-chillroundgothic {
-		font-family: 'sharkey-theme-font-face', 'Lexend', 'ChillRoundGothic', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
-	}
-
-	&.default-font-lxgw-wenkai {
-		@import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css");
-		font-family: 'sharkey-theme-font-face', "LXGW WenKai", "Times New Roman", Times, serif;
-		&[lang="zh-WY"],
-		&[lang="zh-TW"] {
-			@import url('https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@300;400;700&display=swap');
-			font-family: 'sharkey-theme-font-face', "LXGW WenKai TC", "LXGW WenKai", 'Times New Roman', Times, serif;
-		}
-	}
-
-	&.default-font-clearsans {
-		font-family: 'sharkey-theme-font-face', "Clear Han Serif", "Times New Roman", Times, serif
-	}
-
-	&.default-font-jinghualaosong {
-		@import url("https://chinese-fonts-cdn.deno.dev/packages/jhlst/dist/京華老宋体v2_002/result.css");
-		font-family: 'sharkey-theme-font-face', "KingHwa_OldSong", "Times New Roman", Times, serif
-	}
-
-	&.default-font-genryomin2 {
-		@import url('https://static.zeoseven.com/cn/301/main/result.css');
-		font-family: 'sharkey-theme-font-face', "GenWanMin2 TC R", "Times New Roman", Times, serif
-	}
-
-	&.default-font-misskey-biz {
-		font-family: 'sharkey-theme-font-face', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
-	}
-
-	&.default-font-roboto {
-		font-family: 'sharkey-theme-font-face', Roboto, Arial, sans-serif;
-	}
-
-	&.default-font-arial {
-		font-family: 'sharkey-theme-font-face', Arial, sans-serif;
-	}
-
-	&.default-font-times {
-		font-family: 'sharkey-theme-font-face', 'Times New Roman', Times, serif;
-	}
-
-	&.default-font-yishanbeizhuan {
-		font-family: 'sharkey-theme-font-face', 'YiShanBeiZhuanTi', "Chong Xi Small Seal",'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
-	}
-	&.default-font-chongxiseal {
-		font-family: 'sharkey-theme-font-face', "Chong Xi Small Seal", 'YiShanBeiZhuanTi','Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
-	}
-
-	&.default-font-fusion-pixel-8 {
-		font-family: 'sharkey-theme-font-face', 'fusion-pixel-8', Arial, sans-serif;
-	}
-	&.default-font-fusion-pixel-10 {
-		font-family: 'sharkey-theme-font-face', 'fusion-pixel-10', Arial, sans-serif;
-	}
-	&.default-font-fusion-pixel-12 {
-		font-family: 'sharkey-theme-font-face', 'fusion-pixel-12', Arial, sans-serif;
-	}
 }
+
+@import "./styles-font/usual.scss";
+@import "./styles-font/maokentangyuan.scss";
+@import "./styles-font/chillroundgothic.scss";
+@import "./styles-font/clearsans.scss";
+@import "./styles-font/lgtw-wenkai.scss";
+@import "./styles-font/genryomin2.scss";
+@import "./styles-font/jinghualaosong.scss";
+@import "./styles-font/fusion-pixel.scss";
+@import "./styles-font/zhuanti.scss";
 
 html._themeChanging_ {
 	&, * {

@@ -1,0 +1,9 @@
+html.default-font-lxgw-wenkai {
+	@import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css");
+	font-family: 'sharkey-theme-font-face', "LXGW WenKai", "Times New Roman", Times, serif;
+	&[lang="zh-WY"],
+	&[lang="zh-TW"] {
+		@import url('https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@300;400;700&display=swap');
+		font-family: 'sharkey-theme-font-face', "LXGW WenKai TC", "LXGW WenKai", 'Times New Roman', Times, serif;
+	}
+}
