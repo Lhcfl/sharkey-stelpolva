@@ -92,6 +92,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkButton danger @click="updateRepliesAll(false)"><i class="ph-chat ph-bold ph-lg"></i> {{ i18n.ts.hideRepliesToOthersInTimelineAll }}</MkButton>
 		</div>
 	</FormSection>
+	<FormSection>
+		<div class="_gaps_s">
+			<MkButton link to="/make-private-many"><i class="ph-eye-slash ph-bold ph-lg"></i> {{ i18n.ts.makePrivate.textmany }}</MkButton>
+		</div>
+	</FormSection>
 </div>
 </template>
 
