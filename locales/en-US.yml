@@ -1349,6 +1349,7 @@ makePrivate:
   textmany: Make posts private!
   manyWarn: Do you really want to make these {count} posts private in batches? This operation is irreversible and your posts will only be visible to you forever (really!)
   didStart: The making-private process has started
+  bulkText: Bulk make posts private
 _delivery:
   status: "Delivery status"
   stop: "Suspend delivery"

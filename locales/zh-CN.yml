@@ -1282,6 +1282,7 @@ makePrivate:
   textmany: 批量私密化！
   manyWarn: 真的要批量私密化这 {count} 个帖子吗？这个操作不可逆，你的这些帖子会永远只有你自己可见（真的！）
   didStart: 私密化进程已经开始
+  bulkText: 批量私密化帖子
 _delivery:
   status: "投递状态"
   stop: "停止投递"

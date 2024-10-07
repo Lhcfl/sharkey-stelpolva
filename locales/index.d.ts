@@ -5404,6 +5404,10 @@ export interface Locale extends ILocale {
          * The making-private process has started
          */
         "didStart": string;
+        /**
+         * Bulk make posts private
+         */
+        "bulkText": string;
     };
     "_delivery": {
         /**
