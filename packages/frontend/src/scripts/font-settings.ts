@@ -6,6 +6,7 @@ const fontList = [
 	{ id: 'maokentangyuan', name: '猫啃糖圆' },
 	{ id: 'chillroundgothic', name: '寒蝉圆黑' },
 	{ id: 'lxgw-wenkai', name: '霞鹜文楷' },
+	{ id: 'lxgw-marker-gothic', name: '霞鹜漫黑' },
 	{ id: 'clearsans', name: '思源屏显臻宋' },
 	{ id: 'genryomin2', name: '源流明體' },
 	{ id: 'genwanmin2', name: '源雲明體' },
@@ -31,9 +32,9 @@ function getFontOptionsList(val: string): { id: string, name: string, default?: 
 			return [
 				{ name: 'Extra Light', id: 'EL' },
 				{ name: 'Light', id: 'L' },
-				{ name: 'Middle', id: 'M' },
 				{ name: 'Normal', id: 'N', default: true },
 				{ name: 'Regular', id: 'R' },
+				{ name: 'Middle', id: 'M' },
 				{ name: 'Bold', id: 'B' },
 				{ name: 'Heavy', id: 'H' },
 			];
