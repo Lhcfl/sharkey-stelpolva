@@ -156,11 +156,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</template>
 					<MkLazy>
 						<div v-if="noteview === 'pinned'" class="_gaps">
-							<div v-if="user.pinnedNotes.length < 1" class="_fullinfo">
+							<div v-if="pinnedNotes.length < 1" class="_fullinfo">
 								<img :src="infoImageUrl" class="_ghost" aria-hidden="true" :alt="i18n.ts.noNotes"/>
 								<div>{{ i18n.ts.noNotes }}</div>
 							</div>
-							<MkDateSeparatedList v-else v-slot="{ item: note }" :items="user.pinnedNotes" :noGap="true" :ad="true" class="_panel">
+							<MkDateSeparatedList v-else v-slot="{ item: note }" :items="pinnedNotes" :noGap="true" :ad="true" class="_panel">
 								<MkNote :key="note.id" class="note" :note="note" :pinned="true"/>
 							</MkDateSeparatedList>
 						</div>
@@ -204,8 +204,8 @@ import { misskeyApi } from '@/scripts/misskey-api.js';
 import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/scripts/isFfVisibleForMe.js';
 import { useRouter } from '@/router/supplier.js';
 import { getStaticImageUrl } from '@/scripts/media-proxy.js';
-import { infoImageUrl } from "@/instance.js";
-import MkDateSeparatedList from "@/components/MkDateSeparatedList.vue";
+import { infoImageUrl } from '@/instance.js';
+import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 
 const MkNote = defineAsyncComponent(() =>
 	(defaultStore.state.noteDesign === 'misskey') ? import('@/components/MkNote.vue') :
@@ -254,6 +254,9 @@ const isEditingMemo = ref(false);
 const moderationNote = ref(props.user.moderationNote);
 const editModerationNote = ref(false);
 const noteview = ref<string | null>(null);
+
+// Sort pinned notes by date to match the other columns and ensure that MkDateSeparatedList does not break.
+const pinnedNotes = computed(() => Array.from(user.value.pinnedNotes).sort((a, b) => b.id.localeCompare(a.id)));
 
 const listenbrainzdata = ref(false);
 if (props.user.listenbrainz) {
