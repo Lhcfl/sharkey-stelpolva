@@ -7957,6 +7957,7 @@ export type operations = {
           host: string;
           isSuspended?: boolean;
           isNSFW?: boolean;
+          rejectReports?: boolean;
           moderationNote?: string;
         };
       };
