@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<template #default="{ items: notes }">
 						<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.panel" :noGap="true">
-							<FollowingFeedEntry v-if="!isHardMuted(note)" :isMuted="isSoftMuted(note)" :note="note" @select="userSelected"/>
+							<SkFollowingFeedEntry v-if="!isHardMuted(note)" :isMuted="isSoftMuted(note)" :note="note" @select="userSelected"/>
 						</MkDateSeparatedList>
 					</template>
 				</MkPagination>
@@ -30,7 +30,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<div v-if="isWideViewport" ref="userScroll" :class="$style.user">
 		<MkHorizontalSwipe v-if="selectedUserId" v-model:tab="currentTab" :tabs="headerTabs">
-			<UserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withRenotes="withUserRenotes" :withReplies="withUserReplies" :onlyFiles="withOnlyFiles"/>
+			<SkUserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withRenotes="withUserRenotes" :withReplies="withUserReplies" :onlyFiles="withOnlyFiles"/>
 		</MkHorizontalSwipe>
 	</div>
 </div>
@@ -54,13 +54,13 @@ import { infoImageUrl } from '@/instance.js';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 import { Tab } from '@/components/global/MkPageHeader.tabs.vue';
 import { PageHeaderItem } from '@/types/page-header.js';
-import FollowingFeedEntry from '@/components/FollowingFeedEntry.vue';
+import SkFollowingFeedEntry from '@/components/SkFollowingFeedEntry.vue';
 import { useRouter } from '@/router/supplier.js';
 import * as os from '@/os.js';
 import MkPageHeader from '@/components/global/MkPageHeader.vue';
 import { $i } from '@/account.js';
 import { checkWordMute } from '@/scripts/check-word-mute.js';
-import UserRecentNotes from '@/components/UserRecentNotes.vue';
+import SkUserRecentNotes from '@/components/SkUserRecentNotes.vue';
 import { useScrollPositionManager } from '@/nirax.js';
 import { getScrollContainer } from '@/scripts/scroll.js';
 
@@ -77,7 +77,7 @@ const router = useRouter();
 // eslint-disable-next-line vue/no-setup-props-reactivity-loss
 const currentTab: Ref<FollowingFeedTab> = ref(props.initialTab);
 const mutualsOnly: Ref<boolean> = computed(() => currentTab.value === mutualsTab);
-const userRecentNotes = shallowRef<InstanceType<typeof UserRecentNotes>>();
+const userRecentNotes = shallowRef<InstanceType<typeof SkUserRecentNotes>>();
 const userScroll = shallowRef<HTMLElement>();
 const noteScroll = shallowRef<HTMLElement>();
 

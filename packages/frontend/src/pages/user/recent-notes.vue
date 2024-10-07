@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #header>
 		<MkPageHeader :actions="headerActions" :displayBackButton="true"/>
 	</template>
-	<UserRecentNotes ref="userRecentNotes" :userId="userId" :withRenotes="withRenotes" :withReplies="withReplies" :onlyFiles="onlyFiles"/>
+	<SkUserRecentNotes ref="userRecentNotes" :userId="userId" :withRenotes="withRenotes" :withReplies="withReplies" :onlyFiles="onlyFiles"/>
 </MkStickyContainer>
 </template>
 
@@ -20,14 +20,14 @@ import { i18n } from '@/i18n.js';
 import { PageHeaderItem } from '@/types/page-header.js';
 import * as os from '@/os.js';
 import MkPageHeader from '@/components/global/MkPageHeader.vue';
-import UserRecentNotes from '@/components/UserRecentNotes.vue';
+import SkUserRecentNotes from '@/components/SkUserRecentNotes.vue';
 import { acct } from '@/filters/user.js';
 
 defineProps<{
 	userId: string;
 }>();
 
-const userRecentNotes = shallowRef<InstanceType<typeof UserRecentNotes>>();
+const userRecentNotes = shallowRef<InstanceType<typeof SkUserRecentNotes>>();
 const user = computed(() => userRecentNotes.value?.user);
 const withRenotes = ref(false);
 const withReplies = ref(true);
