@@ -247,7 +247,7 @@ const submitText = computed((): string => {
 });
 
 const textLength = computed((): number => {
-	return (text.value + imeText.value).trim().length;
+	return (text.value + imeText.value).trim().length + (cw.value?.trim().length ?? 0);
 });
 
 const maxTextLength = computed((): number => {
