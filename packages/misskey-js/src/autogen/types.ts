@@ -3820,6 +3820,8 @@ export type components = {
       isAdmin?: boolean;
       /** @default false */
       isModerator?: boolean;
+      /** @default false */
+      isSystem?: boolean;
       isSilenced: boolean;
       noindex: boolean;
       isBot?: boolean;
@@ -9199,6 +9201,7 @@ export type operations = {
               }]>;
             };
             isModerator: boolean;
+            isSystem: boolean;
             isSilenced: boolean;
             isSuspended: boolean;
             isHibernated: boolean;

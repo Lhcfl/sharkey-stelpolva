@@ -121,6 +121,11 @@ export const packedUserLiteSchema = {
 			nullable: false, optional: true,
 			default: false,
 		},
+		isSystem: {
+			type: 'boolean',
+			nullable: false, optional: true,
+			default: false,
+		},
 		isSilenced: {
 			type: 'boolean',
 			nullable: false, optional: false,
