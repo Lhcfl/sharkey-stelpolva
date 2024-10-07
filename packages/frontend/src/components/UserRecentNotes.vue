@@ -72,7 +72,7 @@ async function reload(): Promise<void> {
 		.catch(error => {
 			console.error('Error fetching user info', error);
 
-			return error.value =
+			loadError.value =
 				typeof(error) === 'string'
 					? String(error)
 					: JSON.stringify(error);
