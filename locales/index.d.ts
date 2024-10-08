@@ -18,14 +18,14 @@ export interface Locale extends ILocale {
      */
     "headlineMisskey": string;
     /**
-     * ようこそ！Sharkeyは、オープンソースの分散型マイクロブログサービスです。
-     * 「ノート」を作成して、いま起こっていることを共有したり、あなたについて皆に発信しよう📡
-     * 「リアクション」機能で、皆のノートに素早く反応を追加することもできます👍
-     * 新しい世界を探検しよう🚀
+     * Welcome! Sharkey is an open source, decentralized microblogging service.
+     * Create "notes" to share your thoughts with everyone around you. 📡
+     * With "reactions", you can also quickly express your feelings about everyone's notes. 👍
+     * Let's explore a new world! 🚀
      */
     "introMisskey": string;
     /**
-     * {name}は、オープンソースのプラットフォーム<b>Sharkey</b>のサーバーのひとつです。
+     * {name} is one of the services powered by the open source platform <b>Sharkey</b> which is based on Misskey (referred to as a "Misskey instance").
      */
     "poweredByMisskeyDescription": ParameterizedString<"name">;
     /**
@@ -91,7 +91,7 @@ export interface Locale extends ILocale {
      */
     "enterUsername": string;
     /**
-     * {user}がブースト
+     * Boosted by {user}
      */
     "renotedBy": ParameterizedString<"user">;
     /**
@@ -211,7 +211,7 @@ export interface Locale extends ILocale {
      */
     "copyLink": string;
     /**
-     * ブーストのリンクをコピー
+     * Copy boost link
      */
     "copyLinkRenote": string;
     /**
@@ -223,7 +223,7 @@ export interface Locale extends ILocale {
      */
     "deleteAndEdit": string;
     /**
-     * このノートを削除してもう一度編集しますか？このノートへのリアクション、ブースト、返信も全て削除されます。
+     * Are you sure you want to redraft this note? This means you will lose all reactions, boosts, and replies to it.
      */
     "deleteAndEditConfirm": string;
     /**
@@ -455,27 +455,27 @@ export interface Locale extends ILocale {
      */
     "enterEmoji": string;
     /**
-     * ブースト
+     * Boost
      */
     "renote": string;
     /**
-     * ブースト解除
+     * Remove boost
      */
     "unrenote": string;
     /**
-     * ブーストしました。
+     * Boosted.
      */
     "renoted": string;
     /**
-     * {name} にリノートしました。
+     * Boosted to {name}
      */
     "renotedToX": ParameterizedString<"name">;
     /**
-     * この投稿はブーストできません。
+     * This post can't be boosted.
      */
     "cantRenote": string;
     /**
-     * ブーストをブーストすることはできません。
+     * A boost can't be boosted.
      */
     "cantReRenote": string;
     /**
@@ -483,7 +483,7 @@ export interface Locale extends ILocale {
      */
     "quote": string;
     /**
-     * チャンネル内ブースト
+     * Channel-only Boost
      */
     "inChannelRenote": string;
     /**
@@ -591,11 +591,11 @@ export interface Locale extends ILocale {
      */
     "unmute": string;
     /**
-     * ブーストをミュート
+     * Mute Boosts
      */
     "renoteMute": string;
     /**
-     * ブーストのミュートを解除
+     * Unmute Boosts
      */
     "renoteUnmute": string;
     /**
@@ -719,7 +719,7 @@ export interface Locale extends ILocale {
      */
     "flagAsBot": string;
     /**
-     * このアカウントがプログラムによって運用される場合は、このフラグをオンにします。オンにすると、反応の連鎖を防ぐためのフラグとして他の開発者に役立ったり、Sharkeyのシステム上での扱いがBotに合ったものになります。
+     * Enable this option if this account is controlled by a program. If enabled, it will act as a flag for other developers to prevent endless interaction chains with other bots and adjust Sharkey's internal systems to treat this account as a bot.
      */
     "flagAsBotDescription": string;
     /**
@@ -759,11 +759,11 @@ export interface Locale extends ILocale {
      */
     "showOnRemote": string;
     /**
-     * リモートで続行
+     * Continue on remote instance
      */
     "continueOnRemote": string;
     /**
-     * Misskey Hubからサーバーを選択
+     * Choose a instance from Misskey Hub
      */
     "chooseServerOnMisskeyHub": string;
     /**
@@ -879,7 +879,7 @@ export interface Locale extends ILocale {
      */
     "silenceThisInstance": string;
     /**
-     * サーバーをメディアサイレンス
+     * Silence media from this instance
      */
     "mediaSilenceThisInstance": string;
     /**
@@ -963,15 +963,15 @@ export interface Locale extends ILocale {
      */
     "silencedInstances": string;
     /**
-     * サイレンスしたいサーバーのホストを改行で区切って設定します。サイレンスされたサーバーに所属するアカウントはすべて「サイレンス」として扱われ、フォローがすべてリクエストになります。ブロックしたインスタンスには影響しません。
+     * List the host names of the instances that you want to silence, separated by a new line. All accounts belonging to the listed instances will be treated as silenced, and can only make follow requests, and cannot mention local accounts if not followed. This will not affect the blocked instances.
      */
     "silencedInstancesDescription": string;
     /**
-     * メディアサイレンスしたサーバー
+     * Media-silenced instances
      */
     "mediaSilencedInstances": string;
     /**
-     * メディアサイレンスしたいサーバーのホストを改行で区切って設定します。メディアサイレンスされたサーバーに所属するアカウントによるファイルはすべてセンシティブとして扱われ、カスタム絵文字が使用できないようになります。ブロックしたインスタンスには影響しません。
+     * List the host names of the instances that you want to media-silence, separated by a new line. All accounts belonging to the listed instances will be treated as sensitive, and can't use custom emojis. This will not affect the blocked instances.
      */
     "mediaSilencedInstancesDescription": string;
     /**
@@ -1011,7 +1011,7 @@ export interface Locale extends ILocale {
      */
     "pinLimitExceeded": string;
     /**
-     * Sharkeyのインストールが完了しました！管理者アカウントを作成しましょう。
+     * Installation of Sharkey has been finished! Please create an admin user.
      */
     "intro": string;
     /**
@@ -1343,7 +1343,7 @@ export interface Locale extends ILocale {
      */
     "selectFolders": string;
     /**
-     * ファイルが選択されていません
+     * No file selected
      */
     "fileNotSelected": string;
     /**
@@ -1719,7 +1719,7 @@ export interface Locale extends ILocale {
      */
     "enableServiceworker": string;
     /**
-     * ユーザー名を改行で区切って指定します
+     * List one username per line. Use "*@instance.com" to specify all users of an instance
      */
     "antennaUsersDescription": string;
     /**
@@ -1795,7 +1795,7 @@ export interface Locale extends ILocale {
      */
     "about": string;
     /**
-     * Sharkeyについて
+     * About Sharkey
      */
     "aboutMisskey": string;
     /**
@@ -1975,7 +1975,7 @@ export interface Locale extends ILocale {
      */
     "quoteQuestion": string;
     /**
-     * クリップボードのテキストが長いです。テキストファイルとして添付しますか？
+     * The text in clipboard is long. Would you like to attach it as a text file?
      */
     "attachAsFileQuestion": string;
     /**
@@ -1995,7 +1995,7 @@ export interface Locale extends ILocale {
      */
     "signinRequired": string;
     /**
-     * 続行するには、お使いのサーバーに移動するか、このサーバーに登録・ログインする必要があります
+     * To continue, you need to go to your instance to perform this action or sign up / log in to the instance you are trying to interact with.
      */
     "signinOrContinueOnRemote": string;
     /**
@@ -2103,7 +2103,7 @@ export interface Locale extends ILocale {
      */
     "showNoteActionsOnlyHover": string;
     /**
-     * ノートのリアクション数を表示する
+     * Show the number of reactions in notes
      */
     "showReactionsCount": string;
     /**
@@ -2359,7 +2359,7 @@ export interface Locale extends ILocale {
      */
     "notUseSound": string;
     /**
-     * Sharkeyがアクティブな時のみサウンドを出力する
+     * Output sounds only if Sharkey is active.
      */
     "useSoundOnlyWhenActive": string;
     /**
@@ -2423,7 +2423,7 @@ export interface Locale extends ILocale {
      */
     "scratchpad": string;
     /**
-     * スクラッチパッドは、AiScriptの実験環境を提供します。Sharkeyと対話するコードの記述、実行、結果の確認ができます。
+     * The Scratchpad provides an environment for AiScript experiments. You can write, execute, and check the results of it interacting with Sharkey in it.
      */
     "scratchpadDescription": string;
     /**
@@ -2871,7 +2871,7 @@ export interface Locale extends ILocale {
      */
     "reportAbuse": string;
     /**
-     * ブーストを通報
+     * Report boost
      */
     "reportAbuseRenote": string;
     /**
@@ -2975,7 +2975,7 @@ export interface Locale extends ILocale {
      */
     "private": string;
     /**
-     * Sharkeyは有志によって様々な言語に翻訳されています。{link}で翻訳に協力できます。
+     * Misskeyは有志によって様々な言語に翻訳されています。{link}で翻訳に協力できます。
      */
     "i18nInfo": ParameterizedString<"link">;
     /**
@@ -2995,7 +2995,7 @@ export interface Locale extends ILocale {
      */
     "repliesCount": string;
     /**
-     * ブーストした数
+     * Number of boosts sent
      */
     "renotesCount": string;
     /**
@@ -3003,7 +3003,7 @@ export interface Locale extends ILocale {
      */
     "repliedCount": string;
     /**
-     * ブーストされた数
+     * Number of boosts received
      */
     "renotedCount": string;
     /**
@@ -3191,7 +3191,8 @@ export interface Locale extends ILocale {
      */
     "sendErrorReports": string;
     /**
-     * オンにすると、問題が発生したときにエラーの詳細情報がSharkeyに共有され、ソフトウェアの品質向上に役立てることができます。エラー情報には、OSのバージョン、ブラウザの種類、行動履歴などが含まれます。
+     * When turned on, detailed error information will be shared with Sharkey when a problem occurs, helping to improve the quality of Sharkey.
+     * This will include information such the version of your OS, what browser you're using, your activity in Sharkey, etc.
      */
     "sendErrorReportsDescription": string;
     /**
@@ -3447,7 +3448,7 @@ export interface Locale extends ILocale {
      */
     "noMaintainerInformationWarning": string;
     /**
-     * 問い合わせ先URLが設定されていません。
+     * Contact URL is not set.
      */
     "noInquiryUrlWarning": string;
     /**
@@ -3571,7 +3572,7 @@ export interface Locale extends ILocale {
      */
     "learnMore": string;
     /**
-     * Sharkeyが更新されました！
+     * Sharkey has been updated!
      */
     "misskeyUpdated": string;
     /**
@@ -3591,7 +3592,7 @@ export interface Locale extends ILocale {
      */
     "accountDeletionInProgress": string;
     /**
-     * サーバー上であなたのアカウントを一意に識別するための名前。アルファベット(a~z, A~Z)、数字(0~9)、およびアンダーバー(_)が使用できます。ユーザー名は後から変更することは出来ません。
+     * A name that identifies your account from others on this server. You can use the alphabet (a~z, A~Z), digits (0~9) or underscores (_). Usernames cannot be changed later.
      */
     "usernameInfo": string;
     /**
@@ -4091,11 +4092,11 @@ export interface Locale extends ILocale {
      */
     "remindMeLater": string;
     /**
-     * Sharkeyを気に入っていただけましたか？
+     * Have you taken a liking to Sharkey?
      */
     "didYouLikeMisskey": string;
     /**
-     * Sharkeyは{host}が使用している無料のソフトウェアです。これからも開発を続けられるように、ぜひ寄付をお願いします！
+     * {host} uses the free software, Sharkey. We would highly appreciate your donations so development of Sharkey can continue!
      */
     "pleaseDonate": ParameterizedString<"host">;
     /**
@@ -4207,11 +4208,11 @@ export interface Locale extends ILocale {
      */
     "thisPostMayBeAnnoyingIgnore": string;
     /**
-     * ブーストのスマート省略
+     * Collapse boosts you've already seen
      */
     "collapseRenotes": string;
     /**
-     * リアクションやブーストをしたことがあるノートをたたんで表示します。
+     * Collapse boosts that you have boosted or reacted to
      */
     "collapseRenotesDescription": string;
     /**
@@ -4375,7 +4376,7 @@ export interface Locale extends ILocale {
      */
     "reactionsDisplaySize": string;
     /**
-     * リアクションの最大横幅を制限し、縮小して表示する
+     * Limits the maximum width of reactions and display them in reduced size.
      */
     "limitWidthOfReaction": string;
     /**
@@ -4435,7 +4436,7 @@ export interface Locale extends ILocale {
      */
     "reactionsList": string;
     /**
-     * ブースト一覧
+     * Boosts
      */
     "renotesList": string;
     /**
@@ -4555,15 +4556,15 @@ export interface Locale extends ILocale {
      */
     "specifyUser": string;
     /**
-     * 照会しますか？
+     * Are you sure that you want to look this up?
      */
     "lookupConfirm": string;
     /**
-     * ハッシュタグのページを開きますか？
+     * Are you sure you want to open this hashtags page?
      */
     "openTagPageConfirm": string;
     /**
-     * ホスト指定
+     * Specify a host
      */
     "specifyHost": string;
     /**
@@ -4599,7 +4600,7 @@ export interface Locale extends ILocale {
      */
     "later": string;
     /**
-     * Sharkeyへ
+     * To Sharkey
      */
     "goToMisskey": string;
     /**
@@ -4735,11 +4736,11 @@ export interface Locale extends ILocale {
      */
     "useSecurityKey": string;
     /**
-     * 返信
+     * Replies
      */
     "replies": string;
     /**
-     * ブースト
+     * Boosts
      */
     "renotes": string;
     /**
@@ -4783,7 +4784,7 @@ export interface Locale extends ILocale {
      */
     "dateAndTime": string;
     /**
-     * ブーストを表示
+     * Show boosts
      */
     "showRenotes": string;
     /**
@@ -4839,7 +4840,7 @@ export interface Locale extends ILocale {
      */
     "sourceCode": string;
     /**
-     * ソースコードはまだ提供されていません。この問題の修正について管理者に問い合わせてください。
+     * The source code is not yet available. Please contact your administrator to fix this problem.
      */
     "sourceCodeIsNotYetProvided": string;
     /**
@@ -4847,7 +4848,7 @@ export interface Locale extends ILocale {
      */
     "repositoryUrl": string;
     /**
-     * ソースコードが公開されているリポジトリがある場合、そのURLを記入します。Sharkeyを現状のまま（ソースコードにいかなる変更も加えずに）使用している場合は https://activitypub.software/TransFem-org/Sharkey/ と記入します。
+     * If there is a repository where the source code is publicly available, enter its URL. If you are using Sharkey as-is (without any changes to the source code), enter https://activitypub.software/TransFem-org/Sharkey/.
      */
     "repositoryUrlDescription": string;
     /**
@@ -4963,7 +4964,7 @@ export interface Locale extends ILocale {
      */
     "overwriteContentConfirm": string;
     /**
-     * 季節に応じた画面の演出
+     * Seasonal screen effects
      */
     "seasonalScreenEffect": string;
     /**
@@ -5079,7 +5080,7 @@ export interface Locale extends ILocale {
      */
     "keepOriginalFilenameDescription": string;
     /**
-     * 説明文はありません
+     * No description
      */
     "noDescription": string;
     /**
@@ -5099,7 +5100,7 @@ export interface Locale extends ILocale {
      */
     "confirmWhenRevealingSensitiveMedia": string;
     /**
-     * センシティブなメディアです。表示しますか？
+     * This media might be sensitive. Are you sure you want to reveal it?
      */
     "sensitiveMediaRevealConfirm": string;
     /**
@@ -5199,11 +5200,11 @@ export interface Locale extends ILocale {
          */
         "status": string;
         /**
-         * 配信停止
+         * Suspend delivery
          */
         "stop": string;
         /**
-         * 配信再開
+         * Resume delivery
          */
         "resume": string;
         "_type": {
@@ -5375,7 +5376,7 @@ export interface Locale extends ILocale {
          */
         "haveFun": ParameterizedString<"name">;
         /**
-         * このまま{name}(Sharkey)の使い方についてのチュートリアルに進むこともできますが、ここで中断してすぐに使い始めることもできます。
+         * You can proceed to a tutorial on how to use {name} (Sharkey) or you can exit the setup here and start using it immediately.
          */
         "youCanContinueTutorial": ParameterizedString<"name">;
         /**
@@ -5414,7 +5415,7 @@ export interface Locale extends ILocale {
              */
             "title": string;
             /**
-             * ここでは、Sharkeyの基本的な使い方や機能を確認できます。
+             * Here, you can learn the basics of using Sharkey and its features.
              */
             "description": string;
         };
@@ -5424,7 +5425,7 @@ export interface Locale extends ILocale {
              */
             "title": string;
             /**
-             * Sharkeyでの投稿は「ノート」と呼びます。ノートはタイムラインに時系列で並んでいて、リアルタイムで更新されていきます。
+             * Posts on Sharkey are called 'Notes.' Notes are arranged chronologically on the timeline and are updated in real-time.
              */
             "description": string;
             /**
@@ -5454,7 +5455,7 @@ export interface Locale extends ILocale {
              */
             "description": string;
             /**
-             * リアクションは、ノートの「{reaction}」ボタンをクリックするとつけられます。試しにこのサンプルのノートにリアクションをつけてみてください！
+             * Reactions can be added by clicking the '{reaction}' button on the note. Try reacting to this sample note!
              */
             "letsTryReacting": ParameterizedString<"reaction">;
             /**
@@ -5466,7 +5467,7 @@ export interface Locale extends ILocale {
              */
             "reactNotification": string;
             /**
-             * 「{undo}」ボタンを押すとリアクションを取り消すことができます。
+             * You can undo a reaction by pressing the '{undo}' button.
              */
             "reactDone": ParameterizedString<"undo">;
         };
@@ -5476,7 +5477,7 @@ export interface Locale extends ILocale {
              */
             "title": string;
             /**
-             * Sharkeyには、使い方に応じて複数のタイムラインが用意されています（サーバーによってはいずれかが無効になっていることがあります）。
+             * Sharkey provides multiple timelines based on usage (some may not be available depending on the server's policies).
              */
             "description1": string;
             /**
@@ -5504,7 +5505,7 @@ export interface Locale extends ILocale {
              */
             "description3": ParameterizedString<"link">;
             /**
-             * 管理者が選択した他の接続サーバーの投稿を見ることができます。
+             * You can view notes from connected servers picked by your admins.
              */
             "bubble": string;
         };
@@ -5514,7 +5515,7 @@ export interface Locale extends ILocale {
              */
             "title": string;
             /**
-             * Sharkeyにノートを投稿する際には、様々なオプションの設定が可能です。投稿フォームはこのようになっています。
+             * When posting a note on Sharkey, various options are available. The posting form looks like this.
              */
             "description1": string;
             "_visibility": {
@@ -5527,11 +5528,11 @@ export interface Locale extends ILocale {
                  */
                 "public": string;
                 /**
-                 * ホームタイムラインのみに公開。フォロワー・プロフィールを見に来た人・ブーストから、他のユーザーも見ることができます。
+                 * Public only on the Home timeline. People visiting your profile, via followers, and through boosts can see it.
                  */
                 "home": string;
                 /**
-                 * フォロワーにのみ公開。本人以外がブーストすることはできず、またフォロワー以外は閲覧できません。
+                 * Visible to followers only. Only followers can see it and no one else, and it cannot be boosted by others.
                  */
                 "followers": string;
                 /**
@@ -5610,11 +5611,11 @@ export interface Locale extends ILocale {
         };
         "_done": {
             /**
-             * チュートリアルは終了です🎉
+             * The tutorial is complete! 🎉
              */
             "title": string;
             /**
-             * ここで紹介した機能はほんの一部にすぎません。Sharkeyの使い方をより詳しく知るには、{link}をご覧ください。
+             * The functions introduced here are just a small part. For a more detailed understanding of using Sharkey, please refer to {link}.
              */
             "description": ParameterizedString<"link">;
         };
@@ -5637,7 +5638,7 @@ export interface Locale extends ILocale {
          */
         "global": string;
         /**
-         * バブルタイムラインでは、管理者が選択した接続サーバーからの投稿を表示できます。
+         * In the Bubble timeline, you can see notes from connected servers picked by your admins.
          */
         "bubble": string;
     };
@@ -5697,23 +5698,23 @@ export interface Locale extends ILocale {
          */
         "reactionsBufferingDescription": string;
         /**
-         * 問い合わせ先URL
+         * Contact URL
          */
         "inquiryUrl": string;
         /**
-         * サーバー運営者へのお問い合わせフォームのURLや、運営者の連絡先等が記載されたWebページのURLを指定します。
+         * Specify the URL of a web page that contains a contact form or the instance operators' contact information.
          */
         "inquiryUrlDescription": string;
         /**
-         * ロゴURL
+         * Logo URL
          */
         "sidebarLogoUrl": string;
         /**
-         * 高精細、ダイナミック幅のシナリオで通常のアイコンの代わりに使用するロゴを指定します。
+         * Specifies the logo to use instead of the regular icon in high definition, dynamic-width scenarios.
          */
         "sidebarLogoDescription": string;
         /**
-         * 例：サイドバー、訪問者用、「情報」ページ
+         * E.g. In the sidebar, to visitors and in the "About" page.
          */
         "sidebarLogoUsageExample": string;
     };
@@ -5749,15 +5750,14 @@ export interface Locale extends ILocale {
          */
         "moveCannotBeUndone": string;
         /**
-         * 新しいアカウントへ移行します。
-         * 　・フォロワーが新しいアカウントを自動でフォローします
-         * 　・このアカウントからのフォローは全て解除されます
-         * 　・このアカウントではノートの作成などができなくなります
+         * This will migrate your account to a different one.
+         * 　・Followers from this account will automatically be migrated to the new account
+         * 　・This account will unfollow all users it is currently following
+         * 　・You will be unable to create new notes etc. on this account
          *
-         * フォロワーの移行は自動ですが、フォローの移行は手動で行う必要があります。移行前にこのアカウントでフォローエクスポートし、移行後すぐに移行先アカウントでインポートを行なってください。
-         * リスト・ミュート・ブロックについても同様ですので、手動で移行する必要があります。
+         * While migration of followers is automatic, you must manually prepare some steps to migrate the list of users you are following. To do so, carry out a follows export that you will later import on the new account in the settings menu. The same procedure applies to your lists as well as your muted and blocked users.
          *
-         * （この説明はこのサーバー（Sharkey v13.12.0以降）の仕様です。Mastodonなどの他のActivityPubソフトウェアでは挙動が異なる場合があります。）
+         * (This explanation applies to Sharkey v13.12.0 and later. Other ActivityPub software, such as Mastodon, might function differently.)
          */
         "moveAccountDescription": string;
         /**
@@ -5805,7 +5805,7 @@ export interface Locale extends ILocale {
                  */
                 "description": string;
                 /**
-                 * 良いSharkeyライフを！
+                 * Have a good time with Sharkey!
                  */
                 "flavor": string;
             };
@@ -6129,7 +6129,7 @@ export interface Locale extends ILocale {
                  */
                 "description": string;
                 /**
-                 * Sharkeyを使ってくれてありがとう！
+                 * Thank you for using Sharkey!
                  */
                 "flavor": string;
             };
@@ -6333,11 +6333,11 @@ export interface Locale extends ILocale {
                  */
                 "title": string;
                 /**
-                 * "I ❤ #Sharkey"を投稿した
+                 * Post "I ❤ #Sharkey"
                  */
                 "description": string;
                 /**
-                 * Sharkeyを使ってくださりありがとうございます！ by 開発チーム
+                 * Sharkey's development team greatly appreciates your support!
                  */
                 "flavor": string;
             };
@@ -6357,17 +6357,17 @@ export interface Locale extends ILocale {
                  */
                 "title": string;
                 /**
-                 * クライアントを起動してから30分以上経過した
+                 * Keep Sharkey opened for at least 30 minutes
                  */
                 "description": string;
             };
             "_client60min": {
                 /**
-                 * Sharkeyの見すぎ
+                 * No "Miss" in Sharkey
                  */
                 "title": string;
                 /**
-                 * クライアントを起動してから60分以上経過した
+                 * Keep Sharkey opened for at least 60 minutes
                  */
                 "description": string;
             };
@@ -6587,7 +6587,7 @@ export interface Locale extends ILocale {
                  */
                 "description": string;
                 /**
-                 * Misskey-Misskey La-Tu-Ma
+                 * Sharkey-Sharkey La-Tu-Ma
                  */
                 "flavor": string;
             };
@@ -6603,7 +6603,7 @@ export interface Locale extends ILocale {
             };
             "_tutorialCompleted": {
                 /**
-                 * Sharkey初心者講座 修了証
+                 * Sharkey Elementary Course Diploma
                  */
                 "title": string;
                 /**
@@ -6828,7 +6828,7 @@ export interface Locale extends ILocale {
              */
             "alwaysMarkNsfw": string;
             /**
-             * アイコンとバナーの更新を許可
+             * Allow users to edit their avatar or banner
              */
             "canUpdateBioMedia": string;
             /**
@@ -6908,11 +6908,11 @@ export interface Locale extends ILocale {
              */
             "canImportUserLists": string;
             /**
-             * バブルタイムラインの閲覧
+             * Can view the bubble timeline
              */
             "btlAvailable": string;
             /**
-             * ノートのインポートが可能
+             * Can import notes
              */
             "canImportNotes": string;
         };
@@ -6942,11 +6942,11 @@ export interface Locale extends ILocale {
              */
             "isSuspended": string;
             /**
-             * 鍵アカウントユーザー
+             * Private account
              */
             "isLocked": string;
             /**
-             * 「アカウントを見つけやすくする」が有効なユーザー
+             * Account is discoverable
              */
             "isExplorable": string;
             /**
@@ -7047,7 +7047,7 @@ export interface Locale extends ILocale {
          */
         "smtp": string;
         /**
-         * このメールアドレスでは登録できません
+         * This email address is banned
          */
         "banned": string;
     };
@@ -7079,11 +7079,11 @@ export interface Locale extends ILocale {
          */
         "emailSent": ParameterizedString<"email">;
         /**
-         * アカウントが作成され、承認待ちの状態です。
+         * Your account has been created and is awaiting approval.
          */
         "approvalPending": string;
         /**
-         * インスタンスに参加したい理由を入力してください。
+         * Please enter a reason as to why you want to join the instance.
          */
         "reasonInfo": string;
     };
@@ -7309,7 +7309,7 @@ export interface Locale extends ILocale {
     };
     "_aboutMisskey": {
         /**
-         * Sharkeyは、Misskeyをベースにしたオープンソースのソフトウェアです。
+         * Sharkey is open-source software based on Misskey which has been in development by syuilo since 2014.
          */
         "about": string;
         /**
@@ -7325,15 +7325,15 @@ export interface Locale extends ILocale {
          */
         "source": string;
         /**
-         * Misskey オリジナル
+         * Misskey original
          */
         "original": string;
         /**
-         * {name}はオリジナルのSharkeyを改変したバージョンを使用しています。
+         * {name} uses a modified version of the original Sharkey.
          */
         "thisIsModifiedVersion": ParameterizedString<"name">;
         /**
-         * Sharkeyを翻訳
+         * Translate Sharkey
          */
         "translation": string;
         /**
@@ -7353,15 +7353,15 @@ export interface Locale extends ILocale {
          */
         "projectMembers": string;
         /**
-         * Sharkey オリジナル
+         * Sharkey original
          */
         "original_sharkey": string;
         /**
-         * Sharkeyに寄付
+         * Donate to Sharkey
          */
         "donate_sharkey": string;
         /**
-         * テスター
+         * Testers
          */
         "testers": string;
     };
@@ -7407,7 +7407,7 @@ export interface Locale extends ILocale {
          */
         "quiet": string;
         /**
-         * 警告を無効にする
+         * Disable warning
          */
         "disabled": string;
     };
@@ -7457,7 +7457,7 @@ export interface Locale extends ILocale {
          */
         "nameOnly": string;
         /**
-         * チャンネル外へのブーストと引用ブーストを許可する
+         * Allow boosts and quote outside the channel
          */
         "allowRenoteToExternal": string;
     };
@@ -7495,7 +7495,7 @@ export interface Locale extends ILocale {
     };
     "_instanceMute": {
         /**
-         * ミュートしたサーバーのユーザーへの返信を含めて、設定したサーバーの全てのノートとブーストをミュートします。
+         * This will mute any notes/boosts from the listed instances, including those of users replying to a user from a muted instance.
          */
         "instanceMuteDescription": string;
         /**
@@ -7831,11 +7831,11 @@ export interface Locale extends ILocale {
          */
         "driveFileDurationWarn": string;
         /**
-         * 長い音声を使用するとSharkeyの使用に支障をきたす可能性があります。それでも続行しますか？
+         * Long audio may disrupt using Sharkey. Still continue?
          */
         "driveFileDurationWarnDescription": string;
         /**
-         * 音声が読み込めませんでした。設定を変更してください
+         * The audio couldn't be loaded. Please make sure you selected an audio file.
          */
         "driveFileError": string;
     };
@@ -8039,7 +8039,7 @@ export interface Locale extends ILocale {
          */
         "backupCodesExhaustedWarning": string;
         /**
-         * 詳細なガイドはこちら
+         * Click here for a detailed guide
          */
         "moreDetailedGuideHere": string;
     };
@@ -8591,7 +8591,7 @@ export interface Locale extends ILocale {
          */
         "birthdayFollowings": string;
         /**
-         * 検索
+         * Search
          */
         "search": string;
     };
@@ -8699,7 +8699,7 @@ export interface Locale extends ILocale {
          */
         "remainingSeconds": ParameterizedString<"s">;
         /**
-         * 複数の選択肢
+         * Multiple choices
          */
         "multiple": string;
     };
@@ -8851,23 +8851,23 @@ export interface Locale extends ILocale {
          */
         "followedMessageDescriptionForLockedAccount": string;
         /**
-         * 更新バナー
+         * Update banner
          */
         "updateBanner": string;
         /**
-         * バナーを削除
+         * Remove banner
          */
         "removeBanner": string;
         /**
-         * 背景を変更する
+         * Change background
          */
         "changeBackground": string;
         /**
-         * 背景を更新する
+         * Update background
          */
         "updateBackground": string;
         /**
-         * 背景を削除する
+         * Remove background
          */
         "removeBackground": string;
     };
@@ -9031,7 +9031,7 @@ export interface Locale extends ILocale {
          */
         "global": string;
         /**
-         * バブル
+         * Bubble
          */
         "bubble": string;
     };
@@ -9276,7 +9276,7 @@ export interface Locale extends ILocale {
              */
             "dynamic": string;
             /**
-             * このブロックは廃止されています。今後は{play}を利用してください。
+             * This block type has been removed. Please use {play} from now on.
              */
             "dynamicDescription": ParameterizedString<"play">;
             /**
@@ -9331,7 +9331,7 @@ export interface Locale extends ILocale {
          */
         "youGotQuote": ParameterizedString<"name">;
         /**
-         * {name}がBoostしました
+         * Boost from {name}
          */
         "youRenoted": ParameterizedString<"name">;
         /**
@@ -9395,7 +9395,7 @@ export interface Locale extends ILocale {
          */
         "likedBySomeUsers": ParameterizedString<"n">;
         /**
-         * {n}人がリノートしました
+         * Boosted by {n} users
          */
         "renotedBySomeUsers": ParameterizedString<"n">;
         /**
@@ -9436,7 +9436,7 @@ export interface Locale extends ILocale {
              */
             "reply": string;
             /**
-             * Boost
+             * Boosts
              */
             "renote": string;
             /**
@@ -9484,7 +9484,7 @@ export interface Locale extends ILocale {
              */
             "app": string;
             /**
-             * 編集済み
+             * Edits
              */
             "edited": string;
         };
@@ -9498,10 +9498,14 @@ export interface Locale extends ILocale {
              */
             "reply": string;
             /**
-             * ブースト
+             * Boost
              */
             "renote": string;
         };
+        /**
+         * Note got edited
+         */
+        "edited": string;
     };
     "_deck": {
         /**
@@ -9700,7 +9704,7 @@ export interface Locale extends ILocale {
              */
             "reply": string;
             /**
-             * Boostされたとき
+             * When boosted
              */
             "renote": string;
             /**
@@ -9718,7 +9722,7 @@ export interface Locale extends ILocale {
              */
             "abuseReport": string;
             /**
-             * ユーザーからの通報を処理したとき
+             * When resolved abuse reports
              */
             "abuseReportResolved": string;
             /**
@@ -9760,11 +9764,11 @@ export interface Locale extends ILocale {
                 "webhook": string;
                 "_captions": {
                     /**
-                     * モデレーター権限を持つユーザーのメールアドレスに通知を送ります(通報を受けた時のみ)
+                     * Send an email to the moderators when an abuse report is received.
                      */
                     "mail": string;
                     /**
-                     * 指定したSystemWebhookに通知を送ります(通報を受けた時と通報を解決した時にそれぞれ発信)
+                     * Send a notification to the SystemWebhook when an abuse report is received or resolved.
                      */
                     "webhook": string;
                 };
@@ -9981,7 +9985,7 @@ export interface Locale extends ILocale {
          */
         "deleteGalleryPost": string;
         /**
-         * 承認済み
+         * Approved
          */
         "approve": string;
         /**
@@ -10184,7 +10188,7 @@ export interface Locale extends ILocale {
              */
             "title": string;
             /**
-             * アイコン画像のアニメーションが停止します。アニメーション画像は通常の画像よりファイルサイズが大きいことがあるので、データ通信量をさらに削減できます。
+             * Stop avatar image animation. Animated images can be larger in file size than normal images, potentially leading to further reductions in data traffic.
              */
             "description": string;
         };
@@ -10421,7 +10425,7 @@ export interface Locale extends ILocale {
          */
         "timeout": string;
         /**
-         * プレビュー取得の所要時間がこの値を超えた場合、プレビューは生成されません。
+         * If it takes longer than this value to get the preview, the preview won't be generated.
          */
         "timeoutDescription": string;
         /**
@@ -10433,7 +10437,7 @@ export interface Locale extends ILocale {
          */
         "maximumContentLengthDescription": string;
         /**
-         * Content-Lengthが取得できた場合のみプレビューを生成
+         * Generate the preview only if we can get Content-Length
          */
         "requireContentLength": string;
         /**
@@ -10449,15 +10453,15 @@ export interface Locale extends ILocale {
          */
         "userAgentDescription": string;
         /**
-         * プレビューを生成するプロキシのエンドポイント
+         * Endpoint for proxy to generate previews
          */
         "summaryProxy": string;
         /**
-         * Misskey本体ではなく、サマリープロキシを使用してプレビューを生成します。
+         * Generate previews using Summaly Proxy, instead of Sharkey itself.
          */
         "summaryProxyDescription": string;
         /**
-         * プロキシには下記パラメータがクエリ文字列として連携されます。プロキシ側がこれらをサポートしない場合、設定値は無視されます。
+         * The following parameters are sent to the proxy as a query string. If the proxy does not support them, the values are ignored.
          */
         "summaryProxyDescription2": string;
     };
@@ -10548,19 +10552,19 @@ export interface Locale extends ILocale {
         "codeGeneratedDescription": string;
     };
     /**
-     * 承認
+     * Approvals
      */
     "approvals": string;
     /**
-     * リモートプロフィールを開く
+     * Open remote profile
      */
     "openRemoteProfile": string;
     /**
-     * 外部サイトへのリンク警告 除外リスト
+     * Link to external site warning exclusion list
      */
     "trustedLinkUrlPatterns": string;
     /**
-     * スペースで区切るとAND指定になり、改行で区切るとOR指定になります。スラッシュで囲むと正規表現になります。ドメイン名だけ書くと後方一致になります。
+     * Separate with spaces for an AND condition or with line breaks for an OR condition. Using surrounding keywords with slashes will turn them into a regular expression. If you write only the domain name, it will be a backward match.
      */
     "trustedLinkUrlPatternsDescription": string;
     /**
@@ -10568,11 +10572,11 @@ export interface Locale extends ILocale {
      */
     "mutuals": string;
     /**
-     * 引用。
+     * Quoted.
      */
     "quoted": string;
     /**
-     * ブースト解除しました。
+     * Unboosted.
      */
     "rmboost": string;
     /**
@@ -10584,7 +10588,7 @@ export interface Locale extends ILocale {
      */
     "renoteMuted": string;
     /**
-     * ユーザーのすべてのメディアをNSFWとしてマークする
+     * Mark all media from user as NSFW
      */
     "markAsNSFW": string;
     /**
@@ -10592,23 +10596,23 @@ export interface Locale extends ILocale {
      */
     "markInstanceAsNSFW": string;
     /**
-     * このアカウントからのすべてのメディアをNSFWとしてマークしてもよろしいですか？
+     * Are you sure that you want to mark all media from this account as NSFW?
      */
     "nsfwConfirm": string;
     /**
-     * このアカウントのすべてのメディアをNSFWとしてマーク解除してもよろしいですか？
+     * Are you sure that you want to unmark all media from this account as NSFW?
      */
     "unNsfwConfirm": string;
     /**
-     * このアカウントを承認してもよろしいですか？
+     * Are you sure that you want to approve this account?
      */
     "approveConfirm": string;
     /**
-     * 猫語で話す
+     * Speak as a cat
      */
     "flagSpeakAsCat": string;
     /**
-     * 有効にすると、あなたの投稿の 「な」を「にゃ」にします。
+     * Your posts will get nyanified when in cat mode. If this isn't working, then please check that you dont have 'Disable cat speak' on under General/Note Display
      */
     "flagSpeakAsCatDescription": string;
     /**
@@ -10628,43 +10632,43 @@ export interface Locale extends ILocale {
      */
     "mediaSilencedByBase": string;
     /**
-     * 検索ドライブ
+     * Search drive
      */
     "driveSearchbarPlaceholder": string;
     /**
-     * 背景
+     * Background
      */
     "background": string;
     /**
-     * すべての返信の内容を表示する
+     * Show content for all replies
      */
     "expandAllCws": string;
     /**
-     * すべての返信の内容を隠す
+     * Hide content for all replies
      */
     "collapseAllCws": string;
     /**
-     * メニューをドロワーで表示しない
+     * Don't use drawer-style menus
      */
     "disableDrawer": string;
     /**
-     * コーナーの丸み
+     * Corner roundness
      */
     "cornerRadius": string;
     /**
-     * 代替テキストを入れ忘れたときに警告する
+     * Warn you when you forget to put alt text
      */
     "warnForMissingAltText": string;
     /**
-     * DeepLX-JS を使用する (認証キー不要)
+     * Use DeepLX-JS (No Auth Key)
      */
     "deeplFreeMode": string;
     /**
-     * DeepLX-JSの設定方法については、ドキュメントを参照してください。
+     * Need Help? Check our documentation to know how to setup DeepLX-JS.
      */
     "deeplFreeModeDescription": string;
     /**
-     * キューに入れられたすべてのファイルの削除
+     * Deletion of all files queued
      */
     "deleteAllFilesQueued": string;
     /**
@@ -10680,249 +10684,253 @@ export interface Locale extends ILocale {
      */
     "postFiltered": string;
     /**
-     * 未読の通知があるときにタブのアイコンを目立たせる
+     * Enable favicon notification dot
      */
     "enableFaviconNotificationDot": string;
     /**
-     * タブアイコン強調機能の動作確認
+     * Check if the notification dot works on your instance
      */
     "verifyNotificationDotWorkingButton": string;
     /**
-     * このサーバーは現時点ではタブアイコン強調機能をサポートしていません。
+     * Unfortunately, this instance does not support the notification dot feature at this time.
      */
     "notificationDotNotWorking": string;
     /**
-     * タブアイコン強調機能は、このサーバーで正しく機能しています。
+     * The notification dot is functioning properly on this instance.
      */
     "notificationDotWorking": string;
     /**
-     * タブアイコン強調機能が機能しない場合は、管理者にドキュメントを確認するように依頼してください {link}
+     * If the notification dot doesn't work, ask an admin to check our documentation {link}
      */
     "notificationDotNotWorkingAdvice": ParameterizedString<"link">;
     /**
-     * リモートサーバーに通報を転送する
+     * Forward report to remote instance
      */
     "forwardReport": string;
     /**
-     * リモートサーバーからはあなたの情報は見れず、匿名のシステムアカウントとして表示されます。
+     * Instead of your account, an anonymous system account will be displayed as reporter at the remote instance.
      */
     "forwardReportIsAnonymous": string;
     /**
-     * 対応済みにする
+     * Mark report as resolved
      */
     "abuseMarkAsResolved": string;
     /**
-     * 返信にサーバー情報を表示する
+     * Sharkey specific changes are translated in its own {link}.
+     */
+    "i18nInfoSharkey": ParameterizedString<"link">;
+    /**
+     * Show instance ticker on replies
      */
     "showTickerOnReplies": string;
     /**
-     * 猫の話し方を無効にする
+     * Disable cat speak
      */
     "disableCatSpeak": string;
     /**
-     * 検索MFMの検索エンジン
+     * Search Engine For Search MFM
      */
     "searchEngine": string;
     /**
-     * カスタム
+     * Other
      */
     "searchEngineOther": string;
     /**
-     * カスタム検索エンジンのURIは、"https://www.google.com/search?q=\{query}" や "https://www.google.com/search?q=%s" のような形式で入力する必要があります。
+     * The custom URI must be input in the format like "https://www.google.com/search?q=\{query}" or "https://www.google.com/search?q=%s".
      */
     "searchEngineCustomURIDescription": string;
     /**
-     * カスタム検索エンジン URI
+     * Custom URI
      */
     "searchEngineCusomURI": string;
     /**
-     * 公開ノートをインデックス不可にする
+     * Make public notes not indexable
      */
     "makeIndexable": string;
     /**
-     * ノート検索があなたの公開ノートをインデックス化しないようにします。
+     * Stop note search from indexing your public notes.
      */
     "makeIndexableDescription": string;
     /**
-     * アカウント登録を承認制にする
+     * Require approval for new users
      */
     "approvalRequiredForSignup": string;
     /**
-     * 「{choice}」に投票しますか？
-     * 　確認後、選択肢を増やすことができます。
+     * Confirm your vote for "{choice}"?
+     * 　You can choose more options after confirmation.
      */
     "voteConfirmMulti": ParameterizedString<"choice">;
     /**
-     * 承認待ちのユーザーがいます。
+     * There are users awaiting approval.
      */
     "pendingUserApprovals": string;
     /**
-     * 承認する
+     * Approve
      */
     "approveAccount": string;
     /**
-     * 拒否と削除
+     * Deny & Delete
      */
     "denyAccount": string;
     /**
-     * 承認済み
+     * Approved
      */
     "approved": string;
     /**
-     * 承認されていない
+     * Not Approved
      */
     "notApproved": string;
     /**
-     * 承認状況
+     * Approval Status
      */
     "approvalStatus": string;
     /**
-     * スレッド内の返信数
+     * Number of replies in a thread
      */
     "numberOfReplies": string;
     /**
-     * この数値を大きくすると、より多くの返信が表示されます。この値を大きくしすぎると、UIが窮屈になって読みにくくなることがあります。
+     * Increasing this number will display more replies. Setting this too high can cause replies to be cramped and unreadable.
      */
     "numberOfRepliesDescription": string;
     /**
-     * ブースト設定
+     * Boost Settings
      */
     "boostSettings": string;
     /**
-     * 公開範囲セレクターを表示
+     * Show Visibility Selector
      */
     "showVisibilitySelectorOnBoost": string;
     /**
-     * 無効の場合、以下で設定したデフォルトの公開範囲が使用され、セレクターは表示されません。
+     * Shows the visiblity selector if enabled when clicking boost, if disabled it will use the default visiblity defined below and the selector will not show up.
      */
     "showVisibilitySelectorOnBoostDescription": string;
     /**
-     * デフォルトのブースト公開範囲
+     * Default boost visibility
      */
     "visibilityOnBoost": string;
     /**
-     * 絵文字のようなデフォルト
+     * Default like emoji
      */
     "defaultLike": string;
     /**
-     * インスタンス管理者への寄付によって{host}を直接サポートすることもできます。
+     * You can also support {host} directly by donating to your instance administration.
      */
     "pleaseDonateInstance": ParameterizedString<"host">;
     /**
-     * やめる
+     * Cancel
      */
     "thisPostIsMissingAltTextCancel": string;
     /**
-     * このまま投稿
+     * Post anyway
      */
     "thisPostIsMissingAltTextIgnore": string;
     /**
-     * 代替テキストがないファイルが添付されています。すべての添付ファイルに代替テキストを含むようにしてください。
+     * One of the files attached to this post is missing alt text. Please ensure all the attachments have alt text.
      */
     "thisPostIsMissingAltText": string;
     /**
-     * 返信元のノートを折りたたむ
+     * Collapse notes replied to
      */
     "collapseNotesRepliedTo": string;
     /**
-     * ファイルを折りたたむ
+     * Collapse files
      */
     "collapseFiles": string;
     /**
-     * CWを展開する
+     * Uncollapse CWs on notes
      */
     "uncollapseCW": string;
     /**
-     * 長い投稿を常に展開する
+     * Always expand long notes
      */
     "expandLongNote": string;
     /**
-     * 会話スレッドを自動で読み込む
+     * Load conversation on replies
      */
     "autoloadConversation": string;
     /**
-     * 現在このサーバーは承認制です。参加したい理由を記入し、承認された方のみ登録できます。
+     * This instance is only accepting users who specify a reason for registration.
      */
     "approvalRequiredToRegister": string;
     /**
-     * にゃんこフレンド :3
+     * Cat friend :3
      */
     "oneko": string;
     /**
-     * 実績を有効にする
+     * Enable Achievements
      */
     "enableAchievements": string;
     /**
-     * オフにすると実績システムは無効になります。
+     * Turning this off will disable the achievement system
      */
     "turnOffAchievements": string;
     /**
-     * botのハッシュタグ追加を許可する
+     * Populate Hashtags with Bots
      */
     "enableBotTrending": string;
     /**
-     * オフにするとボットがハッシュタグを入力しなくなります。
+     * Turning this off will stop Bots from populating Hashtags
      */
     "turnOffBotTrending": string;
     /**
-     * クリックしてノートを開く
+     * Click to open notes
      */
     "clickToOpen": string;
     /**
-     * ボットをタイムラインに表示
+     * Show bots in timeline
      */
     "showBots": string;
     /**
-     * 寄付する
+     * Donate
      */
     "donation": string;
     /**
-     * 寄付URL
+     * Donation URL
      */
     "donationUrl": string;
     /**
-     * アイコンの後ろに表示
+     * Show Below Avatar
      */
     "showBelowAvatar": string;
     /**
-     * 以下の関係をすべて断ち切る
+     * Break following relationships
      */
     "severAllFollowRelations": string;
     /**
-     * すべての人間関係を壊す？これは不可逆です！これは{instanceName}の{followingCount}フォローと{followersCount}フォロワーの関係を壊す！
+     * Really break all follow relationships? This is irreversible! This will break {followingCount} following and {followersCount} follower relations on {instanceName}!
      */
-    "severAllFollowRelationsConfirm": ParameterizedString<"instanceName" | "followingCount" | "followersCount">;
+    "severAllFollowRelationsConfirm": ParameterizedString<"followingCount" | "followersCount" | "instanceName">;
     /**
-     * キューに入れられた{host}とのすべてのフォロー関係を切断する。
+     * Severing all follow relations with {host} queued.
      */
     "severAllFollowRelationsQueued": ParameterizedString<"host">;
     "_mfm": {
         /**
-         * この機能は一般的に普及していないため、他のMisskeyフォークを含めた多くのFediverseソフトウェアで表示できないことがあります。
+         * This is not a widespread feature, it may not display properly on most other fedi software, including other Misskey forks
          */
         "uncommonFeature": string;
         /**
-         * MFM はMisskey, Sharkey, Firefish, Akkomaなど、多くの場所で使用できるマークアップ言語です。ここでは、利用できるMFM構文の一覧をご覧いただけます。
+         * MFM is a markup language used on Misskey, Sharkey, Firefish, Akkoma, and more that can be used in many places. Here you can view a list of all available MFM syntax.
          */
         "intro": string;
         /**
-         * SharkeyでFediverseの世界が広がります
+         * Sharkey expands the world of the Fediverse
          */
         "dummy": string;
         /**
-         * メンション
+         * Mention
          */
         "mention": string;
         /**
-         * アットマーク + ユーザー名で、特定のユーザーを示すことができます。
+         * You can specify a user by using an At-Symbol and a username.
          */
         "mentionDescription": string;
         /**
-         * ハッシュタグ
+         * Hashtag
          */
         "hashtag": string;
         /**
-         * ナンバーサイン + タグで、ハッシュタグを示すことができます。
+         * You can specify a hashtag using a number sign and text.
          */
         "hashtagDescription": string;
         /**
@@ -10930,279 +10938,279 @@ export interface Locale extends ILocale {
          */
         "url": string;
         /**
-         * URLを示すことができます。
+         * URLs can be displayed.
          */
         "urlDescription": string;
         /**
-         * リンク
+         * Link
          */
         "link": string;
         /**
-         * 文章の特定の範囲を、URLに紐づけることができます。
+         * Specific parts of text can be displayed as a URL.
          */
         "linkDescription": string;
         /**
-         * 太字
+         * Bold
          */
         "bold": string;
         /**
-         * 文字を太く表示して強調することができます。
+         * Highlights letters by making them thicker.
          */
         "boldDescription": string;
         /**
-         * 小文字
+         * Small
          */
         "small": string;
         /**
-         * 内容を小さく・薄く表示させることができます。
+         * Displays content small and thin.
          */
         "smallDescription": string;
         /**
-         * 中央寄せ
+         * Center
          */
         "center": string;
         /**
-         * 内容を中央寄せで表示させることができます。
+         * Displays content centered.
          */
         "centerDescription": string;
         /**
-         * コード（インライン）
+         * Code (Inline)
          */
         "inlineCode": string;
         /**
-         * プログラムなどのコードをインラインでシンタックスハイライトします。
+         * Displays inline syntax highlighting for (program) code.
          */
         "inlineCodeDescription": string;
         /**
-         * コード（ブロック）
+         * Code (Block)
          */
         "blockCode": string;
         /**
-         * 複数行のプログラムなどのコードをブロックでシンタックスハイライトします。
+         * Displays syntax highlighting for multi-line (program) code in a block.
          */
         "blockCodeDescription": string;
         /**
-         * 数式（インライン）
+         * Math (Inline)
          */
         "inlineMath": string;
         /**
-         * 数式 （KaTeX形式）をインラインで表示します。
+         * Display math formulas (KaTeX) in-line
          */
         "inlineMathDescription": string;
         /**
-         * 数式（ブロック）
+         * Math (Block)
          */
         "blockMath": string;
         /**
-         * 数式 （KaTeX形式）をブロックで表示します。
+         * Display math formulas (KaTeX) in a block
          */
         "blockMathDescription": string;
         /**
-         * 引用
+         * Quote
          */
         "quote": string;
         /**
-         * 内容が引用であることを示すことができます。
+         * Displays content as a quote.
          */
         "quoteDescription": string;
         /**
-         * カスタム絵文字
+         * Custom Emoji
          */
         "emoji": string;
         /**
-         * コロンでカスタム絵文字名を囲むと、カスタム絵文字を表示させることができます。
+         * By surrounding a custom emoji name with colons, custom emoji can be displayed.
          */
         "emojiDescription": string;
         /**
-         * 検索
+         * Search
          */
         "search": string;
         /**
-         * 検索ボックスを表示できます。
+         * Displays a search box with pre-entered text.
          */
         "searchDescription": string;
         /**
-         * 反転
+         * Flip
          */
         "flip": string;
         /**
-         * 内容を上下または左右に反転させます。
+         * Flips content horizontally or vertically.
          */
         "flipDescription": string;
         /**
-         * アニメーション（びよんびよん）
+         * Animation (Jelly)
          */
         "jelly": string;
         /**
-         * ゼリーが揺れるような感じのアニメーションをさせます。
+         * Gives content a jelly-like animation.
          */
         "jellyDescription": string;
         /**
-         * アニメーション（じゃーん）
+         * Animation (Tada)
          */
         "tada": string;
         /**
-         * 「じゃーん！」と強調するような感じのアニメーションをさせます。
+         * Gives content a "Tada!"-like animation.
          */
         "tadaDescription": string;
         /**
-         * アニメーション（ジャンプ）
+         * Animation (Jump)
          */
         "jump": string;
         /**
-         * 跳ねるアニメーションをさせます。
+         * Gives content a jumping animation.
          */
         "jumpDescription": string;
         /**
-         * アニメーション（バウンド）
+         * Animation (Bounce)
          */
         "bounce": string;
         /**
-         * 跳ねて着地するようなアニメーションをさせます。
+         * Gives content a bouncy animation.
          */
         "bounceDescription": string;
         /**
-         * アニメーション（ぶるぶる）
+         * Animation (Shake)
          */
         "shake": string;
         /**
-         * 震えるアニメーションをさせます。
+         * Gives content a shaking animation.
          */
         "shakeDescription": string;
         /**
-         * アニメーション（ガタガタ）
+         * Animation (Twitch)
          */
         "twitch": string;
         /**
-         * より激しく震えるアニメーションをさせます。
+         * Gives content a strongly twitching animation.
          */
         "twitchDescription": string;
         /**
-         * アニメーション（回転）
+         * Animation (Spin)
          */
         "spin": string;
         /**
-         * 内容を回転させます。
+         * Gives content a spinning animation.
          */
         "spinDescription": string;
         /**
-         * 大
+         * Big
          */
         "x2": string;
         /**
-         * 内容を大きく表示させます。
+         * Displays content bigger.
          */
         "x2Description": string;
         /**
-         * 特大
+         * Very big
          */
         "x3": string;
         /**
-         * 内容をより大きく表示させます。
+         * Displays content even bigger.
          */
         "x3Description": string;
         /**
-         * 超特大
+         * Unbelievably big
          */
         "x4": string;
         /**
-         * 内容をさらに大きく表示させます。
+         * Displays content even bigger than bigger than big.
          */
         "x4Description": string;
         /**
-         * ぼかし
+         * Blur
          */
         "blur": string;
         /**
-         * 内容をぼかすことができます。ポインターを上に乗せるとはっきり見えるようになります。
+         * Blurs content. It will be displayed clearly when hovered over.
          */
         "blurDescription": string;
         /**
-         * フォント
+         * Font
          */
         "font": string;
         /**
-         * 内容のフォントを指定することができます。
+         * Sets the font to display content in.
          */
         "fontDescription": string;
         /**
-         * レインボー
+         * Rainbow
          */
         "rainbow": string;
         /**
-         * 内容を虹色で表示させます。
+         * Makes the content appear in rainbow colors.
          */
         "rainbowDescription": string;
         /**
-         * キラキラ
+         * Sparkle
          */
         "sparkle": string;
         /**
-         * キラキラと星型のパーティクルを表示させます。
+         * Gives content a sparkling particle effect.
          */
         "sparkleDescription": string;
         /**
-         * 角度変更
+         * Rotate
          */
         "rotate": string;
         /**
-         * 指定した角度で回転させます。
+         * Turns content by a specified angle.
          */
         "rotateDescription": string;
         /**
-         * 位置変更
+         * Position
          */
         "position": string;
         /**
-         * 位置をずらすことができます。
+         * Move content by a specified amount.
          */
         "positionDescription": string;
         /**
-         * 切り取り
+         * Crop
          */
         "crop": string;
         /**
-         * 内容を切り抜きます。
+         * Crop content.
          */
         "cropDescription": string;
         /**
-         * マウス追従
+         * Follow Mouse
          */
         "followMouse": string;
         /**
-         * 内容がマウスに追従します。スマホの場合はタップした場所に追従します。
+         * Content will follow the mouse. On mobile it will follow wherever the user taps.
          */
         "followMouseDescription": string;
         /**
-         * 拡大
+         * Scale
          */
         "scale": string;
         /**
-         * 内容を引き伸ばして表示します。
+         * Scale content by a specified amount.
          */
         "scaleDescription": string;
         /**
-         * 文字色
+         * Foreground color
          */
         "foreground": string;
         /**
-         * 文字色を変更します。
+         * Change the foreground color of text.
          */
         "foregroundDescription": string;
         /**
-         * フェード
+         * Fade
          */
         "fade": string;
         /**
-         * 内容をフェードイン・フェードアウトさせます。
+         * Fade text in and out.
          */
         "fadeDescription": string;
         /**
-         * 背景色
+         * Background color
          */
         "background": string;
         /**
-         * 背景色を変更します。
+         * Change the background color of text.
          */
         "backgroundDescription": string;
         /**
@@ -11210,59 +11218,59 @@ export interface Locale extends ILocale {
          */
         "plain": string;
         /**
-         * 内側の構文を全て無効にします。
+         * Deactivates the effects of all MFM contained within this MFM effect.
          */
         "plainDescription": string;
     };
     "_animatedMFM": {
         /**
-         * MFMアニメーションを再生
+         * Play MFM Animation
          */
         "play": string;
         /**
-         * MFMアニメーション停止
+         * Stop MFM Animation
          */
         "stop": string;
         "_alert": {
             /**
-             * MFMアニメーションには、高速で点滅したり動いたりするテキスト・絵文字を含む場合があります。
+             * Animated MFMs could include flashing lights and fast moving text/emojis.
              */
             "text": string;
             /**
-             * 再生する
+             * Animate
              */
             "confirm": string;
         };
     };
     "_dataRequest": {
         /**
-         * データリクエスト
+         * Request Data
          */
         "title": string;
         /**
-         * データリクエストは3日ごとに可能です。
+         * Data requests are only possible every 3 days.
          */
         "warn": string;
         /**
-         * データの保存が完了すると、このアカウントに登録されているメールアドレスにメールが送信されます。
+         * Once the data is ready to download, an email will be sent to the email address registered to this account.
          */
         "text": string;
         /**
-         * データリクエスト実行
+         * Request
          */
         "button": string;
     };
     "_externalNavigationWarning": {
         /**
-         * 外部サイトに移動します
+         * Navigate to an external site
          */
         "title": string;
         /**
-         * {host}を離れて外部サイトに移動します
+         * Leave {host} and go to an external site
          */
         "description": ParameterizedString<"host">;
         /**
-         * このデバイスで今後このドメインを信頼する
+         * Trust this domain on this device in the future
          */
         "trustThisDomain": string;
     };
