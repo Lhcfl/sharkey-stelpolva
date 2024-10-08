@@ -103,6 +103,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withChannelNotes: ps.withChannelNotes,
 					withFiles: ps.withFiles,
 					withRenotes: ps.withRenotes,
+					withReplies: ps.withReplies,
 				}, me);
 
 				return await this.noteEntityService.packMany(timeline, me);
@@ -142,6 +143,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withChannelNotes: ps.withChannelNotes,
 					withFiles: ps.withFiles,
 					withRenotes: ps.withRenotes,
+					withReplies: true,
 				}, me),
 			});
 
@@ -157,6 +159,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		withChannelNotes: boolean,
 		withFiles: boolean,
 		withRenotes: boolean,
+		withReplies: boolean,
 	}, me: MiLocalUser | null) {
 		const isSelf = me && (me.id === ps.userId);
 
@@ -176,6 +179,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}));
 		} else {
 			query.andWhere('note.channelId IS NULL');
+		}
+
+		if (!ps.withReplies) {
+			query.andWhere('note.replyId IS NULL');
 		}
 
 		this.queryService.generateVisibilityQuery(query, me);
