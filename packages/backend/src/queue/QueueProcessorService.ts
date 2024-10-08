@@ -126,7 +126,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 	) {
 		this.logger = this.queueLoggerService.logger;
 
-		function renderError(e: Error) {
+		function renderError(e?: Error) {
 			if (e instanceof Bull.UnrecoverableError) {
 				return {
 					stack: undefined,
