@@ -97,7 +97,7 @@ export class Resolver {
 
 		const meta = await this.metaService.fetch();
 		if (this.utilityService.isBlockedHost(meta.blockedHosts, host)) {
-			throw new Error('Instance is blocked');
+			throw new Bull.UnrecoverableError('Instance is blocked');
 		}
 
 		if (this.config.signToActivityPubGet && !this.user) {
