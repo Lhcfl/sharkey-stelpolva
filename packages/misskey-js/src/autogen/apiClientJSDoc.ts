@@ -4269,7 +4269,7 @@ declare module '../api.js' {
     ): Promise<SwitchCaseResponseType<E, P>>;
 
     /**
-     * Get Sharkey Sponsors
+     * Get Sharkey Sponsors or Instance Sponsors
      * 
      * **Credential required**: *No*
      */

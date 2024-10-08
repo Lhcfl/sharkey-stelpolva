@@ -3689,7 +3689,7 @@ export type paths = {
   '/sponsors': {
     /**
      * sponsors
-     * @description Get Sharkey Sponsors
+     * @description Get Sharkey Sponsors or Instance Sponsors
      *
      * **Credential required**: *No*
      */
@@ -28079,7 +28079,7 @@ export type operations = {
   };
   /**
    * sponsors
-   * @description Get Sharkey Sponsors
+   * @description Get Sharkey Sponsors or Instance Sponsors
    *
    * **Credential required**: *No*
    */
@@ -28089,6 +28089,8 @@ export type operations = {
         'application/json': {
           /** @default false */
           forceUpdate?: boolean;
+          /** @default false */
+          instance?: boolean;
         };
       };
     };

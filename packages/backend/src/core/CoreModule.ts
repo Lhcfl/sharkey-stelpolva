@@ -149,6 +149,7 @@ import { ApQuestionService } from './activitypub/models/ApQuestionService.js';
 import { QueueModule } from './QueueModule.js';
 import { QueueService } from './QueueService.js';
 import { LoggerService } from './LoggerService.js';
+import { SponsorsService } from './SponsorsService.js';
 import type { Provider } from '@nestjs/common';
 
 //#region 文字列ベースでのinjection用(循環参照対応のため)
@@ -294,6 +295,8 @@ const $ApNoteService: Provider = { provide: 'ApNoteService', useExisting: ApNote
 const $ApPersonService: Provider = { provide: 'ApPersonService', useExisting: ApPersonService };
 const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting: ApQuestionService };
 //#endregion
+
+const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: SponsorsService };
 
 @Module({
 	imports: [
@@ -443,6 +446,8 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ApQuestionService,
 		QueueService,
 
+		SponsorsService,
+
 		//#region 文字列ベースでのinjection用(循環参照対応のため)
 		$LoggerService,
 		$AbuseReportService,
@@ -586,6 +591,8 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ApPersonService,
 		$ApQuestionService,
 		//#endregion
+
+		$SponsorsService,
 	],
 	exports: [
 		QueueModule,
@@ -731,6 +738,8 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ApQuestionService,
 		QueueService,
 
+		SponsorsService,
+
 		//#region 文字列ベースでのinjection用(循環参照対応のため)
 		$LoggerService,
 		$AbuseReportService,
@@ -873,6 +882,8 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ApPersonService,
 		$ApQuestionService,
 		//#endregion
+
+		$SponsorsService,
 	],
 })
 export class CoreModule { }

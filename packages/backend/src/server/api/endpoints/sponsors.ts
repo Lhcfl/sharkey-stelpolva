@@ -3,14 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import * as Redis from 'ioredis';
+import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import { DI } from '@/di-symbols.js';
+import { SponsorsService } from '@/core/SponsorsService.js';
 
 export const meta = {
 	tags: ['meta'],
-	description: 'Get Sharkey Sponsors',
+	description: 'Get Sharkey Sponsors or Instance Sponsors',
 
 	requireCredential: false,
 	requireCredentialPrivateMode: false,
@@ -20,6 +19,7 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		forceUpdate: { type: 'boolean', default: false },
+		instance: { type: 'boolean', default: false },
 	},
 	required: [],
 } as const;
@@ -27,31 +27,14 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-        @Inject(DI.redis) private redisClient: Redis.Redis,
+		private sponsorsService: SponsorsService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			let totalSponsors;
-			const cachedSponsors = await this.redisClient.get('sponsors');	
-
-			if (!ps.forceUpdate && cachedSponsors) {
-				totalSponsors = JSON.parse(cachedSponsors);
+			if (ps.instance) {
+				return { sponsor_data: await this.sponsorsService.instanceSponsors(ps.forceUpdate) };
 			} else {
-				try {
-					const backers = await fetch('https://opencollective.com/sharkey/tiers/backer/all.json').then((response) => response.json());
-					const sponsorsOC = await fetch('https://opencollective.com/sharkey/tiers/sponsor/all.json').then((response) => response.json());
-
-					// Merge both together into one array and make sure it only has Active subscriptions
-					const allSponsors = [...sponsorsOC, ...backers].filter(sponsor => sponsor.isActive === true);
-
-					// Remove possible duplicates
-					totalSponsors = [...new Map(allSponsors.map(v => [v.profile, v])).values()];
-
-					await this.redisClient.set('sponsors', JSON.stringify(totalSponsors), 'EX', 3600);
-				} catch (error) {
-					totalSponsors = [];
-				}
+				return { sponsor_data: await this.sponsorsService.sharkeySponsors(ps.forceUpdate) };
 			}
-			return { sponsor_data: totalSponsors };
 		});
 	}
 }
