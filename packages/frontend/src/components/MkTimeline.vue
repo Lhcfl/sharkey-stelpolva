@@ -107,6 +107,7 @@ function connectChannel() {
 		connection = stream.useChannel('homeTimeline', {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
+			withReplies: props.withReplies,
 		});
 		connection2 = stream.useChannel('main');
 	} else if (props.src === 'local') {
@@ -189,6 +190,7 @@ function updatePaginationQuery(untilDate?: Date) {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			withBots: props.withBots,
+			withReplies: props.withReplies,
 		};
 	} else if (props.src === 'local') {
 		endpoint = 'notes/local-timeline';

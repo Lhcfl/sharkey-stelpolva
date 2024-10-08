@@ -84,7 +84,7 @@ const localSocialTLFilterSwitchStore = ref<'withReplies' | 'onlyFiles' | false>(
 const withReplies = computed<boolean>({
 	get: () => {
 		if (!$i) return false;
-		if (['local', 'social'].includes(src.value) && localSocialTLFilterSwitchStore.value === 'onlyFiles') {
+		if (['home', 'local', 'social'].includes(src.value) && localSocialTLFilterSwitchStore.value === 'onlyFiles') {
 			return false;
 		} else {
 			return defaultStore.reactiveState.tl.value.filter.withReplies;
@@ -271,7 +271,7 @@ const headerActions = computed(() => {
 					ref: withRenotes,
 				}, isBasicTimeline(src.value) && hasWithReplies(src.value) ? {
 					type: 'switch',
-					text: i18n.ts.showRepliesToOthersInTimeline,
+					text: i18n.ts.showRepliesToOthersInTimelineAll,
 					ref: withReplies,
 					disabled: onlyFiles,
 				} : undefined, {
