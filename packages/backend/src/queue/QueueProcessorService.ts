@@ -145,7 +145,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 			if (!job) return '?';
 
 			return {
-				name: job.name,
+				name: job.name || undefined,
 				info: getJobInfo(job),
 				failedReason: job.failedReason || undefined,
 				data: job.data,
