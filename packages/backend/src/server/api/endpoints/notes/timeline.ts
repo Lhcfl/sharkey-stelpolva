@@ -209,7 +209,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		if (!ps.withReplies) {
 			const shouldShowReplyUserIds = [me.id, ...followees.filter(x => x.withReplies).map(x => x.followeeId)];
-			console.log(followees);
 			query.andWhere(new Brackets(qb => {
 				qb
 					.where('note.replyId IS NULL') // 返信ではない
