@@ -7,7 +7,7 @@ import { Brackets, In, Not } from 'typeorm';
 import { Injectable, Inject } from '@nestjs/common';
 import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import type { MiNote, IMentionedRemoteUsers } from '@/models/Note.js';
-import { LatestNote } from '@/models/LatestNote.js';
+import { SkLatestNote } from '@/models/LatestNote.js';
 import type { InstancesRepository, LatestNotesRepository, NotesRepository, UsersRepository } from '@/models/_.js';
 import { RelayService } from '@/core/RelayService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
@@ -268,7 +268,7 @@ export class NoteDeleteService {
 		if (!nextLatest) return;
 
 		// Record it as the latest
-		const latestNote = new LatestNote({
+		const latestNote = new SkLatestNote({
 			userId: note.userId,
 			noteId: nextLatest.id,
 		});
@@ -278,7 +278,7 @@ export class NoteDeleteService {
 		await this.latestNotesRepository
 			.createQueryBuilder('latest')
 			.insert()
-			.into(LatestNote)
+			.into(SkLatestNote)
 			.values(latestNote)
 			.orIgnore()
 			.execute();

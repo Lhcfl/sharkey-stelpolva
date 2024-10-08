@@ -13,7 +13,7 @@ import { MiNote } from '@/models/Note.js';
  * DMs are not counted.
  */
 @Entity('latest_note')
-export class LatestNote {
+export class SkLatestNote {
 	@PrimaryColumn({
 		name: 'user_id',
 		type: 'varchar' as const,
@@ -44,7 +44,7 @@ export class LatestNote {
 	})
 	public note: MiNote | null;
 
-	constructor(data?: Partial<LatestNote>) {
+	constructor(data?: Partial<SkLatestNote>) {
 		if (!data) return;
 
 		for (const [k, v] of Object.entries(data)) {

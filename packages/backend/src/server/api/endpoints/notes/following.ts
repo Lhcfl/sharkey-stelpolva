@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { LatestNote, MiFollowing } from '@/models/_.js';
+import { SkLatestNote, MiFollowing } from '@/models/_.js';
 import type { NotesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -57,7 +57,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.setParameter('me', me.id)
 
 				// Limit to latest notes
-				.innerJoin(LatestNote, 'latest', 'note.id = latest.note_id')
+				.innerJoin(SkLatestNote, 'latest', 'note.id = latest.note_id')
 
 				// Avoid N+1 queries from the "pack" method
 				.innerJoinAndSelect('note.user', 'user')
