@@ -21,6 +21,24 @@ export class SkLatestNote {
 	})
 	public userId: string;
 
+	@PrimaryColumn('boolean', {
+		name: 'is_public',
+		default: false,
+	})
+	public isPublic: boolean;
+
+	@PrimaryColumn('boolean', {
+		name: 'is_reply',
+		default: false,
+	})
+	public isReply: boolean;
+
+	@PrimaryColumn('boolean', {
+		name: 'is_quote',
+		default: false,
+	})
+	public isQuote: boolean;
+
 	@ManyToOne(() => MiUser, {
 		onDelete: 'CASCADE',
 	})
