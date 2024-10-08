@@ -1,1 +1,5 @@
 ---
+disableDrawer: "Não mostrar o menu em formato de gaveta"
+forwardReport: "Encaminhar a denúncia para o servidor remoto"
+forwardReportIsAnonymous: "No servidor remoto, suas informações não serão visíveis, e você será apresentado como uma conta do sistema anônima."
+abuseMarkAsResolved: "Marcar denúncia como resolvida"
