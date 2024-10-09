@@ -481,6 +481,7 @@ export function getNoteMenu(props: {
 				menuItems.push({
 					icon: 'ti ti-edit',
 					text: i18n.ts.deleteAndEdit,
+					danger: true,
 					action: delEdit,
 				});
 			}
