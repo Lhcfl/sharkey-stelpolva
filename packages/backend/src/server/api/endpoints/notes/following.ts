@@ -52,7 +52,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			let query = this.notesRepository
+			const query = this.notesRepository
 				.createQueryBuilder('note')
 				.setParameter('me', me.id)
 
@@ -73,8 +73,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			// Limit to mutuals, if requested
 			if (ps.mutualsOnly) {
-				query = query
-					.innerJoin(MiFollowing, 'mutuals', 'latest.user_id = mutuals."followerId" AND mutuals."followeeId" = :me');
+				query.innerJoin(MiFollowing, 'mutuals', 'latest.user_id = mutuals."followerId" AND mutuals."followeeId" = :me');
 			}
 
 			// Respect blocks and mutes
@@ -82,7 +81,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			this.queryService.generateMutedUserQuery(query, me);
 
 			// Support pagination
-			query = this.queryService
+			this.queryService
 				.makePaginationQuery(query, ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.orderBy('note.id', 'DESC')
 				.take(ps.limit);
