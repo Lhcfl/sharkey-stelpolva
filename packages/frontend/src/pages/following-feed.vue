@@ -62,7 +62,7 @@ import { $i } from '@/account.js';
 import { checkWordMute } from '@/scripts/check-word-mute.js';
 import SkUserRecentNotes from '@/components/SkUserRecentNotes.vue';
 import { useScrollPositionManager } from '@/nirax.js';
-import { getScrollContainer } from '@/scripts/scroll.js';
+import { getScrollContainer } from '@@/js/scroll.js';
 
 const props = withDefaults(defineProps<{
 	initialTab?: FollowingFeedTab,
