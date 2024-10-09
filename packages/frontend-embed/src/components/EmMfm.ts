@@ -55,7 +55,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 	provide('linkNavigationBehavior', props.linkNavigationBehavior);
 
 	const isNote = props.isNote ?? true;
-	const shouldNyaize = props.nyaize ? props.nyaize === 'respect' ? props.author?.isCat : false : false;
+	const shouldNyaize = props.nyaize === 'respect' && props.author?.isCat && props.author?.speakAsCat;
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (props.text == null || props.text === '') return;
@@ -74,6 +74,8 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 	};
 
 	const useAnim = true;
+
+	const isBlock = props.isBlock ?? false;
 
 	/**
 	 * Gen Vue Elements from MFM AST
@@ -224,15 +226,44 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 					case 'sparkle': {
 						return genEl(token.children, scale);
 					}
+					case 'fade': {
+						const direction = token.props.args.out
+							? 'alternate-reverse'
+							: 'alternate';
+						const speed = validTime(token.props.args.speed) ?? '1.5s';
+						const delay = validTime(token.props.args.delay) ?? '0s';
+						const loop = safeParseFloat(token.props.args.loop) ?? 'infinite';
+						style = `animation: mfm-fade ${speed} ${delay} linear ${loop}; animation-direction: ${direction};`;
+						break;
+					}
 					case 'rotate': {
 						const degrees = safeParseFloat(token.props.args.deg) ?? 90;
 						style = `transform: rotate(${degrees}deg); transform-origin: center center;`;
 						break;
 					}
+					case 'followmouse': {
+						return genEl(token.children, scale);
+					}
 					case 'position': {
 						const x = safeParseFloat(token.props.args.x) ?? 0;
 						const y = safeParseFloat(token.props.args.y) ?? 0;
 						style = `transform: translateX(${x}em) translateY(${y}em);`;
+						break;
+					}
+					case 'crop': {
+						const top = Number.parseFloat(
+							(token.props.args.top ?? '0').toString(),
+						);
+						const right = Number.parseFloat(
+							(token.props.args.right ?? '0').toString(),
+						);
+						const bottom = Number.parseFloat(
+							(token.props.args.bottom ?? '0').toString(),
+						);
+						const left = Number.parseFloat(
+							(token.props.args.left ?? '0').toString(),
+						);
+						style = `clip-path: inset(${top}% ${right}% ${bottom}% ${left}%);`;
 						break;
 					}
 					case 'scale': {
@@ -329,63 +360,63 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			case 'center': {
 				return [h('div', {
 					style: 'text-align:center;',
-				}, genEl(token.children, scale))];
+				}, h('bdi',genEl(token.children, scale)))];
 			}
 
 			case 'url': {
-				return [h(EmUrl, {
+				return [h('bdi', h(EmUrl, {
 					key: Math.random(),
 					url: token.props.url,
 					rel: 'nofollow noopener',
-				})];
+				}))];
 			}
 
 			case 'link': {
-				return [h(EmLink, {
+				return [h('bdi', h(EmLink, {
 					key: Math.random(),
 					url: token.props.url,
 					rel: 'nofollow noopener',
-				}, genEl(token.children, scale, true))];
+				}, genEl(token.children, scale, true)))];
 			}
 
 			case 'mention': {
-				return [h(EmMention, {
+				return [h('bdi', h(EmMention, {
 					key: Math.random(),
 					host: (token.props.host == null && props.author && props.author.host != null ? props.author.host : token.props.host) ?? host,
 					username: token.props.username,
-				})];
+				}))];
 			}
 
 			case 'hashtag': {
-				return [h(EmA, {
+				return [h('bdi', h(EmA, {
 					key: Math.random(),
 					to: isNote ? `/tags/${encodeURIComponent(token.props.hashtag)}` : `/user-tags/${encodeURIComponent(token.props.hashtag)}`,
 					style: 'color:var(--hashtag);',
-				}, `#${token.props.hashtag}`)];
+				}, `#${token.props.hashtag}`))];
 			}
 
 			case 'blockCode': {
-				return [h('code', {
+				return [h('bdi', h('code', {
 					key: Math.random(),
 					lang: token.props.lang ?? undefined,
-				}, token.props.code)];
+				}, token.props.code))];
 			}
 
 			case 'inlineCode': {
-				return [h('code', {
+				return [h('bdi', h('code', {
 					key: Math.random(),
-				}, token.props.code)];
+				}, token.props.code))];
 			}
 
 			case 'quote': {
 				if (!props.nowrap) {
-					return [h('div', {
+					return [h('bdi', { class: 'block' }, h('div', {
 						style: QUOTE_STYLE,
-					}, genEl(token.children, scale, true))];
+					}, h('bdi', genEl(token.children, scale, true))))];
 				} else {
 					return [h('span', {
 						style: QUOTE_STYLE,
-					}, genEl(token.children, scale, true))];
+					}, h('bdi', genEl(token.children, scale, true)))];
 				}
 			}
 
@@ -428,21 +459,21 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'mathInline': {
-				return [h('code', token.props.formula)];
+				return [h('bdi', h('code', token.props.formula))];
 			}
 
 			case 'mathBlock': {
-				return [h('code', token.props.formula)];
+				return [h('bdi', h('code', token.props.formula))];
 			}
 
 			case 'search': {
-				return [h('div', {
+				return [h('bdi', h('div', {
 					key: Math.random(),
-				}, token.props.query)];
+				}, token.props.query))];
 			}
 
 			case 'plain': {
-				return [h('span', genEl(token.children, scale, true))];
+				return [h('bdi', h('span', genEl(token.children, scale, true)))];
 			}
 
 			default: {
@@ -454,8 +485,8 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 		}
 	}).flat(Infinity) as (VNode | string)[];
 
-	return h('span', {
+	return h('bdi', { ...( isBlock ? { class: 'block' } : {}) }, h('span', {
 		// https://codeday.me/jp/qa/20190424/690106.html
 		style: props.nowrap ? 'white-space: pre; word-wrap: normal; overflow: hidden; text-overflow: ellipsis;' : 'white-space: pre-wrap;',
-	}, genEl(rootAst, props.rootScale ?? 1));
+	}, genEl(rootAst, props.rootScale ?? 1)));
 }
