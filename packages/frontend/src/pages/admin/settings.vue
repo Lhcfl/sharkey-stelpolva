@@ -159,6 +159,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<template #label>{{ i18n.ts.enableBotTrending }}<span v-if="otherForm.modifiedStates.enableBotTrending" class="_modified">{{ i18n.ts.modified }}</span></template>
 							<template #caption>{{ i18n.ts.turnOffBotTrending }}</template>
 						</MkSwitch>
+					</div>
 				</MkFolder>
 
 				<MkFolder>
