@@ -58,7 +58,6 @@ export class SignupService {
 	}) {
 		const { username, password, passwordHash, host, reason } = opts;
 		let hash = passwordHash;
-		const instance = await this.metaService.fetch(true);
 
 		// Validate username
 		if (!this.userEntityService.validateLocalUsername(username)) {
@@ -118,7 +117,7 @@ export class SignupService {
 		let account!: MiUser;
 		let defaultApproval = false;
 
-		if (!instance.approvalRequiredForSignup) defaultApproval = true;
+		if (!this.meta.approvalRequiredForSignup) defaultApproval = true;
 
 		// Start transaction
 		await this.db.transaction(async transactionalEntityManager => {
