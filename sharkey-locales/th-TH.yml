@@ -1,0 +1,13 @@
+---
+disableDrawer: "ไม่แสดงเมนูในรูปแบบลิ้นชัก"
+forwardReport: "ส่งต่อรายงานไปยังเซิร์ฟเวอร์ระยะไกล"
+forwardReportIsAnonymous: "ข้อมูลของคุณจะไม่ปรากฏบนเซิร์ฟเวอร์ระยะไกลและปรากฏเป็นบัญชีระบบที่ไม่ระบุชื่อ"
+abuseMarkAsResolved: "ทำเครื่องหมายรายงานว่าแก้ไขแล้ว"
+_initialTutorial:
+  _reaction:
+    letsTryReacting: "คุณสามารถเพิ่มรีแอคชั่นได้ด้วยการคลิกปุ่ม “{reaction}” บนโน้ต ลองรีแอคชั่นโน้ตตัวอย่างนี้ดูสิ!"
+    reactDone: "คุณสามารถยกเลิกรีแอคชั่นได้โดยการกดปุ่ม “{undo}”"
+_achievements:
+  _types:
+    _notes1:
+      title: "just setting up my shonk"

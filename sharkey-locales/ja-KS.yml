@@ -1,0 +1,79 @@
+---
+introMisskey: "ようお越し！Sharkeyは、オープンソースの分散型マイクロブログサービスやねん。\n「ノート」を作って、いま起こっとることを共有したり、あんたについて皆に発信しよう📡\n「ツッコミ」機能で、皆のノートに素早く反応を追加したりもできるで✌\nほな、新しい世界を探検しよか🚀"
+poweredByMisskeyDescription: "{name}は、オープンソースのプラットフォーム<b>Sharkey</b>のサーバーのひとつなんやで。"
+renotedBy: "{user}がブーストしたで"
+copyLinkRenote: "ブーストのリンクをコピーするで？"
+deleteAndEditConfirm: "このノートをほかしてもっかい直す？このノートへのツッコミ、ブースト、返信も全部消えるんやけどそれでもええん？"
+inChannelRenote: "チャンネルの中でブースト"
+renoteMute: "ブーストは見いひん"
+renoteUnmute: "ブーストもやっぱ見るわ"
+flagAsBotDescription: "もしこのアカウントをプログラム使うて運用するんやったら、このフラグをオンにしてや。オンにすれば、反応がバーッて連鎖せんように開発者が使うたり、Sharkeyのシステム上での扱いがBotに合ったもんになるからな。"
+flagSpeakAsCat: "猫語で話すで"
+flagSpeakAsCatDescription: "有効にすると、あなたの投稿の 「な」を「にゃ」にするでー。"
+intro: "Sharkeyのインストールが完了したで！管理者アカウントを作ってや。"
+aboutMisskey: "Sharkeyってなんや？"
+disableDrawer: "メニューをドロワーで表示せえへん"
+useSoundOnlyWhenActive: "Sharkeyがアクティブなときだけ音出す"
+scratchpadDescription: "スクラッチパッドではAiScriptを色々試すことができるんや。Sharkeyに対して色々できるコードを書いて動かしてみたり、結果を見たりできるで。"
+reportAbuseRenote: "ブースト苦情だすで？"
+forwardReport: "リモートサーバーに通報を転送するで"
+forwardReportIsAnonymous: "リモートサーバーからはあんたの情報は見えんなって、匿名のシステムアカウントとして表示されるで。"
+abuseMarkAsResolved: "対応したで"
+renotesCount: "ブーストした数やで"
+renotedCount: "ブーストされた数やで"
+sendErrorReportsDescription: "オンにしたら、なんか変なことが起きたとき、詳しいのが全部Sharkeyに送られて、ソフトウェアをもっと良うするで。エラー情報には、OSのバージョン、ブラウザの種類、行動履歴なんかが含まれるな。"
+misskeyUpdated: "Sharkeyが更新されたで！\nモデレーターの人らに感謝せなあかんで"
+didYouLikeMisskey: "Sharkey気に入ってくれた？"
+pleaseDonate: "Sharkeyは{host}が使うとる無料のソフトウェアやで。これからも開発を続けれるように、寄付したってな～。"
+collapseRenotes: "見たことあるブーストは飛ばして表示するで"
+collapseRenotesDescription: "リアクションやブーストをしたことがあるノートをたたんで表示するで。"
+renotesList: "ブースト一覧"
+goToMisskey: "Sharkeyへ"
+renotes: "ブースト"
+showRenotes: "ブースト出す"
+_initialAccountSetting:
+  youCanContinueTutorial: "こんまま{name}(Sharkey)の使い方のチュートリアルにも行けるけど、ここでやめてすぐに使い始めてもええで。"
+_initialTutorial:
+  _landing:
+    description: "ここでは、Sharkeyのカンタンな使い方とか機能を確かめれんで。"
+  _note:
+    description: "Sharkeyでの投稿は「ノート」って呼ばれてんで。ノートは順々にタイムラインに載ってて、リアルタイムで新しくなってってんで。"
+  _reaction:
+    letsTryReacting: "ノートの「{reaction}」ボタンでツッコめるわ。試しに下のノートにツッコんでみ。"
+    reactDone: "「ー」ボタンでツッコミやめれるで。"
+  _timeline:
+    description1: "Sharkeyには、いろいろタイムラインがあんで（ただ、サーバーによっては無効化されてるところもあるな）。"
+  _postNote:
+    description1: "Sharkeyにノートを投稿するとき、いろんなオプションが付けれるで。投稿画面はこんな感じや。"
+    _visibility:
+      home: "ホームタイムラインにだけ見せるで。フォロワーとか、プロフィールを見に来た人、ブーストからも見れるから、実質は全員見れるけどな。あんまし広がりにくいってことや。"
+      followers: "フォロワーにだけ見せるで。自分以外はブーストできへんし、フォロワー以外は絶対に見れへん。"
+_achievements:
+  _types:
+    _notes1:
+      flavor: "Sharkeyを楽しんでな～"
+    _login1000:
+      flavor: "Sharkeyようさん使てもろておおきにな！"
+    _iLoveMisskey:
+      title: "Sharkey好きやねん"
+      description: "\"I ❤ #Sharkey\"を投稿した"
+      flavor: "Sharkeyを使ってくれておおきにな～ by 開発チーム"
+    _client60min:
+      title: "Sharkeyの見過ぎや！"
+    _tutorialCompleted:
+      title: "Sharkeyひよっこ講座 修了証"
+_aboutMisskey:
+  about: "Sharkeyは、Misskeyをベースにしたオープンソースなソフトウェアや。"
+  thisIsModifiedVersion: "{name}はオリジナルのSharkeyをいじったバージョンをつこうてるで。"
+  translation: "Sharkeyを翻訳"
+  donate: "Sharkeyに寄付"
+_channel:
+  allowRenoteToExternal: "チャンネルの外にブーストできるようにする"
+_soundSettings:
+  driveFileDurationWarnDescription: "長い音使うたらSharkey使うのに良うないかもしれへんで。それでもええか？"
+_notification:
+  youRenoted: "{name}がブーストしたみたいやで"
+  renotedBySomeUsers: "{n}人がブーストしたで"
+_webhookSettings:
+  _events:
+    renote: "ブーストされるとき～！"

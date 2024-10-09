@@ -1,0 +1,13 @@
+---
+disableDrawer: "Les menus ne s'affichent pas dans le tiroir"
+forwardReport: "Transférer le signalement à l’instance distante"
+forwardReportIsAnonymous: "L'instance distante ne sera pas en mesure de voir vos informations et apparaîtra comme un compte anonyme du système."
+abuseMarkAsResolved: "Marquer le signalement comme résolu"
+_initialTutorial:
+  _reaction:
+    letsTryReacting: "Des réactions peuvent être ajoutées en cliquant sur le bouton « {reaction} » de la note. Essayez d'ajouter une réaction à cet exemple de note !"
+    reactDone: "Vous pouvez annuler la réaction en cliquant sur le bouton « {undo} » ."
+_achievements:
+  _types:
+    _notes1:
+      title: "Je viens tout juste de configurer mon shonk"

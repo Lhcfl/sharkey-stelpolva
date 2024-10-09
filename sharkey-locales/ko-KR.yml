@@ -1,0 +1,11 @@
+---
+disableDrawer: "드로어 메뉴를 사용하지 않기"
+forwardReport: "리모트 서버에도 신고 내용 보내기"
+forwardReportIsAnonymous: "리모트 서버에서는 나의 정보를 볼 수 없으며, 익명의 시스템 계정으로 표시됩니다."
+abuseMarkAsResolved: "해결됨으로 표시"
+_initialTutorial:
+  _reaction:
+    letsTryReacting: "리액션은 노트의 '{reaction}' 버튼을 클릭하여 붙일 수 있습니다. 지금 표시되는 샘플 노트에 리액션을 달아 보세요!"
+    reactDone: "'{undo}' 버튼을 눌러서 리액션을 취소할 수 있습니다."
+_urlPreviewSetting:
+  requireContentLength: "Content-Length를 얻었을 때만 미리보기 만들기"

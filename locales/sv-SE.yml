@@ -486,7 +486,7 @@ pleaseDonate: "Misskey är en gratis programvara som används på {host}. Donera
 resetPasswordConfirm: "Återställ verkligen ditt lösenord?"
 dataSaver: "Databesparing"
 icon: "Profilbild"
-replies: "Svar"
+replies: "Svara"
 renotes: "Omnotera"
 _delivery:
   stop: "Suspenderad"
@@ -562,6 +562,7 @@ _notification:
     renote: "Omnotera"
     quote: "Citat"
     reaction: "Reaktioner"
+    login: "Logga in"
   _actions:
     reply: "Svara"
     renote: "Omnotera"
