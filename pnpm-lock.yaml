@@ -1066,6 +1066,9 @@ importers:
       '@discordapp/twemoji':
         specifier: 15.1.0
         version: 15.1.0
+      '@phosphor-icons/web':
+        specifier: ^2.0.3
+        version: 2.1.1
       '@rollup/plugin-json':
         specifier: 6.1.0
         version: 6.1.0(rollup@4.22.5)
@@ -1075,9 +1078,6 @@ importers:
       '@rollup/pluginutils':
         specifier: 5.1.2
         version: 5.1.2(rollup@4.22.5)
-      '@tabler/icons-webfont':
-        specifier: 3.3.0
-        version: 3.3.0
       '@twemoji/parser':
         specifier: 15.1.1
         version: 15.1.1
@@ -4534,12 +4534,6 @@ packages:
   '@szmarczak/http-timer@5.0.1':
     resolution: {integrity: sha512-+PmQX0PiAYPMeVYe237LJAYvOMYW1j2rH5YROyS3b4CTVJum34HfRvKvAzozHAQG0TnHNdUfY9nCeUyRAs//cw==}
     engines: {node: '>=14.16'}
-
-  '@tabler/icons-webfont@3.3.0':
-    resolution: {integrity: sha512-vMsxtwTXdC4QH4uDajZjBYThILEI0dP+Mn1s4XZkVtnJ793IF31i3596nYetWhAJnrED0UJ0HQWSbmqVxVQbxA==}
-
-  '@tabler/icons@3.3.0':
-    resolution: {integrity: sha512-PLVe9d7b59sKytbx00KgeGhQG3N176Ezv8YMmsnSz4s0ifDzMWlp/h2wEfQZ0ZNe8e377GY2OW6kovUe3Rnd0g==}
 
   '@testing-library/dom@10.4.0':
     resolution: {integrity: sha512-pemlzrSESWbdAloYml3bAJMEfNh1Z7EduzqPKprCH5S341frlpYnUEW0H72dLxa6IsYr+mPno20GiSm+h9dEdQ==}
@@ -15306,12 +15300,6 @@ snapshots:
     dependencies:
       defer-to-connect: 2.0.1
 
-  '@tabler/icons-webfont@3.3.0':
-    dependencies:
-      '@tabler/icons': 3.3.0
-
-  '@tabler/icons@3.3.0': {}
-
   '@testing-library/dom@10.4.0':
     dependencies:
       '@babel/code-frame': 7.24.7
@@ -20172,7 +20160,7 @@ snapshots:
       whatwg-encoding: 3.1.1
       whatwg-mimetype: 4.0.0
       whatwg-url: 14.0.0
-      ws: 8.18.0(bufferutil@4.0.7)(utf-8-validate@6.0.3)
+      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       xml-name-validator: 5.0.0
     transitivePeerDependencies:
       - bufferutil
