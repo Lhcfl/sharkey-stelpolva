@@ -21,7 +21,6 @@ import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import { QueueService } from '@/core/QueueService.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
-import { MetaService } from '@/core/MetaService.js';
 import { UserKeypairService } from '@/core/UserKeypairService.js';
 import { InstanceActorService } from '@/core/InstanceActorService.js';
 import type { MiUserPublickey } from '@/models/UserPublickey.js';
@@ -75,7 +74,6 @@ export class ActivityPubServerService {
 		@Inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
-		private metaService: MetaService,
 		private utilityService: UtilityService,
 		private userEntityService: UserEntityService,
 		private instanceActorService: InstanceActorService,
@@ -175,7 +173,6 @@ export class ActivityPubServerService {
 			return true;
 		}
 
-		const meta = await this.metaService.fetch();
 		if (this.utilityService.isFederationAllowedHost(keyHost)) {
 			/* blocked instance: refuse (we don't care if the signature is
 				 good, if they even pretend to be from a blocked instance,
