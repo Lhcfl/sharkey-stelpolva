@@ -27,12 +27,16 @@ import { SigninService } from './SigninService.js';
 import type { AuthenticationResponseJSON } from '@simplewebauthn/types';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { isSystemAccount } from '@/misc/is-system-account.js';
+import type { MiMeta } from '@/models/_.js';
 
 @Injectable()
 export class SigninApiService {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
+
+		@Inject(DI.meta)
+		private meta: MiMeta,
 
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
@@ -66,8 +70,6 @@ export class SigninApiService {
 	) {
 		reply.header('Access-Control-Allow-Origin', this.config.url);
 		reply.header('Access-Control-Allow-Credentials', 'true');
-
-		const instance = await this.metaService.fetch(true);
 
 		const body = request.body;
 		const username = body['username'];
@@ -134,7 +136,7 @@ export class SigninApiService {
 
 		const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 
-		if (!user.approved && instance.approvalRequiredForSignup) {
+		if (!user.approved && this.meta.approvalRequiredForSignup) {
 			reply.code(403);
 			return {
 				error: {
@@ -169,7 +171,7 @@ export class SigninApiService {
 						password: newHash
 					});
 				}
-				if (!instance.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
+				if (!this.meta.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
 
 				return this.signinService.signin(request, reply, user);
 			} else {
@@ -200,7 +202,7 @@ export class SigninApiService {
 				});
 			}
 
-			if (!instance.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
+			if (!this.meta.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
 
 			return this.signinService.signin(request, reply, user);
 		} else if (body.credential) {
@@ -213,7 +215,7 @@ export class SigninApiService {
 			const authorized = await this.webAuthnService.verifyAuthentication(user.id, body.credential);
 
 			if (authorized) {
-				if (!instance.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
+				if (!this.meta.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
 				return this.signinService.signin(request, reply, user);
 			} else {
 				return await fail(403, {
