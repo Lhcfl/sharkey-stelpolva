@@ -126,7 +126,7 @@ export class SignupApiService {
 			}
 		}
 
-		if (instance.approvalRequiredForSignup) {
+		if (this.meta.approvalRequiredForSignup) {
 			if (reason == null || typeof reason !== 'string') {
 				reply.code(400);
 				return;
@@ -219,7 +219,7 @@ export class SignupApiService {
 
 			reply.code(204);
 			return;
-		} else if (instance.approvalRequiredForSignup) {
+		} else if (this.meta.approvalRequiredForSignup) {
 			const { account } = await this.signupService.signup({
 				username, password, host, reason,
 			});
@@ -287,8 +287,6 @@ export class SignupApiService {
 
 		const code = body['code'];
 
-		const instance = await this.metaService.fetch(true);
-
 		try {
 			const pendingUser = await this.userPendingsRepository.findOneByOrFail({ code });
 
@@ -323,7 +321,7 @@ export class SignupApiService {
 				});
 			}
 
-			if (instance.approvalRequiredForSignup) {
+			if (this.meta.approvalRequiredForSignup) {
 				if (pendingUser.email) {
 					this.emailService.sendEmail(pendingUser.email, 'Approval pending',
 						'Congratulations! Your account is now pending approval. You will get notified when you have been accepted.',
