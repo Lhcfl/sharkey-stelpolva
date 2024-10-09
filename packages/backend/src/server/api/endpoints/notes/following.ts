@@ -34,9 +34,9 @@ export const paramDef = {
 	properties: {
 		mutualsOnly: { type: 'boolean', default: false },
 		filesOnly: { type: 'boolean', default: false },
-		includeNonPublic: { type: 'boolean', default: true },
+		includeNonPublic: { type: 'boolean', default: false },
 		includeReplies: { type: 'boolean', default: false },
-		includeQuotes: { type: 'boolean', default: true },
+		includeQuotes: { type: 'boolean', default: false },
 
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: 'string', format: 'misskey:id' },

@@ -22298,11 +22298,11 @@ export type operations = {
           mutualsOnly?: boolean;
           /** @default false */
           filesOnly?: boolean;
-          /** @default true */
+          /** @default false */
           includeNonPublic?: boolean;
           /** @default false */
           includeReplies?: boolean;
-          /** @default true */
+          /** @default false */
           includeQuotes?: boolean;
           /** @default 10 */
           limit?: number;
