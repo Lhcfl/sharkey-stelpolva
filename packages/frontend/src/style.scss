@@ -68,6 +68,10 @@ html.radius-misskey {
 
 html {
 	background-color: var(--bg);
+	background-position: center;
+	background-size: cover;
+	background-attachment: fixed;
+	background-repeat: no-repeat;
 	color: var(--fg);
 	accent-color: var(--accent);
 	overflow: auto;
