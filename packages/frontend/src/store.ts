@@ -239,6 +239,16 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'deviceAccount',
 		default: [] as Misskey.entities.UserList[],
 	},
+	followingFeed: {
+		where: 'account',
+		default: {
+			withNonPublic: false,
+			withQuotes: false,
+			withReplies: false,
+			onlyFiles: false,
+			onlyMutuals: false,
+		},
+	},
 
 	overridedDeviceKind: {
 		where: 'device',

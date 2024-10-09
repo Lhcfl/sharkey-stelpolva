@@ -63,20 +63,42 @@ import { checkWordMute } from '@/scripts/check-word-mute.js';
 import SkUserRecentNotes from '@/components/SkUserRecentNotes.vue';
 import { useScrollPositionManager } from '@/nirax.js';
 import { getScrollContainer } from '@/scripts/scroll.js';
+import { defaultStore } from '@/store.js';
+import { deepMerge } from '@/scripts/merge.js';
 
-const props = withDefaults(defineProps<{
-	initialTab?: FollowingFeedTab,
-}>(), {
-	initialTab: followingTab,
+const withNonPublic = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.withNonPublic,
+	set: value => saveFollowingFilter('withNonPublic', value),
 });
+const withQuotes = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.withQuotes,
+	set: value => saveFollowingFilter('withQuotes', value),
+});
+const withReplies = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.withReplies,
+	set: value => saveFollowingFilter('withReplies', value),
+});
+const onlyFiles = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.onlyFiles,
+	set: value => saveFollowingFilter('onlyFiles', value),
+});
+const onlyMutuals = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.onlyMutuals,
+	set: value => saveFollowingFilter('onlyMutuals', value),
+});
+
+// Based on timeline.saveTlFilter()
+function saveFollowingFilter(key: keyof typeof defaultStore.state.followingFeed, value: boolean) {
+	const out = deepMerge({ [key]: value }, defaultStore.state.followingFeed);
+	defaultStore.set('followingFeed', out);
+}
 
 const router = useRouter();
 
-// Vue complains, but we *want* to lose reactivity here.
-// Otherwise, the user would be unable to change the tab.
-// eslint-disable-next-line vue/no-setup-props-reactivity-loss
-const currentTab: Ref<FollowingFeedTab> = ref(props.initialTab);
-const mutualsOnly: Ref<boolean> = computed(() => currentTab.value === mutualsTab);
+const currentTab = computed({
+	get: () => onlyMutuals.value ? mutualsTab : followingTab,
+	set: value => onlyMutuals.value = (value === mutualsTab),
+});
 const userRecentNotes = shallowRef<InstanceType<typeof SkUserRecentNotes>>();
 const userScroll = shallowRef<HTMLElement>();
 const noteScroll = shallowRef<HTMLElement>();
@@ -161,18 +183,13 @@ const latestNotesPagination: Paging<'notes/following'> = {
 	endpoint: 'notes/following' as const,
 	limit: 20,
 	params: computed(() => ({
-		mutualsOnly: mutualsOnly.value,
+		mutualsOnly: onlyMutuals.value,
 		filesOnly: onlyFiles.value,
 		includeNonPublic: withNonPublic.value,
 		includeReplies: withReplies.value,
 		includeQuotes: withQuotes.value,
 	})),
 };
-
-const withNonPublic = ref(false);
-const withQuotes = ref(false);
-const withReplies = ref(false);
-const onlyFiles = ref(false);
 
 const headerActions: PageHeaderItem[] = [
 	{
