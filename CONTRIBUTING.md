@@ -610,15 +610,11 @@ seems to do a decent job)
 *after that commit*, do all the extra work, on the same branch:
 
 * copy all changes (commit after each step):
-  * in `packages/backend/src/core/NoteCreateService.ts`, from `create` to
-    `import` (and vice versa if `git` got confused!)
   * in
     `packages/backend/src/core/activitypub/models/ApNoteService.ts`,
     from `createNote` to `updateNote`
   * from `packages/backend/src/core/NoteCreateService.ts` to
     `packages/backend/src/core/NoteEditService.vue`
-  * in `packages/backend/src/core/activitypub/models/ApNoteService.ts`,
-    from `createNote` to `updateNote`
   * from `packages/backend/src/server/api/endpoints/notes/create.ts`
     to `packages/backend/src/server/api/endpoints/notes/edit.ts`
   * from `packages/frontend/src/components/MkNote*.vue` to
