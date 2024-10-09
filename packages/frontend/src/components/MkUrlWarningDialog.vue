@@ -29,7 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { onBeforeUnmount, onMounted, ref, shallowRef, computed } from 'vue';
-import { instanceName } from '@/config.js';
+import { instanceName } from '@@/js/config.js';
 import MkModal from '@/components/MkModal.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
