@@ -156,7 +156,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			notes = notes.filter(note => {
 				if (note.user?.isSilenced && me && followings && note.userId !== me.id && !followings[note.userId]) return false;
 				if (note.user?.isSuspended) return false;
-				if (this.utilityService.isBlockedHost(meta.blockedHosts, note.userHost)) return false;
+				if (this.utilityService.isFederationAllowedHost(note.userHost)) return false;
 				if (this.utilityService.isSilencedHost(meta.silencedHosts, note.userHost)) return false;
 				return true;
 			});
