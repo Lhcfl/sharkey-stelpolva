@@ -8,11 +8,10 @@ import megalodon, { Entity, MegalodonInterface } from 'megalodon';
 import querystring from 'querystring';
 import { IsNull } from 'typeorm';
 import multer from 'fastify-multer';
-import type { AccessTokensRepository, NoteEditRepository, NotesRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
+import type { AccessTokensRepository, NoteEditRepository, NotesRepository, UserProfilesRepository, UsersRepository, MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import type { Config } from '@/config.js';
-import { MetaService } from '@/core/MetaService.js';
 import { convertAnnouncement, convertFilter, convertAttachment, convertFeaturedTag, convertList, MastoConverters } from './converters.js';
 import { getInstance } from './endpoints/meta.js';
 import { ApiAuthMastodon, ApiAccountMastodon, ApiFilterMastodon, ApiNotifyMastodon, ApiSearchMastodon, ApiTimelineMastodon, ApiStatusMastodon } from './endpoints.js';
@@ -31,6 +30,8 @@ export function getClient(BASE_URL: string, authorization: string | undefined): 
 @Injectable()
 export class MastodonApiServerService {
 	constructor(
+		@Inject(DI.meta)
+		private serverSettings: MiMeta,
         @Inject(DI.usersRepository)
         private usersRepository: UsersRepository,
 		@Inject(DI.notesRepository)
@@ -112,7 +113,7 @@ export class MastodonApiServerService {
 					order: { id: 'ASC' },
 				});
 				const contact = admin == null ? null : await this.mastoConverter.convertAccount((await client.getAccount(admin.id)).data);
-				reply.send(await getInstance(data.data, contact as Entity.Account, this.config, await this.metaService.fetch()));
+				reply.send(await getInstance(data.data, contact as Entity.Account, this.config, this.serverSettings));
 			} catch (e: any) {
 				/* console.error(e); */
 				reply.code(401).send(e.response.data);
