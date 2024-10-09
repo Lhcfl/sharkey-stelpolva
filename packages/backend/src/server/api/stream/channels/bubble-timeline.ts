@@ -4,8 +4,9 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { DI } from '@/di-symbols.js';
+import type { MiMeta } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
-import { MetaService } from '@/core/MetaService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
@@ -21,10 +22,11 @@ class BubbleTimelineChannel extends Channel {
 	private withRenotes: boolean;
 	private withFiles: boolean;
 	private withBots: boolean;
-	private instance: MiMeta;
 
 	constructor(
-		private metaService: MetaService,
+		@Inject(DI.meta)
+		private serverSettings: MiMeta,
+
 		private roleService: RoleService,
 		private noteEntityService: NoteEntityService,
 
@@ -43,7 +45,6 @@ class BubbleTimelineChannel extends Channel {
 		this.withRenotes = !!(params.withRenotes ?? true);
 		this.withFiles = !!(params.withFiles ?? false);
 		this.withBots = !!(params.withBots ?? true);
-		this.instance = await this.metaService.fetch();
 
 		// Subscribe events
 		this.subscriber.on('notesStream', this.onNote);
@@ -54,7 +55,7 @@ class BubbleTimelineChannel extends Channel {
 		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
 		if (!this.withBots && note.user.isBot) return;
 
-		if (!(note.user.host != null && this.instance.bubbleInstances.includes(note.user.host) && note.visibility === 'public' )) return;
+		if (!(note.user.host != null && this.serverSettings.bubbleInstances.includes(note.user.host) && note.visibility === 'public' )) return;
 
 		if (note.channelId != null) return;
 
