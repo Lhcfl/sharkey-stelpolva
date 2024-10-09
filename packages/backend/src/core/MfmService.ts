@@ -6,7 +6,7 @@
 import { URL } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
 import * as parse5 from 'parse5';
-import { Window, DocumentFragment, XMLSerializer } from 'happy-dom';
+import { Window, XMLSerializer } from 'happy-dom';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { intersperse } from '@/misc/prelude/array.js';
@@ -465,7 +465,7 @@ export class MfmService {
 
 		const serialized = new XMLSerializer().serializeToString(body);
 
-		happyDOM.close().catch(e => {});
+		happyDOM.close().catch(err => {});
 
 		return serialized;
 	}

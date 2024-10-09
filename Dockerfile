@@ -23,9 +23,10 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
 RUN pnpm build
 RUN node scripts/trim-deps.mjs
 RUN mv packages/frontend/assets sharkey-assets
+RUN mv packages/frontend-embed/assets sharkey-embed-assets
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
 	pnpm prune
-RUN rm -r node_modules packages/frontend packages/sw
+RUN rm -r node_modules packages/frontend packages/frontend-shared packages/frontend-embed packages/sw
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
 	pnpm i --prod --frozen-lockfile --aggregate-output
 RUN rm -rf .git
@@ -64,6 +65,7 @@ COPY --chown=sharkey:sharkey --from=build /sharkey/packages/megalodon/lib ./pack
 COPY --chown=sharkey:sharkey --from=build /sharkey/fluent-emojis ./fluent-emojis
 COPY --chown=sharkey:sharkey --from=build /sharkey/tossface-emojis/dist ./tossface-emojis/dist
 COPY --chown=sharkey:sharkey --from=build /sharkey/sharkey-assets ./packages/frontend/assets
+COPY --chown=sharkey:sharkey --from=build /sharkey/sharkey-embed-assets ./packages/frontend-embed/assets
 
 COPY --chown=sharkey:sharkey pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --chown=sharkey:sharkey packages/backend/package.json ./packages/backend/package.json

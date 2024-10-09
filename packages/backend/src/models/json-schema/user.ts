@@ -126,10 +126,6 @@ export const packedUserLiteSchema = {
 			nullable: false, optional: true,
 			default: false,
 		},
-		isSilenced: {
-			type: 'boolean',
-			nullable: false, optional: false,
-		},
 		noindex: {
 			type: 'boolean',
 			nullable: false, optional: false,
@@ -277,6 +273,10 @@ export const packedUserDetailedNotMeOnlySchema = {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},
+		isSilenced: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
 		isSuspended: {
 			type: 'boolean',
 			nullable: false, optional: false,
@@ -412,6 +412,10 @@ export const packedUserDetailedNotMeOnlySchema = {
 				ref: 'RoleLite',
 			},
 		},
+		followedMessage: {
+			type: 'string',
+			nullable: true, optional: true,
+		},
 		memo: {
 			type: 'string',
 			nullable: true, optional: false,
@@ -483,6 +487,10 @@ export const packedMeDetailedOnlySchema = {
 			type: 'string',
 			nullable: true, optional: false,
 			format: 'id',
+		},
+		followedMessage: {
+			type: 'string',
+			nullable: true, optional: false,
 		},
 		isModerator: {
 			type: 'boolean',

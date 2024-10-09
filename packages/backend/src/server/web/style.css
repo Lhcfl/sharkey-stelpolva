@@ -47,6 +47,7 @@ html {
 	transform: translateY(80px);
 	color: var(--accent);
 }
+
 #splashSpinner > .spinner {
 	position: absolute;
 	top: 0;

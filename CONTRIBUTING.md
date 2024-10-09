@@ -573,6 +573,26 @@ marginはそのコンポーネントを使う側が設定する
 ### indexというファイル名を使うな
 ESMではディレクトリインポートは廃止されているのと、ディレクトリインポートせずともファイル名が index だと何故か一部のライブラリ？でディレクトリインポートだと見做されてエラーになる
 
+## CSS Recipe
+
+### Lighten CSS vars
+
+``` css
+color: hsl(from var(--accent) h s calc(l + 10));
+```
+
+### Darken CSS vars
+
+``` css
+color: hsl(from var(--accent) h s calc(l - 10));
+```
+
+### Add alpha to CSS vars
+
+``` css
+color: color(from var(--accent) srgb r g b / 0.5);
+```
+
 ## Merging from Misskey into Sharkey
 
 Make sure you have both remotes in the same clone (`git remote add misskey
