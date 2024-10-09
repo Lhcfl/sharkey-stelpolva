@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Brackets } from 'typeorm';
-import type { NotesRepository } from '@/models/_.js';
+import type { NotesRepository, MiMeta } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -9,7 +9,6 @@ import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { ApiError } from '../../error.js';
 import { CacheService } from '@/core/CacheService.js';
-import { MetaService } from '@/core/MetaService.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -51,6 +50,9 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
+		@Inject(DI.meta)
+		private serverSettings: MiMeta,
+
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
@@ -59,11 +61,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 		private activeUsersChart: ActiveUsersChart,
 		private cacheService: CacheService,
-		private metaService: MetaService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me ? me.id : null);
-			const instance = await this.metaService.fetch();
 			if (!policies.btlAvailable) {
 				throw new ApiError(meta.errors.btlDisabled);
 			}
@@ -79,7 +79,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('note.visibility = \'public\'')
 				.andWhere('note.channelId IS NULL')
-				.andWhere('note.userHost IN (:...hosts)', { hosts: instance.bubbleInstances })
+				.andWhere('note.userHost IN (:...hosts)', { hosts: this.serverSettings.bubbleInstances })
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('note.reply', 'reply')
 				.leftJoinAndSelect('note.renote', 'renote')
@@ -97,7 +97,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (!ps.withBots) query.andWhere('user.isBot = FALSE');
-			
+
 			if (ps.withRenotes === false) {
 				query.andWhere(new Brackets(qb => {
 					qb.where('note.renoteId IS NULL');
