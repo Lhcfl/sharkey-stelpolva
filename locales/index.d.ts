@@ -5066,6 +5066,18 @@ export interface Locale extends ILocale {
      */
     "showRenotes": string;
     /**
+     * Show quotes
+     */
+    "showQuotes": string;
+    /**
+     * Show replies
+     */
+    "showReplies": string;
+    /**
+     * Show non-public
+     */
+    "showNonPublicNotes": string;
+    /**
      * 編集済み
      */
     "edited": string;

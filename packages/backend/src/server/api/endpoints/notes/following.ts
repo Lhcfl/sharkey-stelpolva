@@ -33,6 +33,11 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		mutualsOnly: { type: 'boolean', default: false },
+		filesOnly: { type: 'boolean', default: false },
+		includeNonPublic: { type: 'boolean', default: true },
+		includeReplies: { type: 'boolean', default: false },
+		includeQuotes: { type: 'boolean', default: true },
+
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
@@ -74,6 +79,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// Limit to mutuals, if requested
 			if (ps.mutualsOnly) {
 				query.innerJoin(MiFollowing, 'mutuals', 'latest.user_id = mutuals."followerId" AND mutuals."followeeId" = :me');
+			}
+
+			// Limit to files, if requested
+			if (ps.filesOnly) {
+				query.andWhere('note."fileIds" != \'{}\'');
+			}
+
+			// Match selected note types.
+			if (!ps.includeNonPublic) {
+				query.andWhere('latest.is_public');
+			}
+			if (!ps.includeReplies) {
+				query.andWhere('latest.is_reply = false');
+			}
+			if (!ps.includeQuotes) {
+				query.andWhere('latest.is_quote = false');
 			}
 
 			// Respect blocks and mutes

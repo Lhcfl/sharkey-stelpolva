@@ -24,16 +24,13 @@ import MkPullToRefresh from '@/components/MkPullToRefresh.vue';
 import { Paging } from '@/components/MkPagination.vue';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
 	userId: string;
-	withRenotes?: boolean;
-	withReplies?: boolean;
-	onlyFiles?: boolean;
-}>(), {
-	withRenotes: false,
-	withReplies: true,
-	onlyFiles: false,
-});
+	withNonPublic: boolean;
+	withQuotes: boolean;
+	withReplies: boolean;
+	onlyFiles: boolean;
+}>();
 
 const loadError: Ref<string | null> = ref(null);
 const user: Ref<Misskey.entities.UserDetailed | null> = ref(null);
@@ -43,9 +40,13 @@ const pagination: Paging<'users/notes'> = {
 	limit: 10,
 	params: computed(() => ({
 		userId: props.userId,
-		withRenotes: props.withRenotes,
+		withNonPublic: props.withNonPublic,
+		withRenotes: false,
+		withQuotes: props.withQuotes,
 		withReplies: props.withReplies,
+		withRepliesToSelf: props.withReplies,
 		withFiles: props.onlyFiles,
+		allowPartial: true,
 	})),
 };
 

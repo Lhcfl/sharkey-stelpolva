@@ -6,6 +6,7 @@
 import { PrimaryColumn, Entity, JoinColumn, Column, ManyToOne } from 'typeorm';
 import { MiUser } from '@/models/User.js';
 import { MiNote } from '@/models/Note.js';
+import { isQuote, isRenote } from '@/misc/is-renote.js';
 
 /**
  * Maps a user to the most recent post by that user.
@@ -68,5 +69,17 @@ export class SkLatestNote {
 		for (const [k, v] of Object.entries(data)) {
 			(this as Record<string, unknown>)[k] = v;
 		}
+	}
+
+	/**
+	 * Generates a compound key matching a provided note.
+	 */
+	static keyFor(note: MiNote) {
+		return {
+			userId: note.userId,
+			isPublic: note.visibility === 'public',
+			isReply: note.replyId != null,
+			isQuote: isRenote(note) && isQuote(note),
+		};
 	}
 }

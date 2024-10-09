@@ -30,7 +30,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<div v-if="isWideViewport" ref="userScroll" :class="$style.user">
 		<MkHorizontalSwipe v-if="selectedUserId" v-model:tab="currentTab" :tabs="headerTabs">
-			<SkUserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withRenotes="withUserRenotes" :withReplies="withUserReplies" :onlyFiles="withOnlyFiles"/>
+			<SkUserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withNonPublic="withNonPublic" :withQuotes="withQuotes" :withReplies="withReplies" :onlyFiles="onlyFiles"/>
 		</MkHorizontalSwipe>
 	</div>
 </div>
@@ -162,54 +162,58 @@ const latestNotesPagination: Paging<'notes/following'> = {
 	limit: 20,
 	params: computed(() => ({
 		mutualsOnly: mutualsOnly.value,
+		filesOnly: onlyFiles.value,
+		includeNonPublic: withNonPublic.value,
+		includeReplies: withReplies.value,
+		includeQuotes: withQuotes.value,
 	})),
 };
 
-const withUserRenotes = ref(false);
-const withUserReplies = ref(true);
-const withOnlyFiles = ref(false);
+const withNonPublic = ref(false);
+const withQuotes = ref(false);
+const withReplies = ref(false);
+const onlyFiles = ref(false);
 
-const headerActions = computed(() => {
-	const actions: PageHeaderItem[] = [
-		{
-			icon: 'ti ti-refresh',
-			text: i18n.ts.reload,
-			handler: () => reload(),
+const headerActions: PageHeaderItem[] = [
+	{
+		icon: 'ti ti-refresh',
+		text: i18n.ts.reload,
+		handler: () => reload(),
+	},
+	{
+		icon: 'ti ti-dots',
+		text: i18n.ts.options,
+		handler: (ev) => {
+			os.popupMenu([
+				{
+					type: 'switch',
+					text: i18n.ts.showNonPublicNotes,
+					ref: withNonPublic,
+				},
+				{
+					type: 'switch',
+					text: i18n.ts.showQuotes,
+					ref: withQuotes,
+				},
+				{
+					type: 'switch',
+					text: i18n.ts.showReplies,
+					ref: withReplies,
+					disabled: onlyFiles,
+				},
+				{
+					type: 'divider',
+				},
+				{
+					type: 'switch',
+					text: i18n.ts.fileAttachedOnly,
+					ref: onlyFiles,
+					disabled: withReplies,
+				},
+			], ev.currentTarget ?? ev.target);
 		},
-	];
-
-	if (isWideViewport.value) {
-		actions.push({
-			icon: 'ti ti-dots',
-			text: i18n.ts.options,
-			handler: (ev) => {
-				os.popupMenu([
-					{
-						type: 'switch',
-						text: i18n.ts.showRenotes,
-						ref: withUserRenotes,
-					}, {
-						type: 'switch',
-						text: i18n.ts.showRepliesToOthersInTimeline,
-						ref: withUserReplies,
-						disabled: withOnlyFiles,
-					},
-					{
-						type: 'divider',
-					},
-					{
-						type: 'switch',
-						text: i18n.ts.fileAttachedOnly,
-						ref: withOnlyFiles,
-						disabled: withUserReplies,
-					},
-				], ev.currentTarget ?? ev.target);
-			},
-		});
-	}
-
-	return actions;
-});
+	},
+];
 
 const headerTabs = computed(() => [
 	{

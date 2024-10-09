@@ -63,7 +63,7 @@ import { isReply } from '@/misc/is-reply.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { isQuote, isRenote } from '@/misc/is-renote.js';
+import { isPureRenote } from '@/misc/is-renote.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention';
 
@@ -1151,18 +1151,21 @@ export class NoteCreateService implements OnApplicationShutdown {
 		if (note.visibility === 'specified') return;
 
 		// Ignore pure renotes
-		if (isRenote(note) && !isQuote(note)) return;
+		if (isPureRenote(note)) return;
+
+		// Compute the compound key of the entry to check
+		const key = SkLatestNote.keyFor(note);
 
 		// Make sure that this isn't an *older* post.
 		// We can get older posts through replies, lookups, etc.
-		const currentLatest = await this.latestNotesRepository.findOneBy({ userId: note.userId });
+		const currentLatest = await this.latestNotesRepository.findOneBy(key);
 		if (currentLatest != null && currentLatest.noteId >= note.id) return;
 
 		// Record this as the latest note for the given user
 		const latestNote = new SkLatestNote({
-			userId: note.userId,
+			...key,
 			noteId: note.id,
 		});
-		await this.latestNotesRepository.upsert(latestNote, ['userId']);
+		await this.latestNotesRepository.upsert(latestNote, ['userId', 'isPublic', 'isReply', 'isQuote']);
 	}
 }

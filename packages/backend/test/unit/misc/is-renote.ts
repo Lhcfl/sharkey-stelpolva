@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { isQuote, isRenote } from '@/misc/is-renote.js';
+import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
 import { MiNote } from '@/models/Note.js';
 
 const base: MiNote = {
@@ -85,5 +85,26 @@ describe('misc:is-renote', () => {
 		const note: MiNote = { ...base, renoteId: 'some-renote-id', fileIds: ['some-file-id'] };
 		expect(isRenote(note)).toBe(true);
 		expect(isQuote(note as any)).toBe(true);
+	});
+
+	describe('isPureRenote', () => {
+		it('should return true when note is pure renote', () => {
+			const note = new MiNote({ renoteId: 'abc123' });
+			const result = isPureRenote(note);
+			expect(result).toBeTruthy();
+		});
+
+		it('should return false when note is quote', () => {
+			const note = new MiNote({ renoteId: 'abc123', text: 'text' });
+			const result = isPureRenote(note);
+			expect(result).toBeFalsy();
+
+		});
+
+		it('should return false when note is not renote', () => {
+			const note = new MiNote({ renoteId: null });
+			const result = isPureRenote(note);
+			expect(result).toBeFalsy();
+		});
 	});
 });

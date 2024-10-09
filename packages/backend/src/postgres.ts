@@ -92,6 +92,8 @@ export const dbLogger = new MisskeyLogger('db');
 const sqlLogger = dbLogger.createSubLogger('sql', 'gray');
 
 class MyCustomLogger implements Logger {
+	private readonly isDevelopment = process.env.NODE_ENV === 'development';
+
 	@bindThis
 	private highlight(sql: string) {
 		return highlight.highlight(sql, {
@@ -101,7 +103,13 @@ class MyCustomLogger implements Logger {
 
 	@bindThis
 	public logQuery(query: string, parameters?: any[]) {
-		sqlLogger.info(this.highlight(query).substring(0, 100));
+		let message = this.highlight(query);
+
+		if (!this.isDevelopment) {
+			message = message.substring(0, 100);
+		}
+
+		sqlLogger.info(message);
 	}
 
 	@bindThis
