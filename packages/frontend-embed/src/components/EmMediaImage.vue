@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div :class="[hide ? $style.hidden : $style.visible]" @click="onclick">
 	<a
-		:title="image.name"
+		:title="image.comment || image.name"
 		:class="$style.imageContainer"
 		:href="href ?? image.url"
 		target="_blank"
