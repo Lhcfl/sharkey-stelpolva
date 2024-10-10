@@ -5386,6 +5386,10 @@ export interface Locale extends ILocale {
      */
     "sensitiveMediaRevealConfirm": string;
     /**
+     * 外部URLを開く際に警告を表示する
+     */
+    "warnExternalUrl": string;
+    /**
      * 作成したリスト
      */
     "createdLists": string;
