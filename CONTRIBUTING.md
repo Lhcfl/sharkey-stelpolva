@@ -630,9 +630,9 @@ seems to do a decent job)
 * check the changes against our `develop` (`git diff develop`) and
   against Misskey (`git diff misskey/develop`)
 * re-generate `misskey-js` (`pnpm build-misskey-js-with-types`) and commit
-* build the frontend: `rm -rf built/; NODE_ENV=development pnpm --filter=frontend
-  build` (the `development` tells it to keep some of the original
-  filenames in the built files)
+* build the frontend: `rm -rf built/; NODE_ENV=development pnpm
+  --filter=frontend --filter=frontend-embed build` (the `development`
+  tells it to keep some of the original filenames in the built files)
 * make sure there aren't any new `ti-*` classes (Tabler Icons), and
   replace them with appropriate `ph-*` ones (Phosphor Icons):
   `grep -rP '["'\'']ti[ -](?!fw)' -- built/` should show you what to change.

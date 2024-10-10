@@ -6,6 +6,7 @@ import locales from '../../locales/index.js';
 import meta from '../../package.json';
 import packageInfo from './package.json' with { type: 'json' };
 import pluginJson5 from './vite.json5.js';
+import { pluginReplaceIcons } from '../frontend/vite.replaceIcons.ts';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue'];
 
@@ -68,6 +69,7 @@ export function getConfig(): UserConfig {
 		plugins: [
 			pluginVue(),
 			pluginJson5(),
+			...pluginReplaceIcons(),
 		],
 
 		resolve: {
@@ -84,11 +86,8 @@ export function getConfig(): UserConfig {
 			modules: {
 				generateScopedName(name, filename, _css): string {
 					const id = (path.relative(__dirname, filename.split('?')[0]) + '-' + name).replace(/[\\\/\.\?&=]/g, '-').replace(/(src-|vue-)/g, '');
-					if (process.env.NODE_ENV === 'production') {
-						return 'x' + toBase62(hash(id)).substring(0, 4);
-					} else {
-						return id;
-					}
+					const shortId = id.replace(/^(components(-global)?|widgets|ui(-_common_)?)-/, '');
+					return shortId + '-' + toBase62(hash(id)).substring(0, 4);
 				},
 			},
 		},
