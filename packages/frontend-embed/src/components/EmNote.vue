@@ -47,7 +47,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<EmInstanceTicker v-if="appearNote.user.instance != null" :instance="appearNote.user.instance"/>
 			<div style="container-type: inline-size;">
 				<p v-if="appearNote.cw != null" :class="$style.cw">
-					<EmMfm v-if="appearNote.cw != ''" style="margin-right: 8px;" :text="appearNote.cw" :author="appearNote.user" :nyaize="'respect'"/>
+					<EmMfm v-if="appearNote.cw != ''" style="margin-right: 8px;" :text="appearNote.cw" :author="appearNote.user" :nyaize="'respect'" :isBlock="true"/>
 					<button style="display: block; width: 100%; margin: 4px 0;" class="_buttonGray _buttonRounded" @click="showContent = !showContent">{{ showContent ? i18n.ts._cw.hide : i18n.ts._cw.show }}</button>
 				</p>
 				<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
@@ -63,6 +63,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							:emojiUrls="appearNote.emojis"
 							:enableEmojiMenu="!true"
 							:enableEmojiMenuReaction="true"
+							:isBlock="true"
 						/>
 					</div>
 					<div v-if="appearNote.files && appearNote.files.length > 0">

@@ -396,7 +396,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'blockCode': {
-				return [h('bdi', h('code', {
+				return [h('bdi', { class: 'block' }, h('code', {
 					key: Math.random(),
 					lang: token.props.lang ?? undefined,
 				}, token.props.code))];
