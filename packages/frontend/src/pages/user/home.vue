@@ -31,7 +31,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</div>
 						<ul v-if="$i && $i.id != user.id" class="info-badges">
-							<li v-if="user.isFollowed">{{ i18n.ts.followsYou }}</li>
+							<li v-if="user.isFollowed && user.isFollowing">{{ i18n.ts.mutuals }}</li>
+							<li v-else-if="user.isFollowing">{{ i18n.ts.following }}</li>
+							<li v-else-if="user.isFollowed">{{ i18n.ts.followsYou }}</li>
 							<li v-if="user.isMuted">{{ i18n.ts.muted }}</li>
 							<li v-if="user.isRenoteMuted">{{ i18n.ts.renoteMuted }}</li>
 							<li v-if="user.isBlocking">{{ i18n.ts.blocked }}</li>
