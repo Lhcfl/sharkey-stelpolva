@@ -4,7 +4,7 @@
  */
 
 import { VNode, h, SetupContext, provide } from 'vue';
-import * as mfm from 'mfm-js';
+import * as mfm from '@transfem-org/sfm-js';
 import * as Misskey from 'misskey-js';
 import EmUrl from '@/components/EmUrl.vue';
 import EmTime from '@/components/EmTime.vue';
