@@ -46,9 +46,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div class="_buttons">
 							<MkButton inline :disabled="!instance" danger @click="deleteAllFiles">{{ i18n.ts.deleteAllFiles }}</MkButton>
 							<MkButton inline :disabled="!instance" danger @click="severAllFollowRelations">{{ i18n.ts.severAllFollowRelations }}</MkButton>
-							<MkButton v-if="suspensionState === 'none'" inline :disabled="!instance" danger @click="stopDelivery">{{ i18n.ts._delivery.stop }}</MkButton>
-							<MkButton v-if="suspensionState !== 'none'" inline :disabled="!instance" @click="resumeDelivery">{{ i18n.ts._delivery.resume }}</MkButton>
 						</div>
+						<MkSwitch v-model="isSuspended" :disabled="!instance">{{ i18n.ts._delivery.stop }}</MkSwitch>
 						<MkInfo v-if="isBaseBlocked" warn>{{ i18n.ts.blockedByBase }}</MkInfo>
 						<MkSwitch v-model="isBlocked" :disabled="!meta || !instance || isBaseBlocked" @update:modelValue="toggleBlock">{{ i18n.ts.blockThisInstance }}</MkSwitch>
 						<MkInfo v-if="isBaseSilenced" warn>{{ i18n.ts.silencedByBase }}</MkInfo>
@@ -213,6 +212,11 @@ const rejectReports = ref(false);
 const isMediaSilenced = ref(false);
 const faviconUrl = ref<string | null>(null);
 const moderationNote = ref('');
+
+const isSuspended = computed({
+	get: () => suspensionState.value !== 'none',
+	set: value => value ? stopDelivery() : resumeDelivery(),
+});
 
 const baseDomains = computed(() => {
 	const domains: string[] = [];
