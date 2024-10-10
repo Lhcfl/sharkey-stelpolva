@@ -44,7 +44,6 @@ export class MastodonApiServerService {
 		private accessTokensRepository: AccessTokensRepository,
         @Inject(DI.config)
         private config: Config,
-        private metaService: MetaService,
 		private userEntityService: UserEntityService,
 		private driveService: DriveService,
 		private mastoConverter: MastoConverters,

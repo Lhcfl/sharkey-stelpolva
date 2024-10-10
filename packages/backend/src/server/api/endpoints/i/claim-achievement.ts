@@ -4,7 +4,7 @@
  */
 
 import { DI } from '@/di-symbols.js';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { AchievementService, ACHIEVEMENT_TYPES } from '@/core/AchievementService.js';
 import type { MiMeta } from '@/models/_.js';
