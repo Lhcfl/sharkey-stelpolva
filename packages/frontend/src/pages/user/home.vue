@@ -37,6 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<li v-if="user.isMuted">{{ i18n.ts.muted }}</li>
 							<li v-if="user.isRenoteMuted">{{ i18n.ts.renoteMuted }}</li>
 							<li v-if="user.isBlocking">{{ i18n.ts.blocked }}</li>
+							<li v-if="user.isBlocked && $i.isModerator">{{ i18n.ts.blockingYou }}</li>
 						</ul>
 						<div class="actions">
 							<button class="menu _button" @click="menu"><i class="ti ti-dots"></i></button>
