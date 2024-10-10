@@ -385,7 +385,7 @@ async function severAllFollowRelations(): void {
 	const confirm = await os.confirm({
 		type: 'danger',
 		text: i18n.tsx.severAllFollowRelationsConfirm({
-			instanceName: meta.value.shortName ?? meta.value.name,
+			instanceName: instance.value.shortName ?? instance.value.name,
 			followingCount: instance.value.followingCount,
 			followersCount: instance.value.followersCount,
 		}),
