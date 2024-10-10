@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div :class="$style.tl">
 					<MkTimeline
 						ref="tlComponent"
-						:key="src + withRenotes + withReplies + onlyFiles"
+						:key="src + withRenotes + withBots + withReplies + onlyFiles"
 						:src="src.split(':')[0]"
 						:list="src.split(':')[1]"
 						:withRenotes="withRenotes"
@@ -271,6 +271,10 @@ const headerActions = computed(() => {
 					type: 'switch',
 					text: i18n.ts.showRenotes,
 					ref: withRenotes,
+				}, {
+					type: 'switch',
+					text: i18n.ts.showBots,
+					ref: withBots,
 				}, isBasicTimeline(src.value) && hasWithReplies(src.value) ? {
 					type: 'switch',
 					text: i18n.ts.showRepliesToOthersInTimeline,
