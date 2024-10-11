@@ -109,6 +109,8 @@ type Source = {
 	};
 
 	pidFile: string;
+
+	avatarDecorationAllowedHosts: string[] | undefined;
 };
 
 export type Config = {
@@ -198,6 +200,7 @@ export type Config = {
 	} | undefined;
 
 	pidFile: string;
+	avatarDecorationAllowedHosts: string[] | undefined;
 };
 
 const _filename = fileURLToPath(import.meta.url);
@@ -320,6 +323,7 @@ export function loadConfig(): Config {
 		deactivateAntennaThreshold: config.deactivateAntennaThreshold ?? (1000 * 60 * 60 * 24 * 7),
 		import: config.import,
 		pidFile: config.pidFile,
+		avatarDecorationAllowedHosts: config.avatarDecorationAllowedHosts,
 	};
 }
 

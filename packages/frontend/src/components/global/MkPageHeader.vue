@@ -66,6 +66,7 @@ const props = withDefaults(defineProps<{
 	thin?: boolean;
 	displayMyAvatar?: boolean;
 	displayBackButton?: boolean;
+	hideTitle?: boolean;
 }>(), {
 	tabs: () => ([] as Tab[]),
 });
@@ -78,7 +79,7 @@ const displayBackButton = props.displayBackButton && history.state.key !== 'inde
 
 const pageMetadata = injectReactiveMetadata();
 
-const hideTitle = inject('shouldOmitHeaderTitle', false);
+const hideTitle = props.hideTitle || inject('shouldOmitHeaderTitle', false);
 const thin_ = props.thin || inject('shouldHeaderThin', false);
 
 const el = shallowRef<HTMLElement | undefined>(undefined);

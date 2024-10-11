@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span :class="$style.headerRightButtonText">{{ channel.name }}</span>
 				</button>
 			</template>
-			<button v-click-anime v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="channel != null || visibility === 'specified' || editId != null" @click="toggleLocalOnly">
+			<button v-click-anime v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="visibility === 'specified' || editId != null" @click="toggleLocalOnly">
 				<span v-if="!localOnly"><i class="ti ti-rocket"></i></span>
 				<span v-else><i class="ti ti-rocket-off"></i></span>
 			</button>
@@ -65,7 +65,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</div>
 	<MkInfo v-if="hasNotSpecifiedMentions" warn :class="$style.hasNotSpecifiedMentions">{{ i18n.ts.notSpecifiedMentionWarning }} - <button class="_textButton" @click="addMissingMention()">{{ i18n.ts.add }}</button></MkInfo>
-	<input v-show="useCw" ref="cwInputEl" v-model="cw" :class="$style.cw" :placeholder="i18n.ts.annotation" @keydown="onKeydown">
+	<textarea v-show="useCw" ref="cwInputEl" v-model="cw" :class="$style.cw" :placeholder="i18n.ts.annotation" @keydown="onKeydown"/>
 	<div :class="[$style.textOuter, { [$style.withCw]: useCw }]">
 		<div v-if="channel" :class="$style.colorBar" :style="{ background: channel.color }"></div>
 		<textarea ref="textareaEl" v-model="text" :class="[$style.text]" :disabled="posting || posted" :readonly="textAreaReadOnly" :placeholder="placeholder" data-cy-post-form-text dir="auto" @keydown="onKeydown" @paste="onPaste" @compositionupdate="onCompositionUpdate" @compositionend="onCompositionEnd"/>
@@ -106,6 +106,7 @@ import * as mfm from '@transfem-org/sfm-js';
 import * as Misskey from 'misskey-js';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import { toASCII } from 'punycode/';
+import autosize from 'autosize';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import MkNotePreview from '@/components/MkNotePreview.vue';
 import XPostFormAttaches from '@/components/MkPostFormAttaches.vue';
@@ -173,7 +174,7 @@ const emit = defineEmits<{
 }>();
 
 const textareaEl = shallowRef<HTMLTextAreaElement | null>(null);
-const cwInputEl = shallowRef<HTMLInputElement | null>(null);
+const cwInputEl = shallowRef<HTMLTextAreaElement | null>(null);
 const hashtagsInputEl = shallowRef<HTMLInputElement | null>(null);
 const visibilityButton = shallowRef<HTMLElement>();
 
@@ -272,7 +273,12 @@ const hashtags = computed(defaultStore.makeGetterSetter('postFormHashtags'));
 
 watch(text, () => {
 	checkMissingMention();
+	nextTick(() => textareaEl.value && autosize.update(textareaEl.value));
 }, { immediate: true });
+
+watch(cw, () => {
+	nextTick(() => cwInputEl.value && autosize.update(cwInputEl.value));
+});
 
 watch(visibility, () => {
 	checkMissingMention();
@@ -320,7 +326,7 @@ if ($i.isSilenced && visibility.value === 'public') {
 
 if (props.channel) {
 	visibility.value = 'public';
-	localOnly.value = true; // TODO: チャンネルが連合するようになった折には消す
+	// localOnly.value = true; // TODO: チャンネルが連合するようになった折には消す
 }
 
 // 公開以外へのリプライ時は元の公開範囲を引き継ぐ
@@ -494,11 +500,11 @@ function setVisibility() {
 }
 
 async function toggleLocalOnly() {
-	if (props.channel) {
-		visibility.value = 'public';
-		localOnly.value = true; // TODO: チャンネルが連合するようになった折には消す
-		return;
-	}
+	// if (props.channel) {
+	// 	visibility.value = 'public';
+	// 	localOnly.value = true; // TODO: チャンネルが連合するようになった折には消す
+	// 	return;
+	// }
 
 	const neverShowInfo = miLocalStorage.getItem('neverShowLocalOnlyInfo');
 
@@ -802,7 +808,7 @@ async function post(ev?: MouseEvent) {
 		const filesData = toRaw(files.value);
 
 		const isMissingAltText = filesData.filter(
-			file => file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/')
+			file => file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/'),
 		).some(file => !file.comment);
 
 		if (isMissingAltText) {
@@ -1029,6 +1035,7 @@ onMounted(() => {
 
 		nextTick(() => {
 			focus();
+			setTimeout(() => focus(), 10);
 		});
 	}
 
@@ -1095,6 +1102,8 @@ onMounted(() => {
 		}
 
 		nextTick(() => watchForDraft());
+		nextTick(() => textareaEl.value && autosize(textareaEl.value));
+		nextTick(() => cwInputEl.value && autosize(cwInputEl.value));
 	});
 });
 
@@ -1111,6 +1120,7 @@ defineExpose({
 	&.modal {
 		width: 100%;
 		max-width: 520px;
+		overflow-y: auto;
 	}
 }
 
@@ -1319,6 +1329,8 @@ defineExpose({
 	z-index: 1;
 	padding-bottom: 8px;
 	border-bottom: solid 0.5px var(--divider);
+	resize: vertical;
+	min-height: 2rem;
 }
 
 .hashtags {

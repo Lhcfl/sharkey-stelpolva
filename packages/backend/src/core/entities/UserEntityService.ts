@@ -49,6 +49,7 @@ import { IdService } from '@/core/IdService.js';
 import type { AnnouncementService } from '@/core/AnnouncementService.js';
 import type { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
+import { CacheService } from '@/core/CacheService.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { NoteEntityService } from './NoteEntityService.js';
 import type { DriveFileEntityService } from './DriveFileEntityService.js';
@@ -95,6 +96,7 @@ export class UserEntityService implements OnModuleInit {
 	private federatedInstanceService: FederatedInstanceService;
 	private idService: IdService;
 	private avatarDecorationService: AvatarDecorationService;
+	private cacheService: CacheService;
 
 	constructor(
 		private moduleRef: ModuleRef,
@@ -154,6 +156,7 @@ export class UserEntityService implements OnModuleInit {
 		this.federatedInstanceService = this.moduleRef.get('FederatedInstanceService');
 		this.idService = this.moduleRef.get('IdService');
 		this.avatarDecorationService = this.moduleRef.get('AvatarDecorationService');
+		this.cacheService = this.moduleRef.get('CacheService');
 	}
 
 	//#region Validators
@@ -375,6 +378,13 @@ export class UserEntityService implements OnModuleInit {
 	}
 
 	@bindThis
+	public async getHasPendingSentFollowRequest(userId: MiUser['id']): Promise<boolean> {
+		return this.followRequestsRepository.existsBy({
+			followerId: userId,
+		});
+	}
+
+	@bindThis
 	public getOnlineStatus(user: MiUser): 'unknown' | 'online' | 'active' | 'offline' {
 		if (user.hideOnlineStatus) return 'unknown';
 		if (user.lastActiveDate == null) return 'unknown';
@@ -511,6 +521,30 @@ export class UserEntityService implements OnModuleInit {
 		const checkHost = user.host == null ? this.config.host : user.host;
 		const notificationsInfo = isMe && isDetailed ? await this.getNotificationsInfo(user.id) : null;
 
+		const getLocalUserDecorations = () =>
+			user.avatarDecorations.length > 0
+				? this.avatarDecorationService.getAll().then(
+					decorations => user.avatarDecorations.filter(
+						ud => decorations.some(d => d.id === ud.id))
+						.map(ud => ({
+							id: ud.id,
+							angle: ud.angle || undefined,
+							flipH: ud.flipH || undefined,
+							offsetX: ud.offsetX || undefined,
+							offsetY: ud.offsetY || undefined,
+							showBelow: ud.showBelow || undefined,
+							url: decorations.find(d => d.id === ud.id)!.url,
+						})))
+				: [];
+		const avatarDecorations = user.host == null
+			? getLocalUserDecorations()
+			: this.cacheService.stpvRemoteUserDecorationsCache.fetch(user.id).then(res => res.map(ad => ({
+				...ad,
+				url: ad.url && (this.config.proxyRemoteFiles || this.config.mediaProxy)
+					? `${this.config.mediaProxy}/static.webp?url=${(encodeURIComponent(ad.url))}`
+					: ad.url,
+			})));
+
 		const packed = {
 			id: user.id,
 			name: user.name,
@@ -520,15 +554,7 @@ export class UserEntityService implements OnModuleInit {
 			avatarBlurhash: user.avatarBlurhash,
 			description: mastoapi ? mastoapi.description : profile ? profile.description : '',
 			createdAt: this.idService.parse(user.id).date.toISOString(),
-			avatarDecorations: user.avatarDecorations.length > 0 ? this.avatarDecorationService.getAll().then(decorations => user.avatarDecorations.filter(ud => decorations.some(d => d.id === ud.id)).map(ud => ({
-				id: ud.id,
-				angle: ud.angle || undefined,
-				flipH: ud.flipH || undefined,
-				offsetX: ud.offsetX || undefined,
-				offsetY: ud.offsetY || undefined,
-				showBelow: ud.showBelow || undefined,
-				url: decorations.find(d => d.id === ud.id)!.url,
-			}))) : [],
+			avatarDecorations,
 			isBot: user.isBot,
 			isCat: user.isCat,
 			noindex: user.noindex,
@@ -556,7 +582,7 @@ export class UserEntityService implements OnModuleInit {
 					name: r.name,
 					iconUrl: r.iconUrl,
 					displayOrder: r.displayOrder,
-				}))
+				})),
 			) : undefined,
 
 			...(isDetailed ? {
@@ -642,6 +668,7 @@ export class UserEntityService implements OnModuleInit {
 				hasUnreadChannel: false, // 後方互換性のため
 				hasUnreadNotification: notificationsInfo?.hasUnread, // 後方互換性のため
 				hasPendingReceivedFollowRequest: this.getHasPendingReceivedFollowRequest(user.id),
+				hasPendingSentFollowRequest: this.getHasPendingSentFollowRequest(user.id),
 				unreadNotificationsCount: notificationsInfo?.unreadCount,
 				mutedWords: profile!.mutedWords,
 				hardMutedWords: profile!.hardMutedWords,

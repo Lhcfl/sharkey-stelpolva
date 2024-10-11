@@ -150,39 +150,40 @@ export class AntennaService implements OnApplicationShutdown {
 			// Clean up
 			.map(xs => xs.filter(x => x !== ''))
 			.filter(xs => xs.length > 0);
-
-		if (keywords.length > 0) {
-			if (note.text == null && note.cw == null) return false;
-
-			const _text = (note.text ?? '') + '\n' + (note.cw ?? '');
-
-			const matched = keywords.some(and =>
-				and.every(keyword =>
-					antenna.caseSensitive
-						? _text.includes(keyword)
-						: _text.toLowerCase().includes(keyword.toLowerCase()),
-				));
-
-			if (!matched) return false;
-		}
-
 		const excludeKeywords = antenna.excludeKeywords
 			// Clean up
 			.map(xs => xs.filter(x => x !== ''))
 			.filter(xs => xs.length > 0);
 
-		if (excludeKeywords.length > 0) {
-			if (note.text == null && note.cw == null) return false;
+		const _text = ((note.text ?? '') + '\n' + (note.cw ?? '')).trim();
 
-			const _text = (note.text ?? '') + '\n' + (note.cw ?? '');
-
-			const matched = excludeKeywords.some(and =>
-				and.every(keyword =>
-					antenna.caseSensitive
+		const checkMatch = (keyword: string) => {
+			const [specialRule, data] = keyword.split(':');
+			switch (specialRule) {
+				case 'domain': {
+					const host = noteUser.host;
+					if (host == null) {
+						return data === 'here';
+					} else {
+						return host === data;
+					}
+				}
+				default:{
+					return antenna.caseSensitive
 						? _text.includes(keyword)
-						: _text.toLowerCase().includes(keyword.toLowerCase()),
-				));
+						: _text.toLowerCase().includes(keyword.toLowerCase());
+				}
+			}
+		};
 
+		if (keywords.length > 0) {
+			if (!_text) return false;
+			const matched = keywords.some(and => and.every(checkMatch));
+			if (!matched) return false;
+		}
+
+		if (excludeKeywords.length > 0 && _text) {
+			const matched = excludeKeywords.some(and => and.every(checkMatch));
 			if (matched) return false;
 		}
 

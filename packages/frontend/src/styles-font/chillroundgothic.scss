@@ -1,0 +1,51 @@
+@font-face {
+	font-family: "ChillRoundGothic EL";
+	font-display: swap;
+	src: url("/static-assets/fonts/ChillRoundGothic/ChillRoundGothic_ExtraLight.woff") format("woff");
+}
+@font-face {
+	font-family: "ChillRoundGothic L";
+	font-display: swap;
+	src: url("/static-assets/fonts/ChillRoundGothic/ChillRoundGothic_Light.woff") format("woff");
+}
+@font-face {
+	font-family: "ChillRoundGothic N";
+	font-display: swap;
+	src: url("/static-assets/fonts/ChillRoundGothic/ChillRoundGothic_Normal.woff") format("woff");
+}
+@font-face {
+	font-family: "ChillRoundGothic M";
+	font-display: swap;
+	src: url("/static-assets/fonts/ChillRoundGothic/ChillRoundGothic_Medium.woff") format("woff");
+}
+@font-face {
+	font-family: "ChillRoundGothic R";
+	font-display: swap;
+	src: url("/static-assets/fonts/ChillRoundGothic/ChillRoundGothic_Regular.woff") format("woff");
+}
+@font-face {
+	font-family: "ChillRoundGothic B";
+	font-display: swap;
+	src: url("/static-assets/fonts/ChillRoundGothic/ChillRoundGothic_Bold.woff") format("woff");
+}
+html.default-font-chillroundgothic_EL {
+	font-family: 'sharkey-theme-font-face', 'ChillRoundGothic EL','Lexend',  'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+}
+html.default-font-chillroundgothic_L {
+	font-family: 'sharkey-theme-font-face', 'ChillRoundGothic L', 'Lexend', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+}
+html.default-font-chillroundgothic_N {
+	font-family: 'sharkey-theme-font-face', 'Lexend', 'ChillRoundGothic N', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+}
+html.default-font-chillroundgothic_M {
+	font-family: 'sharkey-theme-font-face', 'Lexend', 'ChillRoundGothic M', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+}
+html.default-font-chillroundgothic_R {
+	font-family: 'sharkey-theme-font-face', 'Lexend', 'ChillRoundGothic R', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+}
+html.default-font-chillroundgothic_B {
+	font-family: 'sharkey-theme-font-face', 'Lexend', 'ChillRoundGothic B', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+}
+html.default-font-chillroundgothic_H {
+	font-family: 'sharkey-theme-font-face', 'ChillRoundGothic H', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+}

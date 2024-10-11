@@ -195,6 +195,7 @@ import * as ep___following_invalidate from './endpoints/following/invalidate.js'
 import * as ep___following_requests_accept from './endpoints/following/requests/accept.js';
 import * as ep___following_requests_cancel from './endpoints/following/requests/cancel.js';
 import * as ep___following_requests_list from './endpoints/following/requests/list.js';
+import * as ep___following_requests_sent from './endpoints/following/requests/sent.js';
 import * as ep___following_requests_reject from './endpoints/following/requests/reject.js';
 import * as ep___gallery_featured from './endpoints/gallery/featured.js';
 import * as ep___gallery_popular from './endpoints/gallery/popular.js';
@@ -293,6 +294,9 @@ import * as ep___notes_clips from './endpoints/notes/clips.js';
 import * as ep___notes_conversation from './endpoints/notes/conversation.js';
 import * as ep___notes_create from './endpoints/notes/create.js';
 import * as ep___notes_delete from './endpoints/notes/delete.js';
+import * as ep___notes_makePrivate from './endpoints/notes/make-private.js';
+import * as ep___notes_makePrivateMany from './endpoints/notes/make-private-many.js';
+import * as ep___notes_makePrivateManyCount from './endpoints/notes/make-private-many-count.js';
 import * as ep___notes_favorites_create from './endpoints/notes/favorites/create.js';
 import * as ep___notes_favorites_delete from './endpoints/notes/favorites/delete.js';
 import * as ep___notes_featured from './endpoints/notes/featured.js';
@@ -590,6 +594,7 @@ const eps = [
 	['following/requests/accept', ep___following_requests_accept],
 	['following/requests/cancel', ep___following_requests_cancel],
 	['following/requests/list', ep___following_requests_list],
+	['following/requests/sent', ep___following_requests_sent],
 	['following/requests/reject', ep___following_requests_reject],
 	['gallery/featured', ep___gallery_featured],
 	['gallery/popular', ep___gallery_popular],
@@ -688,6 +693,9 @@ const eps = [
 	['notes/conversation', ep___notes_conversation],
 	['notes/create', ep___notes_create],
 	['notes/delete', ep___notes_delete],
+	['notes/make-private', ep___notes_makePrivate],
+	['notes/make-private-many', ep___notes_makePrivateMany],
+	['notes/make-private-many-count', ep___notes_makePrivateManyCount],
 	['notes/favorites/create', ep___notes_favorites_create],
 	['notes/favorites/delete', ep___notes_favorites_delete],
 	['notes/featured', ep___notes_featured],

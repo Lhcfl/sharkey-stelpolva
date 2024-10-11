@@ -28,7 +28,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.caption"><slot name="caption"></slot></div>
 	<button v-if="mfmPreview" style="font-size: 0.85em;" class="_textButton" type="button" @click="preview = !preview">{{ i18n.ts.preview }}</button>
 	<div v-if="mfmPreview" v-show="preview" v-panel :class="$style.mfmPreview">
-		<Mfm :text="v" :isBlock="true" />
+		<Mfm :text="v" :isBlock="true"/>
 	</div>
 
 	<MkButton v-if="manualSave && changed" primary :class="$style.save" @click="updated"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
@@ -38,6 +38,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { onMounted, onUnmounted, nextTick, ref, watch, computed, toRefs, shallowRef } from 'vue';
 import { debounce } from 'throttle-debounce';
+import autosize from 'autosize';
 import MkButton from '@/components/MkButton.vue';
 import { i18n } from '@/i18n.js';
 import { Autocomplete, SuggestionType } from '@/scripts/autocomplete.js';
@@ -59,6 +60,7 @@ const props = defineProps<{
 	code?: boolean;
 	tall?: boolean;
 	pre?: boolean;
+	autosize?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -123,6 +125,10 @@ watch(v, () => {
 		}
 	}
 
+	if (props.autosize) {
+		nextTick(() => inputEl.value && autosize.update(inputEl.value));
+	}
+
 	invalid.value = inputEl.value?.validity.badInput ?? true;
 });
 
@@ -135,6 +141,10 @@ onMounted(() => {
 
 	if (props.mfmAutocomplete && inputEl.value) {
 		autocompleteWorker = new Autocomplete(inputEl.value, v, props.mfmAutocomplete === true ? undefined : props.mfmAutocomplete);
+	}
+
+	if (props.autosize) {
+		nextTick(() => inputEl.value && autosize(inputEl.value));
 	}
 });
 

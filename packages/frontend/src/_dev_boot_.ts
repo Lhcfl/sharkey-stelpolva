@@ -67,7 +67,7 @@ async function main() {
 	}
 	//#endregion
 
-	const fontSize = localStorage.getItem('fontSize');
+	const fontSize = localStorage.getItem('fontSize') || 2;
 	if (fontSize) {
 		document.documentElement.classList.add('f-' + fontSize);
 	}
@@ -75,6 +75,11 @@ async function main() {
 	const useSystemFont = localStorage.getItem('useSystemFont');
 	if (useSystemFont) {
 		document.documentElement.classList.add('useSystemFont');
+	}
+
+	const defaultFontFace = localStorage.getItem('defaultFontFace') || 'maokentangyuan';
+	if (defaultFontFace) {
+		document.documentElement.classList.add(`default-font-${defaultFontFace}`);
 	}
 
 	const wallpaper = localStorage.getItem('wallpaper');

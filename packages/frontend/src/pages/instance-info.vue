@@ -29,7 +29,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 				<MkKeyValue>
 					<template #key>{{ i18n.ts.description }}</template>
-					<template #value>{{ instance.description }}</template>
+					<template #value>
+						<MkSwitch v-if="hasDescriptionHtml" v-model="enableHTMLDesctiption">HTML</MkSwitch>
+						<!-- eslint-disable-next-line vue/no-v-html -->
+						<div v-if="enableHTMLDesctiption" v-html="sanitizeHtml(instance.description)"></div>
+						<div v-else>{{ instance.description }}</div>
+					</template>
 				</MkKeyValue>
 
 				<FormSection v-if="iAmModerator">
@@ -195,6 +200,7 @@ import { getProxiedImageUrlNullable } from '@/scripts/media-proxy.js';
 import { dateString } from '@/filters/date.js';
 import MkTextarea from '@/components/MkTextarea.vue';
 import MkInfo from '@/components/MkInfo.vue';
+import sanitizeHtml from '@/scripts/sanitize-html';
 
 const props = defineProps<{
 	host: string;
@@ -213,6 +219,9 @@ const rejectReports = ref(false);
 const isMediaSilenced = ref(false);
 const faviconUrl = ref<string | null>(null);
 const moderationNote = ref('');
+const enableHTMLDesctiption = ref(false);
+
+const hasDescriptionHtml = computed(() => instance.value?.description?.includes('</') && instance.value.description.includes('>'));
 
 const baseDomains = computed(() => {
 	const domains: string[] = [];

@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 			<div>
 				<div :class="$style.label">Reason</div>
-				<div>{{ reason }}</div>
+				<Mfm :text="reason" :isBlock="true" linkNavigationBehavior="window"></Mfm>
 			</div>
 		</div>
 		<div :class="$style.buttons">
@@ -51,8 +51,8 @@ function getReason() {
 	return misskeyApi('admin/show-user', {
 		userId: props.user.id,
 	}).then(info => {
-		reason.value = info?.signupReason;
-		email.value = info?.email;
+		reason.value = info.signupReason;
+		email.value = info.email;
 	});
 }
 

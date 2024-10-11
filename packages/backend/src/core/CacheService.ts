@@ -12,7 +12,19 @@ import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
+import { HttpRequestService } from '@/core/HttpRequestService.js';
+import type { Config } from '@/config.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
+
+type StpvRemoteUserDecorationsCacheType = {
+	id: string;
+	angle?: number;
+	flipH?: boolean;
+	offsetX?: number;
+	offsetY?: number;
+	url?: string;
+	showBelow?: boolean;
+}[];
 
 @Injectable()
 export class CacheService implements OnApplicationShutdown {
@@ -26,6 +38,7 @@ export class CacheService implements OnApplicationShutdown {
 	public userBlockedCache: RedisKVCache<Set<string>>; // NOTE: 「被」Blockキャッシュ
 	public renoteMutingsCache: RedisKVCache<Set<string>>;
 	public userFollowingsCache: RedisKVCache<Record<string, Pick<MiFollowing, 'withReplies'> | undefined>>;
+	public stpvRemoteUserDecorationsCache: RedisKVCache<StpvRemoteUserDecorationsCacheType>;
 
 	constructor(
 		@Inject(DI.redis)
@@ -52,7 +65,12 @@ export class CacheService implements OnApplicationShutdown {
 		@Inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
+		@Inject(DI.config)
+		private config: Config,
+
 		private userEntityService: UserEntityService,
+
+		private httpRequestService: HttpRequestService,
 	) {
 		//this.onMessage = this.onMessage.bind(this);
 
@@ -110,6 +128,44 @@ export class CacheService implements OnApplicationShutdown {
 					obj[x.followeeId] = { withReplies: x.withReplies };
 				}
 				return obj;
+			}),
+			toRedisConverter: (value) => JSON.stringify(value),
+			fromRedisConverter: (value) => JSON.parse(value),
+		});
+
+		this.stpvRemoteUserDecorationsCache = new RedisKVCache<StpvRemoteUserDecorationsCacheType>(this.redisClient, 'stpvRemoteUserDecorationsCache', {
+			lifetime: 1000 * 60 * 30, // 30m
+			memoryCacheLifetime: 1000 * 60, // 1m
+			fetcher: (key) => this.userByIdCache.fetch(key, () => this.usersRepository.findOneBy({
+				id: key,
+			}) as Promise<MiLocalUser>).then(user => {
+				if (user.host == null) return [];
+				if (!(this.config.avatarDecorationAllowedHosts?.includes(user.host))) return [];
+				return this.httpRequestService.send(`https://${user.host}/api/users/show`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						host: null,
+						username: user.username,
+					}),
+				}).then(res => res.json() as { avatarDecorations?: StpvRemoteUserDecorationsCacheType })
+					.then((res) =>
+						res.avatarDecorations?.filter(ad => ad.url).map((ad) => ({
+							id: `${ad.id}:${user.host}`,
+							angle: ad.angle ? Number(ad.angle) : undefined,
+							offsetX: ad.offsetX ? Number(ad.offsetX) : undefined,
+							offsetY: ad.offsetY ? Number(ad.offsetY) : undefined,
+							flipH: ad.flipH ? Boolean(ad.flipH) : undefined,
+							showBelow: ad.showBelow ? Boolean(ad.showBelow) : undefined,
+							url: ad.url,
+						})) ?? [],
+					)
+					.catch((err) => {
+						console.error(err);
+						return [];
+					});
 			}),
 			toRedisConverter: (value) => JSON.stringify(value),
 			fromRedisConverter: (value) => JSON.parse(value),

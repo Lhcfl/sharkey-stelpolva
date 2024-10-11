@@ -57,7 +57,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private hashtagService: HashtagService,
 	) {
 		super(meta, paramDef, async () => {
-			const ranking = await this.featuredService.getHashtagsRanking(10);
+			const ranking = await this.featuredService.getHashtagsRanking(50);
 
 			const charts = ranking.length === 0 ? {} : await this.hashtagService.getCharts(ranking, 20);
 

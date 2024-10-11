@@ -237,14 +237,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		}
 
 		if (!ps.withReplies) {
+			const shouldShowReplyUserIds = [me.id, ...followees.filter(x => x.withReplies).map(x => x.followeeId)];
 			query.andWhere(new Brackets(qb => {
 				qb
 					.where('note.replyId IS NULL') // 返信ではない
+					.orWhere('note.replyId = :meId', { meId: me.id }) // reply my note
 					.orWhere(new Brackets(qb => {
 						qb // 返信だけど投稿者自身への返信
 							.where('note.replyId IS NOT NULL')
 							.andWhere('note.replyUserId = note.userId');
-					}));
+					}))
+					.orWhere('note.userId IN (:...shouldShowReplyUserIds)', {
+						shouldShowReplyUserIds,
+					});
 			}));
 		}
 

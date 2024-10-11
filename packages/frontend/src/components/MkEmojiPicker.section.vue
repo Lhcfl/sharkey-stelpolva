@@ -8,7 +8,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 <!-- フォルダの中にはカスタム絵文字だけ（Unicode絵文字もこっち） -->
 <section v-if="!hasChildSection" v-panel style="border-radius: var(--radius-sm); border-bottom: 0.5px solid var(--divider);">
 	<header class="_acrylic" @click="shown = !shown">
-		<i class="toggle ti-fw" :class="shown ? 'ti ti-chevron-down' : 'ti ti-chevron-up'"></i> <slot></slot> (<i class="ph-smiley-sticker ph-bold ph-lg"></i>:{{ emojis.length }})
+		<i class="toggle ti-fw" :class="shown ? 'ti ti-chevron-down' : 'ti ti-chevron-up'"></i>
+		<span class="emoji-example">
+			<MkCustomEmoji v-if="emojiExample[0] === ':'" class="emoji" :name="emojiExample" :normal="true" :fallbackToImage="true"/>
+			<MkEmoji v-else class="emoji" :emoji="emojiExample" :normal="true"/>
+		</span>
+		<slot></slot>
+		(<i class="ph-smiley-sticker ph-bold ph-lg"></i>:{{ emojis.length }})
 	</header>
 	<div v-if="shown" class="body">
 		<button
@@ -80,6 +86,7 @@ const emit = defineEmits<{
 }>();
 
 const emojis = computed(() => Array.isArray(props.emojis) ? props.emojis : props.emojis.value);
+const emojiExample = computed(() => emojis.value[0]);
 
 const shown = ref(!!props.initialShown);
 
@@ -94,3 +101,13 @@ function nestedChosen(emoji: any, ev: MouseEvent) {
 	emit('chosen', emoji, ev);
 }
 </script>
+
+<style lang="scss" scoped>
+.emoji-example {
+	margin-left: 2px;
+	margin-right: 2px;
+	> img {
+		height: 25px;
+	}
+}
+</style>

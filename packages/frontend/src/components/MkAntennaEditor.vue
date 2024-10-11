@@ -28,6 +28,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkTextarea>
 			<MkSwitch v-model="excludeBots">{{ i18n.ts.antennaExcludeBots }}</MkSwitch>
 			<MkSwitch v-model="withReplies">{{ i18n.ts.withReplies }}</MkSwitch>
+			<MkInfo>
+				<Mfm :text="i18n.ts.stpvAntennaPatch"></Mfm>
+			</MkInfo>
 			<MkTextarea v-model="keywords">
 				<template #label>{{ i18n.ts.antennaKeywords }}</template>
 				<template #caption>{{ i18n.ts.antennaKeywordsDescription }}</template>
@@ -53,6 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { watch, ref } from 'vue';
 import * as Misskey from 'misskey-js';
+import type { DeepPartial } from '@/scripts/merge.js';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
@@ -62,7 +66,7 @@ import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { i18n } from '@/i18n.js';
 import { deepMerge } from '@/scripts/merge.js';
-import type { DeepPartial } from '@/scripts/merge.js';
+import MkInfo from '@/components/MkInfo.vue';
 
 type PartialAllowedAntenna = Omit<Misskey.entities.Antenna, 'id' | 'createdAt' | 'updatedAt'> & {
 	id?: string;

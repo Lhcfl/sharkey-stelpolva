@@ -50,6 +50,7 @@ export const paramDef = {
 		withFiles: { type: 'boolean', default: false },
 		withRenotes: { type: 'boolean', default: true },
 		withBots: { type: 'boolean', default: true },
+		withReplies: { type: 'boolean', default: false },
 	},
 	required: [],
 } as const;
@@ -89,6 +90,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withFiles: ps.withFiles,
 					withRenotes: ps.withRenotes,
 					withBots: ps.withBots,
+					withReplies: ps.withReplies,
 				}, me);
 
 				process.nextTick(() => {
@@ -132,6 +134,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withFiles: ps.withFiles,
 					withRenotes: ps.withRenotes,
 					withBots: ps.withBots,
+					withReplies: ps.withReplies,
 				}, me),
 			});
 
@@ -143,7 +146,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		});
 	}
 
-	private async getFromDb(ps: { untilId: string | null; sinceId: string | null; limit: number; includeMyRenotes: boolean; includeRenotedMyNotes: boolean; includeLocalRenotes: boolean; withFiles: boolean; withRenotes: boolean; withBots: boolean; }, me: MiLocalUser) {
+	private async getFromDb(ps: {
+		untilId: string | null;
+		sinceId: string | null;
+		limit: number;
+		includeMyRenotes: boolean;
+		includeRenotedMyNotes: boolean;
+		includeLocalRenotes: boolean;
+		withFiles: boolean;
+		withRenotes: boolean;
+		withBots: boolean;
+		withReplies: boolean;
+	}, me: MiLocalUser) {
 		const followees = await this.userFollowingService.getFollowees(me.id);
 		const followingChannels = await this.channelFollowingsRepository.find({
 			where: {
@@ -193,15 +207,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.andWhere('note.userId = :meId', { meId: me.id });
 		}
 
-		query.andWhere(new Brackets(qb => {
-			qb
-				.where('note.replyId IS NULL') // 返信ではない
-				.orWhere(new Brackets(qb => {
-					qb // 返信だけど投稿者自身への返信
-						.where('note.replyId IS NOT NULL')
-						.andWhere('note.replyUserId = note.userId');
-				}));
-		}));
+		if (!ps.withReplies) {
+			const shouldShowReplyUserIds = [me.id, ...followees.filter(x => x.withReplies).map(x => x.followeeId)];
+			query.andWhere(new Brackets(qb => {
+				qb
+					.where('note.replyId IS NULL') // 返信ではない
+					.orWhere('note.replyId = :meId', { meId: me.id }) // reply my note
+					.orWhere(new Brackets(qb => {
+						qb // 返信だけど投稿者自身への返信
+							.where('note.replyId IS NOT NULL')
+							.andWhere('note.replyUserId = note.userId');
+					}))
+					.orWhere('note.userId IN (:...shouldShowReplyUserIds)', {
+						shouldShowReplyUserIds,
+					});
+			}));
+		}
 
 		this.queryService.generateVisibilityQuery(query, me);
 		this.queryService.generateMutedUserQuery(query, me);

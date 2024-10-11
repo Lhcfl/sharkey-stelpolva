@@ -62,10 +62,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span v-if="passwordRetypeState == 'not-match'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.passwordNotMatched }}</span>
 				</template>
 			</MkInput>
-			<MkInput v-if="instance.approvalRequiredForSignup" v-model="reason" type="text" :spellcheck="false" required data-cy-signup-reason>
+			<MkTextarea v-if="instance.approvalRequiredForSignup" v-model="reason" type="text" :spellcheck="false" required data-cy-signup-reason>
 				<template #label>Reason <div v-tooltip:dialog="i18n.ts._signup.reasonInfo" class="_button _help"><i class="ph-question ph-bold ph-lg"></i></div></template>
 				<template #prefix><i class="ph-chalkboard-teacher ph-bold ph-lg"></i></template>
-			</MkInput>
+			</MkTextarea>
 			<MkCaptcha v-if="instance.enableHcaptcha" ref="hcaptcha" v-model="hCaptchaResponse" :class="$style.captcha" provider="hcaptcha" :sitekey="instance.hcaptchaSiteKey"/>
 			<MkCaptcha v-if="instance.enableMcaptcha" ref="mcaptcha" v-model="mCaptchaResponse" :class="$style.captcha" provider="mcaptcha" :sitekey="instance.mcaptchaSiteKey" :instanceUrl="instance.mcaptchaInstanceUrl"/>
 			<MkCaptcha v-if="instance.enableRecaptcha" ref="recaptcha" v-model="reCaptchaResponse" :class="$style.captcha" provider="recaptcha" :sitekey="instance.recaptchaSiteKey"/>
@@ -87,6 +87,7 @@ import { toUnicode } from 'punycode/';
 import * as Misskey from 'misskey-js';
 import MkButton from './MkButton.vue';
 import MkInput from './MkInput.vue';
+import MkTextarea from './MkTextarea.vue';
 import MkCaptcha, { type Captcha } from '@/components/MkCaptcha.vue';
 import * as config from '@/config.js';
 import * as os from '@/os.js';

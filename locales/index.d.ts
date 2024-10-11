@@ -10,50 +10,50 @@ export interface ILocale {
 }
 export interface Locale extends ILocale {
     /**
-     * 日本語
+     * English
      */
     "_lang_": string;
     /**
-     * ノートでつながるネットワーク
+     * A network connected by notes
      */
     "headlineMisskey": string;
     /**
-     * ようこそ！Sharkeyは、オープンソースの分散型マイクロブログサービスです。
-     * 「ノート」を作成して、いま起こっていることを共有したり、あなたについて皆に発信しよう📡
-     * 「リアクション」機能で、皆のノートに素早く反応を追加することもできます👍
-     * 新しい世界を探検しよう🚀
+     * Welcome! Sharkey is an open source, decentralized microblogging service.
+     * Create "notes" to share your thoughts with everyone around you. 📡
+     * With "reactions", you can also quickly express your feelings about everyone's notes. 👍
+     * Let's explore a new world! 🚀
      */
     "introMisskey": string;
     /**
-     * {name}は、オープンソースのプラットフォーム<b>Sharkey</b>のサーバーのひとつです。
+     * {name} is one of the services powered by the open source platform <b>Sharkey</b> which is based on Misskey (referred to as a "Misskey instance").
      */
     "poweredByMisskeyDescription": ParameterizedString<"name">;
     /**
-     * {month}月 {day}日
+     * {month}/{day}
      */
     "monthAndDay": ParameterizedString<"month" | "day">;
     /**
-     * 検索
+     * Search
      */
     "search": string;
     /**
-     * 通知
+     * Notifications
      */
     "notifications": string;
     /**
-     * ユーザー名
+     * Username
      */
     "username": string;
     /**
-     * パスワード
+     * Password
      */
     "password": string;
     /**
-     * パスワードを忘れた
+     * Forgot password
      */
     "forgotPassword": string;
     /**
-     * 連合に照会中
+     * Fetching from the Fediverse...
      */
     "fetchingAsApObject": string;
     /**
@@ -61,323 +61,323 @@ export interface Locale extends ILocale {
      */
     "ok": string;
     /**
-     * わかった
+     * Got it!
      */
     "gotIt": string;
     /**
-     * キャンセル
+     * Cancel
      */
     "cancel": string;
     /**
-     * やめておく
+     * Not now
      */
     "noThankYou": string;
     /**
-     * ユーザー名を入力
+     * Enter username
      */
     "enterUsername": string;
     /**
-     * {user}がブースト
+     * Boosted by {user}
      */
     "renotedBy": ParameterizedString<"user">;
     /**
-     * ノートはありません
+     * No notes
      */
     "noNotes": string;
     /**
-     * 通知はありません
+     * No notifications
      */
     "noNotifications": string;
     /**
-     * サーバー
+     * Instance
      */
     "instance": string;
     /**
-     * 設定
+     * Settings
      */
     "settings": string;
     /**
-     * 通知の設定
+     * Notification Settings
      */
     "notificationSettings": string;
     /**
-     * 基本設定
+     * Basic Settings
      */
     "basicSettings": string;
     /**
-     * その他の設定
+     * Other Settings
      */
     "otherSettings": string;
     /**
-     * ウィンドウで開く
+     * Open in window
      */
     "openInWindow": string;
     /**
-     * プロフィール
+     * Profile
      */
     "profile": string;
     /**
-     * タイムライン
+     * Timeline
      */
     "timeline": string;
     /**
-     * 自己紹介はありません
+     * This user has not written their bio yet.
      */
     "noAccountDescription": string;
     /**
-     * ログイン
+     * Sign In
      */
     "login": string;
     /**
-     * ログイン中
+     * Signing In
      */
     "loggingIn": string;
     /**
-     * ログアウト
+     * Sign Out
      */
     "logout": string;
     /**
-     * 新規登録
+     * Sign Up
      */
     "signup": string;
     /**
-     * アップロード中
+     * Uploading...
      */
     "uploading": string;
     /**
-     * 保存
+     * Save
      */
     "save": string;
     /**
-     * ユーザー
+     * Users
      */
     "users": string;
     /**
-     * 承認
+     * Approvals
      */
     "approvals": string;
     /**
-     * ユーザーを追加
+     * Add a user
      */
     "addUser": string;
     /**
-     * お気に入り
+     * Add to favorites
      */
     "favorite": string;
     /**
-     * お気に入り
+     * Favorites
      */
     "favorites": string;
     /**
-     * お気に入り解除
+     * Remove from favorites
      */
     "unfavorite": string;
     /**
-     * お気に入りに登録しました。
+     * Added to favorites.
      */
     "favorited": string;
     /**
-     * 既にお気に入りに登録されています。
+     * Already added to favorites.
      */
     "alreadyFavorited": string;
     /**
-     * お気に入りに登録できませんでした。
+     * Couldn't add to favorites.
      */
     "cantFavorite": string;
     /**
-     * ピン留め
+     * Pin to profile
      */
     "pin": string;
     /**
-     * ピン留め解除
+     * Unpin from profile
      */
     "unpin": string;
     /**
-     * 内容をコピー
+     * Copy contents
      */
     "copyContent": string;
     /**
-     * リンクをコピー
+     * Copy link
      */
     "copyLink": string;
     /**
-     * ブーストのリンクをコピー
+     * Copy boost link
      */
     "copyLinkRenote": string;
     /**
-     * 削除
+     * Delete
      */
     "delete": string;
     /**
-     * 削除して編集
+     * Delete and edit
      */
     "deleteAndEdit": string;
     /**
-     * このノートを削除してもう一度編集しますか？このノートへのリアクション、ブースト、返信も全て削除されます。
+     * Are you sure you want to redraft this note? This means you will lose all reactions, boosts, and replies to it.
      */
     "deleteAndEditConfirm": string;
     /**
-     * リストに追加
+     * Add to list
      */
     "addToList": string;
     /**
-     * アンテナに追加
+     * Add to antenna
      */
     "addToAntenna": string;
     /**
-     * メッセージを送信
+     * Send a message
      */
     "sendMessage": string;
     /**
-     * RSSをコピー
+     * Copy RSS
      */
     "copyRSS": string;
     /**
-     * ユーザー名をコピー
+     * Copy username
      */
     "copyUsername": string;
     /**
-     * リモートプロフィールを開く
+     * Open remote profile
      */
     "openRemoteProfile": string;
     /**
-     * ユーザーIDをコピー
+     * Copy user ID
      */
     "copyUserId": string;
     /**
-     * ノートIDをコピー
+     * Copy note ID
      */
     "copyNoteId": string;
     /**
-     * ファイルIDをコピー
+     * Copy file ID
      */
     "copyFileId": string;
     /**
-     * フォルダーIDをコピー
+     * Copy folder ID
      */
     "copyFolderId": string;
     /**
-     * プロフィールURLをコピー
+     * Copy profile URL
      */
     "copyProfileUrl": string;
     /**
-     * 外部サイトへのリンク警告 除外リスト
+     * Link to external site warning exclusion list
      */
     "trustedLinkUrlPatterns": string;
     /**
-     * スペースで区切るとAND指定になり、改行で区切るとOR指定になります。スラッシュで囲むと正規表現になります。ドメイン名だけ書くと後方一致になります。
+     * Separate with spaces for an AND condition or with line breaks for an OR condition. Using surrounding keywords with slashes will turn them into a regular expression. If you write only the domain name, it will be a backward match.
      */
     "trustedLinkUrlPatternsDescription": string;
     /**
-     * 開く
+     * Open
      */
     "open": string;
     /**
-     * ユーザーを検索
+     * Search for a user
      */
     "searchUser": string;
     /**
-     * ユーザーのノートを検索
+     * Search this user’s notes
      */
     "searchThisUsersNotes": string;
     /**
-     * 返信
+     * Reply
      */
     "reply": string;
     /**
-     * もっと見る
+     * Load more
      */
     "loadMore": string;
     /**
-     * もっと見る
+     * Show more
      */
     "showMore": string;
     /**
-     * 閉じる
+     * Close
      */
     "showLess": string;
     /**
-     * フォローされました
+     * followed you
      */
     "youGotNewFollower": string;
     /**
-     * フォローリクエストされました
+     * Follow request received
      */
     "receiveFollowRequest": string;
     /**
-     * フォローが承認されました
+     * Follow request accepted
      */
     "followRequestAccepted": string;
     /**
-     * メンション
+     * Mention
      */
     "mention": string;
     /**
-     * あなた宛て
+     * Mentions
      */
     "mentions": string;
     /**
-     * ダイレクト投稿
+     * Direct notes
      */
     "directNotes": string;
     /**
-     * インポートとエクスポート
+     * Import / Export
      */
     "importAndExport": string;
     /**
-     * インポート
+     * Import
      */
     "import": string;
     /**
-     * エクスポート
+     * Export
      */
     "export": string;
     /**
-     * ファイル
+     * Files
      */
     "files": string;
     /**
-     * ダウンロード
+     * Download
      */
     "download": string;
     /**
-     * ファイル「{name}」を削除しますか？このファイルを使用した一部のコンテンツも削除されます。
+     * Do you want to remove the file "{name}"? Some content using this file will also be removed.
      */
     "driveFileDeleteConfirm": ParameterizedString<"name">;
     /**
-     * {name}のフォローを解除しますか？
+     * Are you sure you want to unfollow {name}?
      */
     "unfollowConfirm": ParameterizedString<"name">;
     /**
-     * エクスポートをリクエストしました。これには時間がかかる場合があります。エクスポートが終わると、「ドライブ」に追加されます。
+     * You've requested an export. This may take a while. It will be added to your Drive once completed.
      */
     "exportRequested": string;
     /**
-     * インポートをリクエストしました。これには時間がかかる場合があります。
+     * You've requested an import. This may take a while.
      */
     "importRequested": string;
     /**
-     * リスト
+     * Lists
      */
     "lists": string;
     /**
-     * リストはありません
+     * You don't have any lists
      */
     "noLists": string;
     /**
-     * ノート
+     * Note
      */
     "note": string;
     /**
-     * ノート
+     * Notes
      */
     "notes": string;
     /**
-     * フォロー
+     * Following
      */
     "following": string;
     /**
-     * フォロワー
+     * Followers
      */
     "followers": string;
     /**
@@ -385,139 +385,139 @@ export interface Locale extends ILocale {
      */
     "mutuals": string;
     /**
-     * フォローされています
+     * Follows you
      */
     "followsYou": string;
     /**
-     * リスト作成
+     * Create list
      */
     "createList": string;
     /**
-     * リストの管理
+     * Manage lists
      */
     "manageLists": string;
     /**
-     * エラー
+     * Error
      */
     "error": string;
     /**
-     * 問題が発生しました
+     * An error has occurred
      */
     "somethingHappened": string;
     /**
-     * 再試行
+     * Retry
      */
     "retry": string;
     /**
-     * ページの読み込みに失敗しました。
+     * An error occurred while loading the page.
      */
     "pageLoadError": string;
     /**
-     * これは通常、ネットワークまたはブラウザキャッシュが原因です。キャッシュをクリアするか、しばらく待ってから再度試してください。
+     * This is normally caused by network errors or the browser's cache. Try clearing the cache and then try again after waiting a little while.
      */
     "pageLoadErrorDescription": string;
     /**
-     * サーバーの応答がありません。しばらく待ってから再度試してください。
+     * This server is not responding. Please wait for a while and try again.
      */
     "serverIsDead": string;
     /**
-     * このページを表示するためには、リロードして新しいバージョンのクライアントをご利用ください。
+     * To view this page, please refresh to update your client.
      */
     "youShouldUpgradeClient": string;
     /**
-     * リスト名を入力
+     * Enter a name for the list
      */
     "enterListName": string;
     /**
-     * プライバシー
+     * Privacy
      */
     "privacy": string;
     /**
-     * フォローを承認制にする
+     * Follow requests require approval
      */
     "makeFollowManuallyApprove": string;
     /**
-     * デフォルトの公開範囲
+     * Default visibility
      */
     "defaultNoteVisibility": string;
     /**
-     * フォロー
+     * Follow
      */
     "follow": string;
     /**
-     * フォロー申請
+     * Send follow request
      */
     "followRequest": string;
     /**
-     * フォロー申請
+     * Follow requests
      */
     "followRequests": string;
     /**
-     * フォロー解除
+     * Unfollow
      */
     "unfollow": string;
     /**
-     * フォロー許可待ち
+     * Follow request pending
      */
     "followRequestPending": string;
     /**
-     * 絵文字を入力
+     * Enter an emoji
      */
     "enterEmoji": string;
     /**
-     * ブースト
+     * Boost
      */
     "renote": string;
     /**
-     * ブースト解除
+     * Remove boost
      */
     "unrenote": string;
     /**
-     * ブーストしました。
+     * Boosted.
      */
     "renoted": string;
     /**
-     * {name} にブーストしました。
-     */
-    "renotedToX": ParameterizedString<"name">;
-    /**
-     * 引用。
+     * Quoted.
      */
     "quoted": string;
     /**
-     * ブースト解除しました。
+     * Unboosted.
      */
     "rmboost": string;
     /**
-     * この投稿はブーストできません。
+     * Boosted to {name}
+     */
+    "renotedToX": ParameterizedString<"name">;
+    /**
+     * This post can't be boosted.
      */
     "cantRenote": string;
     /**
-     * ブーストをブーストすることはできません。
+     * A boost can't be boosted.
      */
     "cantReRenote": string;
     /**
-     * 引用
+     * Quote
      */
     "quote": string;
     /**
-     * チャンネル内ブースト
+     * Channel-only Boost
      */
     "inChannelRenote": string;
     /**
-     * チャンネル内引用
+     * Channel-only Quote
      */
     "inChannelQuote": string;
     /**
-     * チャンネルにリノート
+     * Renote to channel
      */
     "renoteToChannel": string;
     /**
-     * 他のチャンネルにリノート
+     * Renote to other channel
      */
     "renoteToOtherChannel": string;
     /**
-     * ピン留めされたノート
+     * Pinned note
      */
     "pinnedNote": string;
     /**
@@ -525,87 +525,87 @@ export interface Locale extends ILocale {
      */
     "pinnedOnly": string;
     /**
-     * ピン留め
+     * Pin to profile
      */
     "pinned": string;
     /**
-     * あなた
+     * You
      */
     "you": string;
     /**
-     * クリックして表示
+     * Click to show
      */
     "clickToShow": string;
     /**
-     * センシティブ
+     * Sensitive
      */
     "sensitive": string;
     /**
-     * 追加
+     * Add
      */
     "add": string;
     /**
-     * リアクション
+     * Reactions
      */
     "reaction": string;
     /**
-     * リアクション
+     * Reactions
      */
     "reactions": string;
     /**
-     * 絵文字ピッカー
+     * Emoji picker
      */
     "emojiPicker": string;
     /**
-     * リアクション時にピン留め表示する絵文字を設定できます
+     * Set the emojis to be pinned and displayed when reacting.
      */
     "pinnedEmojisForReactionSettingDescription": string;
     /**
-     * 絵文字入力時にピン留め表示する絵文字を設定できます
+     * Set the emojis to be pinned and displayed when viewing emoji picker.
      */
     "pinnedEmojisSettingDescription": string;
     /**
-     * ピッカーの表示
+     * Emoji picker display
      */
     "emojiPickerDisplay": string;
     /**
-     * リアクション設定から上書きする
+     * Override from reaction settings
      */
     "overwriteFromPinnedEmojisForReaction": string;
     /**
-     * 全般設定から上書きする
+     * Override from general settings
      */
     "overwriteFromPinnedEmojis": string;
     /**
-     * ドラッグして並び替え、クリックして削除、＋を押して追加します。
+     * Drag to reorder, click to delete, press "+" to add.
      */
     "reactionSettingDescription2": string;
     /**
-     * 公開範囲を記憶する
+     * Remember note visibility settings
      */
     "rememberNoteVisibility": string;
     /**
-     * 添付取り消し
+     * Remove attachment
      */
     "attachCancel": string;
     /**
-     * ファイルを削除
+     * Delete file
      */
     "deleteFile": string;
     /**
-     * センシティブとして設定
+     * Mark as sensitive
      */
     "markAsSensitive": string;
     /**
-     * センシティブを解除する
+     * Unmark as sensitive
      */
     "unmarkAsSensitive": string;
     /**
-     * ファイル名を入力
+     * Enter filename
      */
     "enterFileName": string;
     /**
-     * ミュート
+     * Mute
      */
     "mute": string;
     /**
@@ -613,11 +613,11 @@ export interface Locale extends ILocale {
      */
     "muted": string;
     /**
-     * ミュート解除
+     * Unmute
      */
     "unmute": string;
     /**
-     * ブーストをミュート
+     * Mute Boosts
      */
     "renoteMute": string;
     /**
@@ -625,19 +625,19 @@ export interface Locale extends ILocale {
      */
     "renoteMuted": string;
     /**
-     * ブーストのミュートを解除
+     * Unmute Boosts
      */
     "renoteUnmute": string;
     /**
-     * ブロック
+     * Block
      */
     "block": string;
     /**
-     * ブロック解除
+     * Unblock
      */
     "unblock": string;
     /**
-     * ユーザーのすべてのメディアをNSFWとしてマークする
+     * Mark all media from user as NSFW
      */
     "markAsNSFW": string;
     /**
@@ -645,299 +645,299 @@ export interface Locale extends ILocale {
      */
     "markInstanceAsNSFW": string;
     /**
-     * 凍結
+     * Suspend
      */
     "suspend": string;
     /**
-     * 解凍
+     * Unsuspend
      */
     "unsuspend": string;
     /**
-     * ブロックしますか？
+     * Are you sure that you want to block this account?
      */
     "blockConfirm": string;
     /**
-     * ブロック解除しますか？
+     * Are you sure that you want to unblock this account?
      */
     "unblockConfirm": string;
     /**
-     * このアカウントからのすべてのメディアをNSFWとしてマークしてもよろしいですか？
+     * Are you sure that you want to mark all media from this account as NSFW?
      */
     "nsfwConfirm": string;
     /**
-     * このアカウントのすべてのメディアをNSFWとしてマーク解除してもよろしいですか？
+     * Are you sure that you want to unmark all media from this account as NSFW?
      */
     "unNsfwConfirm": string;
     /**
-     * 凍結しますか？
+     * Are you sure that you want to suspend this account?
      */
     "suspendConfirm": string;
     /**
-     * このアカウントを承認してもよろしいですか？
+     * Are you sure that you want to approve this account?
      */
     "approveConfirm": string;
     /**
-     * 解凍しますか？
+     * Are you sure that you want to unsuspend this account?
      */
     "unsuspendConfirm": string;
     /**
-     * リストを選択
+     * Select a list
      */
     "selectList": string;
     /**
-     * リストを編集
+     * Edit list
      */
     "editList": string;
     /**
-     * チャンネルを選択
+     * Select a channel
      */
     "selectChannel": string;
     /**
-     * アンテナを選択
+     * Select an antenna
      */
     "selectAntenna": string;
     /**
-     * アンテナを編集
+     * Edit antenna
      */
     "editAntenna": string;
     /**
-     * アンテナを作成
+     * Create an antenna
      */
     "createAntenna": string;
     /**
-     * ウィジェットを選択
+     * Select a widget
      */
     "selectWidget": string;
     /**
-     * ウィジェットを編集
+     * Edit widgets
      */
     "editWidgets": string;
     /**
-     * 編集を終了
+     * Done
      */
     "editWidgetsExit": string;
     /**
-     * カスタム絵文字
+     * Custom Emoji
      */
     "customEmojis": string;
     /**
-     * 絵文字
+     * Emoji
      */
     "emoji": string;
     /**
-     * 絵文字
+     * Emoji
      */
     "emojis": string;
     /**
-     * 絵文字名
+     * Emoji name
      */
     "emojiName": string;
     /**
-     * 絵文字画像URL
+     * Emoji URL
      */
     "emojiUrl": string;
     /**
-     * 絵文字を追加
+     * Add an emoji
      */
     "addEmoji": string;
     /**
-     * おすすめ設定
+     * Recommended settings
      */
     "settingGuide": string;
     /**
-     * リモートのファイルをキャッシュする
+     * Cache remote files
      */
     "cacheRemoteFiles": string;
     /**
-     * この設定を有効にすると、リモートファイルをこのサーバーのストレージにキャッシュするようになります。画像の表示が高速になりますが、サーバーのストレージを多く消費します。リモートユーザーがどれほどキャッシュを保持するかは、ロールによるドライブ容量制限によって決定されます。この制限を超えた場合、古いファイルからキャッシュが削除されリンクになります。この設定が無効の場合、リモートのファイルを最初からリンクとして保持しますが、画像のサムネイル生成やユーザーのプライバシー保護のために、default.ymlでproxyRemoteFilesをtrueにすることをお勧めします。
+     * When this setting is disabled, remote files are loaded directly from the remote servers. Disabling this will decrease storage usage, but increase traffic, as thumbnails will not be generated.
      */
     "cacheRemoteFilesDescription": string;
     /**
-     * ファイル管理の🗑️ボタンで全てのキャッシュを削除できます。
+     * You can clear the cache by clicking the 🗑️ button in the file management view.
      */
     "youCanCleanRemoteFilesCache": string;
     /**
-     * リモートのセンシティブなファイルをキャッシュする
+     * Cache sensitive remote files
      */
     "cacheRemoteSensitiveFiles": string;
     /**
-     * この設定を無効にすると、リモートのセンシティブなファイルはキャッシュせず直リンクするようになります。
+     * When this setting is disabled, sensitive remote files are loaded directly from the remote instance without caching.
      */
     "cacheRemoteSensitiveFilesDescription": string;
     /**
-     * Botとして設定
+     * Mark this account as a bot
      */
     "flagAsBot": string;
     /**
-     * このアカウントがプログラムによって運用される場合は、このフラグをオンにします。オンにすると、反応の連鎖を防ぐためのフラグとして他の開発者に役立ったり、Sharkeyのシステム上での扱いがBotに合ったものになります。
+     * Enable this option if this account is controlled by a program. If enabled, it will act as a flag for other developers to prevent endless interaction chains with other bots and adjust Sharkey's internal systems to treat this account as a bot.
      */
     "flagAsBotDescription": string;
     /**
-     * にゃああああああああああああああ！！！！！！！！！！！！
+     * Mark this account as a cat
      */
     "flagAsCat": string;
     /**
-     * にゃにゃにゃ？？
+     * Enable this option to mark this account as a cat.
      */
     "flagAsCatDescription": string;
     /**
-     * 猫語で話す
+     * Speak as a cat
      */
     "flagSpeakAsCat": string;
     /**
-     * 有効にすると、あなたの投稿の 「な」を「にゃ」にします。
+     * Your posts will get nyanified when in cat mode. If this isn't working, then please check that you dont have 'Disable cat speak' on under General/Note Display
      */
     "flagSpeakAsCatDescription": string;
     /**
-     * タイムラインにノートへの返信を表示する
+     * Show replies in timeline
      */
     "flagShowTimelineReplies": string;
     /**
-     * オンにすると、タイムラインにユーザーのノート以外にもそのユーザーの他のノートへの返信を表示します。
+     * Shows replies of users to notes of other users in the timeline if turned on.
      */
     "flagShowTimelineRepliesDescription": string;
     /**
-     * フォロー中ユーザーからのフォロリクを自動承認
+     * Automatically approve follow requests from users you're following
      */
     "autoAcceptFollowed": string;
     /**
-     * アカウントを追加
+     * Add account
      */
     "addAccount": string;
     /**
-     * アカウントリストの情報を更新
+     * Reload account list
      */
     "reloadAccountsList": string;
     /**
-     * ログインに失敗しました
+     * Failed to sign in
      */
     "loginFailed": string;
     /**
-     * リモートで表示
+     * View on remote instance
      */
     "showOnRemote": string;
     /**
-     * リモートで続行
+     * Continue on remote instance
      */
     "continueOnRemote": string;
     /**
-     * Misskey Hubからサーバーを選択
+     * Choose a instance from Misskey Hub
      */
     "chooseServerOnMisskeyHub": string;
     /**
-     * サーバーのドメインを直接指定
+     * Specify a server host directly
      */
     "specifyServerHost": string;
     /**
-     * ドメインを入力してください
+     * Enter the domain
      */
     "inputHostName": string;
     /**
-     * 全般
+     * General
      */
     "general": string;
     /**
-     * 壁紙
+     * Wallpaper
      */
     "wallpaper": string;
     /**
-     * 壁紙を設定
+     * Set wallpaper
      */
     "setWallpaper": string;
     /**
-     * 壁紙を削除
+     * Remove wallpaper
      */
     "removeWallpaper": string;
     /**
-     * 検索: {q}
+     * Search: {q}
      */
     "searchWith": ParameterizedString<"q">;
     /**
-     * リストがありません
+     * You don't have any lists
      */
     "youHaveNoLists": string;
     /**
-     * {name}をフォローしますか？
+     * Are you sure that you want to follow {name}?
      */
     "followConfirm": ParameterizedString<"name">;
     /**
-     * プロキシアカウント
+     * Proxy account
      */
     "proxyAccount": string;
     /**
-     * プロキシアカウントは、特定の条件下でユーザーのリモートフォローを代行するアカウントです。例えば、ユーザーがリモートユーザーをリストに入れたとき、リストに入れられたユーザーを誰もフォローしていないとアクティビティがサーバーに配達されないため、代わりにプロキシアカウントがフォローするようにします。
+     * A proxy account is an account that acts as a remote follower for users under certain conditions. For example, when a user adds a remote user to the list, the remote user's activity will not be delivered to the instance if no local user is following that user, so the proxy account will follow instead.
      */
     "proxyAccountDescription": string;
     /**
-     * ホスト
+     * Host
      */
     "host": string;
     /**
-     * 自分を選択
+     * Select myself
      */
     "selectSelf": string;
     /**
-     * ユーザーを選択
+     * Select a user
      */
     "selectUser": string;
     /**
-     * 宛先
+     * Recipient
      */
     "recipient": string;
     /**
-     * 注釈
+     * Comments
      */
     "annotation": string;
     /**
-     * 連合
+     * Federation
      */
     "federation": string;
     /**
-     * サーバー
+     * Instances
      */
     "instances": string;
     /**
-     * 初観測
+     * Registered at
      */
     "registeredAt": string;
     /**
-     * 直近のリクエスト受信
+     * Last request received
      */
     "latestRequestReceivedAt": string;
     /**
-     * 直近のステータス
+     * Latest status
      */
     "latestStatus": string;
     /**
-     * ストレージ使用量
+     * Storage usage
      */
     "storageUsage": string;
     /**
-     * チャート
+     * Charts
      */
     "charts": string;
     /**
-     * 1時間ごと
+     * Per Hour
      */
     "perHour": string;
     /**
-     * 1日ごと
+     * Per Day
      */
     "perDay": string;
     /**
-     * アクティビティの配送を停止
+     * Stop sending activities
      */
     "stopActivityDelivery": string;
     /**
-     * このサーバーをブロック
+     * Block this instance
      */
     "blockThisInstance": string;
     /**
-     * サーバーをサイレンス
+     * Silence this instance
      */
     "silenceThisInstance": string;
     /**
-     * サーバーをメディアサイレンス
+     * Silence media from this instance
      */
     "mediaSilenceThisInstance": string;
     /**
@@ -945,163 +945,163 @@ export interface Locale extends ILocale {
      */
     "rejectReports": string;
     /**
-     * 操作
+     * Operations
      */
     "operations": string;
     /**
-     * ソフトウェア
+     * Software
      */
     "software": string;
     /**
-     * バージョン
+     * Version
      */
     "version": string;
     /**
-     * メタデータ
+     * Metadata
      */
     "metadata": string;
     /**
-     * {n}つのファイル
+     * {n} file(s)
      */
     "withNFiles": ParameterizedString<"n">;
     /**
-     * モニター
+     * Monitor
      */
     "monitor": string;
     /**
-     * ジョブキュー
+     * Job Queue
      */
     "jobQueue": string;
     /**
-     * CPUとメモリ
+     * CPU and Memory
      */
     "cpuAndMemory": string;
     /**
-     * ネットワーク
+     * Network
      */
     "network": string;
     /**
-     * ディスク
+     * Disk
      */
     "disk": string;
     /**
-     * サーバー情報
+     * Instance Information
      */
     "instanceInfo": string;
     /**
-     * 統計
+     * Statistics
      */
     "statistics": string;
     /**
-     * キューをクリア
+     * Clear queue
      */
     "clearQueue": string;
     /**
-     * キューをクリアしますか？
+     * Are you sure that you want to clear the queue?
      */
     "clearQueueConfirmTitle": string;
     /**
-     * 未配達の投稿は配送されなくなります。通常この操作を行う必要はありません。
+     * Any undelivered notes remaining in the queue will not be federated. Usually this operation is not needed.
      */
     "clearQueueConfirmText": string;
     /**
-     * キャッシュをクリア
+     * Clear cache
      */
     "clearCachedFiles": string;
     /**
-     * キャッシュされたリモートファイルをすべて削除しますか？
+     * Are you sure that you want to delete all cached remote files?
      */
     "clearCachedFilesConfirm": string;
     /**
-     * ブロックしたサーバー
+     * Blocked Instances
      */
     "blockedInstances": string;
     /**
-     * ブロックしたいサーバーのホストを改行で区切って設定します。ブロックされたサーバーは、このインスタンスとやり取りできなくなります。
+     * List the hostnames of the instances you want to block separated by linebreaks. Listed instances will no longer be able to communicate with this instance.
      */
     "blockedInstancesDescription": string;
     /**
-     * サイレンスしたサーバー
+     * Silenced instances
      */
     "silencedInstances": string;
     /**
-     * サイレンスしたいサーバーのホストを改行で区切って設定します。サイレンスされたサーバーに所属するアカウントはすべて「サイレンス」として扱われ、フォローがすべてリクエストになります。ブロックしたインスタンスには影響しません。
+     * List the host names of the instances that you want to silence, separated by a new line. All accounts belonging to the listed instances will be treated as silenced, and can only make follow requests, and cannot mention local accounts if not followed. This will not affect the blocked instances.
      */
     "silencedInstancesDescription": string;
     /**
-     * メディアサイレンスしたサーバー
+     * Media-silenced instances
      */
     "mediaSilencedInstances": string;
     /**
-     * メディアサイレンスしたいサーバーのホストを改行で区切って設定します。メディアサイレンスされたサーバーに所属するアカウントによるファイルはすべてセンシティブとして扱われ、カスタム絵文字が使用できないようになります。ブロックしたインスタンスには影響しません。
+     * List the host names of the instances that you want to media-silence, separated by a new line. All accounts belonging to the listed instances will be treated as sensitive, and can't use custom emojis. This will not affect the blocked instances.
      */
     "mediaSilencedInstancesDescription": string;
     /**
-     * ミュートとブロック
+     * Mutes and Blocks
      */
     "muteAndBlock": string;
     /**
-     * ミュートしたユーザー
+     * Muted users
      */
     "mutedUsers": string;
     /**
-     * ブロックしたユーザー
+     * Blocked users
      */
     "blockedUsers": string;
     /**
-     * ユーザーはいません
+     * There are no users
      */
     "noUsers": string;
     /**
-     * プロフィールを編集
+     * Edit profile
      */
     "editProfile": string;
     /**
-     * このノートを削除しますか？
+     * Are you sure you want to delete this note?
      */
     "noteDeleteConfirm": string;
     /**
-     * これ以上ピン留めできません
+     * You cannot pin any more notes
      */
     "pinLimitExceeded": string;
     /**
-     * Sharkeyのインストールが完了しました！管理者アカウントを作成しましょう。
+     * Installation of Sharkey has been finished! Please create an admin user.
      */
     "intro": string;
     /**
-     * 完了
+     * Done
      */
     "done": string;
     /**
-     * 処理中
+     * Processing...
      */
     "processing": string;
     /**
-     * プレビュー
+     * Preview
      */
     "preview": string;
     /**
-     * デフォルト
+     * Default
      */
     "default": string;
     /**
-     * デフォルト: {value}
+     * Default: {value}
      */
     "defaultValueIs": ParameterizedString<"value">;
     /**
-     * 絵文字はありません
+     * There are no emoji
      */
     "noCustomEmojis": string;
     /**
-     * ジョブはありません
+     * There are no jobs
      */
     "noJobs": string;
     /**
-     * 連合中
+     * Federating
      */
     "federating": string;
     /**
-     * ブロック中
+     * Blocked
      */
     "blocked": string;
     /**
@@ -1117,559 +1117,559 @@ export interface Locale extends ILocale {
      */
     "mediaSilencedByBase": string;
     /**
-     * 配信停止
+     * Suspended
      */
     "suspended": string;
     /**
-     * 全て
+     * All
      */
     "all": string;
     /**
-     * 購読中
+     * Subscribing
      */
     "subscribing": string;
     /**
-     * 配信中
+     * Publishing
      */
     "publishing": string;
     /**
-     * 応答なし
+     * Not responding
      */
     "notResponding": string;
     /**
-     * サーバーのフォロー
+     * Following on instance
      */
     "instanceFollowing": string;
     /**
-     * サーバーのフォロワー
+     * Instance followers
      */
     "instanceFollowers": string;
     /**
-     * サーバーのユーザー
+     * Users of this instance
      */
     "instanceUsers": string;
     /**
-     * パスワードを変更
+     * Change password
      */
     "changePassword": string;
     /**
-     * セキュリティ
+     * Security
      */
     "security": string;
     /**
-     * 入力が一致しません。
+     * The inputs do not match.
      */
     "retypedNotMatch": string;
     /**
-     * 現在のパスワード
+     * Current password
      */
     "currentPassword": string;
     /**
-     * 新しいパスワード
+     * New password
      */
     "newPassword": string;
     /**
-     * 新しいパスワード(再入力)
+     * Retype new password
      */
     "newPasswordRetype": string;
     /**
-     * ファイルを添付
+     * Attach files
      */
     "attachFile": string;
     /**
-     * もっと！
+     * More!
      */
     "more": string;
     /**
-     * ハイライト
+     * Featured
      */
     "featured": string;
     /**
-     * ユーザー名かユーザーID
+     * Username or user id
      */
     "usernameOrUserId": string;
     /**
-     * ユーザーが見つかりません
+     * User not found
      */
     "noSuchUser": string;
     /**
-     * 照会
+     * Lookup
      */
     "lookup": string;
     /**
-     * お知らせ
+     * Announcements
      */
     "announcements": string;
     /**
-     * 画像URL
+     * Image URL
      */
     "imageUrl": string;
     /**
-     * 削除
+     * Delete
      */
     "remove": string;
     /**
-     * 削除しました
+     * Successfully deleted
      */
     "removed": string;
     /**
-     * 「{x}」を削除しますか？
+     * Are you sure that you want to remove "{x}"?
      */
     "removeAreYouSure": ParameterizedString<"x">;
     /**
-     * 「{x}」を削除しますか？
+     * Are you sure that you want to delete "{x}"?
      */
     "deleteAreYouSure": ParameterizedString<"x">;
     /**
-     * リセットしますか？
+     * Really reset?
      */
     "resetAreYouSure": string;
     /**
-     * よろしいですか？
+     * Are you sure?
      */
     "areYouSure": string;
     /**
-     * 保存しました
+     * Saved
      */
     "saved": string;
     /**
-     * チャット
+     * Chat
      */
     "messaging": string;
     /**
-     * アップロード
+     * Upload
      */
     "upload": string;
     /**
-     * オリジナル画像を保持
+     * Keep original image
      */
     "keepOriginalUploading": string;
     /**
-     * 画像をアップロードする時にオリジナル版を保持します。オフにするとアップロード時にブラウザでWeb公開用画像を生成します。
+     * Saves the originally uploaded image as-is. If turned off, a version to display on the web will be generated on upload.
      */
     "keepOriginalUploadingDescription": string;
     /**
-     * ドライブから
+     * From Drive
      */
     "fromDrive": string;
     /**
-     * URLから
+     * From URL
      */
     "fromUrl": string;
     /**
-     * URLアップロード
+     * Upload from a URL
      */
     "uploadFromUrl": string;
     /**
-     * アップロードしたいファイルのURL
+     * URL of the file you want to upload
      */
     "uploadFromUrlDescription": string;
     /**
-     * アップロードをリクエストしました
+     * Upload requested
      */
     "uploadFromUrlRequested": string;
     /**
-     * アップロードが完了するまで時間がかかる場合があります。
+     * It may take some time until the upload is complete.
      */
     "uploadFromUrlMayTakeTime": string;
     /**
-     * みつける
+     * Explore
      */
     "explore": string;
     /**
-     * 既読
+     * Read
      */
     "messageRead": string;
     /**
-     * これより過去の履歴はありません
+     * There is no further history
      */
     "noMoreHistory": string;
     /**
-     * チャットを開始
+     * Start a new chat
      */
     "startMessaging": string;
     /**
-     * {n}人が読みました
+     * read by {n}
      */
     "nUsersRead": ParameterizedString<"n">;
     /**
-     * {0}に同意
+     * I agree to {0}
      */
     "agreeTo": ParameterizedString<"0">;
     /**
-     * 同意する
+     * Agree
      */
     "agree": string;
     /**
-     * 下記に同意する
+     * I agree to the below
      */
     "agreeBelow": string;
     /**
-     * 基本的な注意事項
+     * Important notes
      */
     "basicNotesBeforeCreateAccount": string;
     /**
-     * 利用規約
+     * Terms of Service
      */
     "termsOfService": string;
     /**
-     * 始める
+     * Begin
      */
     "start": string;
     /**
-     * ホーム
+     * Home
      */
     "home": string;
     /**
-     * リモートユーザーのため、情報が不完全です。
+     * As this user is from a remote instance, the shown information may be incomplete.
      */
     "remoteUserCaution": string;
     /**
-     * アクティビティ
+     * Activity
      */
     "activity": string;
     /**
-     * 画像
+     * Images
      */
     "images": string;
     /**
-     * 画像
+     * Image
      */
     "image": string;
     /**
-     * 誕生日
+     * Birthday
      */
     "birthday": string;
     /**
-     * {age}歳
+     * {age} years old
      */
     "yearsOld": ParameterizedString<"age">;
     /**
-     * 登録日
+     * Joined on
      */
     "registeredDate": string;
     /**
-     * 場所
+     * Location
      */
     "location": string;
     /**
-     * テーマ
+     * Themes
      */
     "theme": string;
     /**
-     * ライトモードで使うテーマ
+     * Theme to use in Light Mode
      */
     "themeForLightMode": string;
     /**
-     * ダークモードで使うテーマ
+     * Theme to use in Dark Mode
      */
     "themeForDarkMode": string;
     /**
-     * ライト
+     * Light
      */
     "light": string;
     /**
-     * ダーク
+     * Dark
      */
     "dark": string;
     /**
-     * 明るいテーマ
+     * Light themes
      */
     "lightThemes": string;
     /**
-     * 暗いテーマ
+     * Dark themes
      */
     "darkThemes": string;
     /**
-     * デバイスのダークモードと同期する
+     * Sync Dark Mode with your device settings
      */
     "syncDeviceDarkMode": string;
     /**
-     * ドライブ
+     * Drive
      */
     "drive": string;
     /**
-     * 検索ドライブ
+     * Search drive
      */
     "driveSearchbarPlaceholder": string;
     /**
-     * ファイル名
+     * Filename
      */
     "fileName": string;
     /**
-     * ファイルを選択
+     * Select a file
      */
     "selectFile": string;
     /**
-     * ファイルを選択
+     * Select files
      */
     "selectFiles": string;
     /**
-     * フォルダーを選択
+     * Select a folder
      */
     "selectFolder": string;
     /**
-     * フォルダーを選択
+     * Select folders
      */
     "selectFolders": string;
     /**
-     * ファイルが選択されていません
+     * No file selected
      */
     "fileNotSelected": string;
     /**
-     * ファイル名を変更
+     * Rename file
      */
     "renameFile": string;
     /**
-     * フォルダー名
+     * Folder name
      */
     "folderName": string;
     /**
-     * フォルダーを作成
+     * Create a folder
      */
     "createFolder": string;
     /**
-     * フォルダー名を変更
+     * Rename this folder
      */
     "renameFolder": string;
     /**
-     * フォルダーを削除
+     * Delete this folder
      */
     "deleteFolder": string;
     /**
-     * フォルダー
+     * Folder
      */
     "folder": string;
     /**
-     * ファイルを追加
+     * Add a file
      */
     "addFile": string;
     /**
-     * ドライブは空です
+     * Your Drive is empty
      */
     "emptyDrive": string;
     /**
-     * フォルダーは空です
+     * This folder is empty
      */
     "emptyFolder": string;
     /**
-     * 削除できません
+     * Unable to delete
      */
     "unableToDelete": string;
     /**
-     * 新しいファイル名を入力してください
+     * Enter a new filename
      */
     "inputNewFileName": string;
     /**
-     * 新しいキャプションを入力してください
+     * Enter new caption
      */
     "inputNewDescription": string;
     /**
-     * 新しいフォルダ名を入力してください
+     * Enter a new folder name
      */
     "inputNewFolderName": string;
     /**
-     * 移動先のフォルダーは、移動するフォルダーのサブフォルダーです。
+     * The destination folder is a subfolder of the folder you wish to move.
      */
     "circularReferenceFolder": string;
     /**
-     * このフォルダは空でないため、削除できません。
+     * Since this folder is not empty, it can not be deleted.
      */
     "hasChildFilesOrFolders": string;
     /**
-     * URLをコピー
+     * Copy URL
      */
     "copyUrl": string;
     /**
-     * 名前を変更
+     * Rename
      */
     "rename": string;
     /**
-     * アイコン
+     * Avatar
      */
     "avatar": string;
     /**
-     * バナー
+     * Banner
      */
     "banner": string;
     /**
-     * 背景
+     * Background
      */
     "background": string;
     /**
-     * センシティブなメディアの表示
+     * Display of sensitive media
      */
     "displayOfSensitiveMedia": string;
     /**
-     * サーバーとの接続が失われたとき
+     * When losing connection to the server
      */
     "whenServerDisconnected": string;
     /**
-     * サーバーから切断されました
+     * Connection to server has been lost
      */
     "disconnectedFromServer": string;
     /**
-     * リロード
+     * Refresh
      */
     "reload": string;
     /**
-     * なにもしない
+     * Ignore
      */
     "doNothing": string;
     /**
-     * リロードしますか？
+     * Would you like to refresh the timeline?
      */
     "reloadConfirm": string;
     /**
-     * ウォッチ
+     * Watch
      */
     "watch": string;
     /**
-     * ウォッチ解除
+     * Stop watching
      */
     "unwatch": string;
     /**
-     * 許可
+     * Accept
      */
     "accept": string;
     /**
-     * 拒否
+     * Reject
      */
     "reject": string;
     /**
-     * 通常
+     * Normal
      */
     "normal": string;
     /**
-     * サーバー名
+     * Instance name
      */
     "instanceName": string;
     /**
-     * サーバーの紹介
+     * Instance description
      */
     "instanceDescription": string;
     /**
-     * 管理者の名前
+     * Maintainer
      */
     "maintainerName": string;
     /**
-     * 管理者のメールアドレス
+     * Maintainer email
      */
     "maintainerEmail": string;
     /**
-     * 利用規約URL
+     * Terms of Service URL
      */
     "tosUrl": string;
     /**
-     * 今年
+     * Year
      */
     "thisYear": string;
     /**
-     * 今月
+     * Month
      */
     "thisMonth": string;
     /**
-     * 今日
+     * Today
      */
     "today": string;
     /**
-     * {day}日
+     * {day}
      */
     "dayX": ParameterizedString<"day">;
     /**
-     * {month}月
+     * {month}
      */
     "monthX": ParameterizedString<"month">;
     /**
-     * {year}年
+     * {year}
      */
     "yearX": ParameterizedString<"year">;
     /**
-     * ページ
+     * Pages
      */
     "pages": string;
     /**
-     * 連携
+     * Integration
      */
     "integration": string;
     /**
-     * 接続する
+     * Connect
      */
     "connectService": string;
     /**
-     * 切断する
+     * Disconnect
      */
     "disconnectService": string;
     /**
-     * ローカルタイムラインを有効にする
+     * Enable local timeline
      */
     "enableLocalTimeline": string;
     /**
-     * グローバルタイムラインを有効にする
+     * Enable global timeline
      */
     "enableGlobalTimeline": string;
     /**
-     * これらのタイムラインを無効化しても、利便性のため管理者およびモデレーターは引き続き利用することができます。
+     * Adminstrators and Moderators will always have access to all timelines, even if they are not enabled.
      */
     "disablingTimelinesInfo": string;
     /**
-     * 登録
+     * Register
      */
     "registration": string;
     /**
-     * 誰でも新規登録できるようにする
+     * Enable new user registration
      */
     "enableRegistration": string;
     /**
-     * 招待
+     * Invite
      */
     "invite": string;
     /**
-     * ローカルユーザーひとりあたりのドライブ容量
+     * Drive capacity per local user
      */
     "driveCapacityPerLocalAccount": string;
     /**
-     * リモートユーザーひとりあたりのドライブ容量
+     * Drive capacity per remote user
      */
     "driveCapacityPerRemoteAccount": string;
     /**
-     * メガバイト単位
+     * In megabytes
      */
     "inMb": string;
     /**
-     * バナー画像のURL
+     * Banner image URL
      */
     "bannerUrl": string;
     /**
-     * 背景画像のURL
+     * Background image URL
      */
     "backgroundImageUrl": string;
     /**
-     * 基本情報
+     * Basic info
      */
     "basicInfo": string;
     /**
-     * ピン留めユーザー
+     * Pinned users
      */
     "pinnedUsers": string;
     /**
-     * 「みつける」ページなどにピン留めしたいユーザーを改行で区切って記述します。
+     * List usernames separated by line breaks to be pinned in the "Explore" tab.
      */
     "pinnedUsersDescription": string;
     /**
-     * ピン留めページ
+     * Pinned Pages
      */
     "pinnedPages": string;
     /**
-     * サーバーのトップページにピン留めしたいページのパスを改行で区切って記述します。
+     * Enter the paths of the Pages you want to pin to the top page of this instance, separated by line breaks.
      */
     "pinnedPagesDescription": string;
     /**
-     * ピン留めするクリップのID
+     * ID of the clip to pin
      */
     "pinnedClipId": string;
     /**
-     * ピン留めされたノート
+     * Pinned notes
      */
     "pinnedNotes": string;
     /**
@@ -1677,15 +1677,15 @@ export interface Locale extends ILocale {
      */
     "hcaptcha": string;
     /**
-     * hCaptchaを有効にする
+     * Enable hCaptcha
      */
     "enableHcaptcha": string;
     /**
-     * サイトキー
+     * Site key
      */
     "hcaptchaSiteKey": string;
     /**
-     * シークレットキー
+     * Secret key
      */
     "hcaptchaSecretKey": string;
     /**
@@ -1693,19 +1693,19 @@ export interface Locale extends ILocale {
      */
     "mcaptcha": string;
     /**
-     * mCaptchaを有効にする
+     * Enable mCaptcha
      */
     "enableMcaptcha": string;
     /**
-     * サイトキー
+     * Site key
      */
     "mcaptchaSiteKey": string;
     /**
-     * シークレットキー
+     * Secret key
      */
     "mcaptchaSecretKey": string;
     /**
-     * mCaptchaのインスタンスのURL
+     * mCaptcha server URL
      */
     "mcaptchaInstanceUrl": string;
     /**
@@ -1713,15 +1713,15 @@ export interface Locale extends ILocale {
      */
     "recaptcha": string;
     /**
-     * reCAPTCHAを有効にする
+     * Enable reCAPTCHA
      */
     "enableRecaptcha": string;
     /**
-     * サイトキー
+     * Site key
      */
     "recaptchaSiteKey": string;
     /**
-     * シークレットキー
+     * Secret key
      */
     "recaptchaSecretKey": string;
     /**
@@ -1729,579 +1729,579 @@ export interface Locale extends ILocale {
      */
     "turnstile": string;
     /**
-     * Turnstileを有効にする
+     * Enable Turnstile
      */
     "enableTurnstile": string;
     /**
-     * サイトキー
+     * Site key
      */
     "turnstileSiteKey": string;
     /**
-     * シークレットキー
+     * Secret key
      */
     "turnstileSecretKey": string;
     /**
-     * 複数のCaptchaを使用すると干渉を起こす可能性があります。他のCaptchaを無効にしますか？キャンセルして複数のCaptchaを有効化したままにすることも可能です。
+     * Using multiple Captcha systems may cause interference between them. Would you like to disable the other Captcha systems currently active? If you would like them to stay enabled, press cancel.
      */
     "avoidMultiCaptchaConfirm": string;
     /**
-     * アンテナ
+     * Antennas
      */
     "antennas": string;
     /**
-     * アンテナの管理
+     * Manage Antennas
      */
     "manageAntennas": string;
     /**
-     * 名前
+     * Name
      */
     "name": string;
     /**
-     * 受信ソース
+     * Antenna source
      */
     "antennaSource": string;
     /**
-     * 受信キーワード
+     * Keywords to listen to
      */
     "antennaKeywords": string;
     /**
-     * 除外キーワード
+     * Keywords to exclude
      */
     "antennaExcludeKeywords": string;
     /**
-     * Botアカウントを除外
+     * Exclude bot accounts
      */
     "antennaExcludeBots": string;
     /**
-     * スペースで区切るとAND指定になり、改行で区切るとOR指定になります
+     * Separate with spaces for an AND condition or with line breaks for an OR condition.
      */
     "antennaKeywordsDescription": string;
     /**
-     * 新しいノートを通知する
+     * Notify about new notes
      */
     "notifyAntenna": string;
     /**
-     * ファイルが添付されたノートのみ
+     * Only notes with files
      */
     "withFileAntenna": string;
     /**
-     * ブラウザへのプッシュ通知を有効にする
+     * Enable Push-Notifications for your Browser
      */
     "enableServiceworker": string;
     /**
-     * ユーザー名を改行で区切って指定します
+     * List one username per line. Use "*@instance.com" to specify all users of an instance
      */
     "antennaUsersDescription": string;
     /**
-     * 大文字小文字を区別する
+     * Case sensitive
      */
     "caseSensitive": string;
     /**
-     * 返信を含む
+     * Include replies
      */
     "withReplies": string;
     /**
-     * 次のアカウントに接続されています
+     * Following account(s) are connected
      */
     "connectedTo": string;
     /**
-     * 投稿と返信
+     * Notes and replies
      */
     "notesAndReplies": string;
     /**
-     * ファイル付き
+     * Including files
      */
     "withFiles": string;
     /**
-     * サイレンス
+     * Silence
      */
     "silence": string;
     /**
-     * サイレンスしますか？
+     * Are you sure that you want to silence this user?
      */
     "silenceConfirm": string;
     /**
-     * サイレンス解除
+     * Undo silencing
      */
     "unsilence": string;
     /**
-     * サイレンス解除しますか？
+     * Are you sure that you want to undo the silencing of this user?
      */
     "unsilenceConfirm": string;
     /**
-     * 人気のユーザー
+     * Popular users
      */
     "popularUsers": string;
     /**
-     * 最近投稿したユーザー
+     * Recently active users
      */
     "recentlyUpdatedUsers": string;
     /**
-     * 最近登録したユーザー
+     * Newly joined users
      */
     "recentlyRegisteredUsers": string;
     /**
-     * 最近発見されたユーザー
+     * Newly discovered users
      */
     "recentlyDiscoveredUsers": string;
     /**
-     * {count}のユーザーがいます
+     * There are {count} users
      */
     "exploreUsersCount": ParameterizedString<"count">;
     /**
-     * Fediverseを探索
+     * Explore the Fediverse
      */
     "exploreFediverse": string;
     /**
-     * 人気のタグ
+     * Popular tags
      */
     "popularTags": string;
     /**
-     * リスト
+     * Lists
      */
     "userList": string;
     /**
-     * 情報
+     * About
      */
     "about": string;
     /**
-     * Sharkeyについて
+     * About Sharkey
      */
     "aboutMisskey": string;
     /**
-     * 管理者
+     * Administrator
      */
     "administrator": string;
     /**
-     * 確認コード
+     * Token
      */
     "token": string;
     /**
-     * 二要素認証
+     * Two-factor authentication
      */
     "2fa": string;
     /**
-     * 二要素認証のセットアップ
+     * Setup two-factor authentification
      */
     "setupOf2fa": string;
     /**
-     * 認証アプリ
+     * Authenticator App
      */
     "totp": string;
     /**
-     * 認証アプリを使ってワンタイムパスワードを入力
+     * Use an authenticator app to enter one-time passwords
      */
     "totpDescription": string;
     /**
-     * モデレーター
+     * Moderator
      */
     "moderator": string;
     /**
-     * モデレーション
+     * Moderation
      */
     "moderation": string;
     /**
-     * モデレーションノート
+     * Moderation note
      */
     "moderationNote": string;
     /**
-     * モデレーションノートを追加する
+     * Add moderation note
      */
     "addModerationNote": string;
     /**
-     * モデログ
+     * Moderation logs
      */
     "moderationLogs": string;
     /**
-     * {n}人が投稿
+     * Mentioned by {n} users
      */
     "nUsersMentioned": ParameterizedString<"n">;
     /**
-     * セキュリティキー・パスキー
+     * Security- and passkeys
      */
     "securityKeyAndPasskey": string;
     /**
-     * セキュリティキー
+     * Security key
      */
     "securityKey": string;
     /**
-     * 最後の使用
+     * Last used
      */
     "lastUsed": string;
     /**
-     * 最後の使用: {t}
+     * Last used: {t}
      */
     "lastUsedAt": ParameterizedString<"t">;
     /**
-     * 登録を解除
+     * Unregister
      */
     "unregister": string;
     /**
-     * パスワードレスログイン
+     * Password-less login
      */
     "passwordLessLogin": string;
     /**
-     * パスワードを使用せず、セキュリティキーやパスキーなどのみでログインします
+     * Allows password-less login using a security- or passkey only
      */
     "passwordLessLoginDescription": string;
     /**
-     * パスワードをリセット
+     * Reset password
      */
     "resetPassword": string;
     /**
-     * 新しいパスワードは「{password}」です
+     * The new password is "{password}"
      */
     "newPasswordIs": ParameterizedString<"password">;
     /**
-     * UIのアニメーションを減らす
+     * Reduce UI animations
      */
     "reduceUiAnimation": string;
     /**
-     * 共有
+     * Share
      */
     "share": string;
     /**
-     * 見つかりません
+     * Not found
      */
     "notFound": string;
     /**
-     * 指定されたURLに該当するページはありませんでした。
+     * No page corresponding to this URL could be found.
      */
     "notFoundDescription": string;
     /**
-     * 既定アップロード先
+     * Default folder for uploads
      */
     "uploadFolder": string;
     /**
-     * すべての通知を既読にする
+     * Mark all notifications as read
      */
     "markAsReadAllNotifications": string;
     /**
-     * すべての投稿を既読にする
+     * Mark all notes as read
      */
     "markAsReadAllUnreadNotes": string;
     /**
-     * すべてのチャットを既読にする
+     * Mark all messages as read
      */
     "markAsReadAllTalkMessages": string;
     /**
-     * ヘルプ
+     * Help
      */
     "help": string;
     /**
-     * ここにメッセージを入力
+     * Enter message here
      */
     "inputMessageHere": string;
     /**
-     * 閉じる
+     * Close
      */
     "close": string;
     /**
-     * 招待
+     * Invites
      */
     "invites": string;
     /**
-     * メンバー
+     * Members
      */
     "members": string;
     /**
-     * 譲渡
+     * Transfer
      */
     "transfer": string;
     /**
-     * タイトル
+     * Title
      */
     "title": string;
     /**
-     * テキスト
+     * Text
      */
     "text": string;
     /**
-     * 有効にする
+     * Enable
      */
     "enable": string;
     /**
-     * 次
+     * Next
      */
     "next": string;
     /**
-     * 再入力
+     * Enter again
      */
     "retype": string;
     /**
-     * {user}のノート
+     * Note by {user}
      */
     "noteOf": ParameterizedString<"user">;
     /**
-     * すべての返信の内容を表示する
+     * Show content for all replies
      */
     "expandAllCws": string;
     /**
-     * すべての返信の内容を隠す
+     * Hide content for all replies
      */
     "collapseAllCws": string;
     /**
-     * 引用付き
+     * Quote
      */
     "quoteAttached": string;
     /**
-     * 引用として添付しますか？
+     * Append as quote?
      */
     "quoteQuestion": string;
     /**
-     * クリップボードのテキストが長いです。テキストファイルとして添付しますか？
+     * The text in clipboard is long. Would you like to attach it as a text file?
      */
     "attachAsFileQuestion": string;
     /**
-     * まだチャットはありません
+     * No messages yet
      */
     "noMessagesYet": string;
     /**
-     * 新しいメッセージがあります
+     * There are new messages
      */
     "newMessageExists": string;
     /**
-     * メッセージに添付できるファイルはひとつです
+     * You can only attach one file to a message
      */
     "onlyOneFileCanBeAttached": string;
     /**
-     * 続行する前に、登録またはログインが必要です
+     * Please register or sign in before continuing
      */
     "signinRequired": string;
     /**
-     * 続行するには、お使いのサーバーに移動するか、このサーバーに登録・ログインする必要があります
+     * To continue, you need to go to your instance to perform this action or sign up / log in to the instance you are trying to interact with.
      */
     "signinOrContinueOnRemote": string;
     /**
-     * 招待
+     * Invites
      */
     "invitations": string;
     /**
-     * 招待コード
+     * Invitation code
      */
     "invitationCode": string;
     /**
-     * 確認しています
+     * Checking...
      */
     "checking": string;
     /**
-     * 利用できます
+     * Available
      */
     "available": string;
     /**
-     * 利用できません
+     * Not available
      */
     "unavailable": string;
     /**
-     * a~z、A~Z、0~9、_が使えます
+     * You can use upper- and lowercase letters, numbers, and underscores.
      */
     "usernameInvalidFormat": string;
     /**
-     * 短すぎます
+     * Too short
      */
     "tooShort": string;
     /**
-     * 長すぎます
+     * Too long
      */
     "tooLong": string;
     /**
-     * 弱いパスワード
+     * Weak password
      */
     "weakPassword": string;
     /**
-     * 普通のパスワード
+     * Average password
      */
     "normalPassword": string;
     /**
-     * 強いパスワード
+     * Strong password
      */
     "strongPassword": string;
     /**
-     * 一致しました
+     * Matches
      */
     "passwordMatched": string;
     /**
-     * 一致していません
+     * Does not match
      */
     "passwordNotMatched": string;
     /**
-     * {x}でログイン
+     * Sign in with {x}
      */
     "signinWith": ParameterizedString<"x">;
     /**
-     * ログインできませんでした。ユーザー名とパスワードを確認してください。
+     * Unable to sign in. The entered username or password is incorrect.
      */
     "signinFailed": string;
     /**
-     * もしくは
+     * Or
      */
     "or": string;
     /**
-     * 言語
+     * Language
      */
     "language": string;
     /**
-     * UIの表示言語
+     * User interface language
      */
     "uiLanguage": string;
     /**
-     * {x}について
+     * About {x}
      */
     "aboutX": ParameterizedString<"x">;
     /**
-     * 絵文字のスタイル
+     * Emoji style
      */
     "emojiStyle": string;
     /**
-     * ネイティブ
+     * Native
      */
     "native": string;
     /**
-     * メニューをドロワーで表示しない
+     * Don't use drawer-style menus
      */
     "disableDrawer": string;
     /**
-     * ノートのアクションをホバー時のみ表示する
+     * Only show note actions on hover
      */
     "showNoteActionsOnlyHover": string;
     /**
-     * ノートのリアクション数を表示する
+     * Show the number of reactions in notes
      */
     "showReactionsCount": string;
     /**
-     * 履歴はありません
+     * No history available
      */
     "noHistory": string;
     /**
-     * ログイン履歴
+     * Login history
      */
     "signinHistory": string;
     /**
-     * 高度なMFMを有効にする
+     * Enable advanced MFM
      */
     "enableAdvancedMfm": string;
     /**
-     * 動きのあるMFMを有効にする
+     * Enable animated MFM
      */
     "enableAnimatedMfm": string;
     /**
-     * やっています
+     * Processing...
      */
     "doing": string;
     /**
-     * カテゴリ
+     * Category
      */
     "category": string;
     /**
-     * タグ
+     * Aliases
      */
     "tags": string;
     /**
-     * このドキュメントのソース
+     * Source of this document
      */
     "docSource": string;
     /**
-     * アカウントを作成
+     * Create account
      */
     "createAccount": string;
     /**
-     * 既存のアカウント
+     * Existing account
      */
     "existingAccount": string;
     /**
-     * 再生成
+     * Regenerate
      */
     "regenerate": string;
     /**
-     * フォントサイズ
+     * Font size
      */
     "fontSize": string;
     /**
-     * コーナーの丸み
+     * Corner roundness
      */
     "cornerRadius": string;
     /**
-     * 画像が1枚のみのメディアリストの高さ
+     * Height of media lists with one image only
      */
     "mediaListWithOneImageAppearance": string;
     /**
-     * {x}を上限に
+     * Limit to {x}
      */
     "limitTo": ParameterizedString<"x">;
     /**
-     * フォロー申請はありません
+     * You don't have any pending follow requests
      */
     "noFollowRequests": string;
     /**
-     * 画像を新しいタブで開く
+     * Open images in new tab
      */
     "openImageInNewTab": string;
     /**
-     * 代替テキストを入れ忘れたときに警告する
+     * Warn you when you forget to put alt text
      */
     "warnForMissingAltText": string;
     /**
-     * ダッシュボード
+     * Dashboard
      */
     "dashboard": string;
     /**
-     * ローカル
+     * Local
      */
     "local": string;
     /**
-     * リモート
+     * Remote
      */
     "remote": string;
     /**
-     * 合計
+     * Total
      */
     "total": string;
     /**
-     * 前週比
+     * Changes to last week
      */
     "weekOverWeekChanges": string;
     /**
-     * 前日比
+     * Changes to yesterday
      */
     "dayOverDayChanges": string;
     /**
-     * アピアランス
+     * Appearance
      */
     "appearance": string;
     /**
-     * クライアント設定
+     * Client Settings
      */
     "clientSettings": string;
     /**
-     * アカウント設定
+     * Account Settings
      */
     "accountSettings": string;
     /**
-     * プロモーション
+     * Promoted
      */
     "promotion": string;
     /**
-     * プロモート
+     * Promote
      */
     "promote": string;
     /**
-     * 日数
+     * Number of days
      */
     "numberOfDays": string;
     /**
-     * このノートを非表示
+     * Hide this note
      */
     "hideThisNote": string;
     /**
-     * タイムラインにおすすめのノートを表示する
+     * Show featured notes in timelines
      */
     "showFeaturedNotesInTimeline": string;
     /**
-     * オブジェクトストレージ
+     * Object Storage
      */
     "objectStorage": string;
     /**
-     * オブジェクトストレージを使用
+     * Use object storage
      */
     "useObjectStorage": string;
     /**
@@ -2309,7 +2309,8 @@ export interface Locale extends ILocale {
      */
     "objectStorageBaseUrl": string;
     /**
-     * 参照に使用するURL。CDNやProxyを使用している場合はそのURL、S3: 'https://<bucket>.s3.amazonaws.com'、GCS等: 'https://storage.googleapis.com/<bucket>'。
+     * The URL used as reference. Specify the URL of your CDN or Proxy if you are using either.
+     * For S3 use 'https://<bucket>.s3.amazonaws.com' and for GCS or equivalent services use 'https://storage.googleapis.com/<bucket>', etc.
      */
     "objectStorageBaseUrlDesc": string;
     /**
@@ -2317,7 +2318,7 @@ export interface Locale extends ILocale {
      */
     "objectStorageBucket": string;
     /**
-     * 使用サービスのbucket名を指定してください。
+     * Please specify the bucket name used at your provider.
      */
     "objectStorageBucketDesc": string;
     /**
@@ -2325,7 +2326,7 @@ export interface Locale extends ILocale {
      */
     "objectStoragePrefix": string;
     /**
-     * このprefixのディレクトリ下に格納されます。
+     * Files will be stored under directories with this prefix.
      */
     "objectStoragePrefixDesc": string;
     /**
@@ -2333,7 +2334,7 @@ export interface Locale extends ILocale {
      */
     "objectStorageEndpoint": string;
     /**
-     * S3の場合は空、それ以外の場合は各サービスのendpointを指定してください。'<host>'または'<host>:<port>'のように指定します。
+     * Leave this empty if you are using AWS S3, otherwise specify the endpoint as '<host>' or '<host>:<port>', depending on the service you are using.
      */
     "objectStorageEndpointDesc": string;
     /**
@@ -2341,235 +2342,235 @@ export interface Locale extends ILocale {
      */
     "objectStorageRegion": string;
     /**
-     * 'xx-east-1'のようなregionを指定してください。使用サービスにregionの概念がない場合は'us-east-1'にしてください。AWS設定ファイルまたは環境変数を参照する場合は空にしてください。
+     * Specify a region like 'xx-east-1'. If your service does not distinguish between regions, enter 'us-east-1'. Leave empty if using AWS configuration files or environment variables.
      */
     "objectStorageRegionDesc": string;
     /**
-     * SSLを使用する
+     * Use SSL
      */
     "objectStorageUseSSL": string;
     /**
-     * API接続にhttpsを使用しない場合はオフにしてください
+     * Turn this off if you are not going to use HTTPS for API connections
      */
     "objectStorageUseSSLDesc": string;
     /**
-     * Proxyを利用する
+     * Connect over Proxy
      */
     "objectStorageUseProxy": string;
     /**
-     * API接続にproxyを利用しない場合はオフにしてください
+     * Turn this off if you are not going to use a Proxy for API connections
      */
     "objectStorageUseProxyDesc": string;
     /**
-     * アップロード時に'public-read'を設定する
+     * Set "public-read" on upload
      */
     "objectStorageSetPublicRead": string;
     /**
-     * s3ForcePathStyleを有効にすると、バケット名をURLのホスト名ではなくパスの一部として指定することを強制します。セルフホストされたMinioなどの使用時に有効にする必要がある場合があります。
+     * If s3ForcePathStyle is enabled, the bucket name has to included in the path of the URL as opposed to the hostname of the URL. You may need to enable this setting when using services such as a self-hosted Minio instance.
      */
     "s3ForcePathStyleDesc": string;
     /**
-     * DeepLX-JS を使用する (認証キー不要)
+     * Use DeepLX-JS (No Auth Key)
      */
     "deeplFreeMode": string;
     /**
-     * DeepLX-JSの設定方法については、ドキュメントを参照してください。
+     * Need Help? Check our documentation to know how to setup DeepLX-JS.
      */
     "deeplFreeModeDescription": string;
     /**
-     * サーバーログ
+     * Server logs
      */
     "serverLogs": string;
     /**
-     * 全て削除
+     * Delete all
      */
     "deleteAll": string;
     /**
-     * タイムライン上部に投稿フォームを表示する
+     * Display the posting form at the top of the timeline
      */
     "showFixedPostForm": string;
     /**
-     * タイムライン上部に投稿フォームを表示する(チャンネル)
+     * Display the posting form at the top of the timeline (Channels)
      */
     "showFixedPostFormInChannel": string;
     /**
-     * フォローする際、デフォルトで返信をTLに含むようにする
+     * Include replies by newly followed users in the timeline by default
      */
     "withRepliesByDefaultForNewlyFollowed": string;
     /**
-     * 新しいノートがあります
+     * There are new notes
      */
     "newNoteRecived": string;
     /**
-     * サウンド
+     * Sounds
      */
     "sounds": string;
     /**
-     * サウンド
+     * Sounds
      */
     "sound": string;
     /**
-     * 聴く
+     * Listen
      */
     "listen": string;
     /**
-     * なし
+     * None
      */
     "none": string;
     /**
-     * ページで表示
+     * Show in page
      */
     "showInPage": string;
     /**
-     * ポップアウト
+     * Pop-out
      */
     "popout": string;
     /**
-     * 音量
+     * Volume
      */
     "volume": string;
     /**
-     * マスター音量
+     * Master volume
      */
     "masterVolume": string;
     /**
-     * サウンドを出力しない
+     * Disable sound
      */
     "notUseSound": string;
     /**
-     * Sharkeyがアクティブな時のみサウンドを出力する
+     * Output sounds only if Sharkey is active.
      */
     "useSoundOnlyWhenActive": string;
     /**
-     * 詳細
+     * Details
      */
     "details": string;
     /**
-     * 絵文字を選択
+     * Select an emoji
      */
     "chooseEmoji": string;
     /**
-     * 操作を完了できません
+     * The operation could not be completed
      */
     "unableToProcess": string;
     /**
-     * 最近使用
+     * Recently used
      */
     "recentUsed": string;
     /**
-     * インストール
+     * Install
      */
     "install": string;
     /**
-     * アンインストール
+     * Uninstall
      */
     "uninstall": string;
     /**
-     * インストールされたアプリ
+     * Authorized Applications
      */
     "installedApps": string;
     /**
-     * ありません
+     * There's nothing to see here
      */
     "nothing": string;
     /**
-     * インストール日時
+     * Authorized at
      */
     "installedDate": string;
     /**
-     * 最終使用日時
+     * Last used at
      */
     "lastUsedDate": string;
     /**
-     * 状態
+     * State
      */
     "state": string;
     /**
-     * ソート
+     * Sorting order
      */
     "sort": string;
     /**
-     * 昇順
+     * Ascending
      */
     "ascendingOrder": string;
     /**
-     * 降順
+     * Descending
      */
     "descendingOrder": string;
     /**
-     * スクラッチパッド
+     * Scratchpad
      */
     "scratchpad": string;
     /**
-     * スクラッチパッドは、AiScriptの実験環境を提供します。Sharkeyと対話するコードの記述、実行、結果の確認ができます。
+     * The Scratchpad provides an environment for AiScript experiments. You can write, execute, and check the results of it interacting with Sharkey in it.
      */
     "scratchpadDescription": string;
     /**
-     * 出力
+     * Output
      */
     "output": string;
     /**
-     * スクリプト
+     * Script
      */
     "script": string;
     /**
-     * Pagesのスクリプトを無効にする
+     * Disable AiScript on Pages
      */
     "disablePagesScript": string;
     /**
-     * リモートユーザー情報の更新
+     * Update remote user information
      */
     "updateRemoteUser": string;
     /**
-     * アイコンを解除
+     * Unset avatar
      */
     "unsetUserAvatar": string;
     /**
-     * アイコンを解除しますか？
+     * Are you sure you want to unset the avatar?
      */
     "unsetUserAvatarConfirm": string;
     /**
-     * バナーを解除
+     * Unset banner
      */
     "unsetUserBanner": string;
     /**
-     * バナーを解除しますか？
+     * Are you sure you want to unset the banner?
      */
     "unsetUserBannerConfirm": string;
     /**
-     * すべてのファイルを削除
+     * Delete all files
      */
     "deleteAllFiles": string;
     /**
-     * すべてのファイルを削除しますか？
+     * Are you sure that you want to delete all files?
      */
     "deleteAllFilesConfirm": string;
     /**
-     * キューに入れられたすべてのファイルの削除
+     * Deletion of all files queued
      */
     "deleteAllFilesQueued": string;
     /**
-     * フォローを全解除
+     * Unfollow all followed users
      */
     "removeAllFollowing": string;
     /**
-     * {host}からのフォローをすべて解除します。そのサーバーがもう存在しなくなった場合などに実行してください。
+     * Executing this unfollows all accounts from {host}. Please run this if the instance e.g. no longer exists.
      */
     "removeAllFollowingDescription": ParameterizedString<"host">;
     /**
-     * このユーザーは凍結されています。
+     * This user has been suspended.
      */
     "userSuspended": string;
     /**
-     * このユーザーはサイレンスされています。
+     * This user is being silenced.
      */
     "userSilenced": string;
     /**
-     * アカウントが凍結されています
+     * This account is suspended
      */
     "yourAccountSuspendedTitle": string;
     /**
-     * このアカウントは、サーバーの利用規約に違反したなどの理由により、凍結されています。詳細については管理者までお問い合わせください。新しいアカウントを作らないでください。
+     * This account has been suspended due to breaking the server's terms of services or similar. Contact the administrator if you would like to know a more detailed reason. Please do not create a new account.
      */
     "yourAccountSuspendedDescription": string;
     /**
@@ -2581,279 +2582,279 @@ export interface Locale extends ILocale {
      */
     "systemAccountDescription": string;
     /**
-     * トークンが無効です
+     * Invalid token
      */
     "tokenRevoked": string;
     /**
-     * ログイントークンが失効しています。ログインし直してください。
+     * This token has expired. Please log in again.
      */
     "tokenRevokedDescription": string;
     /**
-     * アカウントは削除されています
+     * Account deleted
      */
     "accountDeleted": string;
     /**
-     * このアカウントは削除されています。
+     * This account has been deleted.
      */
     "accountDeletedDescription": string;
     /**
-     * メニュー
+     * Menu
      */
     "menu": string;
     /**
-     * 分割線
+     * Divider
      */
     "divider": string;
     /**
-     * 項目を追加
+     * Add Item
      */
     "addItem": string;
     /**
-     * 並び替え
+     * Rearrange
      */
     "rearrange": string;
     /**
-     * リレー
+     * Relays
      */
     "relays": string;
     /**
-     * リレーの追加
+     * Add Relay
      */
     "addRelay": string;
     /**
-     * inboxのURL
+     * Inbox URL
      */
     "inboxUrl": string;
     /**
-     * 追加済みのリレー
+     * Added Relays
      */
     "addedRelays": string;
     /**
-     * プッシュ通知を行うには有効にする必要があります。
+     * Must be enabled for push notifications.
      */
     "serviceworkerInfo": string;
     /**
-     * 削除された投稿
+     * Deleted note
      */
     "deletedNote": string;
     /**
-     * 非公開の投稿
+     * Invisible note
      */
     "invisibleNote": string;
     /**
-     * 自動でもっと見る
+     * Automatically load more
      */
     "enableInfiniteScroll": string;
     /**
-     * 公開範囲
+     * Visibility
      */
     "visibility": string;
     /**
-     * アンケート
+     * Poll
      */
     "poll": string;
     /**
-     * 内容を隠す
+     * Hide content
      */
     "useCw": string;
     /**
-     * プレイヤーを開く
+     * Open video player
      */
     "enablePlayer": string;
     /**
-     * プレイヤーを閉じる
+     * Close video player
      */
     "disablePlayer": string;
     /**
-     * ポストを展開する
+     * Expand post
      */
     "expandTweet": string;
     /**
-     * テーマエディター
+     * Theme editor
      */
     "themeEditor": string;
     /**
-     * 説明
+     * Description
      */
     "description": string;
     /**
-     * キャプションを付ける
+     * Add caption
      */
     "describeFile": string;
     /**
-     * キャプションを入力
+     * Enter caption
      */
     "enterFileDescription": string;
     /**
-     * 作者
+     * Author
      */
     "author": string;
     /**
-     * 未保存の変更があります。破棄しますか？
+     * There are unsaved changes. Do you want to discard them?
      */
     "leaveConfirm": string;
     /**
-     * 管理
+     * Management
      */
     "manage": string;
     /**
-     * プラグイン
+     * Plugins
      */
     "plugins": string;
     /**
-     * 設定のバックアップ
+     * Preference backups
      */
     "preferencesBackups": string;
     /**
-     * デッキ
+     * Deck
      */
     "deck": string;
     /**
-     * デッキ解除
+     * Leave Deck
      */
     "undeck": string;
     /**
-     * モーダルにぼかし効果を使用
+     * Use blur effect for modals
      */
     "useBlurEffectForModal": string;
     /**
-     * フル機能リアクションピッカーを使用
+     * Use full-size reaction picker
      */
     "useFullReactionPicker": string;
     /**
-     * 幅
+     * Width
      */
     "width": string;
     /**
-     * 高さ
+     * Height
      */
     "height": string;
     /**
-     * 大
+     * Big
      */
     "large": string;
     /**
-     * 中
+     * Medium
      */
     "medium": string;
     /**
-     * 小
+     * Small
      */
     "small": string;
     /**
-     * アクセストークンの発行
+     * Generate access token
      */
     "generateAccessToken": string;
     /**
-     * 権限
+     * Permissions
      */
     "permission": string;
     /**
-     * 管理者権限
+     * Admin Permissions
      */
     "adminPermission": string;
     /**
-     * 全て有効にする
+     * Enable all
      */
     "enableAll": string;
     /**
-     * 全て無効にする
+     * Disable all
      */
     "disableAll": string;
     /**
-     * アカウントへのアクセス許可
+     * Grant access to account
      */
     "tokenRequested": string;
     /**
-     * このプラグインはここで設定した権限を行使できるようになります。
+     * This plugin will be able to use the permissions set here.
      */
     "pluginTokenRequestedDescription": string;
     /**
-     * 通知の種類
+     * Notification type
      */
     "notificationType": string;
     /**
-     * 編集
+     * Edit
      */
     "edit": string;
     /**
-     * メールサーバー
+     * Email server
      */
     "emailServer": string;
     /**
-     * メール配信機能を有効化する
+     * Enable email distribution
      */
     "enableEmail": string;
     /**
-     * メールアドレスの確認やパスワードリセットの際に使います
+     * Used to confirm your email during sign-up or if you forget your password
      */
     "emailConfigInfo": string;
     /**
-     * メール
+     * Email
      */
     "email": string;
     /**
-     * メールアドレス
+     * Email address
      */
     "emailAddress": string;
     /**
-     * SMTP サーバーの設定
+     * SMTP Server Configuration
      */
     "smtpConfig": string;
     /**
-     * ホスト
+     * Host
      */
     "smtpHost": string;
     /**
-     * ポート
+     * Port
      */
     "smtpPort": string;
     /**
-     * ユーザー名
+     * Username
      */
     "smtpUser": string;
     /**
-     * パスワード
+     * Password
      */
     "smtpPass": string;
     /**
-     * ユーザー名とパスワードを空欄にすることで、SMTP認証を無効化出来ます
+     * Leave username and password empty to disable SMTP authentication
      */
     "emptyToDisableSmtpAuth": string;
     /**
-     * SMTP 接続に暗黙的なSSL/TLSを使用する
+     * Use implicit SSL/TLS for SMTP connections
      */
     "smtpSecure": string;
     /**
-     * STARTTLS使用時はオフにします。
+     * Turn this off when using STARTTLS
      */
     "smtpSecureInfo": string;
     /**
-     * 配信テスト
+     * Test email delivery
      */
     "testEmail": string;
     /**
-     * ワードミュート
+     * Word mute
      */
     "wordMute": string;
     /**
-     * ハードワードミュート
+     * Hard word mute
      */
     "hardWordMute": string;
     /**
-     * 正規表現エラー
+     * Regular Expression error
      */
     "regexpError": string;
     /**
-     * {tab}ワードミュートの{line}行目の正規表現にエラーが発生しました:
+     * An error occurred in the regular expression on line {line} of your {tab} word mutes:
      */
-    "regexpErrorDescription": ParameterizedString<"tab" | "line">;
+    "regexpErrorDescription": ParameterizedString<"line" | "tab">;
     /**
-     * サーバーミュート
+     * Instance Mutes
      */
     "instanceMute": string;
     /**
-     * {name}が何かを言いました
+     * {name} said something
      */
     "userSaysSomething": ParameterizedString<"name">;
     /**
@@ -2861,3153 +2862,3223 @@ export interface Locale extends ILocale {
      */
     "postFiltered": string;
     /**
-     * アクティブにする
+     * Activate
      */
     "makeActive": string;
     /**
-     * 表示
+     * Display
      */
     "display": string;
     /**
-     * コピー
+     * Copy
      */
     "copy": string;
     /**
-     * メトリクス
+     * Metrics
      */
     "metrics": string;
     /**
-     * 概要
+     * Overview
      */
     "overview": string;
     /**
-     * ログ
+     * Logs
      */
     "logs": string;
     /**
-     * 遅延
+     * Delayed
      */
     "delayed": string;
     /**
-     * データベース
+     * Database
      */
     "database": string;
     /**
-     * チャンネル
+     * Channels
      */
     "channel": string;
     /**
-     * 作成
+     * Create
      */
     "create": string;
     /**
-     * 通知設定
+     * Notification settings
      */
     "notificationSetting": string;
     /**
-     * 表示する通知の種別を選択してください。
+     * Select the types of notification to display.
      */
     "notificationSettingDesc": string;
     /**
-     * 未読の通知があるときにタブのアイコンを目立たせる
+     * Enable favicon notification dot
      */
     "enableFaviconNotificationDot": string;
     /**
-     * タブアイコン強調機能の動作確認
+     * Check if the notification dot works on your instance
      */
     "verifyNotificationDotWorkingButton": string;
     /**
-     * このサーバーは現時点ではタブアイコン強調機能をサポートしていません。
+     * Unfortunately, this instance does not support the notification dot feature at this time.
      */
     "notificationDotNotWorking": string;
     /**
-     * タブアイコン強調機能は、このサーバーで正しく機能しています。
+     * The notification dot is functioning properly on this instance.
      */
     "notificationDotWorking": string;
     /**
-     * タブアイコン強調機能が機能しない場合は、管理者にドキュメントを確認するように依頼してください {link}
+     * If the notification dot doesn't work, ask an admin to check our documentation {link}
      */
     "notificationDotNotWorkingAdvice": ParameterizedString<"link">;
     /**
-     * グローバル設定を使う
+     * Use global settings
      */
     "useGlobalSetting": string;
     /**
-     * オンにすると、アカウントの通知設定が使用されます。オフにすると、個別に設定できるようになります。
+     * If turned on, your account's notification settings will be used. If turned off, individual configurations can be made.
      */
     "useGlobalSettingDesc": string;
     /**
-     * その他
+     * Other
      */
     "other": string;
     /**
-     * ログイントークンを再生成
+     * Regenerate login token
      */
     "regenerateLoginToken": string;
     /**
-     * ログインに使用される内部トークンを再生成します。通常この操作を行う必要はありません。再生成すると、全てのデバイスでログアウトされます。
+     * Regenerates the token used internally during login. Normally this action is not necessary. If regenerated, all devices will be logged out.
      */
     "regenerateLoginTokenDescription": string;
     /**
-     * カスタム絵文字を検索する時のキーワードになります。
+     * This is the keyword when searching for custom emojis.
      */
     "theKeywordWhenSearchingForCustomEmoji": string;
     /**
-     * スペースで区切って複数設定できます。
+     * Separate multiple entries with spaces.
      */
     "setMultipleBySeparatingWithSpace": string;
     /**
-     * ファイルIDまたはURL
+     * File ID or URL
      */
     "fileIdOrUrl": string;
     /**
-     * 動作
+     * Behavior
      */
     "behavior": string;
     /**
-     * サンプル
+     * Sample
      */
     "sample": string;
     /**
-     * 通報
+     * Reports
      */
     "abuseReports": string;
     /**
-     * 通報
+     * Report
      */
     "reportAbuse": string;
     /**
-     * ブーストを通報
+     * Report boost
      */
     "reportAbuseRenote": string;
     /**
-     * {name}を通報する
+     * Report {name}
      */
     "reportAbuseOf": ParameterizedString<"name">;
     /**
-     * 通報理由の詳細を記入してください。対象のノートやページなどがある場合はそのURLも記入してください。
+     * Please fill in details regarding this report. If it is about a specific note, please include its URL.
      */
     "fillAbuseReportDescription": string;
     /**
-     * 内容が送信されました。ご報告ありがとうございました。
+     * Your report has been sent. Thank you very much.
      */
     "abuseReported": string;
     /**
-     * 通報者
+     * Reporter
      */
     "reporter": string;
     /**
-     * 通報先
+     * Reportee Origin
      */
     "reporteeOrigin": string;
     /**
-     * 通報元
+     * Reporter Origin
      */
     "reporterOrigin": string;
     /**
-     * リモートサーバーに通報を転送する
+     * Forward report to remote instance
      */
     "forwardReport": string;
     /**
-     * リモートサーバーからはあなたの情報は見れず、匿名のシステムアカウントとして表示されます。
+     * Instead of your account, an anonymous system account will be displayed as reporter at the remote instance.
      */
     "forwardReportIsAnonymous": string;
     /**
-     * 送信
+     * Send
      */
     "send": string;
     /**
-     * 対応済みにする
+     * Mark report as resolved
      */
     "abuseMarkAsResolved": string;
     /**
-     * 新しいタブで開く
+     * Open in new tab
      */
     "openInNewTab": string;
     /**
-     * サイドビューで開く
+     * Open in side view
      */
     "openInSideView": string;
     /**
-     * デフォルトのナビゲーション
+     * Default navigation behavior
      */
     "defaultNavigationBehaviour": string;
     /**
-     * これらの設定を編集するとアカウントが破損する可能性があります。
+     * Editing these settings may damage your account.
      */
     "editTheseSettingsMayBreakAccount": string;
     /**
-     * ノートのサーバー情報
+     * Instance information of notes
      */
     "instanceTicker": string;
     /**
-     * {x}を待っています
+     * Waiting for {x}
      */
     "waitingFor": ParameterizedString<"x">;
     /**
-     * ランダム
+     * Random
      */
     "random": string;
     /**
-     * システム
+     * System
      */
     "system": string;
     /**
-     * UI切り替え
+     * Switch UI
      */
     "switchUi": string;
     /**
-     * デスクトップ
+     * Desktop
      */
     "desktop": string;
     /**
-     * クリップ
+     * Clip
      */
     "clip": string;
     /**
-     * 新規作成
+     * Create new
      */
     "createNew": string;
     /**
-     * 任意
+     * Optional
      */
     "optional": string;
     /**
-     * 新しいクリップを作成
+     * Create new clip
      */
     "createNewClip": string;
     /**
-     * クリップ解除
+     * Unclip
      */
     "unclip": string;
     /**
-     * このノートはすでにクリップ「{name}」に含まれています。ノートをこのクリップから除外しますか？
+     * This note is already part of the "{name}" clip. Do you want to remove it from this clip instead?
      */
     "confirmToUnclipAlreadyClippedNote": ParameterizedString<"name">;
     /**
-     * パブリック
+     * Public
      */
     "public": string;
     /**
-     * 非公開
+     * Private
      */
     "private": string;
     /**
-     * Sharkeyは有志によって様々な言語に翻訳されています。{link}で翻訳に協力できます。
+     * Sharkey is being translated into various languages by volunteers. You can help at {link}.
      */
     "i18nInfo": ParameterizedString<"link">;
     /**
-     * アクセストークンの管理
+     * Manage access tokens
      */
     "manageAccessTokens": string;
     /**
-     * アカウント情報
+     * Account Info
      */
     "accountInfo": string;
     /**
-     * ノートの数
+     * Number of notes
      */
     "notesCount": string;
     /**
-     * 返信した数
+     * Number of replies sent
      */
     "repliesCount": string;
     /**
-     * ブーストした数
+     * Number of boosts sent
      */
     "renotesCount": string;
     /**
-     * 返信された数
+     * Number of replies received
      */
     "repliedCount": string;
     /**
-     * ブーストされた数
+     * Number of boosts received
      */
     "renotedCount": string;
     /**
-     * フォロー数
+     * Number of followed accounts
      */
     "followingCount": string;
     /**
-     * フォロワー数
+     * Number of followers
      */
     "followersCount": string;
     /**
-     * リアクションした数
+     * Number of sent reactions
      */
     "sentReactionsCount": string;
     /**
-     * リアクションされた数
+     * Number of received reactions
      */
     "receivedReactionsCount": string;
     /**
-     * アンケートに投票した数
+     * Number of sent poll votes
      */
     "pollVotesCount": string;
     /**
-     * アンケートに投票された数
+     * Number of received poll votes
      */
     "pollVotedCount": string;
     /**
-     * はい
+     * Yes
      */
     "yes": string;
     /**
-     * いいえ
+     * No
      */
     "no": string;
     /**
-     * ドライブのファイル数
+     * Number of Drive files
      */
     "driveFilesCount": string;
     /**
-     * ドライブ使用量
+     * Drive space usage
      */
     "driveUsage": string;
     /**
-     * クローラーによるインデックスを拒否
+     * Reject crawler indexing
      */
     "noCrawle": string;
     /**
-     * 外部の検索エンジンにあなたのユーザーページ、ノート、Pagesなどのコンテンツを登録(インデックス)しないよう要求します。
+     * Ask search engines to not index your profile page, notes, Pages, etc.
      */
     "noCrawleDescription": string;
     /**
-     * フォローを承認制にしても、ノートの公開範囲を「フォロワー」にしない限り、誰でもあなたのノートを見ることができます。
+     * Unless you set your note visiblity to "Followers only", your notes will be visible to anyone, even if you require followers to be manually approved.
      */
     "lockedAccountInfo": string;
     /**
-     * デフォルトでメディアをセンシティブ設定にする
+     * Mark as sensitive by default
      */
     "alwaysMarkSensitive": string;
     /**
-     * 添付画像のサムネイルをオリジナル画質にする
+     * Load original images instead of showing thumbnails
      */
     "loadRawImages": string;
     /**
-     * 返信にサーバー情報を表示する
+     * Show instance ticker on replies
      */
     "showTickerOnReplies": string;
     /**
-     * 猫の話し方を無効にする
+     * Disable cat speak
      */
     "disableCatSpeak": string;
     /**
-     * 検索MFMの検索エンジン
+     * Search Engine For Search MFM
      */
     "searchEngine": string;
     /**
-     * カスタム
+     * Other
      */
     "searchEngineOther": string;
     /**
-     * カスタム検索エンジンのURIは、"https://www.google.com/search?q=\{query}" や "https://www.google.com/search?q=%s" のような形式で入力する必要があります。
+     * The custom URI must be input in the format like "https://www.google.com/search?q=\{query}" or "https://www.google.com/search?q=%s".
      */
     "searchEngineCustomURIDescription": string;
     /**
-     * カスタム検索エンジン URI
+     * Custom URI
      */
     "searchEngineCusomURI": string;
     /**
-     * アニメーション画像を再生しない
+     * Don't play animated images
      */
     "disableShowingAnimatedImages": string;
     /**
-     * メディアがセンシティブであることを分かりやすく表示
+     * Highlight sensitive media
      */
     "highlightSensitiveMedia": string;
     /**
-     * 確認のメールを送信しました。メールに記載されたリンクにアクセスして、設定を完了してください。
+     * A verification email has been sent. Please follow the included link to complete verification.
      */
     "verificationEmailSent": string;
     /**
-     * 未設定
+     * Not set
      */
     "notSet": string;
     /**
-     * メールアドレスが確認されました
+     * Email has been verified
      */
     "emailVerified": string;
     /**
-     * お気に入りノートの数
+     * Number of favorite notes
      */
     "noteFavoritesCount": string;
     /**
-     * Pageにいいねした数
+     * Number of liked Pages
      */
     "pageLikesCount": string;
     /**
-     * Pageにいいねされた数
+     * Number of received Page likes
      */
     "pageLikedCount": string;
     /**
-     * 連絡先
+     * Contact
      */
     "contact": string;
     /**
-     * システムのデフォルトのフォントを使う
+     * Use the system's default font
      */
     "useSystemFont": string;
     /**
-     * クリップ
+     * Clips
      */
     "clips": string;
     /**
-     * 実験的機能
+     * Experimental features
      */
     "experimentalFeatures": string;
     /**
-     * 実験的
+     * Experimental
      */
     "experimental": string;
     /**
-     * これは実験的な機能です。仕様が変更されたり、正常に動作しなかったりする可能性があります。
+     * This is an experimental feature. Its functionality is subject to change, and it may not operate as intended.
      */
     "thisIsExperimentalFeature": string;
     /**
-     * 開発者
+     * Developer
      */
     "developer": string;
     /**
-     * アカウントを見つけやすくする
+     * Make account visible in "Explore"
      */
     "makeExplorable": string;
     /**
-     * オフにすると、「みつける」にアカウントが載らなくなります。
+     * If you turn this off, your account will not show up in the "Explore" section.
      */
     "makeExplorableDescription": string;
     /**
-     * 公開ノートをインデックス不可にする
+     * Make public notes not indexable
      */
     "makeIndexable": string;
     /**
-     * ノート検索があなたの公開ノートをインデックス化しないようにします。
+     * Stop note search from indexing your public notes.
      */
     "makeIndexableDescription": string;
     /**
-     * タイムラインのノートを離して表示
+     * Show a gap between posts on the timeline
      */
     "showGapBetweenNotesInTimeline": string;
     /**
-     * 複製
+     * Duplicate
      */
     "duplicate": string;
     /**
-     * 左
+     * Left
      */
     "left": string;
     /**
-     * 中央
+     * Center
      */
     "center": string;
     /**
-     * 広い
+     * Wide
      */
     "wide": string;
     /**
-     * 狭い
+     * Narrow
      */
     "narrow": string;
     /**
-     * 設定はページリロード後に反映されます。今すぐリロードしますか？
+     * This setting will only apply after a page reload. Reload now?
      */
     "reloadToApplySetting": string;
     /**
-     * 反映には再起動が必要です。
+     * A reload is required for this to be reflected.
      */
     "needReloadToApply": string;
     /**
-     * タイトルバーを表示する
+     * Show title bar
      */
     "showTitlebar": string;
     /**
-     * キャッシュをクリア
+     * Clear cache
      */
     "clearCache": string;
     /**
-     * {n}人がオンライン
+     * {n} users are online
      */
     "onlineUsersCount": ParameterizedString<"n">;
     /**
-     * {n}ユーザー
+     * {n} Users
      */
     "nUsers": ParameterizedString<"n">;
     /**
-     * {n}ノート
+     * {n} Notes
      */
     "nNotes": ParameterizedString<"n">;
     /**
-     * エラーリポートを送信
+     * Send error reports
      */
     "sendErrorReports": string;
     /**
-     * オンにすると、問題が発生したときにエラーの詳細情報がSharkeyに共有され、ソフトウェアの品質向上に役立てることができます。エラー情報には、OSのバージョン、ブラウザの種類、行動履歴などが含まれます。
+     * When turned on, detailed error information will be shared with Sharkey when a problem occurs, helping to improve the quality of Sharkey.
+     * This will include information such the version of your OS, what browser you're using, your activity in Sharkey, etc.
      */
     "sendErrorReportsDescription": string;
     /**
-     * マイテーマ
+     * My theme
      */
     "myTheme": string;
     /**
-     * 背景
+     * Background color
      */
     "backgroundColor": string;
     /**
-     * アクセント
+     * Accent color
      */
     "accentColor": string;
     /**
-     * 文字
+     * Text color
      */
     "textColor": string;
     /**
-     * 名前を付けて保存
+     * Save as...
      */
     "saveAs": string;
     /**
-     * 高度
+     * Advanced
      */
     "advanced": string;
     /**
-     * 高度な設定
+     * Advanced settings
      */
     "advancedSettings": string;
     /**
-     * 値
+     * Value
      */
     "value": string;
     /**
-     * 作成日時
+     * Created at
      */
     "createdAt": string;
     /**
-     * 更新日時
+     * Updated at
      */
     "updatedAt": string;
     /**
-     * 保存しますか？
+     * Save changes?
      */
     "saveConfirm": string;
     /**
-     * 削除しますか？
+     * Really delete?
      */
     "deleteConfirm": string;
     /**
-     * 有効な値ではありません。
+     * Invalid value.
      */
     "invalidValue": string;
     /**
-     * レジストリ
+     * Registry
      */
     "registry": string;
     /**
-     * アカウントを閉鎖する
+     * Close account
      */
     "closeAccount": string;
     /**
-     * 現在のバージョン
+     * Current version
      */
     "currentVersion": string;
     /**
-     * 最新のバージョン
+     * Newest version
      */
     "latestVersion": string;
     /**
-     * お使いのクライアントは最新です。
+     * You are using the newest version of your client.
      */
     "youAreRunningUpToDateClient": string;
     /**
-     * 新しいバージョンのクライアントが利用可能です。
+     * There is a newer version of your client available.
      */
     "newVersionOfClientAvailable": string;
     /**
-     * 使用量
+     * Usage
      */
     "usageAmount": string;
     /**
-     * 容量
+     * Capacity
      */
     "capacity": string;
     /**
-     * 使用中
+     * Used
      */
     "inUse": string;
     /**
-     * コードを編集
+     * Edit code
      */
     "editCode": string;
     /**
-     * 適用
+     * Apply
      */
     "apply": string;
     /**
-     * サーバーからのお知らせを受け取る
+     * Receive notifications from this instance
      */
     "receiveAnnouncementFromInstance": string;
     /**
-     * メール通知
+     * Email notifications
      */
     "emailNotification": string;
     /**
-     * 公開
+     * Publish
      */
     "publish": string;
     /**
-     * チャンネル内検索
+     * Search in channel
      */
     "inChannelSearch": string;
     /**
-     * 右クリックでリアクションピッカーを開く
+     * Open reaction picker on right-click
      */
     "useReactionPickerForContextMenu": string;
     /**
-     * {users}が入力中
+     * {users} is/are typing...
      */
     "typingUsers": ParameterizedString<"users">;
     /**
-     * 特定の日付にジャンプ
+     * Jump to specific date
      */
     "jumpToSpecifiedDate": string;
     /**
-     * 過去のタイムラインを表示しています
+     * Currently displaying an old timeline
      */
     "showingPastTimeline": string;
     /**
-     * クリア
+     * Return
      */
     "clear": string;
     /**
-     * 全て既読にする
+     * Mark all as read
      */
     "markAllAsRead": string;
     /**
-     * 戻る
+     * Back
      */
     "goBack": string;
     /**
-     * いいね解除しますか？
+     * Really remove your like?
      */
     "unlikeConfirm": string;
     /**
-     * フルビュー
+     * Full view
      */
     "fullView": string;
     /**
-     * フルビュー解除
+     * Exit full view
      */
     "quitFullView": string;
     /**
-     * 説明を追加
+     * Add description
      */
     "addDescription": string;
     /**
-     * 個々のノートのメニューから「ピン留め」を選択することで、ここにノートを表示しておくことができます。
+     * You can display notes here by selecting "Pin to profile" from the menu of individual notes.
      */
     "userPagePinTip": string;
     /**
-     * 宛先に含まれていないメンションがあります
+     * This note contains mentions of users not included as recipients
      */
     "notSpecifiedMentionWarning": string;
     /**
-     * 情報
+     * About
      */
     "info": string;
     /**
-     * ユーザー情報
+     * User information
      */
     "userInfo": string;
     /**
-     * 不明
+     * Unknown
      */
     "unknown": string;
     /**
-     * オンライン状態
+     * Online status
      */
     "onlineStatus": string;
     /**
-     * オンライン状態を隠す
+     * Hide online status
      */
     "hideOnlineStatus": string;
     /**
-     * オンライン状態を隠すと、検索などの一部機能において利便性が低下することがあります。
+     * Hiding your online status reduces the convenience of some features such as the search.
      */
     "hideOnlineStatusDescription": string;
     /**
-     * オンライン
+     * Online
      */
     "online": string;
     /**
-     * アクティブ
+     * Active
      */
     "active": string;
     /**
-     * オフライン
+     * Offline
      */
     "offline": string;
     /**
-     * 非推奨
+     * Not recommended
      */
     "notRecommended": string;
     /**
-     * Botプロテクション
+     * Bot Protection
      */
     "botProtection": string;
     /**
-     * サーバーブロック・サイレンス
+     * Blocked/Silenced Instances
      */
     "instanceBlocking": string;
     /**
-     * アカウントを選択
+     * Select account
      */
     "selectAccount": string;
     /**
-     * アカウントを切り替え
+     * Switch account
      */
     "switchAccount": string;
     /**
-     * 有効
+     * Enabled
      */
     "enabled": string;
     /**
-     * 無効
+     * Disabled
      */
     "disabled": string;
     /**
-     * クイックアクション
+     * Quick actions
      */
     "quickAction": string;
     /**
-     * ユーザー
+     * User
      */
     "user": string;
     /**
-     * 管理
+     * Management
      */
     "administration": string;
     /**
-     * アカウント
+     * Accounts
      */
     "accounts": string;
     /**
-     * 切り替え
+     * Switch
      */
     "switch": string;
     /**
-     * 管理者情報が設定されていません。
+     * Maintainer information is not configured.
      */
     "noMaintainerInformationWarning": string;
     /**
-     * 問い合わせ先URLが設定されていません。
+     * Contact URL is not set.
      */
     "noInquiryUrlWarning": string;
     /**
-     * Botプロテクションが設定されていません。
+     * Bot protection is not configured.
      */
     "noBotProtectionWarning": string;
     /**
-     * 設定する
+     * Configure
      */
     "configure": string;
     /**
-     * ギャラリーへ投稿
+     * Create new gallery post
      */
     "postToGallery": string;
     /**
-     * このハッシュタグで投稿
+     * Post to this hashtag
      */
     "postToHashtag": string;
     /**
-     * ギャラリー
+     * Gallery
      */
     "gallery": string;
     /**
-     * 最近の投稿
+     * Recent posts
      */
     "recentPosts": string;
     /**
-     * 人気の投稿
+     * Popular posts
      */
     "popularPosts": string;
     /**
-     * ノートで共有
+     * Share with note
      */
     "shareWithNote": string;
     /**
-     * 広告
+     * Advertisements
      */
     "ads": string;
     /**
-     * 期限
+     * Deadline
      */
     "expiration": string;
     /**
-     * 開始期間
+     * Start
      */
     "startingperiod": string;
     /**
-     * メモ
+     * Memo
      */
     "memo": string;
     /**
-     * 優先度
+     * Priority
      */
     "priority": string;
     /**
-     * 高
+     * High
      */
     "high": string;
     /**
-     * 中
+     * Medium
      */
     "middle": string;
     /**
-     * 低
+     * Low
      */
     "low": string;
     /**
-     * メールアドレスの設定がされていません。
+     * Email address not set.
      */
     "emailNotConfiguredWarning": string;
     /**
-     * 比率
+     * Ratio
      */
     "ratio": string;
     /**
-     * 本文をプレビュー
+     * Show preview
      */
     "previewNoteText": string;
     /**
-     * カスタムCSS
+     * Custom CSS
      */
     "customCss": string;
     /**
-     * この設定は必ず知識のある方が行ってください。不適切な設定を行うとクライアントが正常に使用できなくなる恐れがあります。
+     * This setting should only be used if you know what it does. Entering improper values may cause the client to stop functioning normally.
      */
     "customCssWarn": string;
     /**
-     * グローバル
+     * Global
      */
     "global": string;
     /**
-     * アイコンを四角形で表示
+     * Display squared avatars
      */
     "squareAvatars": string;
     /**
-     * 送信
+     * Sent
      */
     "sent": string;
     /**
-     * 受信
+     * Received
      */
     "received": string;
     /**
-     * 検索結果
+     * Search results
      */
     "searchResult": string;
     /**
-     * ハッシュタグ
+     * Hashtags
      */
     "hashtags": string;
     /**
-     * トラブルシューティング
+     * Troubleshooting
      */
     "troubleshooting": string;
     /**
-     * UIにぼかし効果を使用
+     * Use blur effects in the UI
      */
     "useBlurEffect": string;
     /**
-     * 詳しく
+     * Learn more
      */
     "learnMore": string;
     /**
-     * Sharkeyが更新されました！
+     * Sharkey has been updated!
      */
     "misskeyUpdated": string;
     /**
-     * 更新情報を見る
+     * Show changes
      */
     "whatIsNew": string;
     /**
-     * 翻訳
+     * Translate
      */
     "translate": string;
     /**
-     * {x}から翻訳
+     * Translated from {x}
      */
     "translatedFrom": ParameterizedString<"x">;
     /**
-     * アカウントの削除が進行中です
+     * Account deletion is currently in progress
      */
     "accountDeletionInProgress": string;
     /**
-     * サーバー上であなたのアカウントを一意に識別するための名前。アルファベット(a~z, A~Z)、数字(0~9)、およびアンダーバー(_)が使用できます。ユーザー名は後から変更することは出来ません。
+     * A name that identifies your account from others on this server. You can use the alphabet (a~z, A~Z), digits (0~9) or underscores (_). Usernames cannot be changed later.
      */
     "usernameInfo": string;
     /**
-     * 藍モード
+     * Ai Mode
      */
     "aiChanMode": string;
     /**
-     * 開発者モード
+     * Developer mode
      */
     "devMode": string;
     /**
-     * CWを維持する
+     * Keep content warnings
      */
     "keepCw": string;
     /**
-     * Pub/Subのアカウント
+     * Pub/Sub Accounts
      */
     "pubSub": string;
     /**
-     * 直近の通信
+     * Last communication
      */
     "lastCommunication": string;
     /**
-     * 解決済み
+     * Resolved
      */
     "resolved": string;
     /**
-     * 未解決
+     * Unresolved
      */
     "unresolved": string;
     /**
-     * フォロワーを解除
+     * Remove follower
      */
     "breakFollow": string;
     /**
-     * フォロワー解除しますか？
+     * Really remove this follower?
      */
     "breakFollowConfirm": string;
     /**
-     * オンになっています
+     * Enabled
      */
     "itsOn": string;
     /**
-     * オフになっています
+     * Disabled
      */
     "itsOff": string;
     /**
-     * オン
+     * On
      */
     "on": string;
     /**
-     * オフ
+     * Off
      */
     "off": string;
     /**
-     * アカウント登録にメールアドレスを必須にする
+     * Require email address for sign-up
      */
     "emailRequiredForSignup": string;
     /**
-     * アカウント登録を承認制にする
+     * Require approval for new users
      */
     "approvalRequiredForSignup": string;
     /**
-     * 未読
+     * Unread
      */
     "unread": string;
     /**
-     * フィルタ
+     * Filter
      */
     "filter": string;
     /**
-     * コントロールパネル
+     * Control Panel
      */
     "controlPanel": string;
     /**
-     * アカウントを管理
+     * Manage Accounts
      */
     "manageAccounts": string;
     /**
-     * リアクション一覧を公開する
+     * Set reaction history to public
      */
     "makeReactionsPublic": string;
     /**
-     * あなたがしたリアクション一覧を誰でも見れるようにします。
+     * This will make the list of all your past reactions publicly visible.
      */
     "makeReactionsPublicDescription": string;
     /**
-     * クラシック
+     * Classic
      */
     "classic": string;
     /**
-     * スレッドをミュート
+     * Mute thread
      */
     "muteThread": string;
     /**
-     * スレッドのミュートを解除
+     * Unmute thread
      */
     "unmuteThread": string;
     /**
-     * フォローの公開範囲
+     * Visibility of follows
      */
     "followingVisibility": string;
     /**
-     * フォロワーの公開範囲
+     * Visibility of followers
      */
     "followersVisibility": string;
     /**
-     * さらにスレッドを見る
+     * View thread continuation
      */
     "continueThread": string;
     /**
-     * アカウントが削除されます。よろしいですか？
+     * This will irreversibly delete your account. Proceed?
      */
     "deleteAccountConfirm": string;
     /**
-     * パスワードが間違っています。
+     * Incorrect password.
      */
     "incorrectPassword": string;
     /**
-     * 「{choice}」に投票しますか？
+     * Confirm your vote for "{choice}"?
      */
     "voteConfirm": ParameterizedString<"choice">;
     /**
-     * 「{choice}」に投票しますか？
-     * 　確認後、選択肢を増やすことができます。
+     * Confirm your vote for "{choice}"?
+     * 　You can choose more options after confirmation.
      */
     "voteConfirmMulti": ParameterizedString<"choice">;
     /**
-     * 隠す
+     * Hide
      */
     "hide": string;
     /**
-     * モバイルデバイスのときドロワーで表示
+     * Display reaction picker as drawer on mobile
      */
     "useDrawerReactionPickerForMobile": string;
     /**
-     * おかえりなさい、{name}さん
+     * Welcome back, {name}
      */
     "welcomeBackWithName": ParameterizedString<"name">;
     /**
-     * [{ok}]を押して、メールアドレスの確認を完了してください。
+     * Please click [{ok}] to complete email verification.
      */
     "clickToFinishEmailVerification": ParameterizedString<"ok">;
     /**
-     * デバイスタイプ
+     * Device type
      */
     "overridedDeviceKind": string;
     /**
-     * スマートフォン
+     * Smartphone
      */
     "smartphone": string;
     /**
-     * タブレット
+     * Tablet
      */
     "tablet": string;
     /**
-     * 自動
+     * Auto
      */
     "auto": string;
     /**
-     * テーマカラー
+     * Instance Ticker Color
      */
     "themeColor": string;
     /**
-     * サイズ
+     * Size
      */
     "size": string;
     /**
-     * 列の数
+     * Number of columns
      */
     "numberOfColumn": string;
     /**
-     * 検索
+     * Search
      */
     "searchByGoogle": string;
     /**
-     * サーバーデフォルトのライトテーマ
+     * Instance-wide default light theme
      */
     "instanceDefaultLightTheme": string;
     /**
-     * サーバーデフォルトのダークテーマ
+     * Instance-wide default dark theme
      */
     "instanceDefaultDarkTheme": string;
     /**
-     * オブジェクト形式のテーマコードを記入します。
+     * Enter the theme code in object format.
      */
     "instanceDefaultThemeDescription": string;
     /**
-     * ミュートする期限
+     * Mute duration
      */
     "mutePeriod": string;
     /**
-     * 期限
+     * Time limit
      */
     "period": string;
     /**
-     * 無期限
+     * Permanently
      */
     "indefinitely": string;
     /**
-     * 10分
+     * 10 minutes
      */
     "tenMinutes": string;
     /**
-     * 1時間
+     * One hour
      */
     "oneHour": string;
     /**
-     * 1日
+     * One day
      */
     "oneDay": string;
     /**
-     * 1週間
+     * One week
      */
     "oneWeek": string;
     /**
-     * 1ヶ月
+     * One month
      */
     "oneMonth": string;
     /**
-     * 反映されるまで時間がかかる場合があります。
+     * It may take some time for this to be reflected.
      */
     "reflectMayTakeTime": string;
     /**
-     * アカウント情報の取得に失敗しました
+     * Could not fetch account information
      */
     "failedToFetchAccountInformation": string;
     /**
-     * レート制限を超えました
+     * Rate limit exceeded
      */
     "rateLimitExceeded": string;
     /**
-     * 画像のクロップ
+     * Crop image
      */
     "cropImage": string;
     /**
-     * 画像をクロップしますか？
+     * Do you want to crop this image?
      */
     "cropImageAsk": string;
     /**
-     * クロップする
+     * Crop
      */
     "cropYes": string;
     /**
-     * そのまま使う
+     * Use as-is
      */
     "cropNo": string;
     /**
-     * ファイル
+     * File
      */
     "file": string;
     /**
-     * 直近{n}時間
+     * Last {n} hours
      */
     "recentNHours": ParameterizedString<"n">;
     /**
-     * 直近{n}日
+     * Last {n} days
      */
     "recentNDays": ParameterizedString<"n">;
     /**
-     * メールサーバーの設定がされていません。
+     * Email server not configured.
      */
     "noEmailServerWarning": string;
     /**
-     * 未対応の通報があります。
+     * There are unsolved reports.
      */
     "thereIsUnresolvedAbuseReportWarning": string;
     /**
-     * 承認待ちのユーザーがいます。
+     * There are users awaiting approval.
      */
     "pendingUserApprovals": string;
     /**
-     * 推奨
+     * Recommended
      */
     "recommended": string;
     /**
-     * チェック
+     * Check
      */
     "check": string;
     /**
-     * このユーザーのドライブ容量上限を変更
+     * Change the drive capacity for this user
      */
     "driveCapOverrideLabel": string;
     /**
-     * 0以下を指定すると解除されます。
+     * Reset the capacity to default by inputting a value of 0 or lower.
      */
     "driveCapOverrideCaption": string;
     /**
-     * 閲覧するには管理者アカウントでログインしている必要があります。
+     * You must log in with an administrator account to view this.
      */
     "requireAdminForView": string;
     /**
-     * システムにより自動で作成・管理されているアカウントです。
+     * An account created and automatically operated by the system.
      */
     "isSystemAccount": string;
     /**
-     * この操作を行うには {x} と入力してください
+     * Please enter {x} to confirm
      */
     "typeToConfirm": ParameterizedString<"x">;
     /**
-     * アカウント削除
+     * Delete account
      */
     "deleteAccount": string;
     /**
-     * 承認する
+     * Approve
      */
     "approveAccount": string;
     /**
-     * 拒否と削除
+     * Deny & Delete
      */
     "denyAccount": string;
     /**
-     * 承認済み
+     * Approved
      */
     "approved": string;
     /**
-     * 承認されていない
+     * Not Approved
      */
     "notApproved": string;
     /**
-     * 承認状況
+     * Approval Status
      */
     "approvalStatus": string;
     /**
-     * ドキュメント
+     * Documentation
      */
     "document": string;
     /**
-     * ページキャッシュ数
+     * Number of cached pages
      */
     "numberOfPageCache": string;
     /**
-     * 多くすると利便性が向上しますが、負荷とメモリ使用量が増えます。
+     * Increasing this number will improve convenience for but cause more load as more memory usage on the user's device.
      */
     "numberOfPageCacheDescription": string;
     /**
-     * スレッド内の返信数
+     * Number of replies in a thread
      */
     "numberOfReplies": string;
     /**
-     * この数値を大きくすると、より多くの返信が表示されます。この値を大きくしすぎると、UIが窮屈になって読みにくくなることがあります。
+     * Increasing this number will display more replies. Setting this too high can cause replies to be cramped and unreadable.
      */
     "numberOfRepliesDescription": string;
     /**
-     * ブースト設定
+     * Boost Settings
      */
     "boostSettings": string;
     /**
-     * 公開範囲セレクターを表示
+     * Show Visibility Selector
      */
     "showVisibilitySelectorOnBoost": string;
     /**
-     * 無効の場合、以下で設定したデフォルトの公開範囲が使用され、セレクターは表示されません。
+     * Shows the visiblity selector if enabled when clicking boost, if disabled it will use the default visiblity defined below and the selector will not show up.
      */
     "showVisibilitySelectorOnBoostDescription": string;
     /**
-     * デフォルトのブースト公開範囲
+     * Default boost visibility
      */
     "visibilityOnBoost": string;
     /**
-     * ログアウトしますか？
+     * Really log out?
      */
     "logoutConfirm": string;
     /**
-     * 最終利用日時
+     * Last used at
      */
     "lastActiveDate": string;
     /**
-     * ステータスバー
+     * Status bar
      */
     "statusbar": string;
     /**
-     * 選択してください
+     * Select an option
      */
     "pleaseSelect": string;
     /**
-     * 反転
+     * Reverse
      */
     "reverse": string;
     /**
-     * 色付き
+     * Colored
      */
     "colored": string;
     /**
-     * 更新間隔
+     * Update interval
      */
     "refreshInterval": string;
     /**
-     * ラベル
+     * Label
      */
     "label": string;
     /**
-     * タイプ
+     * Type
      */
     "type": string;
     /**
-     * 速度
+     * Speed
      */
     "speed": string;
     /**
-     * 遅い
+     * Slow
      */
     "slow": string;
     /**
-     * 速い
+     * Fast
      */
     "fast": string;
     /**
-     * センシティブなメディアの検出
+     * Detection of sensitive media
      */
     "sensitiveMediaDetection": string;
     /**
-     * ローカルのみ
+     * Local only
      */
     "localOnly": string;
     /**
-     * リモートのみ
+     * Remote only
      */
     "remoteOnly": string;
     /**
-     * アップロード失敗
+     * Upload failed
      */
     "failedToUpload": string;
     /**
-     * 不適切な内容を含む可能性があると判定されたためアップロードできません。
+     * This file could not be uploaded because parts of it have been detected as potentially inappropriate.
      */
     "cannotUploadBecauseInappropriate": string;
     /**
-     * ドライブの空き容量が無いためアップロードできません。
+     * Upload failed due to lack of Drive capacity.
      */
     "cannotUploadBecauseNoFreeSpace": string;
     /**
-     * ファイルサイズの制限を超えているためアップロードできません。
+     * This file cannot be uploaded as it exceeds the file size limit.
      */
     "cannotUploadBecauseExceedsFileSizeLimit": string;
     /**
-     * ベータ
+     * Beta
      */
     "beta": string;
     /**
-     * 自動センシティブ判定
+     * Automatic marking as sensitive
      */
     "enableAutoSensitive": string;
     /**
-     * 利用可能な場合は、機械学習を利用して自動でメディアにセンシティブフラグを設定します。この機能をオフにしても、サーバーによっては自動で設定されることがあります。
+     * Allows automatic detection and marking of sensitive media through Machine Learning where possible. Even if this option is disabled, it may be enabled instance-wide.
      */
     "enableAutoSensitiveDescription": string;
     /**
-     * ユーザーのメールアドレスのバリデーションを、捨てアドかどうかや実際に通信可能かどうかなどを判定しより積極的に行います。オフにすると単に文字列として正しいかどうかのみチェックされます。
+     * Enables stricter validation of email addresses, which includes checking for disposable addresses and by whether it can actually be communicated with. When unchecked, only the format of the email is validated.
      */
     "activeEmailValidationDescription": string;
     /**
-     * ナビゲーションバー
+     * Navigation bar
      */
     "navbar": string;
     /**
-     * シャッフル
+     * Shuffle
      */
     "shuffle": string;
     /**
-     * アカウント
+     * Account
      */
     "account": string;
     /**
-     * 移動
+     * Move
      */
     "move": string;
     /**
-     * プッシュ通知
+     * Push notifications
      */
     "pushNotification": string;
     /**
-     * プッシュ通知を有効化
+     * Enable push notifications
      */
     "subscribePushNotification": string;
     /**
-     * プッシュ通知を停止する
+     * Disable push notifications
      */
     "unsubscribePushNotification": string;
     /**
-     * プッシュ通知は有効です
+     * Push notifications are already enabled
      */
     "pushNotificationAlreadySubscribed": string;
     /**
-     * ブラウザかサーバーがプッシュ通知に非対応
+     * Your browser or instance does not support push notifications
      */
     "pushNotificationNotSupported": string;
     /**
-     * 通知が既読になったらプッシュ通知を削除する
+     * Delete push notifications once they have been read
      */
     "sendPushNotificationReadMessage": string;
     /**
-     * 端末の電池消費量が増加する可能性があります。
+     * This may increase the power consumption of your device.
      */
     "sendPushNotificationReadMessageCaption": string;
     /**
-     * 最大化
+     * Maximize
      */
     "windowMaximize": string;
     /**
-     * 最小化
+     * Minimize
      */
     "windowMinimize": string;
     /**
-     * 元に戻す
+     * Restore
      */
     "windowRestore": string;
     /**
-     * キャプション
+     * Caption
      */
     "caption": string;
     /**
-     * Botアカウントでログイン中
+     * Currently logged in as bot
      */
     "loggedInAsBot": string;
     /**
-     * ツール
+     * Tools
      */
     "tools": string;
     /**
-     * 読み込めません
+     * Unable to load
      */
     "cannotLoad": string;
     /**
-     * プロフィール表示回数
+     * Profile views
      */
     "numberOfProfileView": string;
     /**
-     * いいね！
+     * Like
      */
     "like": string;
     /**
-     * いいねを解除
+     * Unlike
      */
     "unlike": string;
     /**
-     * 絵文字のようなデフォルト
+     * Default like emoji
      */
     "defaultLike": string;
     /**
-     * いいね数
+     * Likes
      */
     "numberOfLikes": string;
     /**
-     * 表示
+     * Show
      */
     "show": string;
     /**
-     * 今後表示しない
+     * Don't show again
      */
     "neverShow": string;
     /**
-     * また後で
+     * Maybe later
      */
     "remindMeLater": string;
     /**
-     * Sharkeyを気に入っていただけましたか？
+     * Have you taken a liking to Sharkey?
      */
     "didYouLikeMisskey": string;
     /**
-     * Sharkeyは{host}が使用している無料のソフトウェアです。これからも開発を続けられるように、ぜひ寄付をお願いします！
+     * {host} uses the free software, Sharkey. We would highly appreciate your donations so development of Sharkey can continue!
      */
     "pleaseDonate": ParameterizedString<"host">;
     /**
-     * インスタンス管理者への寄付によって{host}を直接サポートすることもできます。
+     * You can also support {host} directly by donating to your instance administration.
      */
     "pleaseDonateInstance": ParameterizedString<"host">;
     /**
-     * 対応するソースコードは{anchor}から利用可能です。
+     * The corresponding source code is available at {anchor}
      */
     "correspondingSourceIsAvailable": ParameterizedString<"anchor">;
     /**
-     * ロール
+     * Roles
      */
     "roles": string;
     /**
-     * ロール
+     * Role
      */
     "role": string;
     /**
-     * ロールはありません
+     * Role not found
      */
     "noRole": string;
     /**
-     * 一般ユーザー
+     * Normal user
      */
     "normalUser": string;
     /**
-     * 未定義
+     * Undefined
      */
     "undefined": string;
     /**
-     * アサイン
+     * Assign
      */
     "assign": string;
     /**
-     * アサインを解除
+     * Unassign
      */
     "unassign": string;
     /**
-     * 色
+     * Color
      */
     "color": string;
     /**
-     * カスタム絵文字の管理
+     * Manage Custom Emojis
      */
     "manageCustomEmojis": string;
     /**
-     * アバターデコレーションの管理
+     * Manage avatar decorations
      */
     "manageAvatarDecorations": string;
     /**
-     * これ以上作成することはできません。
+     * You've hit the creation limit.
      */
     "youCannotCreateAnymore": string;
     /**
-     * 一時的に利用できません
+     * Temporarily unavailable
      */
     "cannotPerformTemporary": string;
     /**
-     * 操作回数が制限を超過するため一時的に利用できません。しばらく時間を置いてから再度お試しください。
+     * This action cannot be performed temporarily due to exceeding the execution limit. Please wait for a while and then try again.
      */
     "cannotPerformTemporaryDescription": string;
     /**
-     * パラメータエラー
+     * Invalid parameters
      */
     "invalidParamError": string;
     /**
-     * リクエストパラメータに問題があります。通常これはバグですが、入力した文字数が多すぎる等の可能性もあります。
+     * The request parameters are invalid. This is normally caused by a bug, but may also be due to inputs exceeding size limits or similar.
      */
     "invalidParamErrorDescription": string;
     /**
-     * 操作が拒否されました
+     * Operation denied
      */
     "permissionDeniedError": string;
     /**
-     * このアカウントにはこの操作を行うための権限がありません。
+     * This account does not have the permission to perform this action.
      */
     "permissionDeniedErrorDescription": string;
     /**
-     * プリセット
+     * Preset
      */
     "preset": string;
     /**
-     * プリセットから選択
+     * Choose from presets
      */
     "selectFromPresets": string;
     /**
-     * 実績
+     * Achievements
      */
     "achievements": string;
     /**
-     * サーバーの応答が無効です
+     * Invalid server response
      */
     "gotInvalidResponseError": string;
     /**
-     * サーバーがダウンまたはメンテナンスしている可能性があります。しばらくしてから再度お試しください。
+     * The server may be unreachable or undergoing maintenance. Please try again later.
      */
     "gotInvalidResponseErrorDescription": string;
     /**
-     * この投稿は迷惑になる可能性があります。
+     * This note may annoy others.
      */
     "thisPostMayBeAnnoying": string;
     /**
-     * ホームに投稿
+     * Post to home timeline
      */
     "thisPostMayBeAnnoyingHome": string;
     /**
-     * やめる
+     * Cancel
      */
     "thisPostMayBeAnnoyingCancel": string;
     /**
-     * このまま投稿
+     * Post anyway
      */
     "thisPostMayBeAnnoyingIgnore": string;
     /**
-     * やめる
+     * Cancel
      */
     "thisPostIsMissingAltTextCancel": string;
     /**
-     * このまま投稿
+     * Post anyway
      */
     "thisPostIsMissingAltTextIgnore": string;
     /**
-     * 代替テキストがないファイルが添付されています。すべての添付ファイルに代替テキストを含むようにしてください。
+     * One of the files attached to this post is missing alt text. Please ensure all the attachments have alt text.
      */
     "thisPostIsMissingAltText": string;
     /**
-     * ブーストのスマート省略
+     * Collapse boosts you've already seen
      */
     "collapseRenotes": string;
     /**
-     * リアクションやブーストをしたことがあるノートをたたんで表示します。
+     * Collapse boosts that you have boosted or reacted to
      */
     "collapseRenotesDescription": string;
     /**
-     * 返信元のノートを折りたたむ
+     * Collapse notes replied to
      */
     "collapseNotesRepliedTo": string;
     /**
-     * ファイルを折りたたむ
+     * Collapse files
      */
     "collapseFiles": string;
     /**
-     * CWを展開する
+     * Uncollapse CWs on notes
      */
     "uncollapseCW": string;
     /**
-     * 長い投稿を常に展開する
+     * Always expand long notes
      */
     "expandLongNote": string;
     /**
-     * 会話スレッドを自動で読み込む
+     * Load conversation on replies
      */
     "autoloadConversation": string;
     /**
-     * サーバー内部エラー
+     * Internal Server Error
      */
     "internalServerError": string;
     /**
-     * サーバー内部で予期しないエラーが発生しました。
+     * The server has run into an unexpected error.
      */
     "internalServerErrorDescription": string;
     /**
-     * エラー情報をコピー
+     * Copy error details
      */
     "copyErrorInfo": string;
     /**
-     * このサーバーに登録する
+     * Sign up at this instance
      */
     "joinThisServer": string;
     /**
-     * 他のサーバーを探す
+     * Look for another instance
      */
     "exploreOtherServers": string;
     /**
-     * タイムラインを見てみる
+     * Have a look at the timeline
      */
     "letsLookAtTimeline": string;
     /**
-     * 連合なしにしますか？
+     * Really disable federation?
      */
     "disableFederationConfirm": string;
     /**
-     * 連合なしにしても投稿は非公開になりません。ほとんどの場合、連合なしにする必要はありません。
+     * Even if defederated, posts will continue to be public unless set otherwise. You usually do not need to do this.
      */
     "disableFederationConfirmWarn": string;
     /**
-     * 連合なしにする
+     * Disable
      */
     "disableFederationOk": string;
     /**
-     * 現在このサーバーは招待制です。招待コードをお持ちの方のみ登録できます。
+     * This instance is invite-only. You must enter a valid invite code sign up.
      */
     "invitationRequiredToRegister": string;
     /**
-     * 現在このサーバーは承認制です。参加したい理由を記入し、承認された方のみ登録できます。
+     * This instance is only accepting users who specify a reason for registration.
      */
     "approvalRequiredToRegister": string;
     /**
-     * このサーバーではメール配信はサポートされていません
+     * This instance does not support sending emails
      */
     "emailNotSupported": string;
     /**
-     * チャンネルに投稿
+     * Post to channel
      */
     "postToTheChannel": string;
     /**
-     * 後から変更できません。
+     * This cannot be changed later.
      */
     "cannotBeChangedLater": string;
     /**
-     * リアクションの受け入れ
+     * Reaction Acceptance
      */
     "reactionAcceptance": string;
     /**
-     * いいねのみ
+     * Only likes
      */
     "likeOnly": string;
     /**
-     * 全て (リモートはいいねのみ)
+     * All (Only likes for remote instances)
      */
     "likeOnlyForRemote": string;
     /**
-     * 非センシティブのみ
+     * Non-sensitive only
      */
     "nonSensitiveOnly": string;
     /**
-     * 非センシティブのみ (リモートはいいねのみ)
+     * Non-sensitive only (Only likes from remote)
      */
     "nonSensitiveOnlyForLocalLikeOnlyForRemote": string;
     /**
-     * 自分に割り当てられたロール
+     * Roles assigned to me
      */
     "rolesAssignedToMe": string;
     /**
-     * パスワードリセットしますか？
+     * Really reset your password?
      */
     "resetPasswordConfirm": string;
     /**
-     * センシティブワード
+     * Sensitive words
      */
     "sensitiveWords": string;
     /**
-     * 設定したワードが含まれるノートの公開範囲をホームにします。改行で区切って複数設定できます。
+     * The visibility of all notes containing any of the configured words will be set to "Home" automatically. You can list multiple by separating them via line breaks.
      */
     "sensitiveWordsDescription": string;
     /**
-     * スペースで区切るとAND指定になり、キーワードをスラッシュで囲むと正規表現になります。
+     * Using spaces will create AND expressions and surrounding keywords with slashes will turn them into a regular expression.
      */
     "sensitiveWordsDescription2": string;
     /**
-     * 禁止ワード
+     * Prohibited words
      */
     "prohibitedWords": string;
     /**
-     * 設定したワードが含まれるノートを投稿しようとした際、エラーとなるようにします。改行で区切って複数設定できます。
+     * Enables an error when attempting to post a note containing the set word(s). Multiple words can be set, separated by a new line.
      */
     "prohibitedWordsDescription": string;
     /**
-     * スペースで区切るとAND指定になり、キーワードをスラッシュで囲むと正規表現になります。
+     * Using spaces will create AND expressions and surrounding keywords with slashes will turn them into a regular expression.
      */
     "prohibitedWordsDescription2": string;
     /**
-     * 非表示ハッシュタグ
+     * Hidden hashtags
      */
     "hiddenTags": string;
     /**
-     * 設定したタグをトレンドに表示させないようにします。改行で区切って複数設定できます。
+     * Select tags which will not shown on trend list.
+     * Multiple tags could be registered by lines.
      */
     "hiddenTagsDescription": string;
     /**
-     * ノート検索は利用できません。
+     * Note search is unavailable.
      */
     "notesSearchNotAvailable": string;
     /**
-     * ライセンス
+     * License
      */
     "license": string;
     /**
-     * お気に入り解除しますか？
+     * Really remove from favorites?
      */
     "unfavoriteConfirm": string;
     /**
-     * 自分のクリップ
+     * My clips
      */
     "myClips": string;
     /**
-     * ドライブクリーナー
+     * Drive Cleaner
      */
     "drivecleaner": string;
     /**
-     * すべてのキューを今すぐ再試行
+     * Retry running all queues
      */
     "retryAllQueuesNow": string;
     /**
-     * 今すぐ再試行しますか？
+     * Really retry all?
      */
     "retryAllQueuesConfirmTitle": string;
     /**
-     * 一時的にサーバーの負荷が増大することがあります。
+     * This will temporarily increase the server load.
      */
     "retryAllQueuesConfirmText": string;
     /**
-     * リモートユーザーのチャートを生成
+     * Generate remote user data charts
      */
     "enableChartsForRemoteUser": string;
     /**
-     * リモートサーバーのチャートを生成
+     * Generate remote instance data charts
      */
     "enableChartsForFederatedInstances": string;
     /**
-     * ノートのアクションにクリップを追加
+     * Add "Clip" to note action menu
      */
     "showClipButtonInNoteFooter": string;
     /**
-     * リアクションの表示サイズ
+     * Reaction display size
      */
     "reactionsDisplaySize": string;
     /**
-     * リアクションの最大横幅を制限し、縮小して表示する
+     * Limits the maximum width of reactions and display them in reduced size.
      */
     "limitWidthOfReaction": string;
     /**
-     * ノートIDまたはURL
+     * Note ID or URL
      */
     "noteIdOrUrl": string;
     /**
-     * 動画
+     * Video
      */
     "video": string;
     /**
-     * 動画
+     * Videos
      */
     "videos": string;
     /**
-     * 音声
+     * Audio
      */
     "audio": string;
     /**
-     * 音声
+     * Audio
      */
     "audioFiles": string;
     /**
-     * データセーバー
+     * Data Saver
      */
     "dataSaver": string;
     /**
-     * アカウントの移行
+     * Account Migration
      */
     "accountMigration": string;
     /**
-     * このユーザーは新しいアカウントに移行しました：
+     * This user has moved to a new account:
      */
     "accountMoved": string;
     /**
-     * このアカウントは移行されています
+     * This account has been migrated.
      */
     "accountMovedShort": string;
     /**
-     * この操作はできません
+     * Operation forbidden
      */
     "operationForbidden": string;
     /**
-     * 常に広告を表示する
+     * Always show ads
      */
     "forceShowAds": string;
     /**
-     * にゃんこフレンド :3
+     * Cat friend :3
      */
     "oneko": string;
     /**
-     * メモを追加
+     * Add memo
      */
     "addMemo": string;
     /**
-     * メモを編集
+     * Edit memo
      */
     "editMemo": string;
     /**
-     * リアクション一覧
+     * Reactions
      */
     "reactionsList": string;
     /**
-     * ブースト一覧
+     * Boosts
      */
     "renotesList": string;
     /**
-     * 通知の表示
+     * Notifications
      */
     "notificationDisplay": string;
     /**
-     * 左上
+     * Top left
      */
     "leftTop": string;
     /**
-     * 右上
+     * Top right
      */
     "rightTop": string;
     /**
-     * 左下
+     * Bottom left
      */
     "leftBottom": string;
     /**
-     * 右下
+     * Bottom right
      */
     "rightBottom": string;
     /**
-     * スタック方向
+     * Stacking direction
      */
     "stackAxis": string;
     /**
-     * 縦
+     * Vertical
      */
     "vertical": string;
     /**
-     * 横
+     * Horizontal
      */
     "horizontal": string;
     /**
-     * 位置
+     * Position
      */
     "position": string;
     /**
-     * サーバールール
+     * Server rules
      */
     "serverRules": string;
     /**
-     * このサーバーに登録するには、以下の内容を確認し同意する必要があります。
+     * To register on this server, you must review and agree to the following:
      */
     "pleaseConfirmBelowBeforeSignup": string;
     /**
-     * 続けるには、全ての「同意する」にチェックが入っている必要があります。
+     * You must agree to all above fields to continue.
      */
     "pleaseAgreeAllToContinue": string;
     /**
-     * 続ける
+     * Continue
      */
     "continue": string;
     /**
-     * 予約ユーザー名
+     * Reserved usernames
      */
     "preservedUsernames": string;
     /**
-     * 予約するユーザー名を改行で列挙します。ここで指定されたユーザー名はアカウント作成時に使えなくなりますが、管理者によるアカウント作成時はこの制限を受けません。また、既に存在するアカウントも影響を受けません。
+     * List usernames to reserve separated by linebreaks. These will become unable during normal account creation, but can be used by administrators to manually create accounts. Already existing accounts using these usernames will not be affected.
      */
     "preservedUsernamesDescription": string;
     /**
-     * このファイルからノートを作成
+     * Compose note from this file
      */
     "createNoteFromTheFile": string;
     /**
-     * アーカイブ
+     * Archive
      */
     "archive": string;
     /**
-     * アーカイブ済み
+     * Archived
      */
     "archived": string;
     /**
-     * アーカイブ解除
+     * Unarchive
      */
     "unarchive": string;
     /**
-     * {name}をアーカイブしますか？
+     * Really archive {name}?
      */
     "channelArchiveConfirmTitle": ParameterizedString<"name">;
     /**
-     * アーカイブすると、チャンネル一覧や検索結果に表示されなくなり、新たな書き込みもできなくなります。
+     * An archived channel won't appear in the channel list or search results anymore. New posts can also not be added to it anymore.
      */
     "channelArchiveConfirmDescription": string;
     /**
-     * このチャンネルはアーカイブされています。
+     * This channel has been archived.
      */
     "thisChannelArchived": string;
     /**
-     * ノートの表示
+     * Note display
      */
     "displayOfNote": string;
     /**
-     * 初期設定
+     * Profile setup
      */
     "initialAccountSetting": string;
     /**
-     * フォロー中
+     * Followed
      */
     "youFollowing": string;
     /**
-     * 生成AIによる学習を拒否
+     * Reject usage in Machine Learning (Generative AI)
      */
     "preventAiLearning": string;
     /**
-     * 外部の文章生成AIや画像生成AIに対して、投稿したノートや画像などのコンテンツを学習の対象にしないように要求します。これはnoaiフラグをHTMLレスポンスに含めることによって実現されますが、この要求に従うかはそのAI次第であるため、学習を完全に防止するものではありません。
+     * Requests crawlers to not use posted text or image material etc. in machine learning (Predictive / Generative AI) data sets. This is achieved by adding a "noai" HTML-Response flag to the respective content. A complete prevention can however not be achieved through this flag, as it may simply be ignored.
      */
     "preventAiLearningDescription": string;
     /**
-     * オプション
+     * Options
      */
     "options": string;
     /**
-     * ユーザー指定
+     * Specific user
      */
     "specifyUser": string;
     /**
-     * 照会しますか？
+     * Are you sure that you want to look this up?
      */
     "lookupConfirm": string;
     /**
-     * ハッシュタグのページを開きますか？
+     * Are you sure you want to open this hashtags page?
      */
     "openTagPageConfirm": string;
     /**
-     * ホスト指定
+     * Specify a host
      */
     "specifyHost": string;
     /**
-     * プレビューできません
+     * Could not preview
      */
     "failedToPreviewUrl": string;
     /**
-     * 更新
+     * Update
      */
     "update": string;
     /**
-     * リアクションとして使えるロール
+     * Roles that can use this emoji as reaction
      */
     "rolesThatCanBeUsedThisEmojiAsReaction": string;
     /**
-     * ロールの指定が一つもない場合、誰でもリアクションとして使えます。
+     * If no roles are specified, anyone can use this emoji as reaction.
      */
     "rolesThatCanBeUsedThisEmojiAsReactionEmptyDescription": string;
     /**
-     * ロールは公開ロールである必要があります。
+     * These roles must be public.
      */
     "rolesThatCanBeUsedThisEmojiAsReactionPublicRoleWarn": string;
     /**
-     * リアクションを取り消しますか？
+     * Really delete your reaction?
      */
     "cancelReactionConfirm": string;
     /**
-     * リアクションを変更しますか？
+     * Really change your reaction?
      */
     "changeReactionConfirm": string;
     /**
-     * あとで
+     * Later
      */
     "later": string;
     /**
-     * Sharkeyへ
+     * To Sharkey
      */
     "goToMisskey": string;
     /**
-     * 絵文字の追加辞書
+     * Additional emoji dictionaries
      */
     "additionalEmojiDictionary": string;
     /**
-     * インストール済み
+     * Installed
      */
     "installed": string;
     /**
-     * ブランディング
+     * Branding
      */
     "branding": string;
     /**
-     * サーバーのマシン情報を公開する
+     * Publish server hardware stats
      */
     "enableServerMachineStats": string;
     /**
-     * 実績を有効にする
+     * Enable Achievements
      */
     "enableAchievements": string;
     /**
-     * オフにすると実績システムは無効になります。
+     * Turning this off will disable the achievement system
      */
     "turnOffAchievements": string;
     /**
-     * botのハッシュタグ追加を許可する
+     * Populate Hashtags with Bots
      */
     "enableBotTrending": string;
     /**
-     * オフにするとボットがハッシュタグを入力しなくなります。
+     * Turning this off will stop Bots from populating Hashtags
      */
     "turnOffBotTrending": string;
     /**
-     * ユーザーごとのIdenticon生成を有効にする
+     * Enable user identicon generation
      */
     "enableIdenticonGeneration": string;
     /**
-     * オフにするとパフォーマンスが向上します。
+     * Turning this off can increase performance.
      */
     "turnOffToImprovePerformance": string;
     /**
-     * 招待コードを作成
+     * Generate invite
      */
     "createInviteCode": string;
     /**
-     * オプションを指定して作成
+     * Generate with options
      */
     "createWithOptions": string;
     /**
-     * 作成数
+     * Invite count
      */
     "createCount": string;
     /**
-     * 招待コードを作成しました
+     * Invite generated
      */
     "inviteCodeCreated": string;
     /**
-     * 作成できる招待コードの数が上限に達しています。
+     * You've exceeded the limit of invites you can generate.
      */
     "inviteLimitExceeded": string;
     /**
-     * 作成できる招待コード: 残り {limit} 個
+     * Invite limit: {limit} remaining
      */
     "createLimitRemaining": ParameterizedString<"limit">;
     /**
-     * {time}で最大 {limit} 個の招待コードを作成できます。
+     * This limit will reset to {limit} at {time}.
      */
-    "inviteLimitResetCycle": ParameterizedString<"time" | "limit">;
+    "inviteLimitResetCycle": ParameterizedString<"limit" | "time">;
     /**
-     * 有効期限
+     * Expiration date
      */
     "expirationDate": string;
     /**
-     * 有効期限を設けない
+     * No expiration
      */
     "noExpirationDate": string;
     /**
-     * 招待コードが使用された日時
+     * Invite code used at
      */
     "inviteCodeUsedAt": string;
     /**
-     * 招待コードを使用したユーザー
+     * Invite used by
      */
     "registeredUserUsingInviteCode": string;
     /**
-     * メール認証待ち
+     * Email verification pending
      */
     "waitingForMailAuth": string;
     /**
-     * 招待コードを作成したユーザー
+     * Invite created by
      */
     "inviteCodeCreator": string;
     /**
-     * 使用日時
+     * Used at
      */
     "usedAt": string;
     /**
-     * 未使用
+     * Unused
      */
     "unused": string;
     /**
-     * 使用済み
+     * Used
      */
     "used": string;
     /**
-     * 期限切れ
+     * Expired
      */
     "expired": string;
     /**
-     * 同意しますか？
+     * Agree?
      */
     "doYouAgree": string;
     /**
-     * 重要ですので必ずお読みください。
+     * Please read this important information.
      */
     "beSureToReadThisAsItIsImportant": string;
     /**
-     * 「{x}」の内容をよく読み、同意します。
+     * I have read the text "{x}" and agree.
      */
     "iHaveReadXCarefullyAndAgree": ParameterizedString<"x">;
     /**
-     * ダイアログ
+     * Dialog
      */
     "dialog": string;
     /**
-     * アイコン
+     * Icon
      */
     "icon": string;
     /**
-     * あなたへ
+     * For you
      */
     "forYou": string;
     /**
-     * 現在のお知らせ
+     * Current announcements
      */
     "currentAnnouncements": string;
     /**
-     * 過去のお知らせ
+     * Past announcements
      */
     "pastAnnouncements": string;
     /**
-     * 未読のお知らせがあります。
+     * There are unread announcements.
      */
     "youHaveUnreadAnnouncements": string;
     /**
-     * ブラウザまたはデバイスの指示に従って、セキュリティキーまたはパスキーを使用してください。
+     * Please follow your browser's or device's instructions to use your security- or passkey.
      */
     "useSecurityKey": string;
     /**
-     * 返信
+     * Replies
      */
     "replies": string;
     /**
-     * ブースト
+     * Boosts
      */
     "renotes": string;
     /**
-     * 返信を見る
+     * Show replies
      */
     "loadReplies": string;
     /**
-     * 会話を見る
+     * Show conversation
      */
     "loadConversation": string;
     /**
-     * ピン留めされたリスト
+     * Pinned list
      */
     "pinnedList": string;
     /**
-     * デバイスの画面を常にオンにする
+     * Keep screen on
      */
     "keepScreenOn": string;
     /**
-     * クリックしてノートを開く
+     * Click to open notes
      */
     "clickToOpen": string;
     /**
-     * ボットをタイムラインに表示
+     * Show bots in timeline
      */
     "showBots": string;
     /**
-     * このリンク先の所有者であることが確認されました
+     * Link ownership has been verified
      */
     "verifiedLink": string;
     /**
-     * 投稿を通知
+     * Notify about new notes
      */
     "notifyNotes": string;
     /**
-     * 投稿の通知を解除
+     * Stop notifying about new notes
      */
     "unnotifyNotes": string;
     /**
-     * 認証
+     * Authentication
      */
     "authentication": string;
     /**
-     * 続けるには認証を行ってください
+     * Please authenticate to continue
      */
     "authenticationRequiredToContinue": string;
     /**
-     * 日時
+     * Timestamp
      */
     "dateAndTime": string;
     /**
-     * ブーストを表示
+     * Show boosts
      */
     "showRenotes": string;
     /**
-     * 編集済み
+     * Edited
      */
     "edited": string;
     /**
-     * 通知の受信設定
+     * Notification Settings
      */
     "notificationRecieveConfig": string;
     /**
-     * 相互フォロー
+     * Mutual follow
      */
     "mutualFollow": string;
     /**
-     * フォロー中またはフォロワー
+     * Following or follower
      */
     "followingOrFollower": string;
     /**
-     * ファイル付きのみ
+     * Only notes with files
      */
     "fileAttachedOnly": string;
     /**
-     * TLに他の人への返信を含める
+     * Show replies to others in timeline
      */
     "showRepliesToOthersInTimeline": string;
     /**
-     * TLに他の人への返信を含めない
+     * Hide replies to others from timeline
      */
     "hideRepliesToOthersInTimeline": string;
     /**
-     * TLに現在フォロー中の人全員の返信を含めるようにする
+     * Show replies to others from everyone you follow in timeline
      */
     "showRepliesToOthersInTimelineAll": string;
     /**
-     * TLに現在フォロー中の人全員の返信を含めないようにする
+     * Hide replies to others from everyone you follow in timeline
      */
     "hideRepliesToOthersInTimelineAll": string;
     /**
-     * この操作は元に戻せません。本当にTLに現在フォロー中の人全員の返信を含めるようにしますか？
+     * This operation is irreversible. Would you really like to show replies to others from everyone you follow in your timeline?
      */
     "confirmShowRepliesAll": string;
     /**
-     * この操作は元に戻せません。本当にTLに現在フォロー中の人全員の返信を含めないようにしますか？
+     * This operation is irreversible. Would you really like to hide replies to others from everyone you follow in your timeline?
      */
     "confirmHideRepliesAll": string;
     /**
-     * 外部サービス
+     * External Services
      */
     "externalServices": string;
     /**
-     * ソースコード
+     * Source code
      */
     "sourceCode": string;
     /**
-     * ソースコードはまだ提供されていません。この問題の修正について管理者に問い合わせてください。
+     * The source code is not yet available. Please contact your administrator to fix this problem.
      */
     "sourceCodeIsNotYetProvided": string;
     /**
-     * リポジトリURL
+     * Repository URL
      */
     "repositoryUrl": string;
     /**
-     * ソースコードが公開されているリポジトリがある場合、そのURLを記入します。Sharkeyを現状のまま（ソースコードにいかなる変更も加えずに）使用している場合は https://activitypub.software/TransFem-org/Sharkey/ と記入します。
+     * If there is a repository where the source code is publicly available, enter its URL. If you are using Sharkey as-is (without any changes to the source code), enter https://activitypub.software/TransFem-org/Sharkey/.
      */
     "repositoryUrlDescription": string;
     /**
-     * リポジトリを公開していない場合、代わりにtarballを提供する必要があります。詳細は.config/example.ymlを参照してください。
+     * If you have not published a repository, you must provide a tarball instead. See .config/example.yml for more information.
      */
     "repositoryUrlOrTarballRequired": string;
     /**
-     * フィードバック
+     * Feedback
      */
     "feedback": string;
     /**
-     * フィードバックURL
+     * Feedback URL
      */
     "feedbackUrl": string;
     /**
-     * 運営者情報
+     * Impressum
      */
     "impressum": string;
     /**
-     * 運営者情報URL
+     * Impressum URL
      */
     "impressumUrl": string;
     /**
-     * ドイツなどの一部の国と地域では表示が義務付けられています(Impressum)。
+     * In some countries, like germany, the inclusion of operator contact information (an Impressum) is legally required for commercial websites.
      */
     "impressumDescription": string;
     /**
-     * プライバシーポリシー
+     * Privacy Policy
      */
     "privacyPolicy": string;
     /**
-     * プライバシーポリシーURL
+     * Privacy Policy URL
      */
     "privacyPolicyUrl": string;
     /**
-     * 利用規約・プライバシーポリシー
+     * Terms of Service and Privacy Policy
      */
     "tosAndPrivacyPolicy": string;
     /**
-     * 寄付する
+     * Donate
      */
     "donation": string;
     /**
-     * 寄付URL
+     * Donation URL
      */
     "donationUrl": string;
     /**
-     * アイコンデコレーション
+     * Avatar decorations
      */
     "avatarDecorations": string;
     /**
-     * 付ける
+     * Attach
      */
     "attach": string;
     /**
-     * 外す
+     * Remove
      */
     "detach": string;
     /**
-     * 全て外す
+     * Remove All
      */
     "detachAll": string;
     /**
-     * 角度
+     * Angle
      */
     "angle": string;
     /**
-     * 反転
+     * Flip
      */
     "flip": string;
     /**
-     * アイコンの後ろに表示
+     * Show Below Avatar
      */
     "showBelowAvatar": string;
     /**
-     * アイコンのデコレーションを表示
+     * Show avatar decorations
      */
     "showAvatarDecorations": string;
     /**
-     * 離してリロード
+     * Release to refresh
      */
     "releaseToRefresh": string;
     /**
-     * リロード中
+     * Refreshing...
      */
     "refreshing": string;
     /**
-     * 引っ張ってリロード
+     * Pull down to refresh
      */
     "pullDownToRefresh": string;
     /**
-     * タイムラインのリアルタイム更新を無効にする
+     * Disable real-time timeline updates
      */
     "disableStreamingTimeline": string;
     /**
-     * 通知をグルーピングして表示する
+     * Display grouped notifications
      */
     "useGroupedNotifications": string;
     /**
-     * メールアドレスの確認中に問題が発生しました。リンクの有効期限が切れている可能性があります。
+     * There was a problem verifying the email address. The link may have expired.
      */
     "signupPendingError": string;
     /**
-     * 「内容を隠す」がオンの場合は注釈の記述が必要です。
+     * If "Hide content" is enabled, a description must be provided.
      */
     "cwNotationRequired": string;
     /**
-     * リアクションする
+     * Add reaction
      */
     "doReaction": string;
     /**
-     * コード
+     * Code
      */
     "code": string;
     /**
-     * 設定の反映にはリロードが必要です。
+     * Reloading is required to apply the settings.
      */
     "reloadRequiredToApplySettings": string;
     /**
-     * 残り: {n}
+     * Remaining: {n}
      */
     "remainingN": ParameterizedString<"n">;
     /**
-     * 現在の内容に上書きされますがよろしいですか？
+     * Are you sure you want to overwrite the current content?
      */
     "overwriteContentConfirm": string;
     /**
-     * 季節に応じた画面の演出
+     * Seasonal screen effects
      */
     "seasonalScreenEffect": string;
     /**
-     * デコる
+     * Decorate
      */
     "decorate": string;
     /**
-     * 装飾を追加
+     * Add MFM
      */
     "addMfmFunction": string;
     /**
-     * 高度なMFMのピッカーを表示する
+     * Show advanced MFM picker
      */
     "enableQuickAddMfmFunction": string;
     /**
-     * バブルゲーム
+     * Bubble Game
      */
     "bubbleGame": string;
     /**
-     * 効果音
+     * Sound Effects
      */
     "sfx": string;
     /**
-     * サウンドが再生されます
+     * Sound will be played
      */
     "soundWillBePlayed": string;
     /**
-     * リプレイを見る
+     * View Replay
      */
     "showReplay": string;
     /**
-     * リプレイ
+     * Replay
      */
     "replay": string;
     /**
-     * リプレイ中
+     * Showing replay
      */
     "replaying": string;
     /**
-     * リプレイを終了
+     * Exit Replay
      */
     "endReplay": string;
     /**
-     * リプレイデータをコピー
+     * Copy replay data
      */
     "copyReplayData": string;
     /**
-     * ランキング
+     * Ranking
      */
     "ranking": string;
     /**
-     * 直近{n}日
+     * Last {n} days
      */
     "lastNDays": ParameterizedString<"n">;
     /**
-     * タイトルへ
+     * Go back to title
      */
     "backToTitle": string;
     /**
-     * お住まいの地域
+     * Where are you located
      */
     "hemisphere": string;
     /**
-     * センシティブなファイルを含むノートを表示
+     * Include notes with sensitive files
      */
     "withSensitive": string;
     /**
-     * {name}のセンシティブなファイルを含む投稿
+     * Post by {name} contains sensitive content
      */
     "userSaysSomethingSensitive": ParameterizedString<"name">;
     /**
-     * スワイプしてタブを切り替える
+     * Swipe to switch tabs
      */
     "enableHorizontalSwipe": string;
     /**
-     * 読み込み中
+     * Loading
      */
     "loading": string;
     /**
-     * やめる
+     * Cancel
      */
     "surrender": string;
     /**
-     * リトライ
+     * Retry
      */
     "gameRetry": string;
     /**
-     * 使用しない場合は空欄にしてください
+     * Leave blank if not used
      */
     "notUsePleaseLeaveBlank": string;
     /**
-     * ワンタイムパスワードを使う
+     * Enter the One-Time Password
      */
     "useTotp": string;
     /**
-     * バックアップコードを使う
+     * Use the backup codes
      */
     "useBackupCode": string;
     /**
-     * アプリを起動
+     * Launch the app
      */
     "launchApp": string;
     /**
-     * 動画・音声の再生にブラウザのUIを使用する
+     * Use UI of browser when play video and audio
      */
     "useNativeUIForVideoAudioPlayer": string;
     /**
-     * オリジナルのファイル名を保持
+     * Keep original file name
      */
     "keepOriginalFilename": string;
     /**
-     * この設定をオフにすると、アップロード時にファイル名が自動でランダム文字列に置き換えられます。
+     * If you turn off this setting, files names will be replaced with random string automatically when you upload files.
      */
     "keepOriginalFilenameDescription": string;
     /**
-     * 説明文はありません
+     * No description
      */
     "noDescription": string;
     /**
-     * フォローの際常に確認する
+     * Always confirm when following
      */
     "alwaysConfirmFollow": string;
     /**
-     * お問い合わせ
+     * Contact
      */
     "inquiry": string;
     /**
-     * もう一度お試しください。
+     * Please try again later
      */
     "tryAgain": string;
     /**
-     * センシティブなメディアを表示するとき確認する
+     * Confirm when revealing sensitive media
      */
     "confirmWhenRevealingSensitiveMedia": string;
     /**
-     * センシティブなメディアです。表示しますか？
+     * This media might be sensitive. Are you sure you want to reveal it?
      */
     "sensitiveMediaRevealConfirm": string;
     /**
-     * 外部URLを開く際に警告を表示する
+     * Show warning when opening external URLs
      */
     "warnExternalUrl": string;
     /**
-     * 作成したリスト
+     * Created lists
      */
     "createdLists": string;
     /**
-     * 作成したアンテナ
+     * Created antennas
      */
     "createdAntennas": string;
     /**
-     * 以下の関係をすべて断ち切る
+     * Break following relationships
      */
     "severAllFollowRelations": string;
     /**
-     * すべての人間関係を壊す？これは不可逆です！これは{instanceName}の{followingCount}フォローと{followersCount}フォロワーの関係を壊す！
+     * Really break all follow relationships? This is irreversible! This will break {followingCount} following and {followersCount} follower relations on {instanceName}!
      */
-    "severAllFollowRelationsConfirm": ParameterizedString<"instanceName" | "followingCount" | "followersCount">;
+    "severAllFollowRelationsConfirm": ParameterizedString<"followingCount" | "followersCount" | "instanceName">;
     /**
-     * キューに入れられた{host}とのすべてのフォロー関係を切断する。
+     * Severing all follow relations with {host} queued.
      */
     "severAllFollowRelationsQueued": ParameterizedString<"host">;
+    /**
+     * Sharkey Stelpolva Edition adds additional keyword syntax to the antenna settings.
+     * That means, the special keyword `domain:example.com` will match all posts from `example.com`. This keyword can also be used in OR syntax.
+     * Specifically, you must use `domain:here` to match posts in this instance.
+     *
+     */
+    "stpvAntennaPatch": string;
+    /**
+     * Use the `A OR B` syntax to search for notes containing either A or B. `A B` (with a space in between) means posts containing both keywords A and B.
+     */
+    "stpvPgroongaSearchInstru": string;
+    /**
+     * Time Travel
+     */
+    "timeTravel": string;
+    /**
+     * Show posts before this date
+     */
+    "timeTravelDescription": string;
+    "makePrivate": {
+        /**
+         * Make private
+         */
+        "text": string;
+        /**
+         * Making a post private will make it visible only to you and send a deletion request to remote servers.
+         */
+        "description": string;
+        /**
+         * Are you sure you want to make this post private?
+         */
+        "confirm": string;
+        /**
+         * Making posts private in batches is a **permanent, irreversible** process and places a certain amount of load on the server. Please proceed with caution. You can only make posts private in batches once an hour.
+         */
+        "warn": string;
+        /**
+         * Since Date
+         */
+        "sinceDate": string;
+        /**
+         * Until Date
+         */
+        "untilDate": string;
+        /**
+         * Since this is a very dangerous operation, please enter `{text}` to enable this feature
+         */
+        "dangerTip": ParameterizedString<"text">;
+        /**
+         * There are {count} posts that will be made private
+         */
+        "manyCount": ParameterizedString<"count">;
+        /**
+         * Make posts private!
+         */
+        "textmany": string;
+        /**
+         * Do you really want to make these {count} posts private in batches? This operation is irreversible and your posts will only be visible to you forever (really!)
+         */
+        "manyWarn": ParameterizedString<"count">;
+        /**
+         * The making-private process has started
+         */
+        "didStart": string;
+        /**
+         * Bulk make posts private
+         */
+        "bulkText": string;
+    };
     "_delivery": {
         /**
-         * 配信状態
+         * Delivery status
          */
         "status": string;
         /**
-         * 配信停止
+         * Suspend delivery
          */
         "stop": string;
         /**
-         * 配信再開
+         * Resume delivery
          */
         "resume": string;
         "_type": {
             /**
-             * 配信中
+             * Publishing
              */
             "none": string;
             /**
-             * 手動停止中
+             * Manually suspended
              */
             "manuallySuspended": string;
             /**
-             * サーバー削除のため停止中
+             * Server is suspended due to server deletion
              */
             "goneSuspended": string;
             /**
-             * サーバー応答なしのため停止中
+             * Server is suspended due to no responding
              */
             "autoSuspendedForNotResponding": string;
         };
     };
     "_bubbleGame": {
         /**
-         * 遊び方
+         * How to play
          */
         "howToPlay": string;
         /**
-         * ホールド
+         * Hold
          */
         "hold": string;
         "_score": {
             /**
-             * スコア
+             * Score
              */
             "score": string;
             /**
-             * 稼いだ金額
+             * Amount of money earned
              */
             "scoreYen": string;
             /**
-             * ハイスコア
+             * High score
              */
             "highScore": string;
             /**
-             * 最大チェーン数
+             * Maximum number of chains
              */
             "maxChain": string;
             /**
-             * {yen}円
+             * {yen} Yen
              */
             "yen": ParameterizedString<"yen">;
             /**
-             * {qty}個分
+             * {qty} Pieces
              */
             "estimatedQty": ParameterizedString<"qty">;
             /**
-             * おにぎり {onigiriQtyWithUnit}
+             * {onigiriQtyWithUnit} Onigiri
              */
             "scoreSweets": ParameterizedString<"onigiriQtyWithUnit">;
         };
         "_howToPlay": {
             /**
-             * 位置を調整してハコにモノを落とします。
+             * Adjust the position and drop the object into the box.
              */
             "section1": string;
             /**
-             * 同じ種類のモノがくっつくと別のモノに変化して、スコアが得られます。
+             * When two objects of the same type touch each other, they will change into a different object and you score points.
              */
             "section2": string;
             /**
-             * モノがハコからあふれるとゲームオーバーです。ハコからあふれないようにしつつモノを融合させてハイスコアを目指そう！
+             * The game is over when objects overflow from the box. Aim for a high score by fusing objects together while you avoid overflowing the box!
              */
             "section3": string;
         };
     };
     "_announcement": {
         /**
-         * 既存ユーザーのみ
+         * Existing users only
          */
         "forExistingUsers": string;
         /**
-         * 有効にすると、このお知らせ作成時点で存在するユーザーにのみお知らせが表示されます。無効にすると、このお知らせ作成後にアカウントを作成したユーザーにもお知らせが表示されます。
+         * This announcement will only be shown to users existing at the point of publishment if enabled. If disabled, those newly signing up after it has been posted will also see it.
          */
         "forExistingUsersDescription": string;
         /**
-         * 既読にするのに確認が必要
+         * Require separate read confirmation
          */
         "needConfirmationToRead": string;
         /**
-         * 有効にすると、このお知らせを既読にする際に確認ダイアログが表示されます。また、一括既読操作の対象になりません。
+         * A separate prompt to confirm marking this announcement as read will be displayed if enabled. This announcement will also be excluded from any "Mark all as read" functionality.
          */
         "needConfirmationToReadDescription": string;
         /**
-         * お知らせを終了
+         * Archive announcement
          */
         "end": string;
         /**
-         * アクティブなお知らせが多いため、UXが低下する可能性があります。終了したお知らせはアーカイブすることを検討してください。
+         * Having too many active announcements may worsen the user experience. Please consider archiving announcements that have become obsolete.
          */
         "tooManyActiveAnnouncementDescription": string;
         /**
-         * 既読にしますか？
+         * Mark as read?
          */
         "readConfirmTitle": string;
         /**
-         * 「{title}」の内容を読み、既読にします。
+         * This will mark the contents of "{title}" as read.
          */
         "readConfirmText": ParameterizedString<"title">;
         /**
-         * 特に新規ユーザーのUXを損ねる可能性が高いため、常時掲示するための情報ではなく、即時性が求められる情報の掲示のためにお知らせを使用することを推奨します。
+         * It's best to use announcements to publish fresh and time-bound information, not for information that will be relevant in the long term.
          */
         "shouldNotBeUsedToPresentPermanentInfo": string;
         /**
-         * ダイアログ形式のお知らせが同時に2つ以上ある場合、UXに悪影響を及ぼす可能性が非常に高いため、使用は慎重に行うことを推奨します。
+         * Having two or more dialog-style notifications simultaneously can significantly impact the user experience, so please use them carefully.
          */
         "dialogAnnouncementUxWarn": string;
         /**
-         * 非通知
+         * No notification
          */
         "silence": string;
         /**
-         * オンにすると、このお知らせは通知されず、既読にする必要もなくなります。
+         * Turning this on will skip the notification of this announcement and the user won't need to read it.
          */
         "silenceDescription": string;
     };
     "_initialAccountSetting": {
         /**
-         * アカウントの作成が完了しました！
+         * Your account was successfully created!
          */
         "accountCreated": string;
         /**
-         * さっそくアカウントの初期設定を行いましょう。
+         * For starters, let's set up your profile.
          */
         "letsStartAccountSetup": string;
         /**
-         * まずはあなたのプロフィールを設定しましょう。
+         * First, let's set up your profile.
          */
         "letsFillYourProfile": string;
         /**
-         * プロフィール設定
+         * Profile settings
          */
         "profileSetting": string;
         /**
-         * プライバシー設定
+         * Privacy settings
          */
         "privacySetting": string;
         /**
-         * これらの設定は後から変更できます。
+         * You can always change these settings later.
          */
         "theseSettingsCanEditLater": string;
         /**
-         * この他にも様々な設定を「設定」ページから行えます。ぜひ後で確認してみてください。
+         * There are many more settings you can configure from the "Settings" page. Be sure to visit it later.
          */
         "youCanEditMoreSettingsInSettingsPageLater": string;
         /**
-         * タイムラインを構築するため、気になるユーザーをフォローしてみましょう。
+         * Try following some users that interest you to build up your timeline.
          */
         "followUsers": string;
         /**
-         * プッシュ通知を有効にすると{name}の通知をお使いのデバイスで受け取ることができます。
+         * Enabling push notifications will allow you to receive notifications from {name} directly on your device.
          */
         "pushNotificationDescription": ParameterizedString<"name">;
         /**
-         * 初期設定が完了しました！
+         * Profile setup complete!
          */
         "initialAccountSettingCompleted": string;
         /**
-         * {name}をお楽しみください！
+         * Enjoy {name}!
          */
         "haveFun": ParameterizedString<"name">;
         /**
-         * このまま{name}(Sharkey)の使い方についてのチュートリアルに進むこともできますが、ここで中断してすぐに使い始めることもできます。
+         * You can proceed to a tutorial on how to use {name} (Sharkey) or you can exit the setup here and start using it immediately.
          */
         "youCanContinueTutorial": ParameterizedString<"name">;
         /**
-         * チュートリアルを開始
+         * Start Tutorial
          */
         "startTutorial": string;
         /**
-         * 初期設定をスキップしますか？
+         * Really skip profile setup?
          */
         "skipAreYouSure": string;
         /**
-         * 初期設定をあとでやり直しますか？
+         * Really do profile setup later?
          */
         "laterAreYouSure": string;
     };
     "_initialTutorial": {
         /**
-         * チュートリアルを見る
+         * Start Tutorial
          */
         "launchTutorial": string;
         /**
-         * チュートリアル
+         * Tutorial
          */
         "title": string;
         /**
-         * よくできました
+         * Well done!
          */
         "wellDone": string;
         /**
-         * チュートリアルを終了しますか？
+         * Quit Tutorial?
          */
         "skipAreYouSure": string;
         "_landing": {
             /**
-             * チュートリアルへようこそ
+             * Welcome to the Tutorial
              */
             "title": string;
             /**
-             * ここでは、Sharkeyの基本的な使い方や機能を確認できます。
+             * Here, you can learn the basics of using Sharkey and its features.
              */
             "description": string;
         };
         "_note": {
             /**
-             * ノートって何？
+             * What is a Note?
              */
             "title": string;
             /**
-             * Sharkeyでの投稿は「ノート」と呼びます。ノートはタイムラインに時系列で並んでいて、リアルタイムで更新されていきます。
+             * Posts on Sharkey are called 'Notes.' Notes are arranged chronologically on the timeline and are updated in real-time.
              */
             "description": string;
             /**
-             * 返信することができます。返信に対しての返信も可能で、スレッドのように会話を続けることもできます。
+             * Click on this button to reply to a message. It's also possible to reply to replies, continuing the conversation like a thread.
              */
             "reply": string;
             /**
-             * そのノートを自分のタイムラインに流して共有することができます。テキストを追加して引用することも可能です。
+             * You can share that note to your own timeline. You can also quote them with your comments.
              */
             "renote": string;
             /**
-             * リアクションをつけることができます。詳しくは次のページで解説します。
+             * You can add reactions to the Note. More details will be explained on the next page.
              */
             "reaction": string;
             /**
-             * ノートの詳細を表示したり、リンクをコピーしたりなどの様々な操作が行えます。
+             * You can view Note details, copy links, and perform various other actions.
              */
             "menu": string;
         };
         "_reaction": {
             /**
-             * リアクションって何？
+             * What are Reactions?
              */
             "title": string;
             /**
-             * ノートには「リアクション」をつけることができます。「いいね」では伝わらないニュアンスも、リアクションで簡単・気軽に表現できます。
+             * Notes can be reacted to with various emojis. Reactions allow you to express nuances that may not be conveyed with just a 'like.'
              */
             "description": string;
             /**
-             * リアクションは、ノートの「{reaction}」ボタンをクリックするとつけられます。試しにこのサンプルのノートにリアクションをつけてみてください！
+             * Reactions can be added by clicking the '{reaction}' button on the note. Try reacting to this sample note!
              */
             "letsTryReacting": ParameterizedString<"reaction">;
             /**
-             * リアクションをつけると先に進めるようになります。
+             * Add a reaction to proceed.
              */
             "reactToContinue": string;
             /**
-             * あなたのノートが誰かにリアクションされると、リアルタイムで通知を受け取ります。
+             * You'll receive real-time notifications when someone reacts to your note.
              */
             "reactNotification": string;
             /**
-             * 「{undo}」ボタンを押すとリアクションを取り消すことができます。
+             * You can undo a reaction by pressing the '{undo}' button.
              */
             "reactDone": ParameterizedString<"undo">;
         };
         "_timeline": {
             /**
-             * タイムラインのしくみ
+             * The Concept of Timelines
              */
             "title": string;
             /**
-             * Sharkeyには、使い方に応じて複数のタイムラインが用意されています（サーバーによってはいずれかが無効になっていることがあります）。
+             * Sharkey provides multiple timelines based on usage (some may not be available depending on the server's policies).
              */
             "description1": string;
             /**
-             * あなたがフォローしているアカウントの投稿を見られます。
+             * You can view notes from accounts you follow.
              */
             "home": string;
             /**
-             * このサーバーにいるユーザー全員の投稿を見られます。
+             * You can view notes from all users on this server.
              */
             "local": string;
             /**
-             * ホームタイムラインとローカルタイムラインの投稿が両方表示されます。
+             * Notes from the Home and Local timelines will be displayed.
              */
             "social": string;
             /**
-             * 接続している他のすべてのサーバーからの投稿を見られます。
-             */
-            "global": string;
-            /**
-             * 管理者が選択した他の接続サーバーの投稿を見ることができます。
+             * You can view notes from connected servers picked by your admins.
              */
             "bubble": string;
             /**
-             * それぞれのタイムラインは、画面上部でいつでも切り替えられます。
+             * You can view notes from all connected servers.
+             */
+            "global": string;
+            /**
+             * You can switch between timelines at the top of the screen at any time.
              */
             "description2": string;
             /**
-             * その他にも、リストタイムラインやチャンネルタイムラインなどがあります。詳しくは{link}をご覧ください。
+             * Additionally, there are list timelines and channel timelines. For more details, please refer to {link}.
              */
             "description3": ParameterizedString<"link">;
         };
         "_postNote": {
             /**
-             * ノートの投稿設定
+             * Note Posting Settings
              */
             "title": string;
             /**
-             * Sharkeyにノートを投稿する際には、様々なオプションの設定が可能です。投稿フォームはこのようになっています。
+             * When posting a note on Sharkey, various options are available. The posting form looks like this.
              */
             "description1": string;
             "_visibility": {
                 /**
-                 * ノートを表示できる相手を制限できます。
+                 * You can limit who can view your note.
                  */
                 "description": string;
                 /**
-                 * すべてのユーザーに公開。
+                 * Your note will be visible for all users.
                  */
                 "public": string;
                 /**
-                 * ホームタイムラインのみに公開。フォロワー・プロフィールを見に来た人・ブーストから、他のユーザーも見ることができます。
+                 * Public only on the Home timeline. People visiting your profile, via followers, and through boosts can see it.
                  */
                 "home": string;
                 /**
-                 * フォロワーにのみ公開。本人以外がブーストすることはできず、またフォロワー以外は閲覧できません。
+                 * Visible to followers only. Only followers can see it and no one else, and it cannot be boosted by others.
                  */
                 "followers": string;
                 /**
-                 * 指定したユーザーにのみ公開され、また相手に通知が入ります。ダイレクトメッセージのかわりにお使いいただけます。
+                 * Visible only to specified users, and the recipient will be notified. It can be used as an alternative to direct messaging.
                  */
                 "direct": string;
                 /**
-                 * 機密情報は送信する際は注意してください。
+                 * Be careful when sending sensitive information!
                  */
                 "doNotSendConfidencialOnDirect1": string;
                 /**
-                 * 送信先のサーバーの管理者は投稿内容を見ることが可能なので、信頼できないサーバーのユーザーにダイレクト投稿を送信する場合は、機密情報の扱いに注意が必要です。
+                 * Administrators of the server can see what you write. Be careful with sensitive information when sending direct notes to users on untrusted servers.
                  */
                 "doNotSendConfidencialOnDirect2": string;
                 /**
-                 * 他のサーバーに投稿を連合しません。上記の公開範囲に関わらず、他のサーバーのユーザーは、この設定がついたノートを直接閲覧することができなくなります。
+                 * Posting with this flag will not federate the note to other servers. Users on other servers will not be able to view these notes directly, regardless of the display settings above.
                  */
                 "localOnly": string;
             };
             "_cw": {
                 /**
-                 * 内容を隠す（CW）
+                 * Content Warning
                  */
                 "title": string;
                 /**
-                 * 本文のかわりに「注釈」に書いた内容が表示されます。「もっと見る」を押すと本文が表示されます。
+                 * Instead of the body, the content written in 'comments' field will be displayed. Pressing "read more" will reveal the body.
                  */
                 "description": string;
                 "_exampleNote": {
                     /**
-                     * 飯テロ注意
+                     * This will surely make you hungry!
                      */
                     "cw": string;
                     /**
-                     * チョコのかかったドーナツを食べました🍩😋
+                     * Just had a chocolate-glazed donut 🍩😋
                      */
                     "note": string;
                 };
                 /**
-                 * サーバーのガイドラインにより必要とされるノートに指定したり、ネタバレ投稿やセンシティブな文章を自主規制したりするときに使います。
+                 * This is used when following the server guidelines, for necessary notes, or for self-restriction of spoiler or sensitive text.
                  */
                 "useCases": string;
             };
         };
         "_howToMakeAttachmentsSensitive": {
             /**
-             * 添付ファイルをセンシティブにするには？
+             * How to Mark Attachments as Sensitive?
              */
             "title": string;
             /**
-             * サーバーのガイドラインにより必要とされる際や、そのまま見れる状態にしておくべきではない添付ファイルには、「センシティブ」設定を付けます。
+             * For attachments that are required by server guidelines or that should not be left intact, add a "sensitive" flag.
              */
             "description": string;
             /**
-             * 試しに、このフォームに添付された画像をセンシティブにしてみてください！
+             * Try marking the image attached in this form as sensitive!
              */
             "tryThisFile": string;
             "_exampleNote": {
                 /**
-                 * 納豆のフタ開けるのミスったわね…
+                 * Oops, messed up opening the natto lid...
                  */
                 "note": string;
             };
             /**
-             * 添付ファイルをセンシティブにする際は、そのファイルをクリックしてメニューを開き、「センシティブとして設定」をクリックします。
+             * To mark an attachment as sensitive, click the file thumbnail, open the menu, and click "Mark as Sensitive."
              */
             "method": string;
             /**
-             * ファイルを添付する際は、サーバーのガイドラインに従ってセンシティブを適切に設定してください。
+             * When attaching files, please set sensitivities in accordance with the server guidelines.
              */
             "sensitiveSucceeded": string;
             /**
-             * 画像をセンシティブに設定すると先に進めるようになります。
+             * Mark the attachment file as sensitive to proceed.
              */
             "doItToContinue": string;
         };
         "_done": {
             /**
-             * チュートリアルは終了です🎉
+             * The tutorial is complete! 🎉
              */
             "title": string;
             /**
-             * ここで紹介した機能はほんの一部にすぎません。Sharkeyの使い方をより詳しく知るには、{link}をご覧ください。
+             * The functions introduced here are just a small part. For a more detailed understanding of using Sharkey, please refer to {link}.
              */
             "description": ParameterizedString<"link">;
         };
     };
     "_timelineDescription": {
         /**
-         * ホームタイムラインでは、あなたがフォローしているアカウントの投稿を見られます。
+         * In the Home timeline, you can see notes from accounts you follow.
          */
         "home": string;
         /**
-         * ローカルタイムラインでは、このサーバーにいるユーザー全員の投稿を見られます。
+         * In the Local timeline, you can see notes from all users on this server.
          */
         "local": string;
         /**
-         * ソーシャルタイムラインには、ホームタイムラインとローカルタイムラインの投稿が両方表示されます。
+         * The Social timeline displays notes from both the Home and Local timelines.
          */
         "social": string;
         /**
-         * バブルタイムラインでは、管理者が選択した接続サーバーからの投稿を表示できます。
+         * In the Bubble timeline, you can see notes from connected servers picked by your admins.
          */
         "bubble": string;
         /**
-         * グローバルタイムラインでは、接続している他のすべてのサーバーからの投稿を見られます。
+         * In the Global timeline, you can see notes from all connected servers.
          */
         "global": string;
     };
     "_serverRules": {
         /**
-         * 新規登録前に表示する、サーバーの簡潔なルールを設定します。内容は利用規約の要約とすることを推奨します。
+         * A set of rules to be displayed before registration. Setting a summary of the Terms of Service is recommended.
          */
         "description": string;
     };
     "_serverSettings": {
         /**
-         * アイコン画像のURL
+         * Icon URL
          */
         "iconUrl": string;
         /**
-         * {host}がアプリとして表示される際のアイコンを指定します。
+         * Specifies the icon to use when {host} is displayed as an app.
          */
         "appIconDescription": ParameterizedString<"host">;
         /**
-         * 例: PWAや、スマートフォンのホーム画面にブックマークとして追加された時など
+         * E.g. As PWA, or when displayed as a home screen bookmark on a phone
          */
         "appIconUsageExample": string;
         /**
-         * 円形もしくは角丸にクロップされる場合があるため、塗り潰された余白のある背景を持つことが推奨されます。
+         * As the icon may be cropped to a square or circle, an icon with colored margin around the content is recommended.
          */
         "appIconStyleRecommendation": string;
         /**
-         * 解像度は必ず{resolution}である必要があります。
+         * The minimum resolution is {resolution}.
          */
         "appIconResolutionMustBe": ParameterizedString<"resolution">;
         /**
-         * ロゴURL
+         * Logo URL
          */
         "sidebarLogoUrl": string;
         /**
-         * 高精細、ダイナミック幅のシナリオで通常のアイコンの代わりに使用するロゴを指定します。
+         * Specifies the logo to use instead of the regular icon in high definition, dynamic-width scenarios.
          */
         "sidebarLogoDescription": string;
         /**
-         * 例：サイドバー、訪問者用、「情報」ページ
+         * E.g. In the sidebar, to visitors and in the "About" page.
          */
         "sidebarLogoUsageExample": string;
         /**
-         * manifest.jsonのオーバーライド
+         * manifest.json Override
          */
         "manifestJsonOverride": string;
         /**
-         * 略称
+         * Short name
          */
         "shortName": string;
         /**
-         * サーバーの正式名称が長い場合に、代わりに表示することのできる略称や通称。
+         * A shorthand for the instance's name that can be displayed if the full official name is long.
          */
         "shortNameDescription": string;
         /**
-         * 有効にすると、各種タイムラインを取得する際のパフォーマンスが大幅に向上し、データベースへの負荷を軽減することが可能です。ただし、Redisのメモリ使用量は増加します。サーバーのメモリ容量が少ない場合、または動作が不安定な場合は無効にすることができます。
+         * Greatly increases performance of timeline retrieval and reduces load on the database when enabled. In exchange, memory usage of Redis will increase. Consider disabling this in case of low server memory or server instability.
          */
         "fanoutTimelineDescription": string;
         /**
-         * データベースへのフォールバック
+         * Fallback to database
          */
         "fanoutTimelineDbFallback": string;
         /**
-         * 有効にすると、タイムラインがキャッシュされていない場合にDBへ追加で問い合わせを行うフォールバック処理を行います。無効にすると、フォールバック処理を行わないことでさらにサーバーの負荷を軽減することができますが、タイムラインが取得できる範囲に制限が生じます。
+         * When enabled, the timeline will fall back to the database for additional queries if the timeline is not cached. Disabling it further reduces the server load by eliminating the fallback process, but limits the range of timelines that can be retrieved.
          */
         "fanoutTimelineDbFallbackDescription": string;
         /**
-         * 問い合わせ先URL
+         * Contact URL
          */
         "inquiryUrl": string;
         /**
-         * サーバー運営者へのお問い合わせフォームのURLや、運営者の連絡先等が記載されたWebページのURLを指定します。
+         * Specify the URL of a web page that contains a contact form or the instance operators' contact information.
          */
         "inquiryUrlDescription": string;
     };
     "_accountMigration": {
         /**
-         * 別のアカウントからこのアカウントに移行
+         * Migrate another account to this one
          */
         "moveFrom": string;
         /**
-         * 別のアカウントへエイリアスを作成
+         * Create alias to another account
          */
         "moveFromSub": string;
         /**
-         * 移行元のアカウント #{n}
+         * Original Account #{n}
          */
         "moveFromLabel": ParameterizedString<"n">;
         /**
-         * 別のアカウントからこのアカウントに移行したい場合、ここでエイリアスを作成しておく必要があります。
-         * 移行元のアカウントをこのように入力してください: @username@server.example.com
-         * 削除するには、入力欄を空にして保存します（非推奨）。
+         * You must create an alias for the account to move from on this account.
+         * Enter the account to migrate from in the following format: @username@server.example.com
+         * To delete the alias, leave the field empty (not recommended).
          */
         "moveFromDescription": string;
         /**
-         * このアカウントを新しいアカウントへ移行
+         * Migrate this account to a different one
          */
         "moveTo": string;
         /**
-         * 移行先のアカウント:
+         * Account to move to:
          */
         "moveToLabel": string;
         /**
-         * アカウントを移行すると、取り消すことはできません。
+         * Account migration cannot be undone.
          */
         "moveCannotBeUndone": string;
         /**
-         * 新しいアカウントへ移行します。
-         * 　・フォロワーが新しいアカウントを自動でフォローします
-         * 　・このアカウントからのフォローは全て解除されます
-         * 　・このアカウントではノートの作成などができなくなります
+         * This will migrate your account to a different one.
+         * 　・Followers from this account will automatically be migrated to the new account
+         * 　・This account will unfollow all users it is currently following
+         * 　・You will be unable to create new notes etc. on this account
          *
-         * フォロワーの移行は自動ですが、フォローの移行は手動で行う必要があります。移行前にこのアカウントでフォローエクスポートし、移行後すぐに移行先アカウントでインポートを行なってください。
-         * リスト・ミュート・ブロックについても同様ですので、手動で移行する必要があります。
+         * While migration of followers is automatic, you must manually prepare some steps to migrate the list of users you are following. To do so, carry out a follows export that you will later import on the new account in the settings menu. The same procedure applies to your lists as well as your muted and blocked users.
          *
-         * （この説明はこのサーバー（Sharkey v13.12.0以降）の仕様です。Mastodonなどの他のActivityPubソフトウェアでは挙動が異なる場合があります。）
+         * (This explanation applies to Sharkey v13.12.0 and later. Other ActivityPub software, such as Mastodon, might function differently.)
          */
         "moveAccountDescription": string;
         /**
-         * アカウントの移行には、まずは移行先のアカウントでこのアカウントに対しエイリアスを作成します。
-         * エイリアス作成後、移行先のアカウントを次のように入力してください: @username@server.example.com
+         * To migrate, first create an alias for this account on the account to move to.
+         * After you have created the alias, enter the account to move to in the following format: @username@server.example.com
          */
         "moveAccountHowTo": string;
         /**
-         * 移行する
+         * Migrate
          */
         "startMigration": string;
         /**
-         * 本当にこのアカウントを {account} に移行しますか？一度移行すると取り消せず、二度とこのアカウントを元の状態で使用できなくなります。
+         * Really migrate this account to {account}? Once started, this process cannot be stopped or taken back, and you will not be able to use this account in its original state anymore.
          */
         "migrationConfirm": ParameterizedString<"account">;
         /**
          *
-         * アカウントは移行されています。
-         * 移行を取り消すことはできません。
+         * This account has been migrated.
+         * Migration cannot be reversed.
          */
         "movedAndCannotBeUndone": string;
         /**
-         * このアカウントからのフォロー解除は移行操作から24時間後に実行されます。
-         * このアカウントのフォロー・フォロワー数は0になっています。フォロワーの解除はされないため、あなたのフォロワーはこのアカウントのフォロワー向け投稿を引き続き閲覧できます。
+         * This account will unfollow all accounts it is currently following 24 hours after migration finishes.
+         * Both the number of follows and followers will then become zero. To avoid your followers from being unable to see followers only posts of this account, they will however continue following this account.
          */
         "postMigrationNote": string;
         /**
-         * 移行先のアカウント:
+         * New account:
          */
         "movedTo": string;
     };
     "_achievements": {
         /**
-         * 獲得日時
+         * Unlocked at
          */
         "earnedAt": string;
         "_types": {
@@ -6017,151 +6088,151 @@ export interface Locale extends ILocale {
                  */
                 "title": string;
                 /**
-                 * 初めてノートを投稿した
+                 * Post your first note
                  */
                 "description": string;
                 /**
-                 * 良いSharkeyライフを！
+                 * Have a good time with Sharkey!
                  */
                 "flavor": string;
             };
             "_notes10": {
                 /**
-                 * いくつかのノート
+                 * Some notes
                  */
                 "title": string;
                 /**
-                 * ノートを10回投稿した
+                 * Post 10 notes
                  */
                 "description": string;
             };
             "_notes100": {
                 /**
-                 * たくさんのノート
+                 * A lot of notes
                  */
                 "title": string;
                 /**
-                 * ノートを100回投稿した
+                 * Post 100 notes
                  */
                 "description": string;
             };
             "_notes500": {
                 /**
-                 * ノートまみれ
+                 * Covered in notes
                  */
                 "title": string;
                 /**
-                 * ノートを500回投稿した
+                 * Post 500 notes
                  */
                 "description": string;
             };
             "_notes1000": {
                 /**
-                 * ノートの山
+                 * A mountain of notes
                  */
                 "title": string;
                 /**
-                 * ノートを1,000回投稿した
+                 * Post 1,000 notes
                  */
                 "description": string;
             };
             "_notes5000": {
                 /**
-                 * 湧き出るノート
+                 * Overflowing notes
                  */
                 "title": string;
                 /**
-                 * ノートを5,000回投稿した
+                 * Post 5,000 notes
                  */
                 "description": string;
             };
             "_notes10000": {
                 /**
-                 * スーパーノート
+                 * Supernote
                  */
                 "title": string;
                 /**
-                 * ノートを10,000回投稿した
+                 * Post 10,000 notes
                  */
                 "description": string;
             };
             "_notes20000": {
                 /**
-                 * ニードモアノート
+                 * Need... more... notes...
                  */
                 "title": string;
                 /**
-                 * ノートを20,000回投稿した
+                 * Post 20,000 notes
                  */
                 "description": string;
             };
             "_notes30000": {
                 /**
-                 * ノートノートノート
+                 * Notes notes notes!
                  */
                 "title": string;
                 /**
-                 * ノートを30,000回投稿した
+                 * Post 30,000 notes
                  */
                 "description": string;
             };
             "_notes40000": {
                 /**
-                 * ノート工場
+                 * Note factory
                  */
                 "title": string;
                 /**
-                 * ノートを40,000回投稿した
+                 * Post 40,000 notes
                  */
                 "description": string;
             };
             "_notes50000": {
                 /**
-                 * ノートの惑星
+                 * Planet of notes
                  */
                 "title": string;
                 /**
-                 * ノートを50,000回投稿した
+                 * Post 50,000 notes
                  */
                 "description": string;
             };
             "_notes60000": {
                 /**
-                 * ノートクエーサー
+                 * Note quasar
                  */
                 "title": string;
                 /**
-                 * ノートを60,000回投稿した
+                 * Post 60,000 notes
                  */
                 "description": string;
             };
             "_notes70000": {
                 /**
-                 * ブラックノートホール
+                 * Note black hole
                  */
                 "title": string;
                 /**
-                 * ノートを70,000回投稿した
+                 * Post 70,000 notes
                  */
                 "description": string;
             };
             "_notes80000": {
                 /**
-                 * ノートギャラクシー
+                 * Note galaxy
                  */
                 "title": string;
                 /**
-                 * ノートを80,000回投稿した
+                 * Post 80,000 notes
                  */
                 "description": string;
             };
             "_notes90000": {
                 /**
-                 * ノートバース
+                 * Note universe
                  */
                 "title": string;
                 /**
-                 * ノートを90,000回投稿した
+                 * Post 90,000 notes
                  */
                 "description": string;
             };
@@ -6171,375 +6242,375 @@ export interface Locale extends ILocale {
                  */
                 "title": string;
                 /**
-                 * ノートを100,000回投稿した
+                 * Post 100,000 notes
                  */
                 "description": string;
                 /**
-                 * そんなに書くことある？
+                 * You sure have a lot to say.
                  */
                 "flavor": string;
             };
             "_login3": {
                 /**
-                 * ビギナーⅠ
+                 * Beginner I
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が3日
+                 * Log in for a total of 3 days
                  */
                 "description": string;
                 /**
-                 * 今日からね僕は ミスキストってことで
+                 * Starting today, just call me Misskist
                  */
                 "flavor": string;
             };
             "_login7": {
                 /**
-                 * ビギナーⅡ
+                 * Beginner II
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が7日
+                 * Log in for a total of 7 days
                  */
                 "description": string;
                 /**
-                 * 慣れてきましたか？
+                 * Feel like you've gotten the hang of things yet?
                  */
                 "flavor": string;
             };
             "_login15": {
                 /**
-                 * ビギナーⅢ
+                 * Beginner III
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が15日
+                 * Log in for a total of 15 days
                  */
                 "description": string;
             };
             "_login30": {
                 /**
-                 * ミスキストⅠ
+                 * Misskist I
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が30日
+                 * Log in for a total of 30 days
                  */
                 "description": string;
             };
             "_login60": {
                 /**
-                 * ミスキストⅡ
+                 * Misskist II
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が60日
+                 * Log in for a total of 60 days
                  */
                 "description": string;
             };
             "_login100": {
                 /**
-                 * ミスキストⅢ
+                 * Misskist III
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が100日
+                 * Log in for a total of 100 days
                  */
                 "description": string;
                 /**
-                 * そのユーザー、ミスキストにつき
+                 * Violent Misskist
                  */
                 "flavor": string;
             };
             "_login200": {
                 /**
-                 * 常連Ⅰ
+                 * Regular I
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が200日
+                 * Log in for a total of 200 days
                  */
                 "description": string;
             };
             "_login300": {
                 /**
-                 * 常連Ⅱ
+                 * Regular II
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が300日
+                 * Log in for a total of 300 days
                  */
                 "description": string;
             };
             "_login400": {
                 /**
-                 * 常連Ⅲ
+                 * Regular III
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が400日
+                 * Log in for a total of 400 days
                  */
                 "description": string;
             };
             "_login500": {
                 /**
-                 * ベテランⅠ
+                 * Expert I
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が500日
+                 * Log in for a total of 500 days
                  */
                 "description": string;
                 /**
-                 * 諸君、私はノートが好きだ
+                 * My friends, it has often been said that I like notes
                  */
                 "flavor": string;
             };
             "_login600": {
                 /**
-                 * ベテランⅡ
+                 * Expert II
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が600日
+                 * Log in for a total of 600 days
                  */
                 "description": string;
             };
             "_login700": {
                 /**
-                 * ベテランⅢ
+                 * Expert III
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が700日
+                 * Log in for a total of 700 days
                  */
                 "description": string;
             };
             "_login800": {
                 /**
-                 * ノートマスターⅠ
+                 * Master of Notes I
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が800日
+                 * Log in for a total of 800 days
                  */
                 "description": string;
             };
             "_login900": {
                 /**
-                 * ノートマスターⅡ
+                 * Master of Notes II
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が900日
+                 * Log in for a total of 900 days
                  */
                 "description": string;
             };
             "_login1000": {
                 /**
-                 * ノートマスターⅢ
+                 * Master of Notes III
                  */
                 "title": string;
                 /**
-                 * 通算ログイン日数が1,000日
+                 * Log in for a total of 1,000 days
                  */
                 "description": string;
                 /**
-                 * Sharkeyを使ってくれてありがとう！
+                 * Thank you for using Sharkey!
                  */
                 "flavor": string;
             };
             "_noteClipped1": {
                 /**
-                 * クリップせずにはいられないな
+                 * Must... clip...
                  */
                 "title": string;
                 /**
-                 * 初めてノートをクリップした
+                 * Clip your first note
                  */
                 "description": string;
             };
             "_noteFavorited1": {
                 /**
-                 * 星をみるひと
+                 * Stargazer
                  */
                 "title": string;
                 /**
-                 * 初めてノートをお気に入りに登録した
+                 * Favorite your first note
                  */
                 "description": string;
             };
             "_myNoteFavorited1": {
                 /**
-                 * 星が欲しい
+                 * Seeking Stars
                  */
                 "title": string;
                 /**
-                 * 自分のノートが他の人からお気に入りに登録された
+                 * Have somebody else favorite one of your notes
                  */
                 "description": string;
             };
             "_profileFilled": {
                 /**
-                 * 準備万端
+                 * Well-prepared
                  */
                 "title": string;
                 /**
-                 * プロフィール設定を行った
+                 * Set up your profile
                  */
                 "description": string;
             };
             "_markedAsCat": {
                 /**
-                 * 吾輩は猫である
+                 * I Am a Cat
                  */
                 "title": string;
                 /**
-                 * アカウントをCatとして設定した
+                 * Mark your account as a cat
                  */
                 "description": string;
                 /**
-                 * 名前はまだない。
+                 * I'll give you a name later.
                  */
                 "flavor": string;
             };
             "_following1": {
                 /**
-                 * はじめてのフォロー
+                 * Following your first user
                  */
                 "title": string;
                 /**
-                 * 初めてフォローした
+                 * Follow a user
                  */
                 "description": string;
             };
             "_following10": {
                 /**
-                 * ついてく、ついてく
+                 * Keep up... keep up...
                  */
                 "title": string;
                 /**
-                 * フォローが10人を超した
+                 * Follow 10 users
                  */
                 "description": string;
             };
             "_following50": {
                 /**
-                 * 友達たくさん
+                 * Lots of friends
                  */
                 "title": string;
                 /**
-                 * フォローが50人を超した
+                 * Follow 50 accounts
                  */
                 "description": string;
             };
             "_following100": {
                 /**
-                 * 友達100人
+                 * 100 Friends
                  */
                 "title": string;
                 /**
-                 * フォローが100人を超した
+                 * Follow 100 accounts
                  */
                 "description": string;
             };
             "_following300": {
                 /**
-                 * 友達過多
+                 * Friend overload
                  */
                 "title": string;
                 /**
-                 * フォローが300人を超した
+                 * Follow 300 accounts
                  */
                 "description": string;
             };
             "_followers1": {
                 /**
-                 * はじめてのフォロワー
+                 * First follower
                  */
                 "title": string;
                 /**
-                 * 初めてフォローされた
+                 * Gain 1 follower
                  */
                 "description": string;
             };
             "_followers10": {
                 /**
-                 * フォローミー！
+                 * Follow me!
                  */
                 "title": string;
                 /**
-                 * フォロワーが10人を超した
+                 * Gain 10 followers
                  */
                 "description": string;
             };
             "_followers50": {
                 /**
-                 * ぞろぞろ
+                 * Coming in crowds
                  */
                 "title": string;
                 /**
-                 * フォロワーが50人を超した
+                 * Gain 50 followers
                  */
                 "description": string;
             };
             "_followers100": {
                 /**
-                 * 人気者
+                 * Popular
                  */
                 "title": string;
                 /**
-                 * フォロワーが100人を超した
+                 * Gain 100 followers
                  */
                 "description": string;
             };
             "_followers300": {
                 /**
-                 * 一列でお並びください
+                 * Please form a single line
                  */
                 "title": string;
                 /**
-                 * フォロワーが300人を超した
+                 * Gain 300 followers
                  */
                 "description": string;
             };
             "_followers500": {
                 /**
-                 * 基地局
+                 * Radio Tower
                  */
                 "title": string;
                 /**
-                 * フォロワーが500人を超した
+                 * Gain 500 followers
                  */
                 "description": string;
             };
             "_followers1000": {
                 /**
-                 * インフルエンサー
+                 * Influencer
                  */
                 "title": string;
                 /**
-                 * フォロワーが1,000人を超した
+                 * Gain 1,000 followers
                  */
                 "description": string;
             };
             "_collectAchievements30": {
                 /**
-                 * 実績コレクター
+                 * Achievement Collector
                  */
                 "title": string;
                 /**
-                 * 実績を30個以上獲得した
+                 * Earn 30 achievements
                  */
                 "description": string;
             };
             "_viewAchievements3min": {
                 /**
-                 * 実績好き
+                 * Likes Achievements
                  */
                 "title": string;
                 /**
-                 * 実績一覧を3分以上眺め続けた
+                 * Look at your list of achievements for at least 3 minutes
                  */
                 "description": string;
             };
@@ -6549,109 +6620,109 @@ export interface Locale extends ILocale {
                  */
                 "title": string;
                 /**
-                 * "I ❤ #Sharkey"を投稿した
+                 * Post "I ❤ #Sharkey"
                  */
                 "description": string;
                 /**
-                 * Sharkeyを使ってくださりありがとうございます！ by 開発チーム
+                 * Sharkey's development team greatly appreciates your support!
                  */
                 "flavor": string;
             };
             "_foundTreasure": {
                 /**
-                 * 宝探し
+                 * Treasure Hunt
                  */
                 "title": string;
                 /**
-                 * 隠されたお宝を発見した
+                 * You've found the hidden treasure
                  */
                 "description": string;
             };
             "_client30min": {
                 /**
-                 * ひとやすみ
+                 * Short break
                  */
                 "title": string;
                 /**
-                 * クライアントを起動してから30分以上経過した
+                 * Keep Sharkey opened for at least 30 minutes
                  */
                 "description": string;
             };
             "_client60min": {
                 /**
-                 * Sharkeyの見すぎ
+                 * No "Miss" in Sharkey
                  */
                 "title": string;
                 /**
-                 * クライアントを起動してから60分以上経過した
+                 * Keep Sharkey opened for at least 60 minutes
                  */
                 "description": string;
             };
             "_noteDeletedWithin1min": {
                 /**
-                 * いまのなし
+                 * Nevermind
                  */
                 "title": string;
                 /**
-                 * 投稿してから1分以内にその投稿を削除した
+                 * Delete a note within a minute of posting it
                  */
                 "description": string;
             };
             "_postedAtLateNight": {
                 /**
-                 * 夜行性
+                 * Nocturnal
                  */
                 "title": string;
                 /**
-                 * 深夜にノートを投稿した
+                 * Post a note late at night
                  */
                 "description": string;
                 /**
-                 * そろそろ寝よう。
+                 * It's about time to go to bed.
                  */
                 "flavor": string;
             };
             "_postedAt0min0sec": {
                 /**
-                 * 時報
+                 * Speaking Clock
                  */
                 "title": string;
                 /**
-                 * 0分0秒にノートを投稿した
+                 * Post a note at 00:00
                  */
                 "description": string;
                 /**
-                 * ポッ ポッ ポッ ピーン
+                 * Click Click Click Claaang
                  */
                 "flavor": string;
             };
             "_selfQuote": {
                 /**
-                 * 自己言及
+                 * Self-Reference
                  */
                 "title": string;
                 /**
-                 * 自分のノートを引用した
+                 * Quote your own note
                  */
                 "description": string;
             };
             "_htl20npm": {
                 /**
-                 * 流れるTL
+                 * Flowing Timeline
                  */
                 "title": string;
                 /**
-                 * ホームタイムラインの流速が20npmを越す
+                 * Have the speed of your home timeline exceed 20 npm (notes per minute)
                  */
                 "description": string;
             };
             "_viewInstanceChart": {
                 /**
-                 * アナリスト
+                 * Analyst
                  */
                 "title": string;
                 /**
-                 * サーバーのチャートを表示した
+                 * View your instance's charts
                  */
                 "description": string;
             };
@@ -6661,135 +6732,135 @@ export interface Locale extends ILocale {
                  */
                 "title": string;
                 /**
-                 * スクラッチパッドで hello world を出力した
+                 * Output "hello world" in the Scratchpad
                  */
                 "description": string;
             };
             "_open3windows": {
                 /**
-                 * マルチウィンドウ
+                 * Multi-Window
                  */
                 "title": string;
                 /**
-                 * ウィンドウを3つ以上開いた状態にした
+                 * Have at least 3 windows open at the same time
                  */
                 "description": string;
             };
             "_driveFolderCircularReference": {
                 /**
-                 * 循環参照
+                 * Circular Reference
                  */
                 "title": string;
                 /**
-                 * ドライブのフォルダを再帰的な入れ子にしようとした
+                 * Attempt to create a recursively nested folder in Drive
                  */
                 "description": string;
             };
             "_reactWithoutRead": {
                 /**
-                 * ちゃんと読んだ？
+                 * Did you really read that?
                  */
                 "title": string;
                 /**
-                 * 100文字以上のテキストを含むノートに投稿されてから3秒以内にリアクションした
+                 * React on a note that's over 100 characters long within 3 seconds of it being posted
                  */
                 "description": string;
             };
             "_clickedClickHere": {
                 /**
-                 * ここをクリック
+                 * Click here
                  */
                 "title": string;
                 /**
-                 * ここをクリックした
+                 * You've clicked here
                  */
                 "description": string;
             };
             "_justPlainLucky": {
                 /**
-                 * 単なるラッキー
+                 * Just Plain Lucky
                  */
                 "title": string;
                 /**
-                 * 10秒ごとに0.005%の確率で獲得
+                 * Has a chance to be obtained with a probability of 0.005% every 10 seconds
                  */
                 "description": string;
             };
             "_setNameToSyuilo": {
                 /**
-                 * 神様コンプレックス
+                 * God Complex
                  */
                 "title": string;
                 /**
-                 * 名前を syuilo に設定した
+                 * Set your name to "syuilo"
                  */
                 "description": string;
             };
             "_passedSinceAccountCreated1": {
                 /**
-                 * 一周年
+                 * One Year Anniversary
                  */
                 "title": string;
                 /**
-                 * アカウント作成から1年経過した
+                 * One year has passed since your account was created
                  */
                 "description": string;
             };
             "_passedSinceAccountCreated2": {
                 /**
-                 * 二周年
+                 * Two Year Anniversary
                  */
                 "title": string;
                 /**
-                 * アカウント作成から2年経過した
+                 * Two years have passed since your account was created
                  */
                 "description": string;
             };
             "_passedSinceAccountCreated3": {
                 /**
-                 * 三周年
+                 * Three Year Anniversary
                  */
                 "title": string;
                 /**
-                 * アカウント作成から3年経過した
+                 * Three years have passed since your account was created
                  */
                 "description": string;
             };
             "_loggedInOnBirthday": {
                 /**
-                 * ハッピーバースデー
+                 * Happy Birthday
                  */
                 "title": string;
                 /**
-                 * 誕生日にログインした
+                 * Log in on your birthday
                  */
                 "description": string;
             };
             "_loggedInOnNewYearsDay": {
                 /**
-                 * あけましておめでとうございます
+                 * Happy New Year!
                  */
                 "title": string;
                 /**
-                 * 元日にログインした
+                 * Logged in on the first day of the year
                  */
                 "description": string;
                 /**
-                 * 今年も弊サーバーをよろしくお願いします
+                 * To another great year on this instance
                  */
                 "flavor": string;
             };
             "_cookieClicked": {
                 /**
-                 * クッキーをクリックするゲーム
+                 * A game in which you click cookies
                  */
                 "title": string;
                 /**
-                 * クッキーをクリックした
+                 * Clicked the cookie
                  */
                 "description": string;
                 /**
-                 * ソフト間違ってない？
+                 * Wait, are you on the correct website?
                  */
                 "flavor": string;
             };
@@ -6799,31 +6870,31 @@ export interface Locale extends ILocale {
                  */
                 "title": string;
                 /**
-                 * Brain Diverへのリンクを投稿した
+                 * Post the link to Brain Diver
                  */
                 "description": string;
                 /**
-                 * Misskey-Misskey La-Tu-Ma
+                 * Sharkey-Sharkey La-Tu-Ma
                  */
                 "flavor": string;
             };
             "_smashTestNotificationButton": {
                 /**
-                 * テスト過剰
+                 * Test overflow
                  */
                 "title": string;
                 /**
-                 * 通知のテストをごく短時間のうちに連続して行った
+                 * Trigger the notification test repeatedly within an extremely short time
                  */
                 "description": string;
             };
             "_tutorialCompleted": {
                 /**
-                 * Sharkey初心者講座 修了証
+                 * Sharkey Elementary Course Diploma
                  */
                 "title": string;
                 /**
-                 * チュートリアルを完了した
+                 * Tutorial completed
                  */
                 "description": string;
             };
@@ -6833,21 +6904,21 @@ export interface Locale extends ILocale {
                  */
                 "title": string;
                 /**
-                 * バブルゲームで最も大きいモノを出した
+                 * The biggest object in the bubble game
                  */
                 "description": string;
             };
             "_bubbleGameDoubleExplodingHead": {
                 /**
-                 * ダブル🤯
+                 * Double🤯
                  */
                 "title": string;
                 /**
-                 * バブルゲームで最も大きいモノを2つ同時に出した
+                 * Two of the biggest objects in the bubble game at the same time
                  */
                 "description": string;
                 /**
-                 * これくらいの　おべんとばこに　🤯　🤯　ちょっとつめて
+                 * You can fill a lunch box like this 🤯 🤯 a bit.
                  */
                 "flavor": string;
             };
@@ -6855,1042 +6926,1042 @@ export interface Locale extends ILocale {
     };
     "_role": {
         /**
-         * ロールの作成
+         * New role
          */
         "new": string;
         /**
-         * ロールの編集
+         * Edit role
          */
         "edit": string;
         /**
-         * ロール名
+         * Role name
          */
         "name": string;
         /**
-         * ロールの説明
+         * Role description
          */
         "description": string;
         /**
-         * ロールの権限
+         * Role permissions
          */
         "permission": string;
         /**
-         * <b>モデレーター</b>は基本的なモデレーションに関する操作を行えます。
-         * <b>管理者</b>はサーバーの全ての設定を変更できます。
+         * <b>Moderators</b> can perform basic moderation operations.
+         * <b>Administrators</b> can change all settings of the instance.
          */
         "descriptionOfPermission": string;
         /**
-         * アサイン
+         * Assignment type
          */
         "assignTarget": string;
         /**
-         * <b>マニュアル</b>は誰がこのロールに含まれるかを手動で管理します。
-         * <b>コンディショナル</b>は条件を設定し、それに合致するユーザーが自動で含まれるようになります。
+         * <b>Manual</b> to manually change who is part of this role and who is not.
+         * <b>Conditional</b> to have users be automatically assigned and removed from this role based on a condition.
          */
         "descriptionOfAssignTarget": string;
         /**
-         * マニュアル
+         * Manual
          */
         "manual": string;
         /**
-         * マニュアルロール
+         * Manual roles
          */
         "manualRoles": string;
         /**
-         * コンディショナル
+         * Conditional
          */
         "conditional": string;
         /**
-         * コンディショナルロール
+         * Conditional roles
          */
         "conditionalRoles": string;
         /**
-         * 条件
+         * Condition
          */
         "condition": string;
         /**
-         * これはコンディショナルロールです。
+         * This is a conditional role.
          */
         "isConditionalRole": string;
         /**
-         * 公開ロール
+         * Public role
          */
         "isPublic": string;
         /**
-         * ユーザーのプロフィールでこのロールが表示されます。
+         * This role will be displayed in the profiles of assigned users.
          */
         "descriptionOfIsPublic": string;
         /**
-         * オプション
+         * Options
          */
         "options": string;
         /**
-         * ポリシー
+         * Policies
          */
         "policies": string;
         /**
-         * ベースロール
+         * Role template
          */
         "baseRole": string;
         /**
-         * ベースロールの値を使用
+         * Use role template value
          */
         "useBaseValue": string;
         /**
-         * アサインするロールを選択
+         * Select the role to assign
          */
         "chooseRoleToAssign": string;
         /**
-         * アイコン画像のURL
+         * Icon URL
          */
         "iconUrl": string;
         /**
-         * バッジとして表示
+         * Show as badge
          */
         "asBadge": string;
         /**
-         * オンにすると、ユーザー名の横にロールのアイコンが表示されます。
+         * This role's icon will be displayed next to the username of users with this role if turned on.
          */
         "descriptionOfAsBadge": string;
         /**
-         * ユーザーを見つけやすくする
+         * Make role explorable
          */
         "isExplorable": string;
         /**
-         * オンにすると、「みつける」でメンバー一覧が公開されるほか、ロールのタイムラインが利用可能になります。
+         * This role's timeline and the list of users with this will be made public if enabled.
          */
         "descriptionOfIsExplorable": string;
         /**
-         * 表示順
+         * Position
          */
         "displayOrder": string;
         /**
-         * 数値が大きいほどUI上で先頭に表示されます。
+         * The higher the number, the higher its UI position.
          */
         "descriptionOfDisplayOrder": string;
         /**
-         * モデレーターのメンバー編集を許可
+         * Allow moderators to edit the list of members for this role
          */
         "canEditMembersByModerator": string;
         /**
-         * オンにすると、管理者に加えてモデレーターもこのロールへユーザーをアサイン/アサイン解除できるようになります。オフにすると管理者のみが行えます。
+         * When turned on, moderators as well as administrators will be able to assign and unassign users to this role. When turned off, only administrators will be able to assign users.
          */
         "descriptionOfCanEditMembersByModerator": string;
         /**
-         * 優先度
+         * Priority
          */
         "priority": string;
         "_priority": {
             /**
-             * 低
+             * Low
              */
             "low": string;
             /**
-             * 中
+             * Medium
              */
             "middle": string;
             /**
-             * 高
+             * High
              */
             "high": string;
         };
         "_options": {
             /**
-             * グローバルタイムラインの閲覧
+             * Can view the global timeline
              */
             "gtlAvailable": string;
             /**
-             * バブルタイムラインの閲覧
+             * Can view the bubble timeline
              */
             "btlAvailable": string;
             /**
-             * ローカルタイムラインの閲覧
+             * Can view the local timeline
              */
             "ltlAvailable": string;
             /**
-             * パブリック投稿の許可
+             * Can send public notes
              */
             "canPublicNote": string;
             /**
-             * ノートのインポートが可能
+             * Can import notes
              */
             "canImportNotes": string;
             /**
-             * ノート内の最大メンション数
+             * Maximum number of mentions in a note
              */
             "mentionMax": string;
             /**
-             * サーバー招待コードの発行
+             * Can create instance invite codes
              */
             "canInvite": string;
             /**
-             * 招待コードの作成可能数
+             * Invite limit
              */
             "inviteLimit": string;
             /**
-             * 招待コードの発行間隔
+             * Invite limit cooldown
              */
             "inviteLimitCycle": string;
             /**
-             * 招待コードの有効期限
+             * Invite expiration interval
              */
             "inviteExpirationTime": string;
             /**
-             * カスタム絵文字の管理
+             * Can manage custom emojis
              */
             "canManageCustomEmojis": string;
             /**
-             * アバターデコレーションの管理
+             * Manage avatar decorations
              */
             "canManageAvatarDecorations": string;
             /**
-             * ドライブ容量
+             * Drive capacity
              */
             "driveCapacity": string;
             /**
-             * ファイルにNSFWを常に付与
+             * Always mark files as NSFW
              */
             "alwaysMarkNsfw": string;
             /**
-             * アイコンとバナーの更新を許可
+             * Allow users to edit their avatar or banner
              */
             "canUpdateBioMedia": string;
             /**
-             * ノートのピン留めの最大数
+             * Maximum number of pinned notes
              */
             "pinMax": string;
             /**
-             * アンテナの作成可能数
+             * Maximum number of antennas
              */
             "antennaMax": string;
             /**
-             * ワードミュートの最大文字数
+             * Maximum number of characters allowed in word mutes
              */
             "wordMuteMax": string;
             /**
-             * Webhookの作成可能数
+             * Maximum number of Webhooks
              */
             "webhookMax": string;
             /**
-             * クリップの作成可能数
+             * Maximum number of Clips
              */
             "clipMax": string;
             /**
-             * クリップ内のノートの最大数
+             * Maximum number of notes within a clip
              */
             "noteEachClipsMax": string;
             /**
-             * ユーザーリストの作成可能数
+             * Maximum number of user lists
              */
             "userListMax": string;
             /**
-             * ユーザーリスト内のユーザーの最大数
+             * Maximum number of users within a user list
              */
             "userEachUserListsMax": string;
             /**
-             * レートリミット
+             * Rate limit
              */
             "rateLimitFactor": string;
             /**
-             * 小さいほど制限が緩和され、大きいほど制限が強化されます。
+             * Lower rate limits are less restrictive, higher ones more restrictive.
              */
             "descriptionOfRateLimitFactor": string;
             /**
-             * 広告の非表示
+             * Can hide ads
              */
             "canHideAds": string;
             /**
-             * ノート検索の利用
+             * Usage of note search
              */
             "canSearchNotes": string;
             /**
-             * 翻訳機能の利用
+             * Translator usage
              */
             "canUseTranslator": string;
             /**
-             * アイコンデコレーションの最大取付個数
+             * Maximum number of avatar decorations that can be applied
              */
             "avatarDecorationLimit": string;
         };
         "_condition": {
             /**
-             * マニュアルロールにアサイン済み
+             * Assigned to manual roles
              */
             "roleAssignedTo": string;
             /**
-             * ローカルユーザー
+             * Local user
              */
             "isLocal": string;
             /**
-             * リモートユーザー
+             * Remote user
              */
             "isRemote": string;
             /**
-             * 猫ユーザー
+             * Cat Users
              */
             "isCat": string;
             /**
-             * botユーザー
+             * Bot Users
              */
             "isBot": string;
             /**
-             * サスペンド済みユーザー
+             * Suspended user
              */
             "isSuspended": string;
             /**
-             * 鍵アカウントユーザー
+             * Private account
              */
             "isLocked": string;
             /**
-             * 「アカウントを見つけやすくする」が有効なユーザー
+             * Account is discoverable
              */
             "isExplorable": string;
             /**
-             * アカウント作成から～以内
+             * Less than X has passed since account creation
              */
             "createdLessThan": string;
             /**
-             * アカウント作成から～経過
+             * More than X has passed since account creation
              */
             "createdMoreThan": string;
             /**
-             * フォロワー数が～以下
+             * Has X or fewer followers
              */
             "followersLessThanOrEq": string;
             /**
-             * フォロワー数が～以上
+             * Has X or more followers
              */
             "followersMoreThanOrEq": string;
             /**
-             * フォロー数が～以下
+             * Follows X or fewer accounts
              */
             "followingLessThanOrEq": string;
             /**
-             * フォロー数が～以上
+             * Follows X or more accounts
              */
             "followingMoreThanOrEq": string;
             /**
-             * 投稿数が～以下
+             * Post count is less than/equal to
              */
             "notesLessThanOrEq": string;
             /**
-             * 投稿数が～以上
+             * Post count is greater than/equal to
              */
             "notesMoreThanOrEq": string;
             /**
-             * ～かつ～
+             * AND-Condition
              */
             "and": string;
             /**
-             * ～または～
+             * OR-Condition
              */
             "or": string;
             /**
-             * ～ではない
+             * NOT-Condition
              */
             "not": string;
         };
     };
     "_sensitiveMediaDetection": {
         /**
-         * 機械学習を使って自動でセンシティブなメディアを検出し、モデレーションに役立てることができます。サーバーの負荷が少し増えます。
+         * Reduces the effort of server moderation through automatically recognizing sensitive media via Machine Learning. This will slightly increase the load on the server.
          */
         "description": string;
         /**
-         * 検出感度
+         * Detection sensitivity
          */
         "sensitivity": string;
         /**
-         * 感度を低くすると、誤検知(偽陽性)が減ります。感度を高くすると、検知漏れ(偽陰性)が減ります。
+         * Reducing the sensitivity will lead to fewer misdetections (false positives) whereas increasing it will lead to fewer missed detections (false negatives).
          */
         "sensitivityDescription": string;
         /**
-         * センシティブフラグを設定する
+         * Mark as sensitive
          */
         "setSensitiveFlagAutomatically": string;
         /**
-         * この設定をオフにしても内部的に判定結果は保持されます。
+         * The results of the internal detection will be retained even if this option is turned off.
          */
         "setSensitiveFlagAutomaticallyDescription": string;
         /**
-         * 動画の解析を有効化
+         * Enable analysis of videos
          */
         "analyzeVideos": string;
         /**
-         * 静止画に加えて動画も解析するようにします。サーバーの負荷が少し増えます。
+         * Analyzes videos in addition to images. This will slightly increase the load on the server.
          */
         "analyzeVideosDescription": string;
     };
     "_emailUnavailable": {
         /**
-         * 既に使用されています
+         * This email address is already being used
          */
         "used": string;
         /**
-         * 形式が正しくありません
+         * The format of this email address is invalid
          */
         "format": string;
         /**
-         * 恒久的に使用可能なアドレスではありません
+         * Disposable email addresses may not be used
          */
         "disposable": string;
         /**
-         * 正しいメールサーバーではありません
+         * This email server is invalid
          */
         "mx": string;
         /**
-         * メールサーバーが応答しません
+         * This email server is not responding
          */
         "smtp": string;
         /**
-         * このメールアドレスでは登録できません
+         * This email address is banned
          */
         "banned": string;
     };
     "_ffVisibility": {
         /**
-         * 公開
+         * Public
          */
         "public": string;
         /**
-         * フォロワーだけに公開
+         * Visible to followers only
          */
         "followers": string;
         /**
-         * 非公開
+         * Private
          */
         "private": string;
     };
     "_signup": {
         /**
-         * ほとんど完了です
+         * Almost there
          */
         "almostThere": string;
         /**
-         * あなたが使っているメールアドレスを入力してください。メールアドレスが公開されることはありません。
+         * Please enter your email address. It will not be made public.
          */
         "emailAddressInfo": string;
         /**
-         * 入力されたメールアドレス({email})宛に確認のメールが送信されました。メールに記載されたリンクにアクセスすると、アカウントの作成が完了します。メールに記載されているリンクの有効期限は30分です。
+         * A confirmation email has been sent to your email address ({email}). Please click the included link to complete account creation.
          */
         "emailSent": ParameterizedString<"email">;
         /**
-         * アカウントが作成され、承認待ちの状態です。
+         * Your account has been created and is awaiting approval.
          */
         "approvalPending": string;
         /**
-         * インスタンスに参加したい理由を入力してください。
+         * Please enter a reason as to why you want to join the instance.
          */
         "reasonInfo": string;
     };
     "_accountDelete": {
         /**
-         * アカウントの削除
+         * Delete account
          */
         "accountDelete": string;
         /**
-         * アカウントの削除は負荷のかかる処理であるため、作成したコンテンツの数やアップロードしたファイルの数が多いと完了までに時間がかかることがあります。
+         * As account deletion is a resource-heavy process, it may take some time to complete depending on how much content you have created and how many files you have uploaded.
          */
         "mayTakeTime": string;
         /**
-         * アカウントの削除が完了する際は、登録してあったメールアドレス宛に通知を送信します。
+         * Once account deletion has been completed, an email will be sent to the email address registered to this account.
          */
         "sendEmail": string;
         /**
-         * アカウント削除をリクエスト
+         * Request account deletion
          */
         "requestAccountDelete": string;
         /**
-         * 削除処理が開始されました。
+         * Deletion has been started.
          */
         "started": string;
         /**
-         * 削除が進行中
+         * Deletion is currently in progress
          */
         "inProgress": string;
     };
     "_ad": {
         /**
-         * 戻る
+         * Back
          */
         "back": string;
         /**
-         * この広告の表示頻度を下げる
+         * Show this ad less
          */
         "reduceFrequencyOfThisAd": string;
         /**
-         * 表示しない
+         * Hide
          */
         "hide": string;
         /**
-         * 曜日はサーバーのタイムゾーンを元に指定されます。
+         * The day of the week is determined from the server's timezone.
          */
         "timezoneinfo": string;
         /**
-         * 広告配信設定
+         * Ad settings
          */
         "adsSettings": string;
         /**
-         * リアルタイム更新中に広告を配信する間隔（ノートの個数）
+         * Real-time update ad placement interval (Notes per ad)
          */
         "notesPerOneAd": string;
         /**
-         * 0でリアルタイム更新時の広告配信を無効
+         * Set this value to 0 to disable real-time update ads
          */
         "setZeroToDisable": string;
         /**
-         * 広告の配信間隔が極めて短いため、ユーザー体験が著しく損われる可能性があります。
+         * The current ad interval may significantly worsen the user experience due to being too low.
          */
         "adsTooClose": string;
     };
     "_forgotPassword": {
         /**
-         * アカウントに登録したメールアドレスを入力してください。そのアドレス宛てに、パスワードリセット用のリンクが送信されます。
+         * Enter the email address you used to register. A link with which you can reset your password will then be sent to it.
          */
         "enterEmail": string;
         /**
-         * メールアドレスを登録していない場合は、管理者までお問い合わせください。
+         * If you did not use an email during registration, please contact the instance administrator instead.
          */
         "ifNoEmail": string;
         /**
-         * このサーバーではメールがサポートされていないため、パスワードリセットを行う場合は管理者までお問い合わせください。
+         * This instance does not support using email addresses, please contact the instance administrator to reset your password instead.
          */
         "contactAdmin": string;
     };
     "_gallery": {
         /**
-         * 自分の投稿
+         * My Gallery
          */
         "my": string;
         /**
-         * いいねした投稿
+         * Liked Posts
          */
         "liked": string;
         /**
-         * いいね！
+         * Like
          */
         "like": string;
         /**
-         * いいね解除
+         * Remove like
          */
         "unlike": string;
     };
     "_email": {
         "_follow": {
             /**
-             * フォローされました
+             * You've got a new follower
              */
             "title": string;
         };
         "_receiveFollowRequest": {
             /**
-             * フォローリクエストを受け取りました
+             * You've received a follow request
              */
             "title": string;
         };
     };
     "_plugin": {
         /**
-         * プラグインのインストール
+         * Install plugins
          */
         "install": string;
         /**
-         * 信頼できないプラグインはインストールしないでください。
+         * Please do not install untrustworthy plugins.
          */
         "installWarn": string;
         /**
-         * プラグインの管理
+         * Manage plugins
          */
         "manage": string;
         /**
-         * ソースを表示
+         * View source
          */
         "viewSource": string;
         /**
-         * ログを表示
+         * Show log
          */
         "viewLog": string;
     };
     "_preferencesBackups": {
         /**
-         * 作成したバックアップ
+         * Created backups
          */
         "list": string;
         /**
-         * 新規保存
+         * Save new backup
          */
         "saveNew": string;
         /**
-         * ファイルを読み込み
+         * Load from file
          */
         "loadFile": string;
         /**
-         * このデバイスに適用
+         * Apply to this device
          */
         "apply": string;
         /**
-         * 上書き保存
+         * Save changes
          */
         "save": string;
         /**
-         * バックアップ名を入力
+         * Please enter a name for this backup
          */
         "inputName": string;
         /**
-         * 保存できません
+         * Saving failed
          */
         "cannotSave": string;
         /**
-         * バックアップ名「{name}」は既に存在します。違う名前を指定してください。
+         * A backup called "{name}" already exists. Please enter a different name.
          */
         "nameAlreadyExists": ParameterizedString<"name">;
         /**
-         * バックアップ「{name}」を現在のデバイスに適用しますか？現在のデバイス設定は失われます。
+         * Do you really want to apply the "{name}" backup to this device? Existing settings of this device will be overwritten.
          */
         "applyConfirm": ParameterizedString<"name">;
         /**
-         * {name}に上書き保存しますか？
+         * Save backup as {name}?
          */
         "saveConfirm": ParameterizedString<"name">;
         /**
-         * {name}を削除しますか？
+         * Delete the {name} backup?
          */
         "deleteConfirm": ParameterizedString<"name">;
         /**
-         * 「{old}」を「{new}」に変更しますか？
+         * Rename this backup from "{old}" to "{new}"?
          */
         "renameConfirm": ParameterizedString<"old" | "new">;
         /**
-         * バックアップはありません。「新規保存」で現在のクライアント設定をサーバーに保存できます。
+         * No backups exist. You may backup your client settings on this server by using "Create new backup".
          */
         "noBackups": string;
         /**
-         * 作成日時: {date} {time}
+         * Created at: {date} {time}
          */
         "createdAt": ParameterizedString<"date" | "time">;
         /**
-         * 更新日時: {date} {time}
+         * Updated at: {date} {time}
          */
         "updatedAt": ParameterizedString<"date" | "time">;
         /**
-         * 読み込みできません
+         * Loading failed
          */
         "cannotLoad": string;
         /**
-         * ファイル形式が違います。
+         * Invalid file format
          */
         "invalidFile": string;
     };
     "_registry": {
         /**
-         * スコープ
+         * Scope
          */
         "scope": string;
         /**
-         * キー
+         * Key
          */
         "key": string;
         /**
-         * キー
+         * Keys
          */
         "keys": string;
         /**
-         * ドメイン
+         * Domain
          */
         "domain": string;
         /**
-         * キーを作成
+         * Create key
          */
         "createKey": string;
     };
     "_aboutMisskey": {
         /**
-         * Sharkeyは、Misskeyをベースにしたオープンソースのソフトウェアです。
+         * Sharkey is open-source software based on Misskey which has been in development by syuilo since 2014.
          */
         "about": string;
         /**
-         * 主なコントリビューター
+         * Main contributors
          */
         "contributors": string;
         /**
-         * 全てのコントリビューター
+         * All contributors
          */
         "allContributors": string;
         /**
-         * ソースコード
+         * Source code
          */
         "source": string;
         /**
-         * Misskey オリジナル
+         * Misskey original
          */
         "original": string;
         /**
-         * Sharkey オリジナル
+         * Sharkey original
          */
         "original_sharkey": string;
         /**
-         * {name}はオリジナルのSharkeyを改変したバージョンを使用しています。
+         * {name} uses a modified version of the original Sharkey.
          */
         "thisIsModifiedVersion": ParameterizedString<"name">;
         /**
-         * Sharkeyを翻訳
+         * Translate Sharkey
          */
         "translation": string;
         /**
-         * Misskeyに寄付
+         * Donate to Misskey
          */
         "donate": string;
         /**
-         * Sharkeyに寄付
+         * Donate to Sharkey
          */
         "donate_sharkey": string;
         /**
-         * 他にも多くの方が支援してくれています。ありがとうございます🥰
+         * We also appreciate the support of many other helpers not listed here. Thank you! 🥰
          */
         "morePatrons": string;
         /**
-         * 支援者
+         * Patrons
          */
         "patrons": string;
         /**
-         * プロジェクトメンバー
+         * Project members
          */
         "projectMembers": string;
         /**
-         * テスター
+         * Testers
          */
         "testers": string;
     };
     "_displayOfSensitiveMedia": {
         /**
-         * センシティブ設定されたメディアを隠す
+         * Hide media marked as sensitive
          */
         "respect": string;
         /**
-         * センシティブ設定されたメディアを隠さない
+         * Display media marked as sensitive
          */
         "ignore": string;
         /**
-         * 常にメディアを隠す
+         * Hide all media
          */
         "force": string;
     };
     "_instanceTicker": {
         /**
-         * 表示しない
+         * Never show
          */
         "none": string;
         /**
-         * リモートユーザーに表示
+         * Show for remote users
          */
         "remote": string;
         /**
-         * 常に表示
+         * Always show
          */
         "always": string;
     };
     "_serverDisconnectedBehavior": {
         /**
-         * 自動でリロード
+         * Automatically reload
          */
         "reload": string;
         /**
-         * ダイアログで警告
+         * Show warning dialog
          */
         "dialog": string;
         /**
-         * 控えめに警告
+         * Show unobtrusive warning
          */
         "quiet": string;
         /**
-         * 警告を無効にする
+         * Disable warning
          */
         "disabled": string;
     };
     "_channel": {
         /**
-         * チャンネルを作成
+         * Create channel
          */
         "create": string;
         /**
-         * チャンネルを編集
+         * Edit channel
          */
         "edit": string;
         /**
-         * バナーを設定
+         * Set banner
          */
         "setBanner": string;
         /**
-         * バナーを削除
+         * Remove banner
          */
         "removeBanner": string;
         /**
-         * トレンド
+         * Trending
          */
         "featured": string;
         /**
-         * 管理中
+         * Owned
          */
         "owned": string;
         /**
-         * フォロー中
+         * Followed
          */
         "following": string;
         /**
-         * {n}人が参加中
+         * {n} Participants
          */
         "usersCount": ParameterizedString<"n">;
         /**
-         * {n}投稿があります
+         * {n} Notes
          */
         "notesCount": ParameterizedString<"n">;
         /**
-         * 名前と説明
+         * Name and description
          */
         "nameAndDescription": string;
         /**
-         * 名前のみ
+         * Name only
          */
         "nameOnly": string;
         /**
-         * チャンネル外へのブーストと引用ブーストを許可する
+         * Allow boosts and quote outside the channel
          */
         "allowRenoteToExternal": string;
     };
     "_menuDisplay": {
         /**
-         * 横
+         * Side
          */
         "sideFull": string;
         /**
-         * 横(アイコン)
+         * Side (Icons)
          */
         "sideIcon": string;
         /**
-         * 上部
+         * Top
          */
         "top": string;
         /**
-         * 隠す
+         * Hide
          */
         "hide": string;
     };
     "_wordMute": {
         /**
-         * ミュートするワード
+         * Muted words
          */
         "muteWords": string;
         /**
-         * スペースで区切るとAND指定になり、改行で区切るとOR指定になります。
+         * Separate with spaces for an AND condition or with line breaks for an OR condition.
          */
         "muteWordsDescription": string;
         /**
-         * キーワードをスラッシュで囲むと正規表現になります。
+         * Surround keywords with slashes to use regular expressions.
          */
         "muteWordsDescription2": string;
     };
     "_instanceMute": {
         /**
-         * ミュートしたサーバーのユーザーへの返信を含めて、設定したサーバーの全てのノートとブーストをミュートします。
+         * This will mute any notes/boosts from the listed instances, including those of users replying to a user from a muted instance.
          */
         "instanceMuteDescription": string;
         /**
-         * 改行で区切って設定します
+         * Separate with newlines
          */
         "instanceMuteDescription2": string;
         /**
-         * 設定したサーバーのノートを隠します。
+         * Hides notes from listed instances.
          */
         "title": string;
         /**
-         * ミュートするサーバー
+         * List of instances to be muted
          */
         "heading": string;
     };
     "_theme": {
         /**
-         * テーマを探す
+         * Explore Themes
          */
         "explore": string;
         /**
-         * テーマのインストール
+         * Install a theme
          */
         "install": string;
         /**
-         * テーマの管理
+         * Manage themes
          */
         "manage": string;
         /**
-         * テーマコード
+         * Theme code
          */
         "code": string;
         /**
-         * 説明
+         * Description
          */
         "description": string;
         /**
-         * {name}をインストールしました
+         * {name} has been installed
          */
         "installed": ParameterizedString<"name">;
         /**
-         * インストールされたテーマ
+         * Installed themes
          */
         "installedThemes": string;
         /**
-         * 標準のテーマ
+         * Built-in themes
          */
         "builtinThemes": string;
         /**
-         * そのテーマは既にインストールされています
+         * This theme is already installed
          */
         "alreadyInstalled": string;
         /**
-         * テーマの形式が間違っています
+         * The format of this theme is invalid
          */
         "invalid": string;
         /**
-         * テーマを作る
+         * Make a theme
          */
         "make": string;
         /**
-         * ベース
+         * Base
          */
         "base": string;
         /**
-         * 定数を追加
+         * Add constant
          */
         "addConstant": string;
         /**
-         * 定数
+         * Constant
          */
         "constant": string;
         /**
-         * デフォルト値
+         * Default value
          */
         "defaultValue": string;
         /**
-         * 色
+         * Color
          */
         "color": string;
         /**
-         * プロパティを参照
+         * Reference a property
          */
         "refProp": string;
         /**
-         * 定数を参照
+         * Reference a constant
          */
         "refConst": string;
         /**
-         * キー
+         * Key
          */
         "key": string;
         /**
-         * 関数
+         * Functions
          */
         "func": string;
         /**
-         * 関数の種類
+         * Function type
          */
         "funcKind": string;
         /**
-         * 引数
+         * Argument
          */
         "argument": string;
         /**
-         * 元にするプロパティの名前
+         * Referenced property
          */
         "basedProp": string;
         /**
-         * 不透明度
+         * Opacity
          */
         "alpha": string;
         /**
-         * 暗さ
+         * Darken
          */
         "darken": string;
         /**
-         * 明るさ
+         * Lighten
          */
         "lighten": string;
         /**
-         * 定数名を入力してください
+         * Enter a name for this constant
          */
         "inputConstantName": string;
         /**
-         * ここにテーマコードを貼り付けて、エディターにインポートできます
+         * If you enter theme code here, you can import it to the theme editor
          */
         "importInfo": string;
         /**
-         * 定数 {const} を削除しても良いですか？
+         * Do you really want to delete the constant {const}?
          */
         "deleteConstantConfirm": ParameterizedString<"const">;
         "keys": {
             /**
-             * アクセント
+             * Accent
              */
             "accent": string;
             /**
-             * 背景
+             * Background
              */
             "bg": string;
             /**
-             * 文字
+             * Text
              */
             "fg": string;
             /**
-             * フォーカス
+             * Focus
              */
             "focus": string;
             /**
-             * インジケーター
+             * Indicator
              */
             "indicator": string;
             /**
-             * パネル
+             * Panel
              */
             "panel": string;
             /**
-             * 影
+             * Shadow
              */
             "shadow": string;
             /**
-             * ヘッダー
+             * Header
              */
             "header": string;
             /**
-             * サイドバーの背景
+             * Sidebar background
              */
             "navBg": string;
             /**
-             * サイドバーの文字
+             * Sidebar text
              */
             "navFg": string;
             /**
-             * サイドバー文字(ホバー)
+             * Sidebar text (Hover)
              */
             "navHoverFg": string;
             /**
-             * サイドバー文字(アクティブ)
+             * Sidebar text (Active)
              */
             "navActive": string;
             /**
-             * サイドバーのインジケーター
+             * Sidebar indicator
              */
             "navIndicator": string;
             /**
-             * リンク
+             * Link
              */
             "link": string;
             /**
-             * ハッシュタグ
+             * Hashtag
              */
             "hashtag": string;
             /**
-             * メンション
+             * Mention
              */
             "mention": string;
             /**
-             * あなた宛てメンション
+             * Mentions (Me)
              */
             "mentionMe": string;
             /**
@@ -7898,866 +7969,866 @@ export interface Locale extends ILocale {
              */
             "renote": string;
             /**
-             * モーダルの背景
+             * Modal background
              */
             "modalBg": string;
             /**
-             * 分割線
+             * Divider
              */
             "divider": string;
             /**
-             * スクロールバーの取っ手
+             * Scrollbar handle
              */
             "scrollbarHandle": string;
             /**
-             * スクロールバーの取っ手（ホバー)
+             * Scrollbar handle (Hover)
              */
             "scrollbarHandleHover": string;
             /**
-             * 日付ラベルの文字
+             * Date label text
              */
             "dateLabelFg": string;
             /**
-             * 情報の背景
+             * Information background
              */
             "infoBg": string;
             /**
-             * 情報の文字
+             * Information text
              */
             "infoFg": string;
             /**
-             * 警告の背景
+             * Warning background
              */
             "infoWarnBg": string;
             /**
-             * 警告の文字
+             * Warning text
              */
             "infoWarnFg": string;
             /**
-             * 通知トーストの背景
+             * Notification background
              */
             "toastBg": string;
             /**
-             * 通知トーストの文字
+             * Notification text
              */
             "toastFg": string;
             /**
-             * ボタンの背景
+             * Button background
              */
             "buttonBg": string;
             /**
-             * ボタンの背景 (ホバー)
+             * Button background (Hover)
              */
             "buttonHoverBg": string;
             /**
-             * 入力ボックスの縁取り
+             * Input field border
              */
             "inputBorder": string;
             /**
-             * リスト項目の背景 (ホバー)
+             * List item background (Hover)
              */
             "listItemHoverBg": string;
             /**
-             * ドライブフォルダーの背景
+             * Drive folder background
              */
             "driveFolderBg": string;
             /**
-             * 壁紙のオーバーレイ
+             * Wallpaper overlay
              */
             "wallpaperOverlay": string;
             /**
-             * バッジ
+             * Badge
              */
             "badge": string;
             /**
-             * チャットの背景
+             * Chat background
              */
             "messageBg": string;
             /**
-             * アクセント (暗め)
+             * Accent (Darkened)
              */
             "accentDarken": string;
             /**
-             * アクセント (明るめ)
+             * Accent (Lightened)
              */
             "accentLighten": string;
             /**
-             * 強調された文字
+             * Highlighted Text
              */
             "fgHighlighted": string;
         };
     };
     "_sfx": {
         /**
-         * ノート
+         * New note
          */
         "note": string;
         /**
-         * ノート(自分)
+         * Own note
          */
         "noteMy": string;
         /**
-         * 通知
+         * Notifications
          */
         "notification": string;
         /**
-         * リアクション選択時
+         * On choosing a reaction
          */
         "reaction": string;
     };
     "_soundSettings": {
         /**
-         * ドライブの音声を使用
+         * Use an audio file in Drive.
          */
         "driveFile": string;
         /**
-         * ドライブのファイルを選択してください
+         * Select an audio file from Drive.
          */
         "driveFileWarn": string;
         /**
-         * このファイルは対応していません
+         * This file is not supported
          */
         "driveFileTypeWarn": string;
         /**
-         * 音声ファイルを選択してください
+         * Select an audio file
          */
         "driveFileTypeWarnDescription": string;
         /**
-         * 音声が長すぎます
+         * The audio is too long.
          */
         "driveFileDurationWarn": string;
         /**
-         * 長い音声を使用するとSharkeyの使用に支障をきたす可能性があります。それでも続行しますか？
+         * Long audio may disrupt using Sharkey. Still continue?
          */
         "driveFileDurationWarnDescription": string;
         /**
-         * 音声が読み込めませんでした。設定を変更してください
+         * The audio couldn't be loaded. Please make sure you selected an audio file.
          */
         "driveFileError": string;
     };
     "_ago": {
         /**
-         * 未来
+         * Future
          */
         "future": string;
         /**
-         * たった今
+         * Just now
          */
         "justNow": string;
         /**
-         * {n}秒前
+         * {n}s ago
          */
         "secondsAgo": ParameterizedString<"n">;
         /**
-         * {n}分前
+         * {n}m ago
          */
         "minutesAgo": ParameterizedString<"n">;
         /**
-         * {n}時間前
+         * {n}h ago
          */
         "hoursAgo": ParameterizedString<"n">;
         /**
-         * {n}日前
+         * {n}d ago
          */
         "daysAgo": ParameterizedString<"n">;
         /**
-         * {n}週間前
+         * {n}w ago
          */
         "weeksAgo": ParameterizedString<"n">;
         /**
-         * {n}ヶ月前
+         * {n}mo ago
          */
         "monthsAgo": ParameterizedString<"n">;
         /**
-         * {n}年前
+         * {n}y ago
          */
         "yearsAgo": ParameterizedString<"n">;
         /**
-         * 日時の解析に失敗
+         * None
          */
         "invalid": string;
     };
     "_timeIn": {
         /**
-         * {n}秒後
+         * In {n}s
          */
         "seconds": ParameterizedString<"n">;
         /**
-         * {n}分後
+         * In {n}m
          */
         "minutes": ParameterizedString<"n">;
         /**
-         * {n}時間後
+         * In {n}h
          */
         "hours": ParameterizedString<"n">;
         /**
-         * {n}日後
+         * In {n}d
          */
         "days": ParameterizedString<"n">;
         /**
-         * {n}週間後
+         * In {n}w
          */
         "weeks": ParameterizedString<"n">;
         /**
-         * {n}ヶ月後
+         * In {n}mo
          */
         "months": ParameterizedString<"n">;
         /**
-         * {n}年後
+         * In {n}y
          */
         "years": ParameterizedString<"n">;
     };
     "_time": {
         /**
-         * 秒
+         * Second(s)
          */
         "second": string;
         /**
-         * 分
+         * Minute(s)
          */
         "minute": string;
         /**
-         * 時間
+         * Hour(s)
          */
         "hour": string;
         /**
-         * 日
+         * Day(s)
          */
         "day": string;
     };
     "_2fa": {
         /**
-         * 既に設定は完了しています。
+         * You have already registered a 2-factor authentication device.
          */
         "alreadyRegistered": string;
         /**
-         * 認証アプリの設定を開始
+         * Register authenticator app
          */
         "registerTOTP": string;
         /**
-         * まず、{a}や{b}などの認証アプリをお使いのデバイスにインストールします。
+         * First, install an authentication app (such as {a} or {b}) on your device.
          */
         "step1": ParameterizedString<"a" | "b">;
         /**
-         * 次に、表示されているQRコードをアプリでスキャンするか、ボタンをクリックして端末上でアプリを開きます。
+         * Then, scan the QR code displayed on this screen.
          */
         "step2": string;
         /**
-         * デスクトップアプリを使用する場合は次のURIを入力します
+         * Enter the following URI if you are using a desktop program
          */
         "step2Uri": string;
         /**
-         * 確認コードを入力
+         * Enter an authentication code
          */
         "step3Title": string;
         /**
-         * アプリに表示されている確認コード（トークン）を入力します。
+         * Enter the authentication code (token) provided by your app to finish setup.
          */
         "step3": string;
         /**
-         * 設定が完了しました
+         * Setup complete
          */
         "setupCompleted": string;
         /**
-         * これからログインするときも、同じようにコードを入力します。
+         * From now on, any future login attempts will ask for such a login token.
          */
         "step4": string;
         /**
-         * お使いのブラウザはセキュリティキーに対応していません。
+         * Your browser does not support security keys.
          */
         "securityKeyNotSupported": string;
         /**
-         * セキュリティキー・パスキーを登録するには、まず認証アプリの設定を行なってください。
+         * Please set up an authenticator app to register a security or pass key.
          */
         "registerTOTPBeforeKey": string;
         /**
-         * FIDO2をサポートするハードウェアセキュリティキー、端末の生体認証やPINロック、パスキーといった、WebAuthn由来の鍵を登録します。
+         * Besides fingerprint or PIN authentication, you can also setup authentication via hardware security keys that support FIDO2 to further secure your account.
          */
         "securityKeyInfo": string;
         /**
-         * セキュリティキー・パスキーを登録する
+         * Register a security or pass key
          */
         "registerSecurityKey": string;
         /**
-         * キーの名前を入力
+         * Enter a key name
          */
         "securityKeyName": string;
         /**
-         * ブラウザの指示に従い、セキュリティキーやパスキーを登録してください
+         * Please follow your browser to register the security or pass key
          */
         "tapSecurityKey": string;
         /**
-         * セキュリティキーを削除
+         * Remove security key
          */
         "removeKey": string;
         /**
-         * {name}を削除しますか？
+         * Really delete the {name} key?
          */
         "removeKeyConfirm": ParameterizedString<"name">;
         /**
-         * セキュリティキーが登録されている場合、認証アプリの設定は解除できません。
+         * The authenticator app cannot be removed as long as a security key is registered.
          */
         "whyTOTPOnlyRenew": string;
         /**
-         * 認証アプリを再設定
+         * Reconfigure authenticator app
          */
         "renewTOTP": string;
         /**
-         * 今までの認証アプリの確認コードおよびバックアップコードは使用できなくなります
+         * This will cause verification codes from your previous app to stop working
          */
         "renewTOTPConfirm": string;
         /**
-         * 再設定する
+         * Reconfigure
          */
         "renewTOTPOk": string;
         /**
-         * やめておく
+         * Cancel
          */
         "renewTOTPCancel": string;
         /**
-         * このウィザードを閉じる前に、以下のバックアップコードを確認してください。
+         * Before you close this window, please note the following backup codes.
          */
         "checkBackupCodesBeforeCloseThisWizard": string;
         /**
-         * バックアップコード
+         * Backup codes
          */
         "backupCodes": string;
         /**
-         * 認証アプリが使用できなくなった場合、以下のバックアップコードを使ってアカウントにアクセスできます。これらのコードは必ず安全な場所に保管してください。各コードは一回だけ使用できます。
+         * You can use these codes to gain access to your account in case of becoming unable to use your two-factor authentificator app. Each can only be used once. Please keep them in a safe place.
          */
         "backupCodesDescription": string;
         /**
-         * バックアップコードが使用されました。認証アプリが使えなくなっている場合、なるべく早く認証アプリを再設定してください。
+         * A backup code has been used. Please reconfigure two-factor authentification as soon as possible if you are no longer able to use it.
          */
         "backupCodeUsedWarning": string;
         /**
-         * バックアップコードが全て使用されました。認証アプリを利用できない場合、これ以上アカウントにアクセスできなくなります。認証アプリを再登録してください。
+         * All backup codes have been used. Should you lose access to your two-factor authentification app, you will be unable to access this account. Please reconfigure two-factor authentification.
          */
         "backupCodesExhaustedWarning": string;
         /**
-         * 詳細なガイドはこちら
+         * Click here for a detailed guide
          */
         "moreDetailedGuideHere": string;
     };
     "_permissions": {
         /**
-         * アカウントの情報を見る
+         * View your account information
          */
         "read:account": string;
         /**
-         * アカウントの情報を変更する
+         * Edit your account information
          */
         "write:account": string;
         /**
-         * ブロックを見る
+         * View your list of blocked users
          */
         "read:blocks": string;
         /**
-         * ブロックを操作する
+         * Edit your list of blocked users
          */
         "write:blocks": string;
         /**
-         * ドライブを見る
+         * Access your Drive files and folders
          */
         "read:drive": string;
         /**
-         * ドライブを操作する
+         * Edit or delete your Drive files and folders
          */
         "write:drive": string;
         /**
-         * お気に入りを見る
+         * View your list of favorites
          */
         "read:favorites": string;
         /**
-         * お気に入りを操作する
+         * Edit your list of favorites
          */
         "write:favorites": string;
         /**
-         * フォローの情報を見る
+         * View information on who you follow
          */
         "read:following": string;
         /**
-         * フォロー・フォロー解除する
+         * Follow or unfollow other accounts
          */
         "write:following": string;
         /**
-         * チャットを見る
+         * View your chats
          */
         "read:messaging": string;
         /**
-         * チャットを操作する
+         * Compose or delete chat messages
          */
         "write:messaging": string;
         /**
-         * ミュートを見る
+         * View your list of muted users
          */
         "read:mutes": string;
         /**
-         * ミュートを操作する
+         * Edit your list of muted users
          */
         "write:mutes": string;
         /**
-         * ノートを作成・削除する
+         * Compose or delete notes
          */
         "write:notes": string;
         /**
-         * 通知を見る
+         * View your notifications
          */
         "read:notifications": string;
         /**
-         * 通知を操作する
+         * Manage your notifications
          */
         "write:notifications": string;
         /**
-         * リアクションを見る
+         * View your reactions
          */
         "read:reactions": string;
         /**
-         * リアクションを操作する
+         * Edit your reactions
          */
         "write:reactions": string;
         /**
-         * 投票する
+         * Vote on a poll
          */
         "write:votes": string;
         /**
-         * ページを見る
+         * View your Pages
          */
         "read:pages": string;
         /**
-         * ページを操作する
+         * Edit or delete your Pages
          */
         "write:pages": string;
         /**
-         * ページのいいねを見る
+         * View list of liked Pages
          */
         "read:page-likes": string;
         /**
-         * ページのいいねを操作する
+         * Edit list of liked Pages
          */
         "write:page-likes": string;
         /**
-         * ユーザーグループを見る
+         * View your user groups
          */
         "read:user-groups": string;
         /**
-         * ユーザーグループを操作する
+         * Edit or delete your user groups
          */
         "write:user-groups": string;
         /**
-         * チャンネルを見る
+         * View your channels
          */
         "read:channels": string;
         /**
-         * チャンネルを操作する
+         * Edit your channels
          */
         "write:channels": string;
         /**
-         * ギャラリーを見る
+         * View your gallery
          */
         "read:gallery": string;
         /**
-         * ギャラリーを操作する
+         * Edit your gallery
          */
         "write:gallery": string;
         /**
-         * ギャラリーのいいねを見る
+         * View your list of liked gallery posts
          */
         "read:gallery-likes": string;
         /**
-         * ギャラリーのいいねを操作する
+         * Edit your list of liked gallery posts
          */
         "write:gallery-likes": string;
         /**
-         * Playを見る
+         * View Play
          */
         "read:flash": string;
         /**
-         * Playを操作する
+         * Edit Plays
          */
         "write:flash": string;
         /**
-         * Playのいいねを見る
+         * View list of liked Plays
          */
         "read:flash-likes": string;
         /**
-         * Playのいいねを操作する
+         * Edit list of liked Plays
          */
         "write:flash-likes": string;
         /**
-         * ユーザーからの通報を見る
+         * View user reports
          */
         "read:admin:abuse-user-reports": string;
         /**
-         * ユーザーアカウントを削除する
+         * Delete user account
          */
         "write:admin:delete-account": string;
         /**
-         * ユーザーのすべてのファイルを削除する
+         * Delete all files of a user
          */
         "write:admin:delete-all-files-of-a-user": string;
         /**
-         * データベースインデックスに関する情報を見る
+         * View database index stats
          */
         "read:admin:index-stats": string;
         /**
-         * データベーステーブルに関する情報を見る
+         * View database table stats
          */
         "read:admin:table-stats": string;
         /**
-         * ユーザーのIPアドレスを見る
+         * View user IP addresses
          */
         "read:admin:user-ips": string;
         /**
-         * インスタンスのメタデータを見る
+         * View instance metadata
          */
         "read:admin:meta": string;
         /**
-         * ユーザーのパスワードをリセットする
+         * Reset user password
          */
         "write:admin:reset-password": string;
         /**
-         * ユーザーからの通報を解決する
+         * Resolve user report
          */
         "write:admin:resolve-abuse-user-report": string;
         /**
-         * メールを送る
+         * Send email
          */
         "write:admin:send-email": string;
         /**
-         * サーバーの情報を見る
+         * View server info
          */
         "read:admin:server-info": string;
         /**
-         * モデレーションログを見る
+         * View moderation log
          */
         "read:admin:show-moderation-log": string;
         /**
-         * ユーザーのプライベートな情報を見る
+         * View private user info
          */
         "read:admin:show-user": string;
         /**
-         * ユーザーを凍結する
+         * Suspend user
          */
         "write:admin:suspend-user": string;
         /**
-         * ユーザーのアバターを削除する
+         * Remove user avatar
          */
         "write:admin:unset-user-avatar": string;
         /**
-         * ユーザーのバーナーを削除する
+         * Remove user banner
          */
         "write:admin:unset-user-banner": string;
         /**
-         * ユーザーの凍結を解除する
+         * Unsuspend user
          */
         "write:admin:unsuspend-user": string;
         /**
-         * インスタンスのメタデータを操作する
+         * Manage instance metadata
          */
         "write:admin:meta": string;
         /**
-         * モデレーションノートを操作する
+         * Manage moderation note
          */
         "write:admin:user-note": string;
         /**
-         * ロールを操作する
+         * Manage roles
          */
         "write:admin:roles": string;
         /**
-         * ロールを見る
+         * View roles
          */
         "read:admin:roles": string;
         /**
-         * リレーを操作する
+         * Manage relays
          */
         "write:admin:relays": string;
         /**
-         * リレーを見る
+         * View relays
          */
         "read:admin:relays": string;
         /**
-         * 招待コードを操作する
+         * Manage invite codes
          */
         "write:admin:invite-codes": string;
         /**
-         * 招待コードを見る
+         * View invite codes
          */
         "read:admin:invite-codes": string;
         /**
-         * お知らせを操作する
+         * Manage announcements
          */
         "write:admin:announcements": string;
         /**
-         * お知らせを見る
+         * View announcements
          */
         "read:admin:announcements": string;
         /**
-         * アバターデコレーションを操作する
+         * Can manage avatar decorations
          */
         "write:admin:avatar-decorations": string;
         /**
-         * アバターデコレーションを見る
+         * View avatar decorations
          */
         "read:admin:avatar-decorations": string;
         /**
-         * 連合に関する情報を操作する
+         * Manage federation data
          */
         "write:admin:federation": string;
         /**
-         * ユーザーアカウントを操作する
+         * Manage user account
          */
         "write:admin:account": string;
         /**
-         * ユーザーに関する情報を見る
+         * View user account
          */
         "read:admin:account": string;
         /**
-         * 絵文字を操作する
+         * Manage emoji
          */
         "write:admin:emoji": string;
         /**
-         * 絵文字を見る
+         * View emoji
          */
         "read:admin:emoji": string;
         /**
-         * ジョブキューを操作する
+         * Manage job queue
          */
         "write:admin:queue": string;
         /**
-         * ジョブキューに関する情報を見る
+         * View job queue info
          */
         "read:admin:queue": string;
         /**
-         * プロモーションノートを操作する
+         * Manage promotion notes
          */
         "write:admin:promo": string;
         /**
-         * ユーザーのドライブを操作する
+         * Manage user drive
          */
         "write:admin:drive": string;
         /**
-         * ユーザーのドライブの関する情報を見る
+         * View user drive info
          */
         "read:admin:drive": string;
         /**
-         * 管理者用のWebsocket APIを使う
+         * Use WebSocket API for Admin
          */
         "read:admin:stream": string;
         /**
-         * 広告を操作する
+         * Manage ads
          */
         "write:admin:ad": string;
         /**
-         * 広告を見る
+         * View ads
          */
         "read:admin:ad": string;
         /**
-         * 招待コードを作成する
+         * Create invite codes
          */
         "write:invite-codes": string;
         /**
-         * 招待コードを取得する
+         * Get invite codes
          */
         "read:invite-codes": string;
         /**
-         * クリップのいいねを操作する
+         * Manage favorited clips
          */
         "write:clip-favorite": string;
         /**
-         * クリップのいいねを見る
+         * View favorited clips
          */
         "read:clip-favorite": string;
         /**
-         * 連合に関する情報を取得する
+         * Get federation data
          */
         "read:federation": string;
         /**
-         * 違反を報告する
+         * Report violation
          */
         "write:report-abuse": string;
     };
     "_auth": {
         /**
-         * アプリへのアクセス許可
+         * Granting application permissions
          */
         "shareAccessTitle": string;
         /**
-         * 「{name}」がアカウントにアクセスすることを許可しますか？
+         * Would you like to authorize "{name}" to access this account?
          */
         "shareAccess": ParameterizedString<"name">;
         /**
-         * アカウントへのアクセスを許可しますか？
+         * Are you sure you want to authorize this application to access your account?
          */
         "shareAccessAsk": string;
         /**
-         * {name}は次の権限を要求しています
+         * {name} requests the following permissions
          */
         "permission": ParameterizedString<"name">;
         /**
-         * このアプリは次の権限を要求しています
+         * This application requests the following permissions
          */
         "permissionAsk": string;
         /**
-         * アプリケーションに戻ってやっていってください
+         * Please go back to the application
          */
         "pleaseGoBack": string;
         /**
-         * アプリケーションに戻っています
+         * Returning to the application
          */
         "callback": string;
         /**
-         * アクセスを拒否しました
+         * Access denied
          */
         "denied": string;
         /**
-         * アプリケーションにアクセス許可を与えるには、ログインが必要です。
+         * Please log in to authorize applications.
          */
         "pleaseLogin": string;
     };
     "_antennaSources": {
         /**
-         * 全てのノート
+         * All notes
          */
         "all": string;
         /**
-         * フォローしているユーザーのノート
+         * Notes from followed users
          */
         "homeTimeline": string;
         /**
-         * 指定した一人または複数のユーザーのノート
+         * Notes from specific users
          */
         "users": string;
         /**
-         * 指定したリストのユーザーのノート
+         * Notes from a specified list of users
          */
         "userList": string;
         /**
-         * 指定した一人または複数のユーザーを除いた全てのノート
+         * All notes except for those of one or more specified users
          */
         "userBlacklist": string;
     };
     "_weekday": {
         /**
-         * 日曜日
+         * Sunday
          */
         "sunday": string;
         /**
-         * 月曜日
+         * Monday
          */
         "monday": string;
         /**
-         * 火曜日
+         * Tuesday
          */
         "tuesday": string;
         /**
-         * 水曜日
+         * Wednesday
          */
         "wednesday": string;
         /**
-         * 木曜日
+         * Thursday
          */
         "thursday": string;
         /**
-         * 金曜日
+         * Friday
          */
         "friday": string;
         /**
-         * 土曜日
+         * Saturday
          */
         "saturday": string;
     };
     "_widgets": {
         /**
-         * プロフィール
+         * Profile
          */
         "profile": string;
         /**
-         * サーバー情報
+         * Instance Information
          */
         "instanceInfo": string;
         /**
-         * 付箋
+         * Sticky notes
          */
         "memo": string;
         /**
-         * 通知
+         * Notifications
          */
         "notifications": string;
         /**
-         * タイムライン
+         * Timeline
          */
         "timeline": string;
         /**
-         * カレンダー
+         * Calendar
          */
         "calendar": string;
         /**
-         * トレンド
+         * Trending
          */
         "trends": string;
         /**
-         * 時計
+         * Clock
          */
         "clock": string;
         /**
-         * RSSリーダー
+         * RSS reader
          */
         "rss": string;
         /**
-         * RSSティッカー
+         * RSS-Ticker
          */
         "rssTicker": string;
         /**
-         * アクティビティ
+         * Activity
          */
         "activity": string;
         /**
-         * フォト
+         * Photos
          */
         "photos": string;
         /**
-         * デジタル時計
+         * Digital clock
          */
         "digitalClock": string;
         /**
-         * UNIX時計
+         * UNIX clock
          */
         "unixClock": string;
         /**
-         * 連合
+         * Federation
          */
         "federation": string;
         /**
-         * サーバークラウド
+         * Instance cloud
          */
         "instanceCloud": string;
         /**
-         * 投稿フォーム
+         * Posting form
          */
         "postForm": string;
         /**
-         * スライドショー
+         * Slideshow
          */
         "slideshow": string;
         /**
-         * ボタン
+         * Button
          */
         "button": string;
         /**
-         * オンラインユーザー
+         * Online users
          */
         "onlineUsers": string;
         /**
-         * ジョブキュー
+         * Job Queue
          */
         "jobQueue": string;
         /**
-         * サーバーメトリクス
+         * Server metrics
          */
         "serverMetric": string;
         /**
-         * AiScriptコンソール
+         * AiScript console
          */
         "aiscript": string;
         /**
@@ -8765,719 +8836,719 @@ export interface Locale extends ILocale {
          */
         "aiscriptApp": string;
         /**
-         * 藍
+         * Ai
          */
         "aichan": string;
         /**
-         * ユーザーリスト
+         * User list
          */
         "userList": string;
         "_userList": {
             /**
-             * リストを選択
+             * Select a list
              */
             "chooseList": string;
         };
         /**
-         * クリッカー
+         * Clicker
          */
         "clicker": string;
         /**
-         * 検索
+         * Search
          */
         "search": string;
         /**
-         * 今日誕生日のユーザー
+         * Users who celebrate their birthday today
          */
         "birthdayFollowings": string;
     };
     "_cw": {
         /**
-         * 隠す
+         * Hide
          */
         "hide": string;
         /**
-         * もっと見る
+         * Show content
          */
         "show": string;
         /**
-         * {count}文字
+         * {count} characters
          */
         "chars": ParameterizedString<"count">;
         /**
-         * {count}ファイル
+         * {count} file(s)
          */
         "files": ParameterizedString<"count">;
     };
     "_poll": {
         /**
-         * 選択肢は最低2つ必要です
+         * At least two choices are needed
          */
         "noOnlyOneChoice": string;
         /**
-         * 選択肢{n}
+         * Choice {n}
          */
         "choiceN": ParameterizedString<"n">;
         /**
-         * これ以上追加できません
+         * You cannot add more choices
          */
         "noMore": string;
         /**
-         * 複数回答可
+         * Allow selecting multiple choices
          */
         "canMultipleVote": string;
         /**
-         * 期限
+         * End poll
          */
         "expiration": string;
         /**
-         * 無期限
+         * Never
          */
         "infinite": string;
         /**
-         * 日時指定
+         * End at...
          */
         "at": string;
         /**
-         * 経過指定
+         * End after...
          */
         "after": string;
         /**
-         * 期日
+         * End date
          */
         "deadlineDate": string;
         /**
-         * 時間
+         * Time
          */
         "deadlineTime": string;
         /**
-         * 期間
+         * Duration
          */
         "duration": string;
         /**
-         * {n}票
+         * {n} votes
          */
         "votesCount": ParameterizedString<"n">;
         /**
-         * 計{n}票
+         * {n} votes in total
          */
         "totalVotes": ParameterizedString<"n">;
         /**
-         * 投票する
+         * Vote
          */
         "vote": string;
         /**
-         * 結果を見る
+         * View results
          */
         "showResult": string;
         /**
-         * 投票済み
+         * Voted
          */
         "voted": string;
         /**
-         * 終了済み
+         * Ended
          */
         "closed": string;
         /**
-         * 終了まであと{d}日{h}時間
+         * {d} day(s) {h} hour(s) remaining
          */
         "remainingDays": ParameterizedString<"d" | "h">;
         /**
-         * 終了まであと{h}時間{m}分
+         * {h} hour(s) {m} minute(s) remaining
          */
         "remainingHours": ParameterizedString<"h" | "m">;
         /**
-         * 終了まであと{m}分{s}秒
+         * {m} minute(s) {s} second(s) remaining
          */
         "remainingMinutes": ParameterizedString<"m" | "s">;
         /**
-         * 終了まであと{s}秒
+         * {s} second(s) remaining
          */
         "remainingSeconds": ParameterizedString<"s">;
         /**
-         * 複数の選択肢
+         * Multiple choices
          */
         "multiple": string;
     };
     "_visibility": {
         /**
-         * パブリック
+         * Public
          */
         "public": string;
         /**
-         * 全てのユーザーに公開
+         * Your note will be visible for all users
          */
         "publicDescription": string;
         /**
-         * ホーム
+         * Home
          */
         "home": string;
         /**
-         * ホームタイムラインのみに公開
+         * Post to home timeline only
          */
         "homeDescription": string;
         /**
-         * フォロワー
+         * Followers
          */
         "followers": string;
         /**
-         * 自分のフォロワーのみに公開
+         * Make visible to your followers only
          */
         "followersDescription": string;
         /**
-         * ダイレクト
+         * Direct
          */
         "specified": string;
         /**
-         * 指定したユーザーのみに公開
+         * Make visible for specified users only
          */
         "specifiedDescription": string;
         /**
-         * 連合なし
+         * Defederate
          */
         "disableFederation": string;
         /**
-         * 他サーバーへの配信を行いません
+         * Don't transmit to other instances
          */
         "disableFederationDescription": string;
     };
     "_postForm": {
         /**
-         * このノートに返信...
+         * Reply to this note...
          */
         "replyPlaceholder": string;
         /**
-         * このノートを引用...
+         * Quote this note...
          */
         "quotePlaceholder": string;
         /**
-         * チャンネルに投稿...
+         * Post to a channel...
          */
         "channelPlaceholder": string;
         "_placeholders": {
             /**
-             * いまどうしてる？
+             * What are you up to?
              */
             "a": string;
             /**
-             * 何かありましたか？
+             * What's happening around you?
              */
             "b": string;
             /**
-             * 何をお考えですか？
+             * What's on your mind?
              */
             "c": string;
             /**
-             * 言いたいことは？
+             * What do you want to say?
              */
             "d": string;
             /**
-             * ここに書いてください
+             * Start writing...
              */
             "e": string;
             /**
-             * あなたが書くのを待っています...
+             * Waiting for you to write...
              */
             "f": string;
         };
     };
     "_profile": {
         /**
-         * 名前
+         * Name
          */
         "name": string;
         /**
-         * ユーザー名
+         * Username
          */
         "username": string;
         /**
-         * 自己紹介
+         * Bio
          */
         "description": string;
         /**
-         * ハッシュタグを含めることができます。
+         * You can also include hashtags in your bio.
          */
         "youCanIncludeHashtags": string;
         /**
-         * 追加情報
+         * Additional Information
          */
         "metadata": string;
         /**
-         * 追加情報を編集
+         * Edit additional Information
          */
         "metadataEdit": string;
         /**
-         * プロフィールに表として追加情報を表示することができます。
+         * Using these, you can display additional information fields in your profile.
          */
         "metadataDescription": string;
         /**
-         * ラベル
+         * Label
          */
         "metadataLabel": string;
         /**
-         * 内容
+         * Content
          */
         "metadataContent": string;
         /**
-         * アイコン画像を変更
+         * Change avatar
          */
         "changeAvatar": string;
         /**
-         * バナー画像を変更
+         * Change banner
          */
         "changeBanner": string;
         /**
-         * 更新バナー
+         * Update banner
          */
         "updateBanner": string;
         /**
-         * バナーを削除
+         * Remove banner
          */
         "removeBanner": string;
         /**
-         * 背景を変更する
+         * Change background
          */
         "changeBackground": string;
         /**
-         * 背景を更新する
+         * Update background
          */
         "updateBackground": string;
         /**
-         * 背景を削除する
+         * Remove background
          */
         "removeBackground": string;
         /**
-         * 内容にURLを設定すると、リンク先のWebサイトに自分のプロフィールへのリンクが含まれている場合に所有者確認済みアイコンを表示させることができます。
+         * By entering an URL that contains a link to your profile here, an ownership verification icon can be displayed next to the field.
          */
         "verifiedLinkDescription": string;
         /**
-         * 最大{max}つまでデコレーションを付けられます。
+         * You can add up to {max} decorations.
          */
         "avatarDecorationMax": ParameterizedString<"max">;
     };
     "_exportOrImport": {
         /**
-         * 全てのノート
+         * All notes
          */
         "allNotes": string;
         /**
-         * お気に入りにしたノート
+         * Favorite notes
          */
         "favoritedNotes": string;
         /**
-         * クリップ
+         * Clip
          */
         "clips": string;
         /**
-         * フォロー
+         * Followed users
          */
         "followingList": string;
         /**
-         * ミュート
+         * Muted users
          */
         "muteList": string;
         /**
-         * ブロック
+         * Blocked users
          */
         "blockingList": string;
         /**
-         * リスト
+         * User lists
          */
         "userLists": string;
         /**
-         * ミュートしているユーザーを除外
+         * Exclude muted users
          */
         "excludeMutingUsers": string;
         /**
-         * 使われていないアカウントを除外
+         * Exclude inactive users
          */
         "excludeInactiveUsers": string;
         /**
-         * インポートした人による返信をTLに含むようにする
+         * Include replies from imported users in the timeline
          */
         "withReplies": string;
     };
     "_charts": {
         /**
-         * 連合
+         * Federation
          */
         "federation": string;
         /**
-         * リクエスト
+         * Requests
          */
         "apRequest": string;
         /**
-         * ユーザーの増減
+         * Difference in the number of users
          */
         "usersIncDec": string;
         /**
-         * ユーザーの合計
+         * Total number of users
          */
         "usersTotal": string;
         /**
-         * アクティブユーザー数
+         * Active users
          */
         "activeUsers": string;
         /**
-         * ノートの増減
+         * Difference in the number of notes
          */
         "notesIncDec": string;
         /**
-         * ローカルのノートの増減
+         * Difference in the number of local notes
          */
         "localNotesIncDec": string;
         /**
-         * リモートのノートの増減
+         * Difference in the number of remote notes
          */
         "remoteNotesIncDec": string;
         /**
-         * ノートの合計
+         * Total number of notes
          */
         "notesTotal": string;
         /**
-         * ファイルの増減
+         * Difference in the number of files
          */
         "filesIncDec": string;
         /**
-         * ファイルの合計
+         * Total number of files
          */
         "filesTotal": string;
         /**
-         * ストレージ使用量の増減
+         * Difference in storage usage
          */
         "storageUsageIncDec": string;
         /**
-         * ストレージ使用量の合計
+         * Total storage usage
          */
         "storageUsageTotal": string;
     };
     "_instanceCharts": {
         /**
-         * リクエスト
+         * Requests
          */
         "requests": string;
         /**
-         * ユーザーの増減
+         * Difference in the number of users
          */
         "users": string;
         /**
-         * ユーザーの累積
+         * Cumulative number of users
          */
         "usersTotal": string;
         /**
-         * ノートの増減
+         * Difference in the number of notes
          */
         "notes": string;
         /**
-         * ノートの累積
+         * Cumulative number of notes
          */
         "notesTotal": string;
         /**
-         * フォロー/フォロワーの増減
+         * Difference in the number of followed users / followers
          */
         "ff": string;
         /**
-         * フォロー/フォロワーの累積
+         * Cumulative number of followed users / followers
          */
         "ffTotal": string;
         /**
-         * キャッシュサイズの増減
+         * Difference in cache size
          */
         "cacheSize": string;
         /**
-         * キャッシュサイズの累積
+         * Cumulative total cache size
          */
         "cacheSizeTotal": string;
         /**
-         * ファイル数の増減
+         * Difference in the number of files
          */
         "files": string;
         /**
-         * ファイル数の累積
+         * Cumulative number of files
          */
         "filesTotal": string;
     };
     "_timelines": {
         /**
-         * ホーム
+         * Home
          */
         "home": string;
         /**
-         * ローカル
+         * Local
          */
         "local": string;
         /**
-         * ソーシャル
+         * Social
          */
         "social": string;
         /**
-         * グローバル
+         * Global
          */
         "global": string;
         /**
-         * バブル
+         * Bubble
          */
         "bubble": string;
     };
     "_play": {
         /**
-         * Playの作成
+         * Create Play
          */
         "new": string;
         /**
-         * Playの編集
+         * Edit Play
          */
         "edit": string;
         /**
-         * Playを作成しました
+         * Play created
          */
         "created": string;
         /**
-         * Playを更新しました
+         * Play edited
          */
         "updated": string;
         /**
-         * Playを削除しました
+         * Play deleted
          */
         "deleted": string;
         /**
-         * Play設定
+         * Play settings
          */
         "pageSetting": string;
         /**
-         * このPlayを編集
+         * Edit this Play
          */
         "editThisPage": string;
         /**
-         * ソースを表示
+         * View source
          */
         "viewSource": string;
         /**
-         * 自分のPlay
+         * My Plays
          */
         "my": string;
         /**
-         * いいねしたPlay
+         * Liked Plays
          */
         "liked": string;
         /**
-         * 人気
+         * Popular
          */
         "featured": string;
         /**
-         * タイトル
+         * Title
          */
         "title": string;
         /**
-         * スクリプト
+         * Script
          */
         "script": string;
         /**
-         * 説明
+         * Description
          */
         "summary": string;
         /**
-         * 非公開に設定するとプロフィールに表示されなくなりますが、URLを知っている人は引き続きアクセスできます。
+         * Putting it private means it won't be visible on your profile, but anyone that has the URL can still access it.
          */
         "visibilityDescription": string;
     };
     "_pages": {
         /**
-         * ページの作成
+         * Create a new Page
          */
         "newPage": string;
         /**
-         * ページの編集
+         * Edit this Page
          */
         "editPage": string;
         /**
-         * ソースを表示中
+         * Viewing this Page's source
          */
         "readPage": string;
         /**
-         * ページを作成しました
+         * Page successfully created
          */
         "created": string;
         /**
-         * ページを更新しました
+         * Page successfully edited
          */
         "updated": string;
         /**
-         * ページを削除しました
+         * Page successfully deleted
          */
         "deleted": string;
         /**
-         * ページ設定
+         * Page settings
          */
         "pageSetting": string;
         /**
-         * 指定されたページURLは既に存在しています
+         * The specified Page URL already exists
          */
         "nameAlreadyExists": string;
         /**
-         * 不正なページURLです
+         * The specified Page URL is invalid
          */
         "invalidNameTitle": string;
         /**
-         * 空白でないか確認してください
+         * Make sure the Page title is not empty
          */
         "invalidNameText": string;
         /**
-         * このページを編集
+         * Edit this Page
          */
         "editThisPage": string;
         /**
-         * ソースを表示
+         * View source
          */
         "viewSource": string;
         /**
-         * ページを見る
+         * View your Pages
          */
         "viewPage": string;
         /**
-         * いいね
+         * Like
          */
         "like": string;
         /**
-         * いいね解除
+         * Remove like
          */
         "unlike": string;
         /**
-         * 自分のページ
+         * My Pages
          */
         "my": string;
         /**
-         * いいねしたページ
+         * Liked Pages
          */
         "liked": string;
         /**
-         * 人気
+         * Popular
          */
         "featured": string;
         /**
-         * インスペクター
+         * Inspector
          */
         "inspector": string;
         /**
-         * コンテンツ
+         * Contents
          */
         "contents": string;
         /**
-         * ページブロック
+         * Page block
          */
         "content": string;
         /**
-         * 変数
+         * Variables
          */
         "variables": string;
         /**
-         * タイトル
+         * Title
          */
         "title": string;
         /**
-         * ページURL
+         * Page URL
          */
         "url": string;
         /**
-         * ページの要約
+         * Page summary
          */
         "summary": string;
         /**
-         * 中央寄せ
+         * Center elements
          */
         "alignCenter": string;
         /**
-         * ピン留めされているときにタイトルを非表示
+         * Hide Page title when pinned to profile
          */
         "hideTitleWhenPinned": string;
         /**
-         * フォント
+         * Font
          */
         "font": string;
         /**
-         * セリフ
+         * Serif
          */
         "fontSerif": string;
         /**
-         * サンセリフ
+         * Sans Serif
          */
         "fontSansSerif": string;
         /**
-         * アイキャッチ画像を設定
+         * Set thumbnail
          */
         "eyeCatchingImageSet": string;
         /**
-         * アイキャッチ画像を削除
+         * Delete thumbnail
          */
         "eyeCatchingImageRemove": string;
         /**
-         * ブロックを追加
+         * Add a block
          */
         "chooseBlock": string;
         /**
-         * セクションタイトルを入力
+         * Enter a section title
          */
         "enterSectionTitle": string;
         /**
-         * 種類を選択
+         * Select a type
          */
         "selectType": string;
         /**
-         * コンテンツ
+         * Content
          */
         "contentBlocks": string;
         /**
-         * 入力
+         * Input
          */
         "inputBlocks": string;
         /**
-         * 特殊
+         * Special
          */
         "specialBlocks": string;
         "blocks": {
             /**
-             * テキスト
+             * Text
              */
             "text": string;
             /**
-             * テキストエリア
+             * Text area
              */
             "textarea": string;
             /**
-             * セクション
+             * Section
              */
             "section": string;
             /**
-             * 画像
+             * Images
              */
             "image": string;
             /**
-             * ボタン
+             * Button
              */
             "button": string;
             /**
-             * 動的ブロック
+             * Dynamic Blocks
              */
             "dynamic": string;
             /**
-             * このブロックは廃止されています。今後は{play}を利用してください。
+             * This block type has been removed. Please use {play} from now on.
              */
             "dynamicDescription": ParameterizedString<"play">;
             /**
-             * ノート埋め込み
+             * Embedded note
              */
             "note": string;
             "_note": {
                 /**
-                 * ノートID
+                 * Note ID
                  */
                 "id": string;
                 /**
-                 * ノートURLをペーストして設定することもできます。
+                 * You can alternatively paste the note URL here.
                  */
                 "idDescription": string;
                 /**
-                 * 詳細な表示
+                 * Detailed view
                  */
                 "detailed": string;
             };
@@ -9485,437 +9556,437 @@ export interface Locale extends ILocale {
     };
     "_relayStatus": {
         /**
-         * 承認待ち
+         * Pending
          */
         "requesting": string;
         /**
-         * 承認済み
+         * Accepted
          */
         "accepted": string;
         /**
-         * 拒否済み
+         * Rejected
          */
         "rejected": string;
     };
     "_notification": {
         /**
-         * ファイルがアップロードされました
+         * File successfully uploaded
          */
         "fileUploaded": string;
         /**
-         * {name}からのメンション
+         * {name} mentioned you
          */
         "youGotMention": ParameterizedString<"name">;
         /**
-         * {name}からのリプライ
+         * {name} replied to you
          */
         "youGotReply": ParameterizedString<"name">;
         /**
-         * {name}による引用
+         * {name} quoted you
          */
         "youGotQuote": ParameterizedString<"name">;
         /**
-         * {name}がBoostしました
+         * Boost from {name}
          */
         "youRenoted": ParameterizedString<"name">;
         /**
-         * フォローされました
+         * followed you
          */
         "youWereFollowed": string;
         /**
-         * フォローリクエストが来ました
+         * You've received a follow request
          */
         "youReceivedFollowRequest": string;
         /**
-         * フォローリクエストが承認されました
+         * Your follow request was accepted
          */
         "yourFollowRequestAccepted": string;
         /**
-         * アンケートの結果が出ました
+         * Poll results have become available
          */
         "pollEnded": string;
         /**
-         * 投稿が編集されました
-         */
-        "edited": string;
-        /**
-         * 新しい投稿
+         * New note
          */
         "newNote": string;
         /**
-         * アンテナ {name}
+         * Antenna {name}
          */
         "unreadAntennaNote": ParameterizedString<"name">;
         /**
-         * ロールが付与されました
+         * Role given
          */
         "roleAssigned": string;
         /**
-         * プッシュ通知の更新をしました
+         * Push notifications have been updated
          */
         "emptyPushNotificationMessage": string;
         /**
-         * 実績を獲得
+         * Achievement unlocked
          */
         "achievementEarned": string;
         /**
-         * 通知テスト
+         * Test notification
          */
         "testNotification": string;
         /**
-         * 通知の表示を確かめる
+         * Check notification appearance
          */
         "checkNotificationBehavior": string;
         /**
-         * テスト通知を送信する
+         * Send test notification
          */
         "sendTestNotification": string;
         /**
-         * 通知はこのように表示されます
+         * Notifications look like this
          */
         "notificationWillBeDisplayedLikeThis": string;
         /**
-         * {n}人がリアクションしました
+         * {n} users reacted
          */
         "reactedBySomeUsers": ParameterizedString<"n">;
         /**
-         * {n}人がいいねしました
+         * {n} users liked your note
          */
         "likedBySomeUsers": ParameterizedString<"n">;
         /**
-         * {n}人がリノートしました
+         * Boosted by {n} users
          */
         "renotedBySomeUsers": ParameterizedString<"n">;
         /**
-         * {n}人にフォローされました
+         * Followed by {n} users
          */
         "followedBySomeUsers": ParameterizedString<"n">;
         /**
-         * 通知の履歴をリセットする
+         * Clear notifications
          */
         "flushNotification": string;
+        /**
+         * Note got edited
+         */
+        "edited": string;
         "_types": {
             /**
-             * すべて
+             * All
              */
             "all": string;
             /**
-             * ユーザーの新規投稿
+             * New notes
              */
             "note": string;
             /**
-             * フォロー
+             * New followers
              */
             "follow": string;
             /**
-             * メンション
+             * Mentions
              */
             "mention": string;
             /**
-             * リプライ
+             * Replies
+             */
+            "reply": string;
+            /**
+             * Boosts
+             */
+            "renote": string;
+            /**
+             * Quotes
+             */
+            "quote": string;
+            /**
+             * Reactions
+             */
+            "reaction": string;
+            /**
+             * Polls ending
+             */
+            "pollEnded": string;
+            /**
+             * Received follow requests
+             */
+            "receiveFollowRequest": string;
+            /**
+             * Accepted follow requests
+             */
+            "followRequestAccepted": string;
+            /**
+             * Role given
+             */
+            "roleAssigned": string;
+            /**
+             * Achievement unlocked
+             */
+            "achievementEarned": string;
+            /**
+             * Notifications from linked apps
+             */
+            "app": string;
+            /**
+             * Edits
+             */
+            "edited": string;
+        };
+        "_actions": {
+            /**
+             * followed you back
+             */
+            "followBack": string;
+            /**
+             * Reply
              */
             "reply": string;
             /**
              * Boost
              */
             "renote": string;
-            /**
-             * 引用
-             */
-            "quote": string;
-            /**
-             * リアクション
-             */
-            "reaction": string;
-            /**
-             * アンケートが終了
-             */
-            "pollEnded": string;
-            /**
-             * フォロー申請を受け取った
-             */
-            "receiveFollowRequest": string;
-            /**
-             * フォローが受理された
-             */
-            "followRequestAccepted": string;
-            /**
-             * ロールが付与された
-             */
-            "roleAssigned": string;
-            /**
-             * 実績の獲得
-             */
-            "achievementEarned": string;
-            /**
-             * 連携アプリからの通知
-             */
-            "app": string;
-            /**
-             * 編集済み
-             */
-            "edited": string;
-        };
-        "_actions": {
-            /**
-             * フォローバック
-             */
-            "followBack": string;
-            /**
-             * 返信
-             */
-            "reply": string;
-            /**
-             * ブースト
-             */
-            "renote": string;
         };
     };
     "_deck": {
         /**
-         * 常にメインカラムを表示
+         * Always show main column
          */
         "alwaysShowMainColumn": string;
         /**
-         * カラムの寄せ
+         * Align columns
          */
         "columnAlign": string;
         /**
-         * カラムを追加
+         * Add column
          */
         "addColumn": string;
         /**
-         * 新着ノート通知の設定
+         * Notification setting for new notes
          */
         "newNoteNotificationSettings": string;
         /**
-         * カラムの設定
+         * Column settings
          */
         "configureColumn": string;
         /**
-         * 左に移動
+         * Swap with the left column
          */
         "swapLeft": string;
         /**
-         * 右に移動
+         * Swap with the right column
          */
         "swapRight": string;
         /**
-         * 上に移動
+         * Swap with the above column
          */
         "swapUp": string;
         /**
-         * 下に移動
+         * Swap with the below column
          */
         "swapDown": string;
         /**
-         * 左にスタック
+         * Stack on left column
          */
         "stackLeft": string;
         /**
-         * 右に出す
+         * Pop column to the right
          */
         "popRight": string;
         /**
-         * プロファイル
+         * Profile
          */
         "profile": string;
         /**
-         * 新規プロファイル
+         * New profile
          */
         "newProfile": string;
         /**
-         * プロファイルを削除
+         * Delete profile
          */
         "deleteProfile": string;
         /**
-         * カラムを組み合わせて自分だけのインターフェイスを作りましょう！
+         * Create the perfect interface for you by arranging columns freely!
          */
         "introduction": string;
         /**
-         * 画面の右にある + を押して、いつでもカラムを追加できます。
+         * Click on the + on the right of the screen to add new colums whenever you want.
          */
         "introduction2": string;
         /**
-         * カラムのメニューから、「ウィジェットの編集」を選択してウィジェットを追加してください
+         * Please select "Edit widgets" in the column menu and add a widget.
          */
         "widgetsIntroduction": string;
         /**
-         * 非ルートページは簡易UIで表示
+         * Use simple UI for navigated pages
          */
         "useSimpleUiForNonRootPages": string;
         /**
-         * 「幅を自動調整」が有効の場合、これが幅の最小値となります
+         * Minimum width will be used for this when the "Auto-adjust width" option is enabled
          */
         "usedAsMinWidthWhenFlexible": string;
         /**
-         * 幅を自動調整
+         * Auto-adjust width
          */
         "flexible": string;
         "_columns": {
             /**
-             * メイン
+             * Main
              */
             "main": string;
             /**
-             * ウィジェット
+             * Widgets
              */
             "widgets": string;
             /**
-             * 通知
+             * Notifications
              */
             "notifications": string;
             /**
-             * タイムライン
+             * Timeline
              */
             "tl": string;
             /**
-             * アンテナ
+             * Antennas
              */
             "antenna": string;
             /**
-             * リスト
+             * List
              */
             "list": string;
             /**
-             * チャンネル
+             * Channel
              */
             "channel": string;
             /**
-             * あなた宛て
+             * Mentions
              */
             "mentions": string;
             /**
-             * ダイレクト
+             * Direct notes
              */
             "direct": string;
             /**
-             * ロールタイムライン
+             * Role Timeline
              */
             "roleTimeline": string;
         };
     };
     "_dialog": {
         /**
-         * 最大文字数を超えています！ 現在 {current} / 制限 {max}
+         * You've exceeded the maximum character limit! Currently at {current} of {max}.
          */
         "charactersExceeded": ParameterizedString<"current" | "max">;
         /**
-         * 最小文字数を下回っています！ 現在 {current} / 制限 {min}
+         * You're below the minimum character limit! Currently at {current} of {min}.
          */
         "charactersBelow": ParameterizedString<"current" | "min">;
     };
     "_disabledTimeline": {
         /**
-         * 無効化されたタイムライン
+         * Timeline disabled
          */
         "title": string;
         /**
-         * 現在のロールでは、このタイムラインを使用することはできません。
+         * You cannot use this timeline under your current roles.
          */
         "description": string;
     };
     "_drivecleaner": {
         /**
-         * サイズが大きい順
+         * Descending Filesizes
          */
         "orderBySizeDesc": string;
         /**
-         * 追加日が古い順
+         * Ascending Dates
          */
         "orderByCreatedAtAsc": string;
     };
     "_webhookSettings": {
         /**
-         * Webhookを作成
+         * Create Webhook
          */
         "createWebhook": string;
         /**
-         * Webhookを編集
+         * Modify Webhook
          */
         "modifyWebhook": string;
         /**
-         * 名前
+         * Name
          */
         "name": string;
         /**
-         * シークレット
+         * Secret
          */
         "secret": string;
         /**
-         * トリガー
+         * Trigger
          */
         "trigger": string;
         /**
-         * 有効
+         * Enabled
          */
         "active": string;
         "_events": {
             /**
-             * フォローしたとき
+             * When following a user
              */
             "follow": string;
             /**
-             * フォローされたとき
+             * When being followed
              */
             "followed": string;
             /**
-             * ノートを投稿したとき
+             * When posting a note
              */
             "note": string;
             /**
-             * 返信されたとき
+             * When receiving a reply
              */
             "reply": string;
             /**
-             * Boostされたとき
+             * When boosted
              */
             "renote": string;
             /**
-             * リアクションがあったとき
+             * When receiving a reaction
              */
             "reaction": string;
             /**
-             * メンションされたとき
+             * When being mentioned
              */
             "mention": string;
         };
         "_systemEvents": {
             /**
-             * ユーザーから通報があったとき
+             * When received a new abuse report
              */
             "abuseReport": string;
             /**
-             * ユーザーからの通報を処理したとき
+             * When resolved abuse reports
              */
             "abuseReportResolved": string;
             /**
-             * ユーザーが作成されたとき
+             * When user is created
              */
             "userCreated": string;
         };
         /**
-         * Webhookを削除しますか？
+         * Are you sure you want to delete the Webhook?
          */
         "deleteConfirm": string;
     };
     "_abuseReport": {
         "_notificationRecipient": {
             /**
-             * 通報の通知先を追加
+             * Add a recipient for abuse reports
              */
             "createRecipient": string;
             /**
-             * 通報の通知先を編集
+             * Edit a recipient for abuse reports
              */
             "modifyRecipient": string;
             /**
-             * 通知先の種類
+             * Notification type
              */
             "recipientType": string;
             "_recipientType": {
                 /**
-                 * メール
+                 * Email
                  */
                 "mail": string;
                 /**
@@ -9924,128 +9995,128 @@ export interface Locale extends ILocale {
                 "webhook": string;
                 "_captions": {
                     /**
-                     * モデレーター権限を持つユーザーのメールアドレスに通知を送ります(通報を受けた時のみ)
+                     * Send an email to the moderators when an abuse report is received.
                      */
                     "mail": string;
                     /**
-                     * 指定したSystemWebhookに通知を送ります(通報を受けた時と通報を解決した時にそれぞれ発信)
+                     * Send a notification to the SystemWebhook when an abuse report is received or resolved.
                      */
                     "webhook": string;
                 };
             };
             /**
-             * キーワード
+             * Keywords
              */
             "keywords": string;
             /**
-             * 通知先ユーザー
+             * Users to notify
              */
             "notifiedUser": string;
             /**
-             * 使用するWebhook
+             * Webhook to use
              */
             "notifiedWebhook": string;
             /**
-             * 通知先を削除しますか？
+             * Are you sure that you want to delete the notification recipient?
              */
             "deleteConfirm": string;
         };
     };
     "_moderationLogTypes": {
         /**
-         * ロールを作成
+         * Role created
          */
         "createRole": string;
         /**
-         * ロールを削除
+         * Role deleted
          */
         "deleteRole": string;
         /**
-         * ロールを更新
+         * Role updated
          */
         "updateRole": string;
         /**
-         * ロールへアサイン
+         * Assigned to role
          */
         "assignRole": string;
         /**
-         * ロールのアサイン解除
+         * Removed from role
          */
         "unassignRole": string;
         /**
-         * 承認済み
+         * Approved
          */
         "approve": string;
         /**
-         * 凍結
+         * Suspended
          */
         "suspend": string;
         /**
-         * 凍結解除
+         * Unsuspended
          */
         "unsuspend": string;
         /**
-         * カスタム絵文字追加
+         * Custom emoji added
          */
         "addCustomEmoji": string;
         /**
-         * カスタム絵文字更新
+         * Custom emoji updated
          */
         "updateCustomEmoji": string;
         /**
-         * カスタム絵文字削除
+         * Custom emoji deleted
          */
         "deleteCustomEmoji": string;
         /**
-         * サーバー設定更新
+         * Server settings updated
          */
         "updateServerSettings": string;
         /**
-         * ユーザーのモデレーションノート更新
+         * Moderation note updated
          */
         "updateUserNote": string;
         /**
-         * ファイルを削除
+         * File deleted
          */
         "deleteDriveFile": string;
         /**
-         * ノートを削除
+         * Note deleted
          */
         "deleteNote": string;
         /**
-         * 全体のお知らせを作成
+         * Global announcement created
          */
         "createGlobalAnnouncement": string;
         /**
-         * ユーザーへお知らせを作成
+         * User announcement created
          */
         "createUserAnnouncement": string;
         /**
-         * 全体のお知らせを更新
+         * Global announcement updated
          */
         "updateGlobalAnnouncement": string;
         /**
-         * ユーザーのお知らせを更新
+         * User announcement updated
          */
         "updateUserAnnouncement": string;
         /**
-         * 全体のお知らせを削除
+         * Global announcement deleted
          */
         "deleteGlobalAnnouncement": string;
         /**
-         * ユーザーのお知らせを削除
+         * User announcement deleted
          */
         "deleteUserAnnouncement": string;
         /**
-         * パスワードをリセット
+         * Password reset
          */
         "resetPassword": string;
         /**
-         * リモートサーバーを停止
+         * Remote instance suspended
          */
         "suspendRemoteInstance": string;
         /**
-         * リモートサーバーを再開
+         * Remote instance unsuspended
          */
         "unsuspendRemoteInstance": string;
         /**
@@ -10065,125 +10136,125 @@ export interface Locale extends ILocale {
          */
         "acceptRemoteInstanceReports": string;
         /**
-         * リモートサーバーのモデレーションノート更新
+         * Moderation note updated for remote instance.
          */
         "updateRemoteInstanceNote": string;
         /**
-         * ファイルをセンシティブ付与
+         * File marked as sensitive
          */
         "markSensitiveDriveFile": string;
         /**
-         * ファイルをセンシティブ解除
+         * File unmarked as sensitive
          */
         "unmarkSensitiveDriveFile": string;
         /**
-         * 通報を解決
+         * Report resolved
          */
         "resolveAbuseReport": string;
         /**
-         * 招待コードを作成
+         * Invite generated
          */
         "createInvitation": string;
         /**
-         * 広告を作成
+         * Ad created
          */
         "createAd": string;
         /**
-         * 広告を削除
+         * Ad deleted
          */
         "deleteAd": string;
         /**
-         * 広告を更新
+         * Ad updated
          */
         "updateAd": string;
         /**
-         * アイコンデコレーションを作成
+         * Avatar decoration created
          */
         "createAvatarDecoration": string;
         /**
-         * アイコンデコレーションを更新
+         * Avatar decoration updated
          */
         "updateAvatarDecoration": string;
         /**
-         * アイコンデコレーションを削除
+         * Avatar decoration deleted
          */
         "deleteAvatarDecoration": string;
         /**
-         * ユーザーのアイコンを解除
+         * Unset this user's avatar
          */
         "unsetUserAvatar": string;
         /**
-         * ユーザーのバナーを解除
+         * Unset this user's banner
          */
         "unsetUserBanner": string;
         /**
-         * SystemWebhookを作成
+         * Create SystemWebhook
          */
         "createSystemWebhook": string;
         /**
-         * SystemWebhookを更新
+         * Update SystemWebhook
          */
         "updateSystemWebhook": string;
         /**
-         * SystemWebhookを削除
+         * Delete SystemWebhook
          */
         "deleteSystemWebhook": string;
         /**
-         * 通報の通知先を作成
+         * Create a recipient for abuse reports
          */
         "createAbuseReportNotificationRecipient": string;
         /**
-         * 通報の通知先を更新
+         * Update recipients for abuse reports
          */
         "updateAbuseReportNotificationRecipient": string;
         /**
-         * 通報の通知先を削除
+         * Delete a recipient for abuse reports
          */
         "deleteAbuseReportNotificationRecipient": string;
         /**
-         * アカウントを削除
+         * Delete the account
          */
         "deleteAccount": string;
         /**
-         * ページを削除
+         * Delete the page
          */
         "deletePage": string;
         /**
-         * Playを削除
+         * Delete Play
          */
         "deleteFlash": string;
         /**
-         * ギャラリーの投稿を削除
+         * Delete the gallery post
          */
         "deleteGalleryPost": string;
     };
     "_mfm": {
         /**
-         * この機能は一般的に普及していないため、他のMisskeyフォークを含めた多くのFediverseソフトウェアで表示できないことがあります。
+         * This is not a widespread feature, it may not display properly on most other fedi software, including other Misskey forks
          */
         "uncommonFeature": string;
         /**
-         * MFM はMisskey, Sharkey, Firefish, Akkomaなど、多くの場所で使用できるマークアップ言語です。ここでは、利用できるMFM構文の一覧をご覧いただけます。
+         * MFM is a markup language used on Misskey, Sharkey, Firefish, Akkoma, and more that can be used in many places. Here you can view a list of all available MFM syntax.
          */
         "intro": string;
         /**
-         * SharkeyでFediverseの世界が広がります
+         * Sharkey expands the world of the Fediverse
          */
         "dummy": string;
         /**
-         * メンション
+         * Mention
          */
         "mention": string;
         /**
-         * アットマーク + ユーザー名で、特定のユーザーを示すことができます。
+         * You can specify a user by using an At-Symbol and a username.
          */
         "mentionDescription": string;
         /**
-         * ハッシュタグ
+         * Hashtag
          */
         "hashtag": string;
         /**
-         * ナンバーサイン + タグで、ハッシュタグを示すことができます。
+         * You can specify a hashtag using a number sign and text.
          */
         "hashtagDescription": string;
         /**
@@ -10191,279 +10262,279 @@ export interface Locale extends ILocale {
          */
         "url": string;
         /**
-         * URLを示すことができます。
+         * URLs can be displayed.
          */
         "urlDescription": string;
         /**
-         * リンク
+         * Link
          */
         "link": string;
         /**
-         * 文章の特定の範囲を、URLに紐づけることができます。
+         * Specific parts of text can be displayed as a URL.
          */
         "linkDescription": string;
         /**
-         * 太字
+         * Bold
          */
         "bold": string;
         /**
-         * 文字を太く表示して強調することができます。
+         * Highlights letters by making them thicker.
          */
         "boldDescription": string;
         /**
-         * 小文字
+         * Small
          */
         "small": string;
         /**
-         * 内容を小さく・薄く表示させることができます。
+         * Displays content small and thin.
          */
         "smallDescription": string;
         /**
-         * 中央寄せ
+         * Center
          */
         "center": string;
         /**
-         * 内容を中央寄せで表示させることができます。
+         * Displays content centered.
          */
         "centerDescription": string;
         /**
-         * コード（インライン）
+         * Code (Inline)
          */
         "inlineCode": string;
         /**
-         * プログラムなどのコードをインラインでシンタックスハイライトします。
+         * Displays inline syntax highlighting for (program) code.
          */
         "inlineCodeDescription": string;
         /**
-         * コード（ブロック）
+         * Code (Block)
          */
         "blockCode": string;
         /**
-         * 複数行のプログラムなどのコードをブロックでシンタックスハイライトします。
+         * Displays syntax highlighting for multi-line (program) code in a block.
          */
         "blockCodeDescription": string;
         /**
-         * 数式（インライン）
+         * Math (Inline)
          */
         "inlineMath": string;
         /**
-         * 数式 （KaTeX形式）をインラインで表示します。
+         * Display math formulas (KaTeX) in-line
          */
         "inlineMathDescription": string;
         /**
-         * 数式（ブロック）
+         * Math (Block)
          */
         "blockMath": string;
         /**
-         * 数式 （KaTeX形式）をブロックで表示します。
+         * Display math formulas (KaTeX) in a block
          */
         "blockMathDescription": string;
         /**
-         * 引用
+         * Quote
          */
         "quote": string;
         /**
-         * 内容が引用であることを示すことができます。
+         * Displays content as a quote.
          */
         "quoteDescription": string;
         /**
-         * カスタム絵文字
+         * Custom Emoji
          */
         "emoji": string;
         /**
-         * コロンでカスタム絵文字名を囲むと、カスタム絵文字を表示させることができます。
+         * By surrounding a custom emoji name with colons, custom emoji can be displayed.
          */
         "emojiDescription": string;
         /**
-         * 検索
+         * Search
          */
         "search": string;
         /**
-         * 検索ボックスを表示できます。
+         * Displays a search box with pre-entered text.
          */
         "searchDescription": string;
         /**
-         * 反転
+         * Flip
          */
         "flip": string;
         /**
-         * 内容を上下または左右に反転させます。
+         * Flips content horizontally or vertically.
          */
         "flipDescription": string;
         /**
-         * アニメーション（びよんびよん）
+         * Animation (Jelly)
          */
         "jelly": string;
         /**
-         * ゼリーが揺れるような感じのアニメーションをさせます。
+         * Gives content a jelly-like animation.
          */
         "jellyDescription": string;
         /**
-         * アニメーション（じゃーん）
+         * Animation (Tada)
          */
         "tada": string;
         /**
-         * 「じゃーん！」と強調するような感じのアニメーションをさせます。
+         * Gives content a "Tada!"-like animation.
          */
         "tadaDescription": string;
         /**
-         * アニメーション（ジャンプ）
+         * Animation (Jump)
          */
         "jump": string;
         /**
-         * 跳ねるアニメーションをさせます。
+         * Gives content a jumping animation.
          */
         "jumpDescription": string;
         /**
-         * アニメーション（バウンド）
+         * Animation (Bounce)
          */
         "bounce": string;
         /**
-         * 跳ねて着地するようなアニメーションをさせます。
+         * Gives content a bouncy animation.
          */
         "bounceDescription": string;
         /**
-         * アニメーション（ぶるぶる）
+         * Animation (Shake)
          */
         "shake": string;
         /**
-         * 震えるアニメーションをさせます。
+         * Gives content a shaking animation.
          */
         "shakeDescription": string;
         /**
-         * アニメーション（ガタガタ）
+         * Animation (Twitch)
          */
         "twitch": string;
         /**
-         * より激しく震えるアニメーションをさせます。
+         * Gives content a strongly twitching animation.
          */
         "twitchDescription": string;
         /**
-         * アニメーション（回転）
+         * Animation (Spin)
          */
         "spin": string;
         /**
-         * 内容を回転させます。
+         * Gives content a spinning animation.
          */
         "spinDescription": string;
         /**
-         * 大
+         * Big
          */
         "x2": string;
         /**
-         * 内容を大きく表示させます。
+         * Displays content bigger.
          */
         "x2Description": string;
         /**
-         * 特大
+         * Very big
          */
         "x3": string;
         /**
-         * 内容をより大きく表示させます。
+         * Displays content even bigger.
          */
         "x3Description": string;
         /**
-         * 超特大
+         * Unbelievably big
          */
         "x4": string;
         /**
-         * 内容をさらに大きく表示させます。
+         * Displays content even bigger than bigger than big.
          */
         "x4Description": string;
         /**
-         * ぼかし
+         * Blur
          */
         "blur": string;
         /**
-         * 内容をぼかすことができます。ポインターを上に乗せるとはっきり見えるようになります。
+         * Blurs content. It will be displayed clearly when hovered over.
          */
         "blurDescription": string;
         /**
-         * フォント
+         * Font
          */
         "font": string;
         /**
-         * 内容のフォントを指定することができます。
+         * Sets the font to display content in.
          */
         "fontDescription": string;
         /**
-         * レインボー
+         * Rainbow
          */
         "rainbow": string;
         /**
-         * 内容を虹色で表示させます。
+         * Makes the content appear in rainbow colors.
          */
         "rainbowDescription": string;
         /**
-         * キラキラ
+         * Sparkle
          */
         "sparkle": string;
         /**
-         * キラキラと星型のパーティクルを表示させます。
+         * Gives content a sparkling particle effect.
          */
         "sparkleDescription": string;
         /**
-         * 角度変更
+         * Rotate
          */
         "rotate": string;
         /**
-         * 指定した角度で回転させます。
+         * Turns content by a specified angle.
          */
         "rotateDescription": string;
         /**
-         * 位置変更
+         * Position
          */
         "position": string;
         /**
-         * 位置をずらすことができます。
+         * Move content by a specified amount.
          */
         "positionDescription": string;
         /**
-         * 切り取り
+         * Crop
          */
         "crop": string;
         /**
-         * 内容を切り抜きます。
+         * Crop content.
          */
         "cropDescription": string;
         /**
-         * マウス追従
+         * Follow Mouse
          */
         "followMouse": string;
         /**
-         * 内容がマウスに追従します。スマホの場合はタップした場所に追従します。
+         * Content will follow the mouse. On mobile it will follow wherever the user taps.
          */
         "followMouseDescription": string;
         /**
-         * 拡大
+         * Scale
          */
         "scale": string;
         /**
-         * 内容を引き伸ばして表示します。
+         * Scale content by a specified amount.
          */
         "scaleDescription": string;
         /**
-         * 文字色
+         * Foreground color
          */
         "foreground": string;
         /**
-         * 文字色を変更します。
+         * Change the foreground color of text.
          */
         "foregroundDescription": string;
         /**
-         * フェード
+         * Fade
          */
         "fade": string;
         /**
-         * 内容をフェードイン・フェードアウトさせます。
+         * Fade text in and out.
          */
         "fadeDescription": string;
         /**
-         * 背景色
+         * Background color
          */
         "background": string;
         /**
-         * 背景色を変更します。
+         * Change the background color of text.
          */
         "backgroundDescription": string;
         /**
@@ -10471,21 +10542,21 @@ export interface Locale extends ILocale {
          */
         "plain": string;
         /**
-         * 内側の構文を全て無効にします。
+         * Deactivates the effects of all MFM contained within this MFM effect.
          */
         "plainDescription": string;
     };
     "_fileViewer": {
         /**
-         * ファイルの詳細
+         * File details
          */
         "title": string;
         /**
-         * ファイルタイプ
+         * File type
          */
         "type": string;
         /**
-         * ファイルサイズ
+         * Filesize
          */
         "size": string;
         /**
@@ -10493,149 +10564,149 @@ export interface Locale extends ILocale {
          */
         "url": string;
         /**
-         * 追加日
+         * Uploaded at
          */
         "uploadedAt": string;
         /**
-         * 添付されているノート
+         * Attached notes
          */
         "attachedNotes": string;
         /**
-         * このページは、このファイルをアップロードしたユーザーしか閲覧できません。
+         * This page can only be seen by the user who uploaded this file.
          */
         "thisPageCanBeSeenFromTheAuthor": string;
     };
     "_externalResourceInstaller": {
         /**
-         * 外部サイトからインストール
+         * Install from external site
          */
         "title": string;
         /**
-         * 配布元が信頼できるかを確認した上でインストールしてください。
+         * Make sure the distributor of this resource is trustworthy before installation.
          */
         "checkVendorBeforeInstall": string;
         "_plugin": {
             /**
-             * このプラグインをインストールしますか？
+             * Do you want to install this plugin?
              */
             "title": string;
             /**
-             * プラグイン情報
+             * Plugin information
              */
             "metaTitle": string;
         };
         "_theme": {
             /**
-             * このテーマをインストールしますか？
+             * Do you want to install this theme?
              */
             "title": string;
             /**
-             * テーマ情報
+             * Theme information
              */
             "metaTitle": string;
         };
         "_meta": {
             /**
-             * 基本のカラースキーム
+             * Base color scheme
              */
             "base": string;
         };
         "_vendorInfo": {
             /**
-             * 配布元情報
+             * Distributor information
              */
             "title": string;
             /**
-             * 参照したエンドポイント
+             * Referenced endpoint
              */
             "endpoint": string;
             /**
-             * ファイル整合性の確認
+             * Hash verification
              */
             "hashVerify": string;
         };
         "_errors": {
             "_invalidParams": {
                 /**
-                 * パラメータが不足しています
+                 * Invalid parameters
                  */
                 "title": string;
                 /**
-                 * 外部サイトからデータを取得するために必要な情報が不足しています。URLをお確かめください。
+                 * There is not enough information to load data from an external site. Please confirm the entered URL.
                  */
                 "description": string;
             };
             "_resourceTypeNotSupported": {
                 /**
-                 * この外部リソースには対応していません
+                 * This external resource is not supported
                  */
                 "title": string;
                 /**
-                 * この外部サイトから取得したリソースの種別には対応していません。サイト管理者にお問い合わせください。
+                 * The type of this external resource is not supported. Please contact the site administrator.
                  */
                 "description": string;
             };
             "_failedToFetch": {
                 /**
-                 * データの取得に失敗しました
+                 * Failed to fetch data
                  */
                 "title": string;
                 /**
-                 * 外部サイトとの通信に失敗しました。もう一度試しても改善しない場合、サイト管理者にお問い合わせください。
+                 * An error occurred communicating with the external site. If trying again does not fix this issue, please contact the site administrator.
                  */
                 "fetchErrorDescription": string;
                 /**
-                 * 外部サイトから取得したデータが読み取れませんでした。サイト管理者にお問い合わせください。
+                 * An error occurred processing the data loaded from the external site. Please contact the site administrator.
                  */
                 "parseErrorDescription": string;
             };
             "_hashUnmatched": {
                 /**
-                 * 正しいデータが取得できませんでした
+                 * Data verification failed
                  */
                 "title": string;
                 /**
-                 * 提供されたデータの整合性の確認に失敗しました。セキュリティ上、インストールは続行できません。サイト管理者にお問い合わせください。
+                 * An error occurred verifying the integrity of the fetched data. As a security measure, installation cannot continue. Please contact the site administrator.
                  */
                 "description": string;
             };
             "_pluginParseFailed": {
                 /**
-                 * AiScript エラー
+                 * AiScript Error
                  */
                 "title": string;
                 /**
-                 * データは取得できたものの、AiScriptの解析時にエラーがあったため読み込めませんでした。プラグインの作者にお問い合わせください。エラーの詳細はJavascriptコンソールをご確認ください。
+                 * The requested data was fetched successfully, but an error occurred during AiScript parsing. Please contact the plugin author. Error details can be viewed in the Javascript console.
                  */
                 "description": string;
             };
             "_pluginInstallFailed": {
                 /**
-                 * プラグインのインストールに失敗しました
+                 * Plugin installation failed
                  */
                 "title": string;
                 /**
-                 * プラグインのインストール中に問題が発生しました。もう一度お試しください。エラーの詳細はJavascriptコンソールをご覧ください。
+                 * A problem occurred during plugin installation. Please try again. Error details can be viewed in the Javascript console.
                  */
                 "description": string;
             };
             "_themeParseFailed": {
                 /**
-                 * テーマ解析エラー
+                 * Theme parsing failed
                  */
                 "title": string;
                 /**
-                 * データは取得できたものの、テーマファイルの解析時にエラーがあったため読み込めませんでした。テーマの作者にお問い合わせください。エラーの詳細はJavascriptコンソールをご確認ください。
+                 * The requested data was fetched successfully, but an error occurred during theme parsing. Please contact the theme author. Error details can be viewed in the Javascript console.
                  */
                 "description": string;
             };
             "_themeInstallFailed": {
                 /**
-                 * テーマのインストールに失敗しました
+                 * Failed to install theme
                  */
                 "title": string;
                 /**
-                 * テーマのインストール中に問題が発生しました。もう一度お試しください。エラーの詳細はJavascriptコンソールをご覧ください。
+                 * A problem occurred during theme installation. Please try again. Error details can be viewed in the Javascript console.
                  */
                 "description": string;
             };
@@ -10643,313 +10714,313 @@ export interface Locale extends ILocale {
     };
     "_animatedMFM": {
         /**
-         * MFMアニメーションを再生
+         * Play MFM Animation
          */
         "play": string;
         /**
-         * MFMアニメーション停止
+         * Stop MFM Animation
          */
         "stop": string;
         "_alert": {
             /**
-             * MFMアニメーションには、高速で点滅したり動いたりするテキスト・絵文字を含む場合があります。
+             * Animated MFMs could include flashing lights and fast moving text/emojis.
              */
             "text": string;
             /**
-             * 再生する
+             * Animate
              */
             "confirm": string;
         };
     };
     "_dataRequest": {
         /**
-         * データリクエスト
+         * Request Data
          */
         "title": string;
         /**
-         * データリクエストは3日ごとに可能です。
+         * Data requests are only possible every 3 days.
          */
         "warn": string;
         /**
-         * データの保存が完了すると、このアカウントに登録されているメールアドレスにメールが送信されます。
+         * Once the data is ready to download, an email will be sent to the email address registered to this account.
          */
         "text": string;
         /**
-         * データリクエスト実行
+         * Request
          */
         "button": string;
     };
     "_dataSaver": {
         "_media": {
             /**
-             * メディアの読み込みを無効化
+             * Loading Media
              */
             "title": string;
             /**
-             * 画像・動画が自動で読み込まれるのを防止します。隠れている画像・動画はタップすると読み込まれます。
+             * Prevents images/videos from being loaded automatically. Hidden images/videos will be loaded when tapped.
              */
             "description": string;
         };
         "_avatar": {
             /**
-             * アイコン画像のアニメーションを無効化
+             * Avatar image
              */
             "title": string;
             /**
-             * アイコン画像のアニメーションが停止します。アニメーション画像は通常の画像よりファイルサイズが大きいことがあるので、データ通信量をさらに削減できます。
+             * Stop avatar image animation. Animated images can be larger in file size than normal images, potentially leading to further reductions in data traffic.
              */
             "description": string;
         };
         "_urlPreview": {
             /**
-             * URLプレビューのサムネイルを非表示
+             * URL preview thumbnails
              */
             "title": string;
             /**
-             * URLプレビューのサムネイル画像が読み込まれなくなります。
+             * URL preview thumbnail images will no longer be loaded.
              */
             "description": string;
         };
         "_code": {
             /**
-             * コードハイライトを非表示
+             * Code highlighting
              */
             "title": string;
             /**
-             * MFMなどでコードハイライト記法が使われている場合、タップするまで読み込まれなくなります。コードハイライトではハイライトする言語ごとにその定義ファイルを読み込む必要がありますが、それらが自動で読み込まれなくなるため、通信量の削減が見込めます。
+             * If code highlighting notations are used in MFM, etc., they will not load until tapped. Syntax highlighting requires downloading the highlight definition files for each programming language. Therefore, disabling the automatic loading of these files is expected to reduce the amount of communication data.
              */
             "description": string;
         };
     };
     "_hemisphere": {
         /**
-         * 北半球
+         * Northern Hemisphere
          */
         "N": string;
         /**
-         * 南半球
+         * Southern Hemisphere
          */
         "S": string;
         /**
-         * 一部のクライアント設定で、季節を判定するために使用します。
+         * Used in some client settings to determine season.
          */
         "caption": string;
     };
     "_reversi": {
         /**
-         * リバーシ
+         * Reversi
          */
         "reversi": string;
         /**
-         * 対局の設定
+         * Game settings
          */
         "gameSettings": string;
         /**
-         * ボードを選択
+         * Choose a board
          */
         "chooseBoard": string;
         /**
-         * 先行/後攻
+         * Black/White
          */
         "blackOrWhite": string;
         /**
-         * {name}が黒(先行)
+         * {name} is playing Black
          */
         "blackIs": ParameterizedString<"name">;
         /**
-         * ルール
+         * Rules
          */
         "rules": string;
         /**
-         * 対局はまもなく開始されます
+         * The game will begin shortly
          */
         "thisGameIsStartedSoon": string;
         /**
-         * 相手の準備が完了するのを待っています
+         * Waiting for opponent's turn
          */
         "waitingForOther": string;
         /**
-         * あなたの準備が完了するのを待っています
+         * Waiting for your turn
          */
         "waitingForMe": string;
         /**
-         * 準備してください
+         * Get ready
          */
         "waitingBoth": string;
         /**
-         * 準備完了
+         * Ready
          */
         "ready": string;
         /**
-         * 準備を再開
+         * Not ready
          */
         "cancelReady": string;
         /**
-         * 相手のターンです
+         * Opponent's turn
          */
         "opponentTurn": string;
         /**
-         * あなたのターンです
+         * Your turn
          */
         "myTurn": string;
         /**
-         * {name}のターンです
+         * It's {name}'s turn
          */
         "turnOf": ParameterizedString<"name">;
         /**
-         * {name}のターン
+         * {name}'s turn
          */
         "pastTurnOf": ParameterizedString<"name">;
         /**
-         * 投了
+         * Surrender
          */
         "surrender": string;
         /**
-         * 投了により
+         * Surrendered
          */
         "surrendered": string;
         /**
-         * 時間切れ
+         * Out of time
          */
         "timeout": string;
         /**
-         * 引き分け
+         * Draw
          */
         "drawn": string;
         /**
-         * {name}の勝ち
+         * {name} wins
          */
         "won": ParameterizedString<"name">;
         /**
-         * 黒
+         * Black
          */
         "black": string;
         /**
-         * 白
+         * White
          */
         "white": string;
         /**
-         * 合計
+         * Total
          */
         "total": string;
         /**
-         * {count}ターン目
+         * Turn {count}
          */
         "turnCount": ParameterizedString<"count">;
         /**
-         * 自分の対局
+         * My rounds
          */
         "myGames": string;
         /**
-         * みんなの対局
+         * All rounds
          */
         "allGames": string;
         /**
-         * 終了
+         * Ended
          */
         "ended": string;
         /**
-         * 対局中
+         * Currently playing
          */
         "playing": string;
         /**
-         * 石の少ない方が勝ち(ロセオ)
+         * The one with fewer stones wins (Llotheo)
          */
         "isLlotheo": string;
         /**
-         * ループマップ
+         * Looping map
          */
         "loopedMap": string;
         /**
-         * どこでも置けるモード
+         * Tiles are placeable everywhere
          */
         "canPutEverywhere": string;
         /**
-         * 1ターンの時間制限
+         * Time limit for turn
          */
         "timeLimitForEachTurn": string;
         /**
-         * フリーマッチ
+         * Free Match
          */
         "freeMatch": string;
         /**
-         * 対戦相手を探しています
+         * Finding opponent...
          */
         "lookingForPlayer": string;
         /**
-         * 対局がキャンセルされました
+         * The game has been cancelled.
          */
         "gameCanceled": string;
         /**
-         * 開始時に対局をタイムラインに投稿
+         * Share Game to timeline when started
          */
         "shareToTlTheGameWhenStart": string;
         /**
-         * 対局を開始しました！ #MisskeyReversi
+         * The game has begun! #MisskeyReversi
          */
         "iStartedAGame": string;
         /**
-         * 相手が設定を変更しました
+         * The opponent has changed their settings.
          */
         "opponentHasSettingsChanged": string;
         /**
-         * 変則許可 (完全フリー)
+         * Irregular rules (completely free)
          */
         "allowIrregularRules": string;
         /**
-         * 変則なし
+         * No irregular rules
          */
         "disallowIrregularRules": string;
         /**
-         * 盤面に行・列番号を表示
+         * Display row and column numbering on the board
          */
         "showBoardLabels": string;
         /**
-         * 石をアイコンにする
+         * Turn stones into user avatars
          */
         "useAvatarAsStone": string;
     };
     "_offlineScreen": {
         /**
-         * オフライン - サーバーに接続できません
+         * Offline - cannot connect to the server
          */
         "title": string;
         /**
-         * サーバーに接続できません
+         * Unable to connect to the server
          */
         "header": string;
     };
     "_urlPreviewSetting": {
         /**
-         * URLプレビューの設定
+         * URL preview settings
          */
         "title": string;
         /**
-         * URLプレビューを有効にする
+         * Enable URL preview
          */
         "enable": string;
         /**
-         * プレビュー取得時のタイムアウト(ms)
+         * Time out when getting preview (ms)
          */
         "timeout": string;
         /**
-         * プレビュー取得の所要時間がこの値を超えた場合、プレビューは生成されません。
+         * If it takes longer than this value to get the preview, the preview won't be generated.
          */
         "timeoutDescription": string;
         /**
-         * Content-Lengthの最大値(byte)
+         * Maximum Content-Length (bytes)
          */
         "maximumContentLength": string;
         /**
-         * Content-Lengthがこの値を超えた場合、プレビューは生成されません。
+         * If Content-Length is higher than this value, the preview won't be generated.
          */
         "maximumContentLengthDescription": string;
         /**
-         * Content-Lengthが取得できた場合のみプレビューを生成
+         * Generate the preview only if we can get Content-Length
          */
         "requireContentLength": string;
         /**
-         * 相手サーバがContent-Lengthを返さない場合、プレビューは生成されません。
+         * If other server doesn't return Content-Length, the preview won't be generated.
          */
         "requireContentLengthDescription": string;
         /**
@@ -10957,65 +11028,65 @@ export interface Locale extends ILocale {
          */
         "userAgent": string;
         /**
-         * プレビュー取得時に使用されるUser-Agentを設定します。空欄の場合、デフォルトのUser-Agentが使用されます。
+         * Sets the User-Agent to be used when retrieving previews. If left blank, the default User-Agent will be used.
          */
         "userAgentDescription": string;
         /**
-         * プレビューを生成するプロキシのエンドポイント
+         * Endpoint for proxy to generate previews
          */
         "summaryProxy": string;
         /**
-         * Misskey本体ではなく、サマリープロキシを使用してプレビューを生成します。
+         * Generate previews using Summaly Proxy, instead of Sharkey itself.
          */
         "summaryProxyDescription": string;
         /**
-         * プロキシには下記パラメータがクエリ文字列として連携されます。プロキシ側がこれらをサポートしない場合、設定値は無視されます。
+         * The following parameters are sent to the proxy as a query string. If the proxy does not support them, the values are ignored.
          */
         "summaryProxyDescription2": string;
     };
     "_mediaControls": {
         /**
-         * ピクチャインピクチャ
+         * Picture in Picture
          */
         "pip": string;
         /**
-         * 再生速度
+         * Playback Speed
          */
         "playbackRate": string;
         /**
-         * ループ再生
+         * Loop playback
          */
         "loop": string;
     };
     "_contextMenu": {
         /**
-         * コンテキストメニュー
+         * Context menu
          */
         "title": string;
         /**
-         * アプリケーション
+         * Application
          */
         "app": string;
         /**
-         * Shiftキーでアプリケーション
+         * Application with shift key
          */
         "appWithShift": string;
         /**
-         * ブラウザのUI
+         * Native
          */
         "native": string;
     };
     "_externalNavigationWarning": {
         /**
-         * 外部サイトに移動します
+         * Navigate to an external site
          */
         "title": string;
         /**
-         * {host}を離れて外部サイトに移動します
+         * Leave {host} and go to an external site
          */
         "description": ParameterizedString<"host">;
         /**
-         * このデバイスで今後このドメインを信頼する
+         * Trust this domain on this device in the future
          */
         "trustThisDomain": string;
     };

@@ -49,6 +49,7 @@ export class MiUser {
 	})
 	public usernameLower: string;
 
+	@Index() // USING pgroonga pgroonga_varchar_full_text_search_ops_v2
 	@Column('varchar', {
 		length: 128, nullable: true,
 		comment: 'The name of the User.',
@@ -160,7 +161,7 @@ export class MiUser {
 		length: 128, nullable: true,
 	})
 	public backgroundBlurhash: string | null;
-	
+
 	@Column('jsonb', {
 		default: [],
 	})
@@ -342,5 +343,5 @@ export const passwordSchema = { type: 'string', minLength: 1 } as const;
 export const nameSchema = { type: 'string', minLength: 1, maxLength: 50 } as const;
 export const descriptionSchema = { type: 'string', minLength: 1, maxLength: 1500 } as const;
 export const locationSchema = { type: 'string', minLength: 1, maxLength: 50 } as const;
-export const listenbrainzSchema = { type: "string", minLength: 1, maxLength: 128 } as const;
+export const listenbrainzSchema = { type: 'string', minLength: 1, maxLength: 128 } as const;
 export const birthdaySchema = { type: 'string', pattern: /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.toString().slice(1, -1) } as const;

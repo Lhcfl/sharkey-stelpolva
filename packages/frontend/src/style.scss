@@ -68,12 +68,16 @@ html.radius-misskey {
 
 html {
 	background-color: var(--bg);
+	background-position: center;
+	background-size: cover;
+	background-attachment: fixed;
+	background-repeat: no-repeat;
 	color: var(--fg);
 	accent-color: var(--accent);
 	overflow: auto;
 	overflow-wrap: break-word;
 	font-family: 'sharkey-theme-font-face', 'Lexend', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
-	font-size: 14px;
+	font-size: 16px;
 	line-height: 1.35;
 	text-size-adjust: 100%;
 	tab-size: 2;
@@ -105,22 +109,56 @@ html {
 		}
 	}
 
+	&.f-0 {
+		font-size: 14px;
+	}
 	&.f-1 {
 		font-size: 15px;
 	}
-
 	&.f-2 {
 		font-size: 16px;
 	}
-
 	&.f-3 {
 		font-size: 17px;
+	}
+	&.f-4 {
+		font-size: 18px;
+	}
+	&.f-5 {
+		font-size: 19px;
+	}
+	&.f-6 {
+		font-size: 20px;
+	}
+	&.f-7 {
+		font-size: 21px;
+	}
+	&.f-8 {
+		font-size: 22px;
+	}
+	&.f-9 {
+		font-size: 23px;
+	}
+	&.f-10 {
+		font-size: 24px;
 	}
 
 	&.useSystemFont {
 		font-family: system-ui;
 	}
 }
+
+@import "./styles-font/usual.scss";
+@import "./styles-font/maokentangyuan.scss";
+@import "./styles-font/chillroundgothic.scss";
+@import "./styles-font/clearsans.scss";
+@import "./styles-font/lgtw-wenkai.scss";
+@import "./styles-font/lgtw-marker-gothic.scss";
+@import "./styles-font/genryomin2.scss";
+@import "./styles-font/genwanmin2.scss";
+@import "./styles-font/jinghualaosong.scss";
+@import "./styles-font/fusion-pixel.scss";
+@import "./styles-font/zhuanti.scss";
 
 html._themeChanging_ {
 	&, * {

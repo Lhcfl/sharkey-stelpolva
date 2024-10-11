@@ -257,7 +257,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		if (data.localOnly == null) data.localOnly = false;
 		if (data.channel != null && data.visibility !== 'specified') data.visibility = 'public';
 		if (data.channel != null) data.visibleUsers = [];
-		if (data.channel != null) data.localOnly = true;
+		// if (data.channel != null) data.localOnly = true;
 
 		const meta = await this.metaService.fetch();
 
@@ -908,6 +908,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 	@bindThis
 	private async renderNoteOrRenoteActivity(data: Option, note: MiNote) {
 		if (data.localOnly) return null;
+		if (data.channel) note.channel = data.channel;
 
 		const content = this.isRenote(data) && !this.isQuote(data)
 			? this.apRendererService.renderAnnounce(data.renote.uri ? data.renote.uri : `${this.config.url}/notes/${data.renote.id}`, note)

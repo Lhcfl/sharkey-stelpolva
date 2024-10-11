@@ -358,15 +358,15 @@ export const defaultStore = markRaw(new Storage('base', {
 	},
 	emojiPickerScale: {
 		where: 'device',
-		default: 1,
+		default: 2,
 	},
 	emojiPickerWidth: {
 		where: 'device',
-		default: 1,
+		default: 4,
 	},
 	emojiPickerHeight: {
 		where: 'device',
-		default: 2,
+		default: 4,
 	},
 	emojiPickerUseDrawerForMobile: {
 		where: 'device',
@@ -456,6 +456,10 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'device',
 		default: false,
 	},
+	chineseAutospacing: {
+		where: 'device',
+		default: null as 'all' | 'special' | null,
+	},
 	mediaListWithOneImageAppearance: {
 		where: 'device',
 		default: 'expand' as 'expand' | '16_9' | '1_1' | '2_3',
@@ -536,10 +540,10 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'device',
 		default: false,
 	},
-  contextMenu: {
+	contextMenu: {
 		where: 'device',
 		default: 'app' as 'app' | 'appWithShift' | 'native',
-  },
+	},
 
 	sound_masterVolume: {
 		where: 'device',

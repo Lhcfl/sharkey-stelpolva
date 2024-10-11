@@ -36,13 +36,14 @@ export class MiUserProfile {
 	})
 	public birthday: string | null;
 
-	@Column("varchar", {
+	@Column('varchar', {
 		length: 128,
 		nullable: true,
-		comment: "The ListenBrainz username of the User.",
+		comment: 'The ListenBrainz username of the User.',
 	})
 	public listenbrainz: string | null;
 
+	@Index() // USING pgroonga pgroonga_varchar_full_text_search_ops_v2
 	@Column('varchar', {
 		length: 2048, nullable: true,
 		comment: 'The description (bio) of the User.',

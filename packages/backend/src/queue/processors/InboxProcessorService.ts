@@ -216,6 +216,9 @@ export class InboxProcessorService {
 			}
 		} catch (e) {
 			if (e instanceof IdentifiableError) {
+				if (e.id === '9f466dab-c856-48cd-9e65-ff90ff750580') {
+					return 'blocked notes with too many mentions';
+				}
 				if (e.id === '689ee33f-f97c-479a-ac49-1b9f8140af99') {
 					return 'blocked notes with prohibited words';
 				}

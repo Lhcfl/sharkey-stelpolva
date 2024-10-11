@@ -55,11 +55,12 @@ function top() {
 
 async function timetravel() {
 	const { canceled, result: date } = await os.inputDate({
-		title: i18n.ts.date,
+		title: i18n.ts.timeTravel as string,
+		text: i18n.ts.timeTravelDescription as string,
 	});
 	if (canceled) return;
 
-	tlEl.value.timetravel(date);
+	tlEl.value?.timetravel(date);
 }
 
 function settings() {

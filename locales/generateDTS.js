@@ -56,7 +56,7 @@ function createMembers(record) {
 }
 
 export default function generateDTS() {
-	const locale = yaml.load(fs.readFileSync(`${__dirname}/ja-JP.yml`, 'utf-8'));
+	const locale = yaml.load(fs.readFileSync(`${__dirname}/en-US.yml`, 'utf-8'));
 	const members = createMembers(locale);
 	const elements = [
 		ts.factory.createVariableStatement(

@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<SkNoteHeader :class="$style.header" :note="note" :classic="true" :mini="true"/>
 			<div :class="$style.content">
 				<p v-if="note.cw != null" :class="$style.cw">
-					<Mfm v-if="note.cw != ''" style="margin-right: 8px;" :text="note.cw" :isBlock="true" :author="note.user" :nyaize="'respect'"/>
+					<Mfm v-if="note.cw != ''" style="margin-right: 8px;" :text="note.cw" :isBlock="true" :author="note.user" :nyaize="'respect'" @click.stop="defaultStore.state.clickToOpen ? noteclick(note.id) : undefined"/>
 					<MkCwButton v-model="showContent" :text="note.text" :files="note.files" :poll="note.poll"/>
 				</p>
 				<div v-show="note.cw == null || showContent">
@@ -93,6 +93,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { computed, ref, shallowRef, watch } from 'vue';
 import * as Misskey from 'misskey-js';
+import { isPureRenote } from 'misskey-js/note.js';
 import SkNoteHeader from '@/components/SkNoteHeader.vue';
 import MkReactionsViewer from '@/components/MkReactionsViewer.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
@@ -113,7 +114,9 @@ import { reactionPicker } from '@/scripts/reaction-picker.js';
 import { claimAchievement } from '@/scripts/achievements.js';
 import { getNoteMenu } from '@/scripts/get-note-menu.js';
 import { useNoteCapture } from '@/scripts/use-note-capture.js';
+import { useRouter } from '@/router/supplier.js';
 import { boostMenuItems, type Visibility } from '@/scripts/boost-quote.js';
+import { spacingNote } from '@/scripts/autospacing';
 
 const canRenote = computed(() => ['public', 'home'].includes(props.note.visibility) || props.note.userId === $i.id);
 const hideLine = computed(() => { return props.detail ? true : false; });
@@ -148,9 +151,16 @@ const quoteButton = shallowRef<HTMLElement>();
 const menuButton = shallowRef<HTMLElement>();
 const likeButton = shallowRef<HTMLElement>();
 
-let appearNote = computed(() => isRenote ? props.note.renote as Misskey.entities.Note : props.note);
+let appearNote = computed(() => spacingNote(isRenote ? props.note.renote as Misskey.entities.Note : props.note));
 const defaultLike = computed(() => defaultStore.state.like ? defaultStore.state.like : null);
 const replies = ref<Misskey.entities.Note[]>([]);
+
+function noteclick(id: string) {
+	const selection = document.getSelection();
+	if (selection?.toString().length === 0) {
+		useRouter().push(`/notes/${id}`);
+	}
+}
 
 const isRenote = (
 	props.note.renote != null &&
@@ -182,13 +192,7 @@ useNoteCapture({
 });
 
 if ($i) {
-	misskeyApi('notes/renotes', {
-		noteId: appearNote.value.id,
-		userId: $i.id,
-		limit: 1,
-	}).then((res) => {
-		renoted.value = res.length > 0;
-	});
+	renoted.value = appearNote.value.renotedByMe || (isPureRenote(props.note) && props.note.userId === $i.id);
 }
 
 function focus() {
@@ -301,7 +305,7 @@ function boostVisibility() {
 	}
 }
 
-function renote(visibility: Visibility, localOnly: boolean = false) {
+function renote(visibility: Visibility, localOnly = false) {
 	pleaseLogin();
 	showMovedDialog();
 
@@ -322,6 +326,7 @@ function renote(visibility: Visibility, localOnly: boolean = false) {
 		}).then(() => {
 			os.toast(i18n.ts.renoted);
 			renoted.value = true;
+			appearNote.value.renoteCount += 1;
 		});
 	} else {
 		const el = renoteButton.value as HTMLElement | null | undefined;

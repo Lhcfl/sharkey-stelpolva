@@ -97,6 +97,7 @@ import { extractUrlFromMfm } from '@/scripts/extract-url-from-mfm.js';
 import { i18n } from '@/i18n.js';
 import { deepClone } from '@/scripts/clone.js';
 import { dateTimeFormat } from '@/scripts/intl-const.js';
+import { spacingNote } from '@/scripts/autospacing';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -137,7 +138,7 @@ const isRenote = (
 );
 
 const el = shallowRef<HTMLElement>();
-let appearNote = computed(() => isRenote ? note.value.renote as Misskey.entities.Note : note.value);
+let appearNote = computed(() => spacingNote(isRenote ? note.value.renote as Misskey.entities.Note : note.value));
 const renoteUrl = appearNote.value.renote ? appearNote.value.renote.url : null;
 const renoteUri = appearNote.value.renote ? appearNote.value.renote.uri : null;
 

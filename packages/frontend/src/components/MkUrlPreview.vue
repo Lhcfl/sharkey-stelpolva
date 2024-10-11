@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else>invalid url</span>
 	</div>
 	<div :class="$style.action">
-		<MkButton :small="true" inline @click="playerEnabled = false">
+		<MkButton :small="true" inline @click.stop="playerEnabled = false">
 			<i class="ti ti-x"></i> {{ i18n.ts.disablePlayer }}
 		</MkButton>
 	</div>
@@ -38,7 +38,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 		></iframe>
 	</div>
 	<div :class="$style.action">
-		<MkButton :small="true" inline @click="tweetExpanded = false">
+		<MkButton :small="true" inline @click.stop="tweetExpanded = false">
+			<i class="ti ti-x"></i> {{ i18n.ts.close }}
+		</MkButton>
+	</div>
+</template>
+<template v-else-if="apNote && apExpanded">
+	<SkNoteSimple :note="apNote" :class="$style.linkNote"/>
+	<div :class="$style.action">
+		<MkButton :small="true" inline @click.stop="apExpanded = false">
 			<i class="ti ti-x"></i> {{ i18n.ts.close }}
 		</MkButton>
 	</div>
@@ -66,16 +74,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</component>
 	<template v-if="showActions">
 		<div v-if="tweetId" :class="$style.action">
-			<MkButton :small="true" inline @click="tweetExpanded = true">
+			<MkButton :small="true" inline @click.stop="tweetExpanded = true">
 				<i class="ti ti-brand-x"></i> {{ i18n.ts.expandTweet }}
 			</MkButton>
 		</div>
 		<div v-if="!playerEnabled && player.url" :class="$style.action">
-			<MkButton :small="true" inline @click="playerEnabled = true">
+			<MkButton :small="true" inline @click.stop="playerEnabled = true">
 				<i class="ti ti-player-play"></i> {{ i18n.ts.enablePlayer }}
 			</MkButton>
-			<MkButton v-if="!isMobile" :small="true" inline @click="openPlayer()">
+			<MkButton v-if="!isMobile" :small="true" inline @click.stop="openPlayer()">
 				<i class="ti ti-picture-in-picture"></i> {{ i18n.ts.openInWindow }}
+			</MkButton>
+		</div>
+		<div v-else-if="!apExpanded && apNote" :class="$style.action">
+			<MkButton :small="true" inline @click.stop="apExpanded = true">
+				<i class="ti ti-world-x"></i> {{ i18n.ts.expandTweet }}
 			</MkButton>
 		</div>
 	</template>
@@ -84,6 +97,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { defineAsyncComponent, onDeactivated, onUnmounted, ref } from 'vue';
+import * as Misskey from 'misskey-js';
+import SkNoteSimple from './SkNoteSimple.vue';
 import type { summaly } from '@misskey-dev/summaly';
 import { url as local } from '@/config.js';
 import { i18n } from '@/i18n.js';
@@ -93,6 +108,7 @@ import MkButton from '@/components/MkButton.vue';
 import { versatileLang } from '@/scripts/intl-const.js';
 import { transformPlayerUrl } from '@/scripts/player-url-transform.js';
 import { defaultStore } from '@/store.js';
+import { misskeyApi } from '@/scripts/misskey-api';
 
 type SummalyResult = Awaited<ReturnType<typeof summaly>>;
 
@@ -131,6 +147,8 @@ const tweetExpanded = ref(props.detail);
 const embedId = `embed${Math.random().toString().replace(/\D/, '')}`;
 const tweetHeight = ref(150);
 const unknownUrl = ref(false);
+const apExpanded = ref(false);
+const apNote = ref<Misskey.entities.Note | null>(null);
 
 onDeactivated(() => {
 	playerEnabled.value = false;
@@ -178,6 +196,16 @@ window.fetch(`/url?url=${encodeURIComponent(requestUrl.href)}&lang=${versatileLa
 		sitename.value = info.sitename;
 		player.value = info.player;
 		sensitive.value = info.sensitive ?? false;
+
+		if (info.activityPub) {
+			misskeyApi('ap/show', {
+				uri: info.activityPub,
+			}).then(res => {
+				if (res.type === 'Note') {
+					apNote.value = res.object;
+				}
+			});
+		}
 	});
 
 function adjustTweetHeight(message: any) {
@@ -234,6 +262,14 @@ onUnmounted(() => {
 	position: absolute;
 	top: 0;
 	width: 100%;
+}
+
+.linkNote {
+	margin-top: 5px;
+	padding: 16px;
+	border: solid 1px var(--renote);
+	border-radius: var(--radius-sm);
+	overflow: clip;
 }
 
 .link {

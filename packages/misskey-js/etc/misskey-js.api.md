@@ -1502,6 +1502,8 @@ declare namespace entities {
         FollowingRequestsCancelResponse,
         FollowingRequestsListRequest,
         FollowingRequestsListResponse,
+        FollowingRequestsSentRequest,
+        FollowingRequestsSentResponse,
         FollowingRequestsRejectRequest,
         GalleryFeaturedRequest,
         GalleryFeaturedResponse,
@@ -1638,6 +1640,10 @@ declare namespace entities {
         NotesCreateRequest,
         NotesCreateResponse,
         NotesDeleteRequest,
+        NotesMakePrivateRequest,
+        NotesMakePrivateManyRequest,
+        NotesMakePrivateManyCountRequest,
+        NotesMakePrivateManyCountResponse,
         NotesFavoritesCreateRequest,
         NotesFavoritesDeleteRequest,
         NotesFeaturedRequest,
@@ -2022,6 +2028,12 @@ type FollowingRequestsListResponse = operations['following___requests___list']['
 
 // @public (undocumented)
 type FollowingRequestsRejectRequest = operations['following___requests___reject']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type FollowingRequestsSentRequest = operations['following___requests___sent']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type FollowingRequestsSentResponse = operations['following___requests___sent']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type FollowingUpdateAllRequest = operations['following___update-all']['requestBody']['content']['application/json'];
@@ -2676,6 +2688,18 @@ type NotesLocalTimelineRequest = operations['notes___local-timeline']['requestBo
 
 // @public (undocumented)
 type NotesLocalTimelineResponse = operations['notes___local-timeline']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type NotesMakePrivateManyCountRequest = operations['notes___make-private-many-count']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type NotesMakePrivateManyCountResponse = operations['notes___make-private-many-count']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type NotesMakePrivateManyRequest = operations['notes___make-private-many']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type NotesMakePrivateRequest = operations['notes___make-private']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type NotesMentionsRequest = operations['notes___mentions']['requestBody']['content']['application/json'];
