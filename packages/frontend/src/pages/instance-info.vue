@@ -337,6 +337,7 @@ async function resumeDelivery(): Promise<void> {
 }
 
 async function toggleNSFW(): Promise<void> {
+	if (!iAmModerator) return;
 	if (!instance.value) throw new Error('No instance?');
 	await misskeyApi('admin/federation/update-instance', {
 		host: instance.value.host,
@@ -345,6 +346,7 @@ async function toggleNSFW(): Promise<void> {
 }
 
 async function toggleRejectReports(): Promise<void> {
+	if (!iAmModerator) return;
 	if (!instance.value) throw new Error('No instance?');
 	await misskeyApi('admin/federation/update-instance', {
 		host: instance.value.host,
@@ -364,6 +366,7 @@ function refreshMetadata(): void {
 }
 
 async function deleteAllFiles(): Promise<void> {
+	if (!iAmModerator) return;
 	if (!instance.value) throw new Error('No instance?');
 
 	const confirm = await os.confirm({
@@ -383,6 +386,7 @@ async function deleteAllFiles(): Promise<void> {
 }
 
 async function severAllFollowRelations(): Promise<void> {
+	if (!iAmModerator) return;
 	if (!instance.value) throw new Error('No instance?');
 
 	const confirm = await os.confirm({
