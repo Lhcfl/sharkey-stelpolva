@@ -29,8 +29,9 @@ export async function warningExternalWebsite(url: string) {
 	});
 
 	const isTrustedByUser = defaultStore.reactiveState.trustedDomains.value.includes(domain);
+	const isDisabledByUser = !defaultStore.reactiveState.warnExternalUrl.value;
 
-	if (!isTrustedByInstance && !isTrustedByUser) {
+	if (!isTrustedByInstance && !isTrustedByUser && !isDisabledByUser) {
 		const confirm = await new Promise<{ canceled: boolean }>(resolve => {
 			const { dispose } = os.popup(MkUrlWarningDialog, {
 				url,

@@ -503,6 +503,10 @@ export interface Locale extends ILocale {
      */
     "pinnedNote": string;
     /**
+     * Pinned
+     */
+    "pinnedOnly": string;
+    /**
      * ピン留め
      */
     "pinned": string;
@@ -5103,6 +5107,10 @@ export interface Locale extends ILocale {
      * This media might be sensitive. Are you sure you want to reveal it?
      */
     "sensitiveMediaRevealConfirm": string;
+    /**
+     * 外部URLを開く際に警告を表示する
+     */
+    "warnExternalUrl": string;
     /**
      * 作成したリスト
      */
