@@ -255,7 +255,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		if (data.createdAt == null) data.createdAt = new Date();
 		if (data.visibility == null) data.visibility = 'public';
 		if (data.localOnly == null) data.localOnly = false;
-		if (data.channel != null) data.visibility = 'public';
+		if (data.channel != null && data.visibility !== 'specified') data.visibility = 'public';
 		if (data.channel != null) data.visibleUsers = [];
 		if (data.channel != null) data.localOnly = true;
 
@@ -481,10 +481,10 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 		// should really not happen, but better safe than sorry
 		if (data.reply?.id === insert.id) {
-			throw new Error("A note can't reply to itself");
+			throw new Error('A note can\'t reply to itself');
 		}
 		if (data.renote?.id === insert.id) {
-			throw new Error("A note can't renote itself");
+			throw new Error('A note can\'t renote itself');
 		}
 
 		if (data.uri != null) insert.uri = data.uri;
