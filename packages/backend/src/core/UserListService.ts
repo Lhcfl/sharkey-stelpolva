@@ -6,7 +6,7 @@
 import { Inject, Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { ModuleRef } from '@nestjs/core';
-import type { UserListMembershipsRepository } from '@/models/_.js';
+import type { FollowingsRepository, UserListMembershipsRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiUserList } from '@/models/UserList.js';
 import type { MiUserListMembership } from '@/models/UserListMembership.js';
@@ -39,6 +39,9 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 
 		@Inject(DI.userListMembershipsRepository)
 		private userListMembershipsRepository: UserListMembershipsRepository,
+
+		@Inject(DI.followingsRepository)
+		private followingsRepository: FollowingsRepository,
 
 		private userEntityService: UserEntityService,
 		private idService: IdService,
@@ -113,7 +116,11 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 		if (this.userEntityService.isRemoteUser(target)) {
 			const proxy = await this.proxyAccountService.fetch();
 			if (proxy) {
-				this.queueService.createFollowJob([{ from: { id: proxy.id }, to: { id: target.id } }]);
+				const hasFollow = await this.followingsRepository.createQueryBuilder('f')
+					.where('f.followeeId = :userId', { userId: target.id })
+					.andWhere('f.followerHost IS NULL')
+					.getExists();
+				if (!hasFollow) this.queueService.createFollowJob([{ from: { id: proxy.id }, to: { id: target.id } }]);
 			}
 		}
 	}
