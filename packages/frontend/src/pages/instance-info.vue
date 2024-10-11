@@ -275,7 +275,7 @@ async function fetch(): Promise<void> {
 		host: props.host,
 	});
 	suspensionState.value = instance.value?.suspensionState ?? 'none';
-	isSuspended.value = instance.value?.suspensionState !== 'none';
+	isSuspended.value = suspensionState.value !== 'none';
 	isBlocked.value = instance.value?.isBlocked ?? false;
 	isSilenced.value = instance.value?.isSilenced ?? false;
 	isNSFW.value = instance.value?.isNSFW ?? false;
