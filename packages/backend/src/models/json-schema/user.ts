@@ -142,6 +142,10 @@ export const packedUserLiteSchema = {
 			type: 'boolean',
 			nullable: false, optional: true,
 		},
+		isSilenced: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
 		instance: {
 			type: 'object',
 			nullable: false, optional: true,

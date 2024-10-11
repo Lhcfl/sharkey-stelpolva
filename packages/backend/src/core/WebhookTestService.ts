@@ -53,16 +53,22 @@ function generateDummyUser(override?: Partial<MiUser>): MiUser {
 		avatar: null,
 		bannerId: null,
 		banner: null,
+		backgroundId: null,
+		background: null,
 		avatarUrl: null,
 		bannerUrl: null,
+		backgroundUrl: null,
 		avatarBlurhash: null,
 		bannerBlurhash: null,
+		backgroundBlurhash: null,
 		avatarDecorations: [],
 		tags: [],
 		isSuspended: false,
 		isLocked: false,
+		isSilenced: false,
 		isBot: false,
 		isCat: true,
+		speakAsCat: true,
 		isRoot: false,
 		isExplorable: true,
 		isHibernated: false,
@@ -76,6 +82,9 @@ function generateDummyUser(override?: Partial<MiUser>): MiUser {
 		uri: null,
 		followersUri: null,
 		token: null,
+		approved: true,
+		signupReason: null,
+		noindex: false,
 		...override,
 	};
 }
@@ -118,6 +127,7 @@ function generateDummyNote(override?: Partial<MiNote>): MiNote {
 		replyUserHost: null,
 		renoteUserId: null,
 		renoteUserHost: null,
+		updatedAt: null,
 		...override,
 	};
 }
@@ -182,9 +192,15 @@ function toPackedUserLite(user: MiUser, override?: Packed<'UserLite'>): Packed<'
 		})),
 		isBot: user.isBot,
 		isCat: user.isCat,
+		speakAsCat: user.speakAsCat,
 		emojis: user.emojis,
 		onlineStatus: 'active',
 		badgeRoles: [],
+		noindex: user.noindex,
+		isModerator: false,
+		isAdmin: false,
+		isSystem: false,
+		isSilenced: user.isSilenced,
 		...override,
 	};
 }
@@ -201,6 +217,8 @@ function toPackedUserDetailedNotMe(user: MiUser, override?: Packed<'UserDetailed
 		lastFetchedAt: user.lastFetchedAt?.toISOString() ?? null,
 		bannerUrl: user.bannerUrl,
 		bannerBlurhash: user.bannerBlurhash,
+		backgroundUrl: user.backgroundUrl,
+		backgroundBlurhash: user.backgroundBlurhash,
 		isLocked: user.isLocked,
 		isSilenced: false,
 		isSuspended: user.isSuspended,
@@ -236,6 +254,7 @@ function toPackedUserDetailedNotMe(user: MiUser, override?: Packed<'UserDetailed
 		isRenoteMuted: false,
 		notify: 'none',
 		withReplies: true,
+		ListenBrainz: null,
 		...override,
 	};
 }

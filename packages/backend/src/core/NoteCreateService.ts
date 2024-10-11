@@ -576,7 +576,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 		// ハッシュタグ更新
 		if (data.visibility === 'public' || data.visibility === 'home') {
-			if (user.isBot && meta.enableBotTrending) {
+			if (user.isBot && this.meta.enableBotTrending) {
 				this.hashtagService.updateHashtags(user, tags);
 			} else if (!user.isBot) {
 				this.hashtagService.updateHashtags(user, tags);
