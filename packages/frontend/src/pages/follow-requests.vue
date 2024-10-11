@@ -90,7 +90,7 @@ const headerTabs = computed(() => [
 		icon: 'ph-envelope ph-bold ph-lg',
 	}, {
 		key: 'sent',
-		title: i18n.ts.followRequestPending,
+		title: i18n.ts.pendingFollowRequests,
 		icon: 'ph-paper-plane-tilt ph-bold ph-lg',
 	},
 ]);
