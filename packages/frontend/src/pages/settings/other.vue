@@ -168,7 +168,7 @@ const exportData = () => {
 };
 
 watch([
-    enableCondensedLineForAcct,
+    enableCondensedLine,
 ], async () => {
     await reloadAsk();
 });

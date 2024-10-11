@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<br />
 			<I18n :src="i18n.ts.i18nInfoSharkey" tag="span">
 				<template #link>
-				    <!-- TODO: ADD LINK TO OUR I18N SERVICE -->
+					<!-- TODO: ADD LINK TO OUR I18N SERVICE -->
 					<MkLink url="https://crowdin.com/project/misskey">INSERT THINGY</MkLink>
 				</template>
 			</I18n>

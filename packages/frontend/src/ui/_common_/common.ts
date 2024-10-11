@@ -124,7 +124,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 		});
 	}
 
-	if(instance.donationUrl) {
+	if (instance.donationUrl) {
 		menuItems.push({
 			type: 'a',
 			text: i18n.ts.donation,

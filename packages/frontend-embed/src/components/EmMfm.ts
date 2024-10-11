@@ -360,7 +360,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			case 'center': {
 				return [h('div', {
 					style: 'text-align:center;',
-				}, h('bdi',genEl(token.children, scale)))];
+				}, h('bdi', genEl(token.children, scale)))];
 			}
 
 			case 'url': {
