@@ -363,41 +363,46 @@ function refreshMetadata(): void {
 	});
 }
 
-async function deleteAllFiles(): void {
+async function deleteAllFiles(): Promise<void> {
+	if (!instance.value) throw new Error('No instance?');
+
 	const confirm = await os.confirm({
-		type: 'danger',
+		type: 'warning',
 		text: i18n.ts.deleteAllFilesConfirm,
 	});
 	if (confirm.canceled) return;
 
-	if (!instance.value) throw new Error('No instance?');
-	await misskeyApi('admin/federation/delete-all-files', {
-		host: instance.value.host,
-	});
-	await os.alert({
-		text: i18n.ts.deleteAllFilesQueued,
-	});
+	await Promise.all([
+		misskeyApi('admin/federation/delete-all-files', {
+			host: instance.value.host,
+		}),
+		os.alert({
+			text: i18n.ts.deleteAllFilesQueued,
+		}),
+	]);
 }
 
-async function severAllFollowRelations(): void {
+async function severAllFollowRelations(): Promise<void> {
 	if (!instance.value) throw new Error('No instance?');
 
 	const confirm = await os.confirm({
-		type: 'danger',
+		type: 'warning',
 		text: i18n.tsx.severAllFollowRelationsConfirm({
-			instanceName: instance.value.shortName ?? instance.value.name,
+			instanceName: instance.value.name ?? instance.value.host,
 			followingCount: instance.value.followingCount,
 			followersCount: instance.value.followersCount,
 		}),
 	});
 	if (confirm.canceled) return;
 
-	await misskeyApi('admin/federation/remove-all-following', {
-		host: instance.value.host,
-	});
-	await os.alert({
-		text: i18n.tsx.severAllFollowRelationsQueued({ host: instance.value.host }),
-	});
+	await Promise.all([
+		misskeyApi('admin/federation/remove-all-following', {
+			host: instance.value.host,
+		}),
+		os.alert({
+			text: i18n.tsx.severAllFollowRelationsQueued({ host: instance.value.host }),
+		}),
+	]);
 }
 
 fetch();
