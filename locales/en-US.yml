@@ -1359,7 +1359,7 @@ _delivery:
     none: "Publishing"
     manuallySuspended: "Manually suspended"
     goneSuspended: "Server is suspended due to server deletion"
-    autoSuspendedForNotResponding: "Server is suspended due to no responding"
+    autoSuspendedForNotResponding: "Server is suspended due to not responding"
 _bubbleGame:
   howToPlay: "How to play"
   hold: "Hold"
