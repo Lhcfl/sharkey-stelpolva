@@ -491,7 +491,7 @@ export class ClientServerService {
 			return await reply.view('base', {
 				img: this.meta.bannerUrl,
 				url: this.config.url,
-				title: this.meta.name ?? 'Misskey',
+				title: this.meta.name ?? 'Sharkey',
 				desc: this.meta.description,
 				...await this.generateCommonPugData(this.meta),
 				...data,
@@ -817,7 +817,7 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await reply.view('base-embed', {
-				title: this.meta.name ?? 'Misskey',
+				title: this.meta.name ?? 'Sharkey',
 				...await this.generateCommonPugData(this.meta),
 				embedCtx: htmlSafeJsonStringify({
 					user: _user,
@@ -840,7 +840,7 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await reply.view('base-embed', {
-				title: this.meta.name ?? 'Misskey',
+				title: this.meta.name ?? 'Sharkey',
 				...await this.generateCommonPugData(this.meta),
 				embedCtx: htmlSafeJsonStringify({
 					note: _note,
@@ -861,7 +861,7 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await reply.view('base-embed', {
-				title: this.meta.name ?? 'Misskey',
+				title: this.meta.name ?? 'Sharkey',
 				...await this.generateCommonPugData(this.meta),
 				embedCtx: htmlSafeJsonStringify({
 					clip: _clip,
@@ -874,7 +874,7 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await reply.view('base-embed', {
-				title: this.meta.name ?? 'Misskey',
+				title: this.meta.name ?? 'Sharkey',
 				...await this.generateCommonPugData(this.meta),
 			});
 		});
