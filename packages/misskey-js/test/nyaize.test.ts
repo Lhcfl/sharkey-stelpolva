@@ -3,15 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { describe, test, assert, afterEach } from 'vitest';
-import { nyaize } from '@/scripts/nyaize.js';
+import { nyaize } from '../src/nyaize.js';
 
 function runTests(cases) {
-    for (const c of cases) {
-        const [input,expected] = c;
-        const got = nyaize(input);
-        assert.strictEqual(got, expected);
-    }
+	for (const c of cases) {
+		const [input,expected] = c;
+		const got = nyaize(input);
+		expect(got).toEqual(expected);
+	}
 }
 
 describe('nyaize', () => {
