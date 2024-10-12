@@ -514,6 +514,7 @@ export class NoteEditService implements OnApplicationShutdown {
 				renoteUserId: data.renote ? data.renote.userId : null,
 				renoteUserHost: data.renote ? data.renote.userHost : null,
 				userHost: user.host,
+				reactionAndUserPairCache: oldnote.reactionAndUserPairCache,
 			});
 
 			if (data.uri != null) note.uri = data.uri;
