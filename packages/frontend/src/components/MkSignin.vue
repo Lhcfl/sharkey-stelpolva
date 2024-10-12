@@ -117,14 +117,19 @@ const props = withDefaults(defineProps<{
 });
 
 function onUsernameChange(): void {
+	const usernameRequested = username.value;
 	misskeyApi('users/show', {
-		username: username.value,
+		username: usernameRequested,
 	}).then(userResponse => {
-		user.value = userResponse;
-		usePasswordLessLogin.value = userResponse.usePasswordLessLogin;
+		if (userResponse.username === username.value) {
+			user.value = userResponse;
+			usePasswordLessLogin.value = userResponse.usePasswordLessLogin;
+		}
 	}, () => {
-		user.value = null;
-		usePasswordLessLogin.value = true;
+		if (usernameRequested === username.value) {
+			user.value = null;
+			usePasswordLessLogin.value = true;
+		}
 	});
 }
 
