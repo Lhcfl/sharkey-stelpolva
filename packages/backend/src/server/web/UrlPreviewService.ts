@@ -198,10 +198,25 @@ export class UrlPreviewService {
 				{
 					test: (url) => /^https?:\/\/[^\/]*?music.163.com\/[\s\S]*?song\?[\s\S]*id=([\d]+)/.test(url.toString()),
 					async summarize(url, opts) {
-						const netEaseUrl = new URL(url.toString().replaceAll('/#/song', '/m/song')); // fuck music163's /#/
+						const netEaseUrl = new URL(url.toString()); // fuck music163's /#/
 						if (netEaseUrl.searchParams.get('id')) {
 							const summary = await summaly(`https://music.163.com/song?id=${netEaseUrl.searchParams.get('id')}`, { ...opts, plugins: [] });
 							summary.player.url = `https://music.163.com/outchain/player?type=2&id=${netEaseUrl.searchParams.get('id')}&auto=1&height=66`;
+							summary.player.width = 330;
+							summary.player.height = 86;
+							return summary;
+						} else {
+							return await summaly(url.toString(), { ...opts, plugins: [] });
+						}
+					},
+				},
+				{
+					test: (url) => /^https?:\/\/[^\/]*?music.163.com\/song\/([\d]+)/.test(url.toString()),
+					async summarize(url, opts) {
+						const id = url.toString().match(/^https?:\/\/[^\/]*?music.163.com\/song\/([\d]+)/)?.[1];
+						if (id) {
+							const summary = await summaly(`https://music.163.com/song?id=${id}`, { ...opts, plugins: [] });
+							summary.player.url = `https://music.163.com/outchain/player?type=2&id=${id}&auto=1&height=66`;
 							summary.player.width = 330;
 							summary.player.height = 86;
 							return summary;
