@@ -173,7 +173,7 @@ export class ActivityPubServerService {
 			return true;
 		}
 
-		if (this.utilityService.isFederationAllowedHost(keyHost)) {
+		if (!this.utilityService.isFederationAllowedHost(keyHost)) {
 			/* blocked instance: refuse (we don't care if the signature is
 				 good, if they even pretend to be from a blocked instance,
 				 they're out) */
