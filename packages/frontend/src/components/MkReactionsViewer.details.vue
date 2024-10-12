@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.users">
 			<div v-for="u in users" :key="u.id" :class="$style.user">
 				<MkAvatar :class="$style.avatar" :user="u"/>
-				<MkUserName :user="u" :nowrap="true"/>
+				<MkUserName :user="u" :nowrap="true" :class="$style.username"/>
 			</div>
 			<div v-if="count > 10" :class="$style.more">+{{ count - 10 }}</div>
 		</div>
@@ -97,5 +97,12 @@ function getReactionName(reaction: string): string {
 
 .more {
 	padding-top: 4px;
+}
+
+.username {
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	min-width: 0;
+	overflow: hidden;
 }
 </style>
