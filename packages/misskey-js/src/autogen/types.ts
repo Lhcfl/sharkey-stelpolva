@@ -22304,6 +22304,8 @@ export type operations = {
           includeReplies?: boolean;
           /** @default false */
           includeQuotes?: boolean;
+          /** @default true */
+          includeBots?: boolean;
           /** @default 10 */
           limit?: number;
           /** Format: misskey:id */
@@ -27241,6 +27243,8 @@ export type operations = {
           withQuotes?: boolean;
           /** @default true */
           withRenotes?: boolean;
+          /** @default true */
+          withBots?: boolean;
           /** @default true */
           withNonPublic?: boolean;
           /** @default false */

@@ -55,6 +55,7 @@ export const paramDef = {
 		withRepliesToSelf: { type: 'boolean', default: true },
 		withQuotes: { type: 'boolean', default: true },
 		withRenotes: { type: 'boolean', default: true },
+		withBots: { type: 'boolean', default: true },
 		withNonPublic: { type: 'boolean', default: true },
 		withChannelNotes: { type: 'boolean', default: false },
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
@@ -108,6 +109,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withFiles: ps.withFiles,
 					withRenotes: ps.withRenotes,
 					withQuotes: ps.withQuotes,
+					withBots: ps.withBots,
 					withNonPublic: ps.withNonPublic,
 					withRepliesToOthers: ps.withReplies,
 					withRepliesToSelf: ps.withRepliesToSelf,
@@ -135,6 +137,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				excludeReplies: ps.withChannelNotes && !ps.withReplies, // userTimelineWithChannel may include replies
 				excludeNoFiles: ps.withChannelNotes && ps.withFiles, // userTimelineWithChannel may include notes without files
 				excludePureRenotes: !ps.withRenotes,
+				excludeBots: !ps.withBots,
 				noteFilter: note => {
 					if (note.channel?.isSensitive && !isSelf) return false;
 					if (note.visibility === 'specified' && (!me || (me.id !== note.userId && !note.visibleUserIds.some(v => v === me.id)))) return false;
@@ -156,6 +159,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withFiles: ps.withFiles,
 					withRenotes: ps.withRenotes,
 					withQuotes: ps.withQuotes,
+					withBots: ps.withBots,
 					withNonPublic: ps.withNonPublic,
 					withRepliesToOthers: ps.withReplies,
 					withRepliesToSelf: ps.withRepliesToSelf,
@@ -175,6 +179,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		withFiles: boolean,
 		withRenotes: boolean,
 		withQuotes: boolean,
+		withBots: boolean,
 		withNonPublic: boolean,
 		withRepliesToOthers: boolean,
 		withRepliesToSelf: boolean,
@@ -244,6 +249,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		if (!ps.withNonPublic) {
 			query.andWhere('note.visibility = \'public\'');
+		}
+
+		if (!ps.withBots) {
+			query.andWhere('"user"."isBot" = false');
 		}
 
 		return await query.limit(ps.limit).getMany();

@@ -30,17 +30,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<div v-if="isWideViewport" ref="userScroll" :class="$style.user">
 		<MkHorizontalSwipe v-if="selectedUserId" v-model:tab="currentTab" :tabs="headerTabs">
-			<SkUserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withNonPublic="withNonPublic" :withQuotes="withQuotes" :withReplies="withReplies" :onlyFiles="onlyFiles"/>
+			<SkUserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withNonPublic="withNonPublic" :withQuotes="withQuotes" :withBots="withBots" :withReplies="withReplies" :onlyFiles="onlyFiles"/>
 		</MkHorizontalSwipe>
 	</div>
 </div>
 </template>
-
-<script lang="ts">
-export type FollowingFeedTab = typeof followingTab | typeof mutualsTab;
-export const followingTab = 'following' as const;
-export const mutualsTab = 'mutuals' as const;
-</script>
 
 <script lang="ts" setup>
 import { computed, Ref, ref, shallowRef } from 'vue';
@@ -74,6 +68,10 @@ const withQuotes = computed({
 	get: () => defaultStore.reactiveState.followingFeed.value.withQuotes,
 	set: value => saveFollowingFilter('withQuotes', value),
 });
+const withBots = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.withBots,
+	set: value => saveFollowingFilter('withBots', value),
+});
 const withReplies = computed({
 	get: () => defaultStore.reactiveState.followingFeed.value.withReplies,
 	set: value => saveFollowingFilter('withReplies', value),
@@ -95,10 +93,13 @@ function saveFollowingFilter(key: keyof typeof defaultStore.state.followingFeed,
 
 const router = useRouter();
 
+const followingTab = 'following' as const;
+const mutualsTab = 'mutuals' as const;
 const currentTab = computed({
 	get: () => onlyMutuals.value ? mutualsTab : followingTab,
 	set: value => onlyMutuals.value = (value === mutualsTab),
 });
+
 const userRecentNotes = shallowRef<InstanceType<typeof SkUserRecentNotes>>();
 const userScroll = shallowRef<HTMLElement>();
 const noteScroll = shallowRef<HTMLElement>();
@@ -188,6 +189,7 @@ const latestNotesPagination: Paging<'notes/following'> = {
 		includeNonPublic: withNonPublic.value,
 		includeReplies: withReplies.value,
 		includeQuotes: withQuotes.value,
+		includeBots: withBots.value,
 	})),
 };
 
@@ -211,6 +213,11 @@ const headerActions: PageHeaderItem[] = [
 					type: 'switch',
 					text: i18n.ts.showQuotes,
 					ref: withQuotes,
+				},
+				{
+					type: 'switch',
+					text: i18n.ts.showBots,
+					ref: withBots,
 				},
 				{
 					type: 'switch',

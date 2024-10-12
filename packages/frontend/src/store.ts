@@ -244,6 +244,7 @@ export const defaultStore = markRaw(new Storage('base', {
 		default: {
 			withNonPublic: false,
 			withQuotes: false,
+			withBots: true,
 			withReplies: false,
 			onlyFiles: false,
 			onlyMutuals: false,

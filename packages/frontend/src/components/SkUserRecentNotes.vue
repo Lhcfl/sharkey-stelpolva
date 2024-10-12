@@ -29,6 +29,7 @@ const props = defineProps<{
 	withNonPublic: boolean;
 	withQuotes: boolean;
 	withReplies: boolean;
+	withBots: boolean;
 	onlyFiles: boolean;
 }>();
 

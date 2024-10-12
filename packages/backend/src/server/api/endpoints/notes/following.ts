@@ -37,6 +37,7 @@ export const paramDef = {
 		includeNonPublic: { type: 'boolean', default: false },
 		includeReplies: { type: 'boolean', default: false },
 		includeQuotes: { type: 'boolean', default: false },
+		includeBots: { type: 'boolean', default: true },
 
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: 'string', format: 'misskey:id' },
@@ -95,6 +96,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 			if (!ps.includeQuotes) {
 				query.andWhere('latest.is_quote = false');
+			}
+
+			// Match selected user types.
+			if (!ps.includeBots) {
+				query.andWhere('"user"."isBot" = false');
 			}
 
 			// Respect blocks and mutes
