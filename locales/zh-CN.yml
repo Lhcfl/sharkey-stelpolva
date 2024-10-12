@@ -744,8 +744,8 @@ sentReactionsCount: "发送回应数"
 receivedReactionsCount: "收到回应数"
 pollVotesCount: "问卷调查的投票数"
 pollVotedCount: "问卷调查的被投票数"
-yes: "是"
-no: "否"
+"yes": "是"
+"no": "否"
 driveFilesCount: "网盘的文件数"
 driveUsage: "网盘的空间用量"
 noCrawle: "要求搜索引擎不索引该用户"
@@ -896,8 +896,8 @@ breakFollow: "移除关注者"
 breakFollowConfirm: "你想取消关注吗？"
 itsOn: "已开启"
 itsOff: "已关闭"
-on: "开启"
-off: "关闭"
+"on": "开启"
+"off": "关闭"
 emailRequiredForSignup: "注册账户需要电子邮件地址"
 unread: "未读"
 filter: "筛选"
@@ -1263,26 +1263,23 @@ confirmWhenRevealingSensitiveMedia: "显示敏感内容前需要确认"
 sensitiveMediaRevealConfirm: "这是敏感内容。是否显示？"
 createdLists: "已创建的列表"
 createdAntennas: "已创建的天线"
-stpvAntennaPatch: |
-  Sharkey Stelpolva Edition 为天线的设置添加了额外的关键词语法。
-  具体而言， `domain:example.com` 这个特殊关键词会匹配所有来自 `example.com` 的帖子。这个关键词同样能使用在 OR 语法中。
-  特别地，你必须用 `domain:here` 来匹配本实例的帖子。
-stpvPgroongaSearchInstru: 可以使用 `A OR B` 的词法来搜索包含 A 或者 B 的帖子。`A B`（中间有空格）代表同时包含关键词 A 和 B 的帖子。
-timeTravel: 时光机
-timeTravelDescription: 显示该日期以前的帖子
+stpvAntennaPatch: "Sharkey Stelpolva Edition 为天线的设置添加了额外的关键词语法。\n具体而言， `domain:example.com` 这个特殊关键词会匹配所有来自 `example.com` 的帖子。这个关键词同样能使用在 OR 语法中。\n特别地，你必须用 `domain:here` 来匹配本实例的帖子。\n"
+stpvPgroongaSearchInstru: "可以使用 `A OR B` 的词法来搜索包含 A 或者 B 的帖子。`A B`（中间有空格）代表同时包含关键词 A 和 B 的帖子。"
+timeTravel: "时光机"
+timeTravelDescription: "显示该日期以前的帖子"
 makePrivate:
-  text: 私密化
-  description: 私密化帖子将使帖子变得仅自己可见，并向远程服务器发送删除标记。
-  confirm: 你确定要私密化该帖字吗？
-  warn: 批量私密化帖子是**永久的、不可逆**的过程，并且对服务器有一定负载。请谨慎操作。你每小时只能批量私密化一次帖子。
-  sinceDate: 开始日期
-  untilDate: 结束日期
-  dangerTip: 由于这是一个非常危险的操作，请输入 `{text}` 来启用这项功能
-  manyCount: 共有 {count} 个帖子将会被私密化
-  textmany: 批量私密化！
-  manyWarn: 真的要批量私密化这 {count} 个帖子吗？这个操作不可逆，你的这些帖子会永远只有你自己可见（真的！）
-  didStart: 私密化进程已经开始
-  bulkText: 批量私密化帖子
+  text: "私密化"
+  description: "私密化帖子将使帖子变得仅自己可见，并向远程服务器发送删除标记。"
+  confirm: "你确定要私密化该帖字吗？"
+  warn: "批量私密化帖子是**永久的、不可逆**的过程，并且对服务器有一定负载。请谨慎操作。你每小时只能批量私密化一次帖子。"
+  sinceDate: "开始日期"
+  untilDate: "结束日期"
+  dangerTip: "由于这是一个非常危险的操作，请输入 `{text}` 来启用这项功能"
+  manyCount: "共有 {count} 个帖子将会被私密化"
+  textmany: "批量私密化！"
+  manyWarn: "真的要批量私密化这 {count} 个帖子吗？这个操作不可逆，你的这些帖子会永远只有你自己可见（真的！）"
+  didStart: "私密化进程已经开始"
+  bulkText: "批量私密化帖子"
 _delivery:
   status: "投递状态"
   stop: "停止投递"
@@ -1367,6 +1364,7 @@ _initialTutorial:
     global: "可以查看所有已联合的服务器上的帖子。"
     description2: "可以随时在屏幕顶部在每个时间线之间切换。"
     description3: "另外，还有列表时间线和频道时间线。请参阅{link}了解更多详细信息。"
+    bubble: "可以查看来自管理员挑选的服务器上的帖子。"
   _postNote:
     title: "帖子发布设置"
     description1: "在 Misskey 发布帖子时，您可以设置各种选项。发帖窗口看起来是这样的。\n"
@@ -1403,6 +1401,7 @@ _timelineDescription:
   local: "本地时间线可以查看这个服务器上所有用户发表的帖子。"
   social: "社交时间线将同时显示首页时间线和本地时间线的内容。"
   global: "全局时间线可以查看所有已联合的服务器上的帖子。"
+  bubble: "Bubble 时间线可以查看来自管理员选择的实例的帖子。"
 _serverRules:
   description: "在新用户注册前显示服务器的简单规则。推荐显示服务条款的主要内容。"
 _serverSettings:
@@ -2300,6 +2299,7 @@ _timelines:
   local: "本地"
   social: "社交"
   global: "全局"
+  bubble: "Bubble"
 _play:
   new: "创建 Play"
   edit: "编辑 Play"
@@ -2541,6 +2541,10 @@ _moderationLogTypes:
   deletePage: "删除了页面"
   deleteFlash: "删除了 Play"
   deleteGalleryPost: "删除了图库稿件"
+  setRemoteInstanceNSFW: "设置远程服务器为NSFW"
+  unsetRemoteInstanceNSFW: "取消设置远程服务器为NSFW"
+  rejectRemoteInstanceReports: "拒绝了远程服务器的举报"
+  acceptRemoteInstanceReports: "接收了远程服务器的举报"
 _fileViewer:
   title: "文件信息"
   type: "文件类型"
@@ -2604,7 +2608,7 @@ _dataSaver:
     title: "代码高亮"
     description: "如果使用了代码高亮标记，例如在 MFM 中，则在点击之前不会加载。 代码高亮要求加载每种高亮语言的定义文件，由于这些文件不再自动加载，因此有望减少数据传输量。"
 _hemisphere:
-  N: "北半球"
+  "N": "北半球"
   S: "南半球"
   caption: "在某些客户端设置中用来确定季节"
 _reversi:
@@ -2772,6 +2776,32 @@ _mfm:
   searchDescription: "显示一个搜索框"
   plain: "纯文本"
   plainDescription: "纯文本块内所有的特殊语法都会被忽略"
+  flip: "翻转"
+  flipDescription: "水平或者垂直翻转内容"
+  blur: "模糊"
+  blurDescription: "让内容模糊化。把鼠标放上去或者点击内容可以重新显示它"
+  font: "字体"
+  fontDescription: "设置显示内容的字体风格"
+  rainbow: "彩虹"
+  rainbowDescription: "让内容变成彩虹色"
+  sparkle: "闪耀"
+  sparkleDescription: "让内容变得blingbling的闪闪发光"
+  rotate: "旋转"
+  rotateDescription: "讲内容旋转一个角度"
+  position: "位移"
+  positionDescription: "使内容发生一定的位移"
+  crop: "裁剪"
+  cropDescription: "裁剪内容"
+  followMouse: "跟随鼠标"
+  followMouseDescription: "内容会跟着你的鼠标跑。在移动设备上，它会跟着你点击的位置跑"
+  scale: "缩放"
+  scaleDescription: "以一定比例缩放内容"
+  foreground: "前景色"
+  foregroundDescription: "修改内容的前景色"
+  fade: "淡入淡出"
+  fadeDescription: "让内容淡入淡出"
+  background: "背景色"
+  backgroundDescription: "修改内容的背景色"
 _animatedMFM:
   play: "播放 MFM 动画"
   stop: "停止 MFM 动画"
@@ -2783,3 +2813,32 @@ _dataRequest:
   warn: "每 3 天只能请求一次数据"
   text: "一旦数据已经可以下载了，一封 Email 会发送给你的电子邮件地址。"
   button: "请求"
+trustedLinkUrlPatterns: "信任这些域名或者链接，跳转到外部网站时不显示警告"
+trustedLinkUrlPatternsDescription: "AND 条件用空格分隔，OR 条件用换行符分隔。使用斜杠包裹内容将它变成一个正则表达式。如果只写域名，则会进行backward match。"
+open: "打开"
+mutuals: "Mutuals"
+pinnedOnly: "Pinned"
+muted: "静音"
+renoteMuted: "转发被静音"
+markInstanceAsNSFW: "标记为 NSFW"
+rejectReports: "拒绝来自此实例的举报"
+blockedByBase: "由于基域名被屏蔽，此域名被自动屏蔽。要解除此域名的屏蔽，请先解除基域名的屏蔽。"
+silencedByBase: "由于基域名被静默，此域名被自动静默。要解除此域名的静默，请先解除基域名的静默。"
+mediaSilencedByBase: "由于基域名media被静默，此域名media被自动静默。要解除此域名的media静默，请先解除基域名的media静默。"
+deleteAllFilesQueued: "删除所有队列中的的文件"
+systemAccountTitle: "这是一个系统用户"
+systemAccountDescription: "该账户由系统自动创建并管理，无法登录。"
+postFiltered: "帖子被过滤"
+showTickerOnReplies: "在回复上显示实例角标"
+disableCatSpeak: "关闭像喵一样说话功能"
+uncollapseCW: "自动展开帖子的内容警告 (CW)"
+expandLongNote: "不自动折叠长帖子"
+showBelowAvatar: "显示在头像下层"
+warnExternalUrl: "打开外部链接的时候显示警告"
+severAllFollowRelations: "切断关注关系"
+severAllFollowRelationsConfirm: "真的要切断所有的关注关系吗？这是不可逆的操作！该操作会破坏与 {instanceName} 建立的 {followingCount} 关注中和 {followersCount} 关注者关系！"
+severAllFollowRelationsQueued: "Severing all follow relations with {host} queued."
+_externalNavigationWarning:
+  title: "导航到外部网站"
+  description: "要离开 {host} 并前往这个外部网站吗？"
+  trustThisDomain: "在这台设备上信任该域名，以后不要为我显示对该域名的警告"
