@@ -5222,6 +5222,10 @@ export interface Locale extends ILocale {
      */
     "useGroupedNotifications": string;
     /**
+     * Allow clicking on pop-up notifications
+     */
+    "allowClickingNotifications": string;
+    /**
      * メールアドレスの確認中に問題が発生しました。リンクの有効期限が切れている可能性があります。
      */
     "signupPendingError": string;
