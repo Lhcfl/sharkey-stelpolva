@@ -110,7 +110,9 @@ function onUsernameChange(): void {
 	misskeyApi('users/show', {
 		username: username.value,
 	}).then(userResponse => {
-		user.value = userResponse;
+		if (userResponse.username === username.value) {
+			user.value = userResponse;
+		}
 	}, () => {
 		user.value = null;
 	});
