@@ -462,3 +462,16 @@ bdi.block { display: block }
 	  opacity: 1;
 	}
 }
+
+@media (prefers-reduced-motion) {
+	@keyframes mfm-spin { 0% { transform: none; filter: none; opacity: 1 } }
+	@keyframes mfm-spinX { 0% { transform: none; filter: none; opacity: 1 } }
+	@keyframes mfm-spinY { 0% { transform: none; filter: none; opacity: 1 } }
+	@keyframes mfm-jump { 0% { transform: none; filter: none; opacity: 1 } }
+	@keyframes mfm-bounce { 0% { transform: none; filter: none; opacity: 1 } }
+	@keyframes mfm-twitch { 0% { transform: none; filter: none; opacity: 1 } }
+	@keyframes mfm-shake { 0% { transform: none; filter: none; opacity: 1 } }
+	@keyframes mfm-rubberBand { 0% { transform: none; filter: none; opacity: 1 } }
+	@keyframes mfm-rainbow { 0% { transform: none; filter: none; opacity: 1 } }
+	@keyframes mfm-fade	{ 0% { transform: none; filter: none; opacity: 1 } }
+}
