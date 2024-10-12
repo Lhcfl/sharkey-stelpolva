@@ -2817,6 +2817,7 @@ trustedLinkUrlPatterns: "信任这些域名或者链接，跳转到外部网站�
 trustedLinkUrlPatternsDescription: "AND 条件用空格分隔，OR 条件用换行符分隔。使用斜杠包裹内容将它变成一个正则表达式。如果只写域名，则会进行backward match。"
 open: "打开"
 pinnedOnly: "置顶"
+mutuals: "互相关注"
 muted: "静音"
 renoteMuted: "转发被静音"
 markInstanceAsNSFW: "标记为 NSFW"
