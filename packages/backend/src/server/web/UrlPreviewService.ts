@@ -196,16 +196,18 @@ export class UrlPreviewService {
 					},
 				},
 				{
-					test: (url) => /^https?:\/\/[^\/]*?music.163.com\/[\s\S]*song\?[\s\S]*id=([\d]+)/.test(url.toString()),
+					test: (url) => /^https?:\/\/[^\/]*?music.163.com\/[\s\S]*?song\?[\s\S]*id=([\d]+)/.test(url.toString()),
 					async summarize(url, opts) {
-						const summary = await summaly(url.toString(), { ...opts, plugins: [] });
-						const music163Match = summary.url.match(/^https?:\/\/[^\/]*?music.163.com\/[\s\S]*song\?[\s\S]*id=([\d]+)/);
-						if (music163Match?.[1] && summary.player.url == null) {
+						const music163Match = url.toString().match(/^https?:\/\/[^\/]*?music.163.com\/[\s\S]*?song\?[\s\S]*?id=([\d]+)/);
+						if (music163Match?.[1]) {
+							const summary = await summaly(`https://music.163.com/song?id=${music163Match[1]}`, { ...opts, plugins: [] });
 							summary.player.url = `https://music.163.com/outchain/player?type=2&id=${music163Match[1]}&auto=1&height=66`;
 							summary.player.width = 330;
 							summary.player.height = 86;
+							return summary;
+						} else {
+							return await summaly(url.toString(), { ...opts, plugins: [] });
 						}
-						return summary;
 					},
 				},
 				{
@@ -221,7 +223,7 @@ export class UrlPreviewService {
 								},
 							}, (res) => {
 								const location = res.headers['location'] ?? '';
-								const music163Match = location.match(/^https?:\/\/[^\/]*?music.163.com\/[\s\S]*song\?[\s\S]*id=([\d]+)/);
+								const music163Match = location.match(/^https?:\/\/[^\/]*?music.163.com\/[\s\S]*?song\?[\s\S]*?id=([\d]+)/);
 								if (!location || !music163Match?.[1]) {
 									summaly(url.toString(), { ...opts, plugins: [] }).then(val => resolve(val)).catch(reject); // fallback;
 								} else {
