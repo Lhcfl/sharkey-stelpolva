@@ -15366,6 +15366,10 @@ export type operations = {
           untilId?: string;
           /** @default 10 */
           limit?: number;
+          /** @default false */
+          includeFollower?: boolean;
+          /** @default true */
+          includeFollowee?: boolean;
         };
       };
     };
@@ -15425,6 +15429,10 @@ export type operations = {
           untilId?: string;
           /** @default 10 */
           limit?: number;
+          /** @default false */
+          includeFollower?: boolean;
+          /** @default true */
+          includeFollowee?: boolean;
         };
       };
     };
