@@ -82,4 +82,16 @@ export class SkLatestNote {
 			isQuote: isRenote(note) && isQuote(note),
 		};
 	}
+
+	/**
+	 * Checks if two notes would produce equivalent compound keys.
+	 */
+	static areEquivalent(first: MiNote, second: MiNote): boolean {
+		return (
+			first.userId === second.userId &&
+			first.visibility === second.visibility &&
+			(first.replyId != null) === (second.replyId != null) &&
+			(isRenote(first) && isQuote(first)) === (isRenote(second) && isQuote(second))
+		);
+	}
 }
