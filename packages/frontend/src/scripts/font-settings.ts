@@ -1,5 +1,6 @@
 import { computed, ref, watch } from 'vue';
 import { miLocalStorage } from '@/local-storage.js';
+import { i18n } from '@/i18n.js';
 
 const fontList = [
 	{ id: 'sharkey-default', name: 'Sharkey Default' },
@@ -18,6 +19,7 @@ const fontList = [
 	{ id: 'times', name: 'Times' },
 	{ id: 'yishanbeizhuan', name: '峄山碑篆体' },
 	{ id: 'chongxiseal', name: '崇羲篆體' },
+	{ id: 'system-ui', name: i18n.ts.useSystemFont },
 ];
 
 function getFontOptionsList(val: string): { id: string, name: string, default?: boolean }[] {
@@ -51,9 +53,9 @@ function getFontId(name: string, option: string) {
 }
 
 export function getDefaultFontSettings() {
-	const def_arr = (miLocalStorage.getItem('defaultFontFace') ?? '').split('_');
-	const fontFace = ref(def_arr[0] ?? '');
-	const fontFaceType = ref(def_arr[1] ?? '');
+	const def_arr = miLocalStorage.getItem('defaultFontFace')?.split('_');
+	const fontFace = ref(def_arr?.[0] ?? 'maokentangyuan');
+	const fontFaceType = ref(def_arr?.[1] ?? '');
 	const availableTypes = computed(() => getFontOptionsList(fontFace.value));
 
 	function setDafaultFont() {
