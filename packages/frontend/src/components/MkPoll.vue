@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div :class="{ [$style.done]: closed || isVoted }">
 	<ul :class="$style.choices">
-		<li v-for="(choice, i) in poll.choices" :key="i" :class="$style.choice" @click="vote(i)">
+		<li v-for="(choice, i) in props.poll.choices" :key="i" :class="$style.choice" @click="vote(i)">
 			<div :class="$style.bg" :style="{ 'width': `${showResult ? (choice.votes / total * 100) : 0}%` }"></div>
 			<span :class="$style.fg">
 				<template v-if="choice.isVoted"><i class="ti ti-check" style="margin-right: 4px; color: var(--accent);"></i></template>
@@ -24,6 +24,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-if="isVoted">{{ i18n.ts._poll.voted }}</span>
 		<span v-else-if="closed">{{ i18n.ts._poll.closed }}</span>
 		<span v-if="remaining > 0"> · {{ timer }}</span>
+		<span v-if="!closed"> · </span>
+		<a v-if="!closed" style="color: inherit;" @click="refreshVotes()">Refresh</a>
 	</p>
 </div>
 </template>
@@ -107,6 +109,17 @@ const vote = async (id) => {
 		choice: id,
 	});
 	if (!showResult.value) showResult.value = !props.poll.multiple;
+};
+
+const refreshVotes = async () => {
+	pleaseLogin(undefined, pleaseLoginContext.value);
+
+	if (props.readOnly || closed.value) return;
+	await misskeyApi('notes/polls/refresh', {
+		noteId: props.noteId,
+	// Sadly due to being in the same component and the poll being a prop we require to break Vue's recommendation of not mutating the prop to update it.
+	// eslint-disable-next-line vue/no-mutating-props
+	}).then((res: any) => res.poll ? props.poll.choices = res.poll.choices : null );
 };
 </script>
 

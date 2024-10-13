@@ -1659,6 +1659,7 @@ declare namespace entities {
         NotesPollsRecommendationRequest,
         NotesPollsRecommendationResponse,
         NotesPollsVoteRequest,
+        NotesPollsRefreshRequest,
         NotesReactionsRequest,
         NotesReactionsResponse,
         NotesReactionsCreateRequest,
@@ -2696,6 +2697,9 @@ type NotesPollsRecommendationRequest = operations['notes___polls___recommendatio
 
 // @public (undocumented)
 type NotesPollsRecommendationResponse = operations['notes___polls___recommendation']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type NotesPollsRefreshRequest = operations['notes___polls___refresh']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type NotesPollsVoteRequest = operations['notes___polls___vote']['requestBody']['content']['application/json'];
