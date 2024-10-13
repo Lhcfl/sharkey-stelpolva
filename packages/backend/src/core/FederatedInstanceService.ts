@@ -12,6 +12,8 @@ import { IdService } from '@/core/IdService.js';
 import { DI } from '@/di-symbols.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
+import { QueryFailedError } from 'typeorm';
+import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
 
 @Injectable()
 export class FederatedInstanceService implements OnApplicationShutdown {
@@ -56,11 +58,24 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 		const index = await this.instancesRepository.findOneBy({ host });
 
 		if (index == null) {
-			const i = await this.instancesRepository.insertOne({
-				id: this.idService.gen(),
-				host,
-				firstRetrievedAt: new Date(),
-			});
+			let i;
+			try {
+				i = await this.instancesRepository.insertOne({
+					id: this.idService.gen(),
+					host,
+					firstRetrievedAt: new Date(),
+				});
+			} catch (e: unknown) {
+				if (e instanceof QueryFailedError) {
+					if (isDuplicateKeyValueError(e)) {
+						i = await this.instancesRepository.findOneBy({ host });
+					}
+				}
+
+				if (i == null) {
+					throw e;
+				}
+			}
 
 			this.federatedInstanceCache.set(host, i);
 			return i;

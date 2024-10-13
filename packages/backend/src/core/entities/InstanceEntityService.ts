@@ -59,6 +59,7 @@ export class InstanceEntityService {
 			infoUpdatedAt: instance.infoUpdatedAt ? instance.infoUpdatedAt.toISOString() : null,
 			latestRequestReceivedAt: instance.latestRequestReceivedAt ? instance.latestRequestReceivedAt.toISOString() : null,
 			isNSFW: instance.isNSFW,
+			rejectReports: instance.rejectReports,
 			moderationNote: iAmModerator ? instance.moderationNote : null,
 		};
 	}

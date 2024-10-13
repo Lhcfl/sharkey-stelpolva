@@ -4808,6 +4808,7 @@ export type components = {
       /** Format: date-time */
       latestRequestReceivedAt: string | null;
       isNSFW: boolean;
+      rejectReports: boolean;
       moderationNote?: string | null;
     };
     GalleryPost: {
