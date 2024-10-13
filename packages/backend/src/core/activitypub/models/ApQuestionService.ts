@@ -98,7 +98,7 @@ export class ApQuestionService {
 			const newCount = apChoices.filter(ap => ap.name === choice).at(0)?.replies?.totalItems;
 			if (newCount == null) throw new Error('invalid newCount: ' + newCount);
 
-			if (!(oldCount > newCount)) {
+			if (oldCount <= newCount) {
 				changed = true;
 				poll.votes[poll.choices.indexOf(choice)] = newCount;
 			}
