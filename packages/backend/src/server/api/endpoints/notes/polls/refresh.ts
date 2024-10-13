@@ -40,7 +40,7 @@ export const meta = {
 		},
 
 		youHaveBeenBlocked: {
-			message: 'You cannot vote this poll because you have been blocked by this user.',
+			message: 'You cannot refresh this poll because you have been blocked by this user.',
 			code: 'YOU_HAVE_BEEN_BLOCKED',
 			id: '85a5377e-b1e9-4617-b0b9-5bea73331e49',
 		},

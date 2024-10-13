@@ -24,8 +24,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-if="isVoted">{{ i18n.ts._poll.voted }}</span>
 		<span v-else-if="closed">{{ i18n.ts._poll.closed }}</span>
 		<span v-if="remaining > 0"> · {{ timer }}</span>
-		<span v-if="!closed"> · </span>
-		<a v-if="!closed" style="color: inherit;" @click="refreshVotes()">{{ i18n.ts.reload }}</a>
+		<span v-if="!closed && $i && !props.local"> · </span>
+		<a v-if="!closed && $i && !props.local" style="color: inherit;" @click="refreshVotes()">{{ i18n.ts.reload }}</a>
 	</p>
 </div>
 </template>
@@ -41,11 +41,13 @@ import { i18n } from '@/i18n.js';
 import { host } from '@/config.js';
 import { useInterval } from '@/scripts/use-interval.js';
 import type { OpenOnRemoteOptions } from '@/scripts/please-login.js';
+import { $i } from '@/account.js';
 
 const props = defineProps<{
 	noteId: string;
 	poll: NonNullable<Misskey.entities.Note['poll']>;
 	readOnly?: boolean;
+	local?: boolean;
 }>();
 
 const remaining = ref(-1);
