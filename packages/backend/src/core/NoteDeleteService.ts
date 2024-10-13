@@ -152,7 +152,7 @@ export class NoteDeleteService {
 			userId: user.id,
 		});
 
-		await this.updateLatestNote(note);
+		this.updateLatestNoteBG(note);
 
 		if (deleter && (note.userId !== deleter.id)) {
 			const user = await this.usersRepository.findOneByOrFail({ id: note.userId });
@@ -234,6 +234,12 @@ export class NoteDeleteService {
 		for (const remoteUser of remoteUsers) {
 			this.apDeliverManagerService.deliverToUser(user, content, remoteUser);
 		}
+	}
+
+	private updateLatestNoteBG(note: MiNote): void {
+		this
+			.updateLatestNote(note)
+			.catch(err => console.error('Unhandled exception while updating latest_note (after delete):', err));
 	}
 
 	private async updateLatestNote(note: MiNote) {

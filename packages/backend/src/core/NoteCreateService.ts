@@ -531,8 +531,6 @@ export class NoteCreateService implements OnApplicationShutdown {
 				await this.notesRepository.insert(insert);
 			}
 
-			await this.updateLatestNote(insert);
-
 			return insert;
 		} catch (e) {
 			// duplicate key error
@@ -814,6 +812,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 				}
 			});
 		}
+
+		// Update the Latest Note index / following feed
+		this.updateLatestNoteBG(note);
 
 		// Register to search database
 		if (!user.noindex) this.index(note);
@@ -1145,7 +1146,13 @@ export class NoteCreateService implements OnApplicationShutdown {
 		this.dispose();
 	}
 
-	private async updateLatestNote(note: MiNote) {
+	private updateLatestNoteBG(note: MiNote): void {
+		this
+			.updateLatestNote(note)
+			.catch(err => console.error('Unhandled exception while updating latest_note (after create):', err));
+	}
+
+	private async updateLatestNote(note: MiNote): Promise<void> {
 		// Ignore DMs.
 		// Followers-only posts are *included*, as this table is used to back the "following" feed.
 		if (note.visibility === 'specified') return;
