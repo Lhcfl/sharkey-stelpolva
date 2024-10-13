@@ -25,7 +25,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="closed">{{ i18n.ts._poll.closed }}</span>
 		<span v-if="remaining > 0"> · {{ timer }}</span>
 		<span v-if="!closed"> · </span>
-		<a v-if="!closed" style="color: inherit;" @click="refreshVotes()">Refresh</a>
+		<a v-if="!closed" style="color: inherit;" @click="refreshVotes()">{{ i18n.ts.reload }}</a>
 	</p>
 </div>
 </template>
