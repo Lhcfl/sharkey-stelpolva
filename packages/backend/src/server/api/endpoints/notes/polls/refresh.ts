@@ -18,7 +18,7 @@ export const meta = {
 
 	prohibitMoved: true,
 
-	kind: 'write:votes',
+	kind: 'read:federation',
 
 	errors: {
 		noSuchNote: {
