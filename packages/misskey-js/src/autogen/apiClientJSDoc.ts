@@ -3276,7 +3276,7 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
-     * **Credential required**: *Yes* / **Permission**: *write:votes*
+     * **Credential required**: *Yes* / **Permission**: *read:federation*
      */
     request<E extends 'notes/polls/refresh', P extends Endpoints[E]['req']>(
       endpoint: E,

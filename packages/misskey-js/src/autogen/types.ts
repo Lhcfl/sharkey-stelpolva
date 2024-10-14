@@ -2841,7 +2841,7 @@ export type paths = {
      * notes/polls/refresh
      * @description No description provided.
      *
-     * **Credential required**: *Yes* / **Permission**: *write:votes*
+     * **Credential required**: *Yes* / **Permission**: *read:federation*
      */
     post: operations['notes___polls___refresh'];
   };
@@ -22819,7 +22819,7 @@ export type operations = {
    * notes/polls/refresh
    * @description No description provided.
    *
-   * **Credential required**: *Yes* / **Permission**: *write:votes*
+   * **Credential required**: *Yes* / **Permission**: *read:federation*
    */
   notes___polls___refresh: {
     requestBody: {
