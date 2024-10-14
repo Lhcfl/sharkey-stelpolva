@@ -67,7 +67,10 @@ export class Resolver {
 	}
 
 	@bindThis
-	public async resolve(value: string | IObject): Promise<IObject> {
+	public async resolve(value: string | IObject | [string | IObject]): Promise<IObject> {
+		// eslint-disable-next-line no-param-reassign
+		if (Array.isArray(value)) value = value[0];
+
 		if (typeof value !== 'string') {
 			return value;
 		}

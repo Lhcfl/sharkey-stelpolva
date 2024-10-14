@@ -98,7 +98,10 @@ export class ApDbResolverService implements OnApplicationShutdown {
 	 * AP Person => Misskey User in DB
 	 */
 	@bindThis
-	public async getUserFromApId(value: string | IObject): Promise<MiLocalUser | MiRemoteUser | null> {
+	public async getUserFromApId(value: string | IObject | [string | IObject]): Promise<MiLocalUser | MiRemoteUser | null> {
+		// eslint-disable-next-line no-param-reassign
+		if (Array.isArray(value)) value = value[0];
+
 		const parsed = this.parseUri(value);
 
 		if (parsed.local) {
