@@ -87,11 +87,14 @@ export class SkLatestNote {
 	 * Checks if two notes would produce equivalent compound keys.
 	 */
 	static areEquivalent(first: MiNote, second: MiNote): boolean {
+		const firstKey = SkLatestNote.keyFor(first);
+		const secondKey = SkLatestNote.keyFor(second);
+
 		return (
-			first.userId === second.userId &&
-			first.visibility === second.visibility &&
-			(first.replyId != null) === (second.replyId != null) &&
-			(isRenote(first) && isQuote(first)) === (isRenote(second) && isQuote(second))
+			firstKey.userId === secondKey.userId &&
+			firstKey.isPublic === secondKey.isPublic &&
+			firstKey.isReply === secondKey.isReply &&
+			firstKey.isQuote === secondKey.isQuote
 		);
 	}
 }
