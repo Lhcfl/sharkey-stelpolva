@@ -63,4 +63,87 @@ describe(SkLatestNote, () => {
 			expect(key.isQuote).toBeFalsy();
 		});
 	});
+
+	describe('areEquivalent', () => {
+		it('should return true when keys match', () => {
+			const first = new MiNote({ id: '1', userId: 'abc123', visibility: 'public', replyId: null, renoteId: null, fileIds: [] });
+			const second = new MiNote({ id: '2', userId: 'abc123', visibility: 'public', replyId: null, renoteId: null, fileIds: [] });
+
+			const result = SkLatestNote.areEquivalent(first, second);
+
+			expect(result).toBeTruthy();
+		});
+
+		it('should return true when keys match with different reply IDs', () => {
+			const first = new MiNote({ id: '1', userId: 'abc123', visibility: 'public', replyId: '3', renoteId: null, fileIds: [] });
+			const second = new MiNote({ id: '2', userId: 'abc123', visibility: 'public', replyId: '4', renoteId: null, fileIds: [] });
+
+			const result = SkLatestNote.areEquivalent(first, second);
+
+			expect(result).toBeTruthy();
+		});
+
+		it('should return true when keys match with different renote IDs', () => {
+			const first = new MiNote({ id: '1', userId: 'abc123', visibility: 'public', replyId: null, renoteId: '3', fileIds: ['1'] });
+			const second = new MiNote({ id: '2', userId: 'abc123', visibility: 'public', replyId: null, renoteId: '4', fileIds: ['1'] });
+
+			const result = SkLatestNote.areEquivalent(first, second);
+
+			expect(result).toBeTruthy();
+		});
+
+		it('should return true when keys match with different file counts', () => {
+			const first = new MiNote({ id: '1', userId: 'abc123', visibility: 'public', replyId: null, renoteId: null, fileIds: ['1'] });
+			const second = new MiNote({ id: '2', userId: 'abc123', visibility: 'public', replyId: null, renoteId: null, fileIds: ['1','2'] });
+
+			const result = SkLatestNote.areEquivalent(first, second);
+
+			expect(result).toBeTruthy();
+		});
+
+		it('should return true when keys match with different private visibilities', () => {
+			const first = new MiNote({ id: '1', userId: 'abc123', visibility: 'home', replyId: null, renoteId: null, fileIds: [] });
+			const second = new MiNote({ id: '2', userId: 'abc123', visibility: 'followers', replyId: null, renoteId: null, fileIds: [] });
+
+			const result = SkLatestNote.areEquivalent(first, second);
+
+			expect(result).toBeTruthy();
+		});
+
+		it('should return false when user ID differs', () => {
+			const first = new MiNote({ id: '1', userId: 'abc123', visibility: 'public', replyId: null, renoteId: null, fileIds: [] });
+			const second = new MiNote({ id: '2', userId: 'def456', visibility: 'public', replyId: null, renoteId: null, fileIds: [] });
+
+			const result = SkLatestNote.areEquivalent(first, second);
+
+			expect(result).toBeFalsy();
+		});
+
+		it('should return false when visibility differs', () => {
+			const first = new MiNote({ id: '1', userId: 'abc123', visibility: 'public', replyId: null, renoteId: null, fileIds: [] });
+			const second = new MiNote({ id: '2', userId: 'abc123', visibility: 'home', replyId: null, renoteId: null, fileIds: [] });
+
+			const result = SkLatestNote.areEquivalent(first, second);
+
+			expect(result).toBeFalsy();
+		});
+
+		it('should return false when reply differs', () => {
+			const first = new MiNote({ id: '1', userId: 'abc123', visibility: 'public', replyId: '1', renoteId: null, fileIds: [] });
+			const second = new MiNote({ id: '2', userId: 'abc123', visibility: 'public', replyId: null, renoteId: null, fileIds: [] });
+
+			const result = SkLatestNote.areEquivalent(first, second);
+
+			expect(result).toBeFalsy();
+		});
+
+		it('should return false when quote differs', () => {
+			const first = new MiNote({ id: '1', userId: 'abc123', visibility: 'public', replyId: null, renoteId: '3', fileIds: ['1'] });
+			const second = new MiNote({ id: '2', userId: 'abc123', visibility: 'public', replyId: null, renoteId: null, fileIds: [] });
+
+			const result = SkLatestNote.areEquivalent(first, second);
+
+			expect(result).toBeFalsy();
+		});
+	});
 });
