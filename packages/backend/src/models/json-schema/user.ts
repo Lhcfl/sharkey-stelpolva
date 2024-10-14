@@ -578,6 +578,10 @@ export const packedMeDetailedOnlySchema = {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},
+		hasPendingSentFollowRequest: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
 		unreadNotificationsCount: {
 			type: 'number',
 			nullable: false, optional: false,
