@@ -59,7 +59,7 @@ export class ApDbResolverService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public parseUri(value: string | IObject): UriParseResult {
+	public parseUri(value: string | IObject | [string | IObject]): UriParseResult {
 		const separator = '/';
 
 		const uri = new URL(getApId(value));
@@ -78,7 +78,7 @@ export class ApDbResolverService implements OnApplicationShutdown {
 	 * AP Note => Misskey Note in DB
 	 */
 	@bindThis
-	public async getNoteFromApId(value: string | IObject): Promise<MiNote | null> {
+	public async getNoteFromApId(value: string | IObject | [string | IObject]): Promise<MiNote | null> {
 		const parsed = this.parseUri(value);
 
 		if (parsed.local) {
@@ -99,9 +99,6 @@ export class ApDbResolverService implements OnApplicationShutdown {
 	 */
 	@bindThis
 	public async getUserFromApId(value: string | IObject | [string | IObject]): Promise<MiLocalUser | MiRemoteUser | null> {
-		// eslint-disable-next-line no-param-reassign
-		if (Array.isArray(value)) value = value[0];
-
 		const parsed = this.parseUri(value);
 
 		if (parsed.local) {

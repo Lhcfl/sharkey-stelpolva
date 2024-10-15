@@ -21,6 +21,7 @@ import { ApDbResolverService } from './ApDbResolverService.js';
 import { ApRendererService } from './ApRendererService.js';
 import { ApRequestService } from './ApRequestService.js';
 import type { IObject, ICollection, IOrderedCollection } from './type.js';
+import { fromTuple } from '@/misc/from-tuple.js';
 
 export class Resolver {
 	private history: Set<string>;
@@ -69,7 +70,7 @@ export class Resolver {
 	@bindThis
 	public async resolve(value: string | IObject | [string | IObject]): Promise<IObject> {
 		// eslint-disable-next-line no-param-reassign
-		if (Array.isArray(value)) value = value[0];
+		value = fromTuple(value);
 
 		if (typeof value !== 'string') {
 			return value;

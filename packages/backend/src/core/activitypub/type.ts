@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { fromTuple } from '@/misc/from-tuple.js';
+
 export type Obj = { [x: string]: any };
 export type ApObject = IObject | string | (IObject | string)[];
 
@@ -54,7 +56,7 @@ export function getOneApId(value: ApObject): string {
  */
 export function getApId(value: string | IObject | [string | IObject]): string {
 	// eslint-disable-next-line no-param-reassign
-	if (Array.isArray(value)) value = value[0];
+	value = fromTuple(value);
 
 	if (typeof value === 'string') return value;
 	if (typeof value.id === 'string') return value.id;

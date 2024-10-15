@@ -41,6 +41,7 @@ import { ApPersonService } from './models/ApPersonService.js';
 import { ApQuestionService } from './models/ApQuestionService.js';
 import type { Resolver } from './ApResolverService.js';
 import type { IAccept, IAdd, IAnnounce, IBlock, ICreate, IDelete, IFlag, IFollow, ILike, IObject, IReject, IRemove, IUndo, IUpdate, IMove, IPost } from './type.js';
+import { fromTuple } from '@/misc/from-tuple.js';
 
 @Injectable()
 export class ApInboxService {
@@ -253,7 +254,7 @@ export class ApInboxService {
 		}
 
 		if (activity.target === actor.featured) {
-			const object = Array.isArray(activity.object) ? activity.object[0] : activity.object;
+			const object = fromTuple(activity.object);
 			const note = await this.apNoteService.resolveNote(object);
 			if (note == null) return 'note not found';
 			await this.notePiningService.addPinned(actor, note.id);
@@ -271,7 +272,7 @@ export class ApInboxService {
 
 		const resolver = this.apResolverService.createResolver();
 
-		const activityObject = Array.isArray(activity.object) ? activity.object[0] : activity.object;
+		const activityObject = fromTuple(activity.object);
 		if (!activityObject) return 'skip: activity has no object property';
 		const targetUri = getApId(activityObject);
 		if (targetUri.startsWith('bear:')) return 'skip: bearcaps url not supported.';
@@ -372,7 +373,7 @@ export class ApInboxService {
 
 		this.logger.info(`Create: ${uri}`);
 
-		const activityObject = Array.isArray(activity.object) ? activity.object[0] : activity.object;
+		const activityObject = fromTuple(activity.object);
 		if (!activityObject) return 'skip: activity has no object property';
 		const targetUri = getApId(activityObject);
 		if (targetUri.startsWith('bear:')) return 'skip: bearcaps url not supported.';
@@ -451,7 +452,7 @@ export class ApInboxService {
 		// 削除対象objectのtype
 		let formerType: string | undefined;
 
-		const activityObject = Array.isArray(activity.object) ? activity.object[0] : activity.object;
+		const activityObject = fromTuple(activity.object);
 		if (typeof activityObject === 'string') {
 			// typeが不明だけど、どうせ消えてるのでremote resolveしない
 			formerType = undefined;
@@ -619,7 +620,7 @@ export class ApInboxService {
 		}
 
 		if (activity.target === actor.featured) {
-			const activityObject = Array.isArray(activity.object) ? activity.object[0] : activity.object;
+			const activityObject = fromTuple(activity.object);
 			const note = await this.apNoteService.resolveNote(activityObject);
 			if (note == null) return 'note not found';
 			await this.notePiningService.removePinned(actor, note.id);
