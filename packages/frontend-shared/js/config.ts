@@ -16,6 +16,7 @@ export const apiUrl = location.origin + '/api';
 export const wsOrigin = location.origin;
 export const lang = localStorage.getItem('lang') ?? 'en-US';
 export const langs = _LANGS_;
+export const langsVersion = _LANGS_VERSION_;
 const preParseLocale = localStorage.getItem('locale');
 export let locale: Locale = preParseLocale ? JSON.parse(preParseLocale) : null;
 export const version = _VERSION_;

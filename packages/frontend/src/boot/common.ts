@@ -5,7 +5,7 @@
 
 import { computed, watch, version as vueVersion, App } from 'vue';
 import { compareVersions } from 'compare-versions';
-import { version, lang, updateLocale, locale } from '@@/js/config.js';
+import { version, lang, langsVersion, updateLocale, locale } from '@@/js/config.js';
 import widgets from '@/widgets/index.js';
 import directives from '@/directives/index.js';
 import components from '@/components/index.js';
@@ -81,14 +81,15 @@ export async function common(createVue: () => App<Element>) {
 
 	//#region Detect language & fetch translations
 	const localeVersion = miLocalStorage.getItem('localeVersion');
-	const localeOutdated = (localeVersion == null || localeVersion !== version || locale == null);
+	const localeOutdated = (localeVersion == null || localeVersion !== langsVersion || locale == null);
 	if (localeOutdated) {
-		const res = await window.fetch(`/assets/locales/${lang}.${version}.json`);
+		console.info(`Updating locales from version ${localeVersion ?? 'N/A'} to ${langsVersion}`);
+		const res = await window.fetch(`/assets/locales/${lang}.${langsVersion}.json`);
 		if (res.status === 200) {
 			const newLocale = await res.text();
 			const parsedNewLocale = JSON.parse(newLocale);
 			miLocalStorage.setItem('locale', newLocale);
-			miLocalStorage.setItem('localeVersion', version);
+			miLocalStorage.setItem('localeVersion', langsVersion);
 			updateLocale(parsedNewLocale);
 			updateI18n(parsedNewLocale);
 		}

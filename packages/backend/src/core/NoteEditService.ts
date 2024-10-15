@@ -50,6 +50,7 @@ import { isReply } from '@/misc/is-reply.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
 
@@ -217,7 +218,7 @@ export class NoteEditService implements OnApplicationShutdown {
 		private utilityService: UtilityService,
 		private userBlockingService: UserBlockingService,
 		private cacheService: CacheService,
-		private noteCreateService: NoteCreateService,
+		private latestNoteService: LatestNoteService,
 	) {
 		this.updateNotesCountQueue = new CollapsedQueue(60 * 1000 * 5, this.collapseNotesCount, this.performUpdateNotesCount);
 	}
@@ -563,7 +564,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			}
 
 			setImmediate('post edited', { signal: this.#shutdownController.signal }).then(
-				() => this.postNoteEdited(note, user, data, silent, tags!, mentionedUsers!),
+				() => this.postNoteEdited(note, oldnote, user, data, silent, tags!, mentionedUsers!),
 				() => { /* aborted, ignore this */ },
 			);
 
@@ -574,7 +575,7 @@ export class NoteEditService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async postNoteEdited(note: MiNote, user: {
+	private async postNoteEdited(note: MiNote, oldNote: MiNote, user: {
 		id: MiUser['id'];
 		username: MiUser['username'];
 		host: MiUser['host'];
@@ -770,6 +771,9 @@ export class NoteEditService implements OnApplicationShutdown {
 				}
 			});
 		}
+
+		// Update the Latest Note index / following feed
+		this.latestNoteService.handleUpdatedNoteBG(oldNote, note);
 
 		// Register to search database
 		if (!user.noindex) this.index(note);

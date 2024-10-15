@@ -10916,6 +10916,22 @@ export interface Locale extends ILocale {
      * Severing all follow relations with {host} queued.
      */
     "severAllFollowRelationsQueued": ParameterizedString<"host">;
+    /**
+     * Pending follow requests
+     */
+    "pendingFollowRequests": string;
+    /**
+     * Show quotes
+     */
+    "showQuotes": string;
+    /**
+     * Show replies
+     */
+    "showReplies": string;
+    /**
+     * Show non-public
+     */
+    "showNonPublicNotes": string;
     "_mfm": {
         /**
          * This is not a widespread feature, it may not display properly on most other fedi software, including other Misskey forks

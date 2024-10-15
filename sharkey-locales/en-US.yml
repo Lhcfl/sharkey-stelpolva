@@ -142,6 +142,10 @@ sensitiveMediaRevealConfirm: "This media might be sensitive. Are you sure you wa
 severAllFollowRelations: "Break following relationships"
 severAllFollowRelationsConfirm: "Really break all follow relationships? This is irreversible! This will break {followingCount} following and {followersCount} follower relations on {instanceName}!"
 severAllFollowRelationsQueued: "Severing all follow relations with {host} queued."
+pendingFollowRequests: "Pending follow requests"
+showQuotes: "Show quotes"
+showReplies: "Show replies"
+showNonPublicNotes: "Show non-public"
 _delivery:
   stop: "Suspend delivery"
   resume: "Resume delivery"
