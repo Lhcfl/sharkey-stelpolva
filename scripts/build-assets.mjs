@@ -78,7 +78,7 @@ async function buildBackendScript() {
   ]) {
     let source = await fs.readFile(file, { encoding: 'utf-8' });
     source = source.replaceAll(/\bLANGS\b/g, JSON.stringify(Object.keys(locales)));
-		source = source.replaceAll(/\bLANGS_VERSION\b/g, JSON.stringify(localesVersion));
+    source = source.replaceAll(/\bLANGS_VERSION\b/g, JSON.stringify(localesVersion));
     const { code } = await terser.minify(source, { toplevel: true });
     await fs.writeFile(`./packages/backend/built/server/web/${path.basename(file)}`, code);
   }
