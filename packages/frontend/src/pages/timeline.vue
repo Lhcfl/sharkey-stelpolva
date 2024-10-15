@@ -278,7 +278,7 @@ const headerActions = computed(() => {
 					ref: withBots,
 				}, isBasicTimeline(src.value) && hasWithReplies(src.value) ? {
 					type: 'switch',
-					text: i18n.ts.showRepliesToOthersInTimelineAll,
+					text: i18n.ts.showRepliesToOthersInTimeline,
 					ref: withReplies,
 					disabled: onlyFiles,
 				} : undefined, {
