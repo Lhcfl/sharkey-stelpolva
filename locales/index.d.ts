@@ -5222,7 +5222,7 @@ export interface Locale extends ILocale {
      */
     "useGroupedNotifications": string;
     /**
-     * Allow clicking on pop-up notifications
+     * ポップアップ通知のクリックを許可する
      */
     "allowClickingNotifications": string;
     /**
