@@ -237,8 +237,11 @@ export class ApNoteService {
 				})
 				.catch(async err => {
 					this.logger.warn(`Error in inReplyTo ${note.inReplyTo} - ${err.statusCode ?? err}`);
-					// throw err;
-					return null;
+					if (visibility === 'followers') {
+						throw err;
+					} else {
+						return null;
+					}
 				})
 			: null;
 
