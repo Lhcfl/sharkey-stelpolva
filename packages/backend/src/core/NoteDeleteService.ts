@@ -6,8 +6,8 @@
 import { Brackets, In, Not } from 'typeorm';
 import { Injectable, Inject } from '@nestjs/common';
 import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
-import type { MiNote, IMentionedRemoteUsers } from '@/models/Note.js';
-import { LatestNote } from '@/models/LatestNote.js';
+import { MiNote, IMentionedRemoteUsers } from '@/models/Note.js';
+import { SkLatestNote } from '@/models/LatestNote.js';
 import type { InstancesRepository, LatestNotesRepository, NotesRepository, UsersRepository } from '@/models/_.js';
 import { RelayService } from '@/core/RelayService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
@@ -25,7 +25,7 @@ import { bindThis } from '@/decorators.js';
 import { MetaService } from '@/core/MetaService.js';
 import { SearchService } from '@/core/SearchService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { isQuote, isRenote } from '@/misc/is-renote.js';
+import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
 
 @Injectable()
 export class NoteDeleteService {
@@ -240,8 +240,14 @@ export class NoteDeleteService {
 		// If it's a DM, then it can't possibly be the latest note so we can safely skip this.
 		if (note.visibility === 'specified') return;
 
+		// If it's a pure renote, then it can't possibly be the latest note so we can safely skip this.
+		if (isPureRenote(note)) return;
+
+		// Compute the compound key of the entry to check
+		const key = SkLatestNote.keyFor(note);
+
 		// Check if the deleted note was possibly the latest for the user
-		const hasLatestNote = await this.latestNotesRepository.existsBy({ userId: note.userId });
+		const hasLatestNote = await this.latestNotesRepository.existsBy(key);
 		if (hasLatestNote) return;
 
 		// Find the newest remaining note for the user.
@@ -250,8 +256,16 @@ export class NoteDeleteService {
 			.createQueryBuilder('note')
 			.select()
 			.where({
-				userId: note.userId,
-				visibility: Not('specified'),
+				userId: key.userId,
+				visibility: key.isPublic
+					? 'public'
+					: Not('specified'),
+				replyId: key.isReply
+					? Not(null)
+					: null,
+				renoteId: key.isQuote
+					? Not(null)
+					: null,
 			})
 			.andWhere(`
 				(
@@ -268,8 +282,8 @@ export class NoteDeleteService {
 		if (!nextLatest) return;
 
 		// Record it as the latest
-		const latestNote = new LatestNote({
-			userId: note.userId,
+		const latestNote = new SkLatestNote({
+			...key,
 			noteId: nextLatest.id,
 		});
 
@@ -278,7 +292,7 @@ export class NoteDeleteService {
 		await this.latestNotesRepository
 			.createQueryBuilder('latest')
 			.insert()
-			.into(LatestNote)
+			.into(SkLatestNote)
 			.values(latestNote)
 			.orIgnore()
 			.execute();
