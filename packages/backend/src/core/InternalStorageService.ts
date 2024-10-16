@@ -24,6 +24,8 @@ export class InternalStorageService {
 		@Inject(DI.config)
 		private config: Config,
 	) {
+		// No one should erase the working directly *while the server is running*.
+		fs.mkdirSync(path, { recursive: true });
 	}
 
 	@bindThis
@@ -38,14 +40,12 @@ export class InternalStorageService {
 
 	@bindThis
 	public async saveFromPath(key: string, srcPath: string): Promise<string> {
-		await mkdir(path, { recursive: true });
 		await copyFile(srcPath, this.resolvePath(key));
 		return `${this.config.url}/files/${key}`;
 	}
 
 	@bindThis
 	public async saveFromBuffer(key: string, data: Buffer): Promise<string> {
-		await mkdir(path, { recursive: true });
 		await writeFile(this.resolvePath(key), data);
 		return `${this.config.url}/files/${key}`;
 	}
