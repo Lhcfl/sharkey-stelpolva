@@ -227,8 +227,8 @@ importers:
         specifier: 0.1.21
         version: 0.1.21
       fast-xml-parser:
-        specifier: ^4.4.0
-        version: 4.4.0
+        specifier: 4.4.1
+        version: 4.4.1
       fastify:
         specifier: 5.0.0
         version: 5.0.0
@@ -6973,12 +6973,8 @@ packages:
     resolution: {integrity: sha512-B9/wizE4WngqQftFPmdaMYlXoJlJOYxGQOanC77fq9k8+Z0v5dDSVh+3glErdIROP//s/jgb7ZuxKfB8nVyo0g==}
     hasBin: true
 
-  fast-xml-parser@4.4.0:
-    resolution: {integrity: sha512-kLY3jFlwIYwBNDojclKsNAC12sfD6NwW74QB2CoNGPvtVxjliYehVunB3HYyNi+n4Tt1dAcgwYvmKF/Z18flqg==}
-    hasBin: true
-
-  fast-xml-parser@4.5.0:
-    resolution: {integrity: sha512-/PlTQCI96+fZMAOLMZK4CWG1ItCbfZ/0jx7UIJFChPNrx7tcEgerUgWbeieCM9MfHInUDyK8DWYZ+YrywDJuTg==}
+  fast-xml-parser@4.4.1:
+    resolution: {integrity: sha512-xkjOecfnKGkSsOwtZ5Pz7Us/T6mrbPQrq0nh+aCO5V9nk5NLWmasAHumTKjiPJPWANe+kAZ84Jc8ooJkzZ88Sw==}
     hasBin: true
 
   fastify-multer@2.0.3:
@@ -18726,11 +18722,7 @@ snapshots:
     dependencies:
       strnum: 1.0.5
 
-  fast-xml-parser@4.4.0:
-    dependencies:
-      strnum: 1.0.5
-
-  fast-xml-parser@4.5.0:
+  fast-xml-parser@4.4.1:
     dependencies:
       strnum: 1.0.5
 
@@ -19656,7 +19648,7 @@ snapshots:
 
   is-svg@5.1.0:
     dependencies:
-      fast-xml-parser: 4.5.0
+      fast-xml-parser: 4.4.1
 
   is-symbol@1.0.4:
     dependencies:

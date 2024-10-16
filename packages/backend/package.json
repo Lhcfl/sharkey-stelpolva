@@ -112,7 +112,7 @@
 		"content-disposition": "0.5.4",
 		"date-fns": "2.30.0",
 		"deep-email-validator": "0.1.21",
-		"fast-xml-parser": "^4.4.0",
+		"fast-xml-parser": "4.4.1",
 		"fastify": "5.0.0",
 		"fastify-multer": "^2.0.3",
 		"fastify-raw-body": "5.0.0",
