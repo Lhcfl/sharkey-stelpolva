@@ -88,7 +88,7 @@
 	const themeFontFaceName = 'sharkey-theme-font-face';
 	if (theme) {
 		let existingFontFace;
-		document.fonts.forEach((v,k,s)=>{if (v.family === themeFontFaceName) existingFontFace=v;});
+		document.fonts.forEach((v) => { if (v.family === themeFontFaceName) existingFontFace = v;});
 		if (existingFontFace) document.fonts.delete(existingFontFace);
 
 		const themeProps = JSON.parse(theme);
@@ -102,9 +102,8 @@
 			document.fonts.add(fontFace);
 			fontFace.load().catch(
 				(failure) => {
-					console.log(failure)
-				}
-			);
+					console.log(failure);
+				},			);
 		}
 		for (const [k, v] of Object.entries(themeProps)) {
 			if (k.startsWith('font')) continue;

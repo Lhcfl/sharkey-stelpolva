@@ -31,8 +31,17 @@
 		document.documentElement.classList.add('noborder');
 	}
 
+	// Force update when locales change
+	const langsVersion = LANGS_VERSION;
+	const localeVersion = localStorage.getItem('localeVersion');
+	if (localeVersion !== langsVersion) {
+		console.info(`Updating locales from version ${localeVersion ?? 'N/A'} to ${langsVersion}`);
+		localStorage.removeItem('localeVersion');
+		localStorage.removeItem('locale');
+	}
+
 	//#region Detect language & fetch translations
-	if (!localStorage.hasOwnProperty('locale')) {
+	if (!localStorage.getItem('locale')) {
 		const supportedLangs = LANGS;
 		let lang = localStorage.getItem('lang');
 		if (lang == null || !supportedLangs.includes(lang)) {
@@ -46,37 +55,17 @@
 			}
 		}
 
-		const metaRes = await window.fetch('/api/meta', {
-			method: 'POST',
-			body: JSON.stringify({}),
-			credentials: 'omit',
-			cache: 'no-cache',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		});
-		if (metaRes.status !== 200) {
-			renderError('META_FETCH');
-			return;
-		}
-		const meta = await metaRes.json();
-		const v = meta.version;
-		if (v == null) {
-			renderError('META_FETCH_V');
-			return;
-		}
-
 		// for https://github.com/misskey-dev/misskey/issues/10202
 		if (lang == null || lang.toString == null || lang.toString() === 'null') {
 			console.error('invalid lang value detected!!!', typeof lang, lang);
 			lang = 'en-US';
 		}
 
-		const localRes = await window.fetch(`/assets/locales/${lang}.${v}.json`);
+		const localRes = await window.fetch(`/assets/locales/${lang}.${langsVersion}.json`);
 		if (localRes.status === 200) {
 			localStorage.setItem('lang', lang);
 			localStorage.setItem('locale', await localRes.text());
-			localStorage.setItem('localeVersion', v);
+			localStorage.setItem('localeVersion', langsVersion);
 		} else {
 			renderError('LOCALE_FETCH');
 			return;

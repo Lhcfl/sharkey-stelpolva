@@ -1,5 +1,6 @@
 import tsParser from '@typescript-eslint/parser';
 import sharedConfig from '../shared/eslint.config.js';
+import globals from 'globals';
 
 export default [
 	...sharedConfig,
@@ -41,6 +42,17 @@ export default [
 				name: '__filename',
 				message: 'Not in ESModule. Use `import.meta.url` instead.',
 			}],
+		},
+	},
+	{
+		files: ['src/server/web/**/*.js', 'src/server/web/**/*.ts'],
+		languageOptions: {
+			globals: {
+				...globals.browser,
+				LANGS: true,
+				CLIENT_ENTRY: true,
+				LANGS_VERSION: true,
+			},
 		},
 	},
 ];
