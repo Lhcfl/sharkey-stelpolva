@@ -19,6 +19,7 @@ class BubbleTimelineChannel extends Channel {
 	public static shouldShare = false;
 	public static requireCredential = false as const;
 	private withRenotes: boolean;
+	private withReplies: boolean;
 	private withFiles: boolean;
 	private withBots: boolean;
 	private instance: MiMeta;
@@ -43,6 +44,7 @@ class BubbleTimelineChannel extends Channel {
 		this.withRenotes = !!(params.withRenotes ?? true);
 		this.withFiles = !!(params.withFiles ?? false);
 		this.withBots = !!(params.withBots ?? true);
+		this.withReplies = !!(params.withReplies ?? false);
 		this.instance = await this.metaService.fetch();
 
 		// Subscribe events
@@ -56,20 +58,22 @@ class BubbleTimelineChannel extends Channel {
 
 		if (!(this.instance.bubbleInstances.map((i) => i === '#local' ? null : i).includes(note.user.host) && note.visibility === 'public' )) return;
 
+		// 関係ない返信は除外
+		if (note.reply && !this.withReplies) {
+			if (!this.user) {
+				return;
+			} else if (!this.following[note.userId]?.withReplies) {
+				const reply = note.reply;
+				// 「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
+				if (reply.userId !== this.user.id && note.userId !== this.user.id && reply.userId !== note.userId) return;
+			}
+		}
+
 		// if (note.channelId != null) return;
 
 		if (isRenotePacked(note) && !isQuotePacked(note) && !this.withRenotes) return;
 
 		if (note.user.isSilenced && !this.following[note.userId] && note.userId !== this.user!.id) return;
-
-		if (this.isNoteMutedOrBlocked(note)) return;
-
-		if (this.user && isRenotePacked(note) && !isQuotePacked(note)) {
-			if (note.renote && Object.keys(note.renote.reactions).length > 0) {
-				const myRenoteReaction = await this.noteEntityService.populateMyReaction(note.renote, this.user.id);
-				note.renote.myReaction = myRenoteReaction;
-			}
-		}
 
 		this.connection.cacheNote(note);
 

@@ -17,6 +17,7 @@ import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { MiLocalUser } from '@/models/User.js';
 import { MetaService } from '@/core/MetaService.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
+import { ApiError } from '../../error.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -31,6 +32,14 @@ export const meta = {
 			type: 'object',
 			optional: false, nullable: false,
 			ref: 'Note',
+		},
+	},
+
+	errors: {
+		bothWithRepliesAndWithFiles: {
+			message: 'Specifying both withReplies and withFiles is not supported',
+			code: 'BOTH_WITH_REPLIES_AND_WITH_FILES',
+			id: 'dfaa3eb7-8002-4cb7-bcc4-1095df46656f',
 		},
 	},
 } as const;
@@ -76,6 +85,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
 			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);
+
+			if (ps.withReplies && ps.withFiles) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
 
 			const serverSettings = await this.metaService.fetch();
 
@@ -212,7 +223,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			query.andWhere(new Brackets(qb => {
 				qb
 					.where('note.replyId IS NULL') // 返信ではない
-					.orWhere('note.replyId = :meId', { meId: me.id }) // reply my note
+					.orWhere('note.replyUserId = :meId', { meId: me.id }) // reply my note
 					.orWhere(new Brackets(qb => {
 						qb // 返信だけど投稿者自身への返信
 							.where('note.replyId IS NOT NULL')

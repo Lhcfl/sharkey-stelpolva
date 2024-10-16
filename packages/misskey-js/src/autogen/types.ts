@@ -15404,6 +15404,10 @@ export type operations = {
           untilId?: string;
           /** @default 10 */
           limit?: number;
+          /** @default false */
+          includeFollower?: boolean;
+          /** @default true */
+          includeFollowee?: boolean;
         };
       };
     };
@@ -15463,6 +15467,10 @@ export type operations = {
           untilId?: string;
           /** @default 10 */
           limit?: number;
+          /** @default false */
+          includeFollower?: boolean;
+          /** @default true */
+          includeFollowee?: boolean;
         };
       };
     };
@@ -22623,6 +22631,8 @@ export type operations = {
           withBots?: boolean;
           /** @default true */
           withRenotes?: boolean;
+          /** @default true */
+          withReplies?: boolean;
           /** @default 10 */
           limit?: number;
           /** Format: misskey:id */
@@ -23740,6 +23750,8 @@ export type operations = {
           withRenotes?: boolean;
           /** @default true */
           withBots?: boolean;
+          /** @default false */
+          withReplies?: boolean;
         };
       };
     };

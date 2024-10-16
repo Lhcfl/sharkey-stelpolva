@@ -127,6 +127,7 @@ function connectChannel() {
 	} else if (props.src === 'bubble') {
 		connection = stream.useChannel('bubbleTimeline', {
 			withRenotes: props.withRenotes,
+			withReplies: props.withReplies,
 			withFiles: props.onlyFiles ? true : undefined,
 			withBots: props.withBots,
 		});
@@ -214,6 +215,7 @@ function updatePaginationQuery(untilDate?: Date) {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			withBots: props.withBots,
+			withReplies: props.withReplies,
 		};
 	} else if (props.src === 'global') {
 		endpoint = 'notes/global-timeline';

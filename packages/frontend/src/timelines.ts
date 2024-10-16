@@ -57,5 +57,5 @@ export function availableBasicTimelines(): BasicTimelineType[] {
 }
 
 export function hasWithReplies(timeline: BasicTimelineType | undefined | null): boolean {
-	return timeline === 'local' || timeline === 'social' || timeline === 'home';
+	return timeline === 'local' || timeline === 'social' || timeline === 'home' || timeline === 'bubble';
 }

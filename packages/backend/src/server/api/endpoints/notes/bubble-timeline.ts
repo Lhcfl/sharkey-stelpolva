@@ -9,6 +9,7 @@ import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { MetaService } from '@/core/MetaService.js';
+import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -30,6 +31,12 @@ export const meta = {
 			code: 'BTL_DISABLED',
 			id: '0332fc13-6ab2-4427-ae80-a9fadffd1a6c',
 		},
+
+		bothWithRepliesAndWithFiles: {
+			message: 'Specifying both withReplies and withFiles is not supported',
+			code: 'BOTH_WITH_REPLIES_AND_WITH_FILES',
+			id: 'dfaa3eb7-8002-4cb7-bcc4-1095df46656f',
+		},
 	},
 } as const;
 
@@ -39,6 +46,7 @@ export const paramDef = {
 		withFiles: { type: 'boolean', default: false },
 		withBots: { type: 'boolean', default: true },
 		withRenotes: { type: 'boolean', default: true },
+		withReplies: { type: 'boolean', default: true },
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
@@ -60,6 +68,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private activeUsersChart: ActiveUsersChart,
 		private cacheService: CacheService,
 		private metaService: MetaService,
+		private userFollowingService: UserFollowingService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me ? me.id : null);
@@ -73,6 +82,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			] = me ? await Promise.all([
 				this.cacheService.userFollowingsCache.fetch(me.id),
 			]) : [undefined];
+
+			if (ps.withReplies && ps.withFiles) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
 
 			//#region Construct query
 			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'),
@@ -112,6 +123,37 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					}));
 				}));
 			}
+
+			if (!ps.withReplies) {
+				if (me) {
+					const followees = await this.userFollowingService.getFollowees(me.id);
+					const shouldShowReplyUserIds = [me.id, ...followees.filter(x => x.withReplies).map(x => x.followeeId)];
+					query.andWhere(new Brackets(qb => {
+						qb
+							.where('note.replyId IS NULL') // 返信ではない
+							.orWhere('note.replyUserId = :meId', { meId: me.id }) // reply my note
+							.orWhere(new Brackets(qb => {
+								qb // 返信だけど投稿者自身への返信
+									.where('note.replyId IS NOT NULL')
+									.andWhere('note.replyUserId = note.userId');
+							}))
+							.orWhere('note.userId IN (:...shouldShowReplyUserIds)', {
+								shouldShowReplyUserIds,
+							});
+					}));
+				} else {
+					query.andWhere(new Brackets(qb => {
+						qb
+							.where('note.replyId IS NULL') // 返信ではない
+							.orWhere(new Brackets(qb => {
+								qb // 返信だけど投稿者自身への返信
+									.where('note.replyId IS NOT NULL')
+									.andWhere('note.replyUserId = note.userId');
+							}));
+					}));
+				}
+			}
+
 			//#endregion
 
 			let timeline = await query.limit(ps.limit).getMany();

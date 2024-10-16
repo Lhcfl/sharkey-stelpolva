@@ -18,6 +18,7 @@ class HomeTimelineChannel extends Channel {
 	public static kind = 'read:account';
 	private withRenotes: boolean;
 	private withFiles: boolean;
+	private withReplies: boolean;
 
 	constructor(
 		private noteEntityService: NoteEntityService,
@@ -33,6 +34,7 @@ class HomeTimelineChannel extends Channel {
 	public async init(params: JsonObject) {
 		this.withRenotes = !!(params.withRenotes ?? true);
 		this.withFiles = !!(params.withFiles ?? false);
+		this.withReplies = !!(params.withReplies ?? false);
 
 		this.subscriber.on('notesStream', this.onNote);
 	}
@@ -56,7 +58,7 @@ class HomeTimelineChannel extends Channel {
 			if (!isMe && !note.visibleUserIds!.includes(this.user!.id)) return;
 		}
 
-		if (note.reply) {
+		if (note.reply && !this.withReplies) {
 			const reply = note.reply;
 			if (this.following[note.userId]?.withReplies) {
 				// 自分のフォローしていないユーザーの visibility: followers な投稿への返信は弾く
