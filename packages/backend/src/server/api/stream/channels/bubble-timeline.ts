@@ -56,7 +56,7 @@ class BubbleTimelineChannel extends Channel {
 
 		if (!(this.instance.bubbleInstances.map((i) => i === '#local' ? null : i).includes(note.user.host) && note.visibility === 'public' )) return;
 
-		if (note.channelId != null) return;
+		// if (note.channelId != null) return;
 
 		if (isRenotePacked(note) && !isQuotePacked(note) && !this.withRenotes) return;
 
