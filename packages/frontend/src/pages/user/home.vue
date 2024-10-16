@@ -30,12 +30,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 								</button>
 							</div>
 						</div>
-						<div v-if="$i && $i.id != user.id" class="info-badges">
-							<span v-if="user.isFollowed">{{ i18n.ts.followsYou }}</span>
-							<span v-if="user.isMuted">{{ i18n.ts.muted }}</span>
-							<span v-if="user.isRenoteMuted">{{ i18n.ts.renoteMuted }}</span>
-							<span v-if="user.isBlocking">{{ i18n.ts.blocked }}</span>
-						</div>
+						<ul v-if="$i && $i.id != user.id" class="info-badges">
+							<li v-if="user.isFollowed && user.isFollowing">{{ i18n.ts.mutuals }}</li>
+							<li v-else-if="user.isFollowing">{{ i18n.ts.following }}</li>
+							<li v-else-if="user.isFollowed">{{ i18n.ts.followsYou }}</li>
+							<li v-if="user.isMuted">{{ i18n.ts.muted }}</li>
+							<li v-if="user.isRenoteMuted">{{ i18n.ts.renoteMuted }}</li>
+							<li v-if="user.isBlocking">{{ i18n.ts.blocked }}</li>
+							<li v-if="user.isBlocked && $i.isModerator">{{ i18n.ts.blockingYou }}</li>
+						</ul>
 						<div class="actions">
 							<button class="menu _button" @click="menu"><i class="ti ti-dots"></i></button>
 							<MkFollowButton v-if="$i?.id != user.id" v-model:user="user" :inline="true" :transparent="false" :full="true" class="koudoku"/>
@@ -469,12 +472,17 @@ onUnmounted(() => {
 						display: flex;
 						flex-direction: row;
 
+						padding: 0;
+						margin: 0;
+
 						> * {
 							padding: 4px 8px;
 							color: #fff;
 							background: rgba(0, 0, 0, 0.7);
 							font-size: 0.7em;
 							border-radius: var(--radius-sm);
+							list-style-type: none;
+							margin-left: 0;
 						}
 
 						> :not(:first-child) {

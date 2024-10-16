@@ -6,6 +6,7 @@
 import { PrimaryColumn, Entity, JoinColumn, Column, ManyToOne } from 'typeorm';
 import { MiUser } from '@/models/User.js';
 import { MiNote } from '@/models/Note.js';
+import { isQuote, isRenote } from '@/misc/is-renote.js';
 
 /**
  * Maps a user to the most recent post by that user.
@@ -13,13 +14,31 @@ import { MiNote } from '@/models/Note.js';
  * DMs are not counted.
  */
 @Entity('latest_note')
-export class LatestNote {
+export class SkLatestNote {
 	@PrimaryColumn({
 		name: 'user_id',
 		type: 'varchar' as const,
 		length: 32,
 	})
 	public userId: string;
+
+	@PrimaryColumn('boolean', {
+		name: 'is_public',
+		default: false,
+	})
+	public isPublic: boolean;
+
+	@PrimaryColumn('boolean', {
+		name: 'is_reply',
+		default: false,
+	})
+	public isReply: boolean;
+
+	@PrimaryColumn('boolean', {
+		name: 'is_quote',
+		default: false,
+	})
+	public isQuote: boolean;
 
 	@ManyToOne(() => MiUser, {
 		onDelete: 'CASCADE',
@@ -44,11 +63,38 @@ export class LatestNote {
 	})
 	public note: MiNote | null;
 
-	constructor(data?: Partial<LatestNote>) {
+	constructor(data?: Partial<SkLatestNote>) {
 		if (!data) return;
 
 		for (const [k, v] of Object.entries(data)) {
 			(this as Record<string, unknown>)[k] = v;
 		}
+	}
+
+	/**
+	 * Generates a compound key matching a provided note.
+	 */
+	static keyFor(note: MiNote) {
+		return {
+			userId: note.userId,
+			isPublic: note.visibility === 'public',
+			isReply: note.replyId != null,
+			isQuote: isRenote(note) && isQuote(note),
+		};
+	}
+
+	/**
+	 * Checks if two notes would produce equivalent compound keys.
+	 */
+	static areEquivalent(first: MiNote, second: MiNote): boolean {
+		const firstKey = SkLatestNote.keyFor(first);
+		const secondKey = SkLatestNote.keyFor(second);
+
+		return (
+			firstKey.userId === secondKey.userId &&
+			firstKey.isPublic === secondKey.isPublic &&
+			firstKey.isReply === secondKey.isReply &&
+			firstKey.isQuote === secondKey.isQuote
+		);
 	}
 }

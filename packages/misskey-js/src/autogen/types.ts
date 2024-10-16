@@ -4810,6 +4810,7 @@ export type components = {
       /** Format: date-time */
       latestRequestReceivedAt: string | null;
       isNSFW: boolean;
+      rejectReports: boolean;
       moderationNote?: string | null;
     };
     GalleryPost: {
@@ -22499,6 +22500,16 @@ export type operations = {
         'application/json': {
           /** @default false */
           mutualsOnly?: boolean;
+          /** @default false */
+          filesOnly?: boolean;
+          /** @default false */
+          includeNonPublic?: boolean;
+          /** @default false */
+          includeReplies?: boolean;
+          /** @default false */
+          includeQuotes?: boolean;
+          /** @default true */
+          includeBots?: boolean;
           /** @default 10 */
           limit?: number;
           /** Format: misskey:id */
@@ -27435,7 +27446,15 @@ export type operations = {
           /** @default false */
           withReplies?: boolean;
           /** @default true */
+          withRepliesToSelf?: boolean;
+          /** @default true */
+          withQuotes?: boolean;
+          /** @default true */
           withRenotes?: boolean;
+          /** @default true */
+          withBots?: boolean;
+          /** @default true */
+          withNonPublic?: boolean;
           /** @default false */
           withChannelNotes?: boolean;
           /** @default 10 */

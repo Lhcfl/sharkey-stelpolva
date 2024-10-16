@@ -199,7 +199,8 @@ export class ApRendererService {
 			type: 'Flag',
 			actor: this.userEntityService.genLocalUserUri(user.id),
 			content,
-			object,
+			// This MUST be an array for Pleroma compatibility: https://activitypub.software/TransFem-org/Sharkey/-/issues/641#note_7301
+			object: [object],
 		};
 	}
 

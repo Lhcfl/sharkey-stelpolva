@@ -461,6 +461,10 @@ export interface Locale extends ILocale {
      */
     "followRequestPending": string;
     /**
+     * Pending follow requests
+     */
+    "pendingFollowRequests": string;
+    /**
      * Enter an emoji
      */
     "enterEmoji": string;
@@ -1100,6 +1104,10 @@ export interface Locale extends ILocale {
      * Federating
      */
     "federating": string;
+    /**
+     * Blocking you
+     */
+    "blockingYou": string;
     /**
      * Blocked
      */
@@ -5065,6 +5073,18 @@ export interface Locale extends ILocale {
      */
     "showRenotes": string;
     /**
+     * Show quotes
+     */
+    "showQuotes": string;
+    /**
+     * Show replies
+     */
+    "showReplies": string;
+    /**
+     * Show non-public
+     */
+    "showNonPublicNotes": string;
+    /**
      * Edited
      */
     "edited": string;
@@ -5512,7 +5532,7 @@ export interface Locale extends ILocale {
              */
             "goneSuspended": string;
             /**
-             * Server is suspended due to no responding
+             * Server is suspended due to not responding
              */
             "autoSuspendedForNotResponding": string;
         };

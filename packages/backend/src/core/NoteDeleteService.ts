@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Brackets, In, Not } from 'typeorm';
+import { Brackets, In } from 'typeorm';
 import { Injectable, Inject } from '@nestjs/common';
 import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
-import type { MiNote, IMentionedRemoteUsers } from '@/models/Note.js';
-import { LatestNote } from '@/models/LatestNote.js';
-import type { InstancesRepository, LatestNotesRepository, NotesRepository, UsersRepository } from '@/models/_.js';
+import { MiNote, IMentionedRemoteUsers } from '@/models/Note.js';
+import type { InstancesRepository, NotesRepository, UsersRepository } from '@/models/_.js';
 import { RelayService } from '@/core/RelayService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { DI } from '@/di-symbols.js';
@@ -20,13 +19,13 @@ import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { MetaService } from '@/core/MetaService.js';
 import { SearchService } from '@/core/SearchService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { IdService } from '@/core/IdService.js';
+import { LatestNoteService } from '@/core/LatestNoteService.js';
 
 @Injectable()
 export class NoteDeleteService {
@@ -40,15 +39,11 @@ export class NoteDeleteService {
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.latestNotesRepository)
-		private latestNotesRepository: LatestNotesRepository,
-
 		@Inject(DI.instancesRepository)
 		private instancesRepository: InstancesRepository,
 
 		private idService: IdService,
 		private userEntityService: UserEntityService,
-		private noteEntityService: NoteEntityService,
 		private globalEventService: GlobalEventService,
 		private relayService: RelayService,
 		private federatedInstanceService: FederatedInstanceService,
@@ -60,6 +55,7 @@ export class NoteDeleteService {
 		private notesChart: NotesChart,
 		private perUserNotesChart: PerUserNotesChart,
 		private instanceChart: InstanceChart,
+		private latestNoteService: LatestNoteService,
 	) {}
 
 	/**
@@ -152,7 +148,7 @@ export class NoteDeleteService {
 			userId: user.id,
 		});
 
-		await this.updateLatestNote(note);
+		this.latestNoteService.handleDeletedNoteBG(note);
 		if (!quiet) {
 			if (note.renoteId && note.text) {
 				// Decrement notes count (user)
@@ -331,53 +327,5 @@ export class NoteDeleteService {
 		for (const remoteUser of remoteUsers) {
 			this.apDeliverManagerService.deliverToUser(user, content, remoteUser);
 		}
-	}
-
-	private async updateLatestNote(note: MiNote) {
-		// If it's a DM, then it can't possibly be the latest note so we can safely skip this.
-		if (note.visibility === 'specified') return;
-
-		// Check if the deleted note was possibly the latest for the user
-		const hasLatestNote = await this.latestNotesRepository.existsBy({ userId: note.userId });
-		if (hasLatestNote) return;
-
-		// Find the newest remaining note for the user.
-		// We exclude DMs and pure renotes.
-		const nextLatest = await this.notesRepository
-			.createQueryBuilder('note')
-			.select()
-			.where({
-				userId: note.userId,
-				visibility: Not('specified'),
-			})
-			.andWhere(`
-				(
-					note."renoteId" IS NULL
-					OR note.text IS NOT NULL
-					OR note.cw IS NOT NULL
-					OR note."replyId" IS NOT NULL
-					OR note."hasPoll"
-					OR note."fileIds" != '{}'
-				)
-			`)
-			.orderBy({ id: 'DESC' })
-			.getOne();
-		if (!nextLatest) return;
-
-		// Record it as the latest
-		const latestNote = new LatestNote({
-			userId: note.userId,
-			noteId: nextLatest.id,
-		});
-
-		// When inserting the latest note, it's possible that another worker has "raced" the insert and already added a newer note.
-		// We must use orIgnore() to ensure that the query ignores conflicts, otherwise an exception may be thrown.
-		await this.latestNotesRepository
-			.createQueryBuilder('latest')
-			.insert()
-			.into(LatestNote)
-			.values(latestNote)
-			.orIgnore()
-			.execute();
 	}
 }

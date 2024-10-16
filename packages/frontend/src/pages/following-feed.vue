@@ -30,17 +30,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<div v-if="isWideViewport" ref="userScroll" :class="$style.user">
 		<MkHorizontalSwipe v-if="selectedUserId" v-model:tab="currentTab" :tabs="headerTabs">
-			<SkUserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withRenotes="withUserRenotes" :withReplies="withUserReplies" :onlyFiles="withOnlyFiles"/>
+			<SkUserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withNonPublic="withNonPublic" :withQuotes="withQuotes" :withBots="withBots" :withReplies="withReplies" :onlyFiles="onlyFiles"/>
 		</MkHorizontalSwipe>
 	</div>
 </div>
 </template>
-
-<script lang="ts">
-export type FollowingFeedTab = typeof followingTab | typeof mutualsTab;
-export const followingTab = 'following' as const;
-export const mutualsTab = 'mutuals' as const;
-</script>
 
 <script lang="ts" setup>
 import { computed, Ref, ref, shallowRef } from 'vue';
@@ -63,20 +57,49 @@ import { checkWordMute } from '@/scripts/check-word-mute.js';
 import SkUserRecentNotes from '@/components/SkUserRecentNotes.vue';
 import { useScrollPositionManager } from '@/nirax.js';
 import { getScrollContainer } from '@/scripts/scroll.js';
+import { defaultStore } from '@/store.js';
+import { deepMerge } from '@/scripts/merge.js';
 
-const props = withDefaults(defineProps<{
-	initialTab?: FollowingFeedTab,
-}>(), {
-	initialTab: followingTab,
+const withNonPublic = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.withNonPublic,
+	set: value => saveFollowingFilter('withNonPublic', value),
 });
+const withQuotes = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.withQuotes,
+	set: value => saveFollowingFilter('withQuotes', value),
+});
+const withBots = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.withBots,
+	set: value => saveFollowingFilter('withBots', value),
+});
+const withReplies = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.withReplies,
+	set: value => saveFollowingFilter('withReplies', value),
+});
+const onlyFiles = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.onlyFiles,
+	set: value => saveFollowingFilter('onlyFiles', value),
+});
+const onlyMutuals = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.onlyMutuals,
+	set: value => saveFollowingFilter('onlyMutuals', value),
+});
+
+// Based on timeline.saveTlFilter()
+function saveFollowingFilter(key: keyof typeof defaultStore.state.followingFeed, value: boolean) {
+	const out = deepMerge({ [key]: value }, defaultStore.state.followingFeed);
+	defaultStore.set('followingFeed', out);
+}
 
 const router = useRouter();
 
-// Vue complains, but we *want* to lose reactivity here.
-// Otherwise, the user would be unable to change the tab.
-// eslint-disable-next-line vue/no-setup-props-reactivity-loss
-const currentTab: Ref<FollowingFeedTab> = ref(props.initialTab);
-const mutualsOnly: Ref<boolean> = computed(() => currentTab.value === mutualsTab);
+const followingTab = 'following' as const;
+const mutualsTab = 'mutuals' as const;
+const currentTab = computed({
+	get: () => onlyMutuals.value ? mutualsTab : followingTab,
+	set: value => onlyMutuals.value = (value === mutualsTab),
+});
+
 const userRecentNotes = shallowRef<InstanceType<typeof SkUserRecentNotes>>();
 const userScroll = shallowRef<HTMLElement>();
 const noteScroll = shallowRef<HTMLElement>();
@@ -161,55 +184,60 @@ const latestNotesPagination: Paging<'notes/following'> = {
 	endpoint: 'notes/following' as const,
 	limit: 20,
 	params: computed(() => ({
-		mutualsOnly: mutualsOnly.value,
+		mutualsOnly: onlyMutuals.value,
+		filesOnly: onlyFiles.value,
+		includeNonPublic: withNonPublic.value,
+		includeReplies: withReplies.value,
+		includeQuotes: withQuotes.value,
+		includeBots: withBots.value,
 	})),
 };
 
-const withUserRenotes = ref(false);
-const withUserReplies = ref(true);
-const withOnlyFiles = ref(false);
-
-const headerActions = computed(() => {
-	const actions: PageHeaderItem[] = [
-		{
-			icon: 'ti ti-refresh',
-			text: i18n.ts.reload,
-			handler: () => reload(),
+const headerActions: PageHeaderItem[] = [
+	{
+		icon: 'ti ti-refresh',
+		text: i18n.ts.reload,
+		handler: () => reload(),
+	},
+	{
+		icon: 'ti ti-dots',
+		text: i18n.ts.options,
+		handler: (ev) => {
+			os.popupMenu([
+				{
+					type: 'switch',
+					text: i18n.ts.showNonPublicNotes,
+					ref: withNonPublic,
+				},
+				{
+					type: 'switch',
+					text: i18n.ts.showQuotes,
+					ref: withQuotes,
+				},
+				{
+					type: 'switch',
+					text: i18n.ts.showBots,
+					ref: withBots,
+				},
+				{
+					type: 'switch',
+					text: i18n.ts.showReplies,
+					ref: withReplies,
+					disabled: onlyFiles,
+				},
+				{
+					type: 'divider',
+				},
+				{
+					type: 'switch',
+					text: i18n.ts.fileAttachedOnly,
+					ref: onlyFiles,
+					disabled: withReplies,
+				},
+			], ev.currentTarget ?? ev.target);
 		},
-	];
-
-	if (isWideViewport.value) {
-		actions.push({
-			icon: 'ti ti-dots',
-			text: i18n.ts.options,
-			handler: (ev) => {
-				os.popupMenu([
-					{
-						type: 'switch',
-						text: i18n.ts.showRenotes,
-						ref: withUserRenotes,
-					}, {
-						type: 'switch',
-						text: i18n.ts.showRepliesToOthersInTimeline,
-						ref: withUserReplies,
-						disabled: withOnlyFiles,
-					},
-					{
-						type: 'divider',
-					},
-					{
-						type: 'switch',
-						text: i18n.ts.fileAttachedOnly,
-						ref: withOnlyFiles,
-						disabled: withUserReplies,
-					},
-				], ev.currentTarget ?? ev.target);
-			},
-		});
-	}
-
-	return actions;
-});
+	},
+];
 
 const headerTabs = computed(() => [
 	{

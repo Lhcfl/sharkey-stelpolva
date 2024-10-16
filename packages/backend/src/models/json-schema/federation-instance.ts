@@ -121,6 +121,11 @@ export const packedFederationInstanceSchema = {
 			optional: false,
 			nullable: false,
 		},
+		rejectReports: {
+			type: 'boolean',
+			optional: false,
+			nullable: false,
+		},
 		moderationNote: {
 			type: 'string',
 			optional: true, nullable: true,
