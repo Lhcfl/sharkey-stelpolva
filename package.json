@@ -35,6 +35,8 @@
 		"dev": "node scripts/dev.mjs",
 		"lint": "pnpm -r lint",
 		"lint-all": "pnpm -r --no-bail lint",
+		"eslint": "pnpm -r eslint",
+		"eslint-all": "pnpm -r --no-bail eslint",
 		"cy:open": "pnpm cypress open --browser --e2e --config-file=cypress.config.ts",
 		"cy:run": "pnpm cypress run",
 		"e2e": "pnpm start-server-and-test start:test http://localhost:61812 cy:run",
