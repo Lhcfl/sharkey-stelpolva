@@ -103,7 +103,8 @@
 			fontFace.load().catch(
 				(failure) => {
 					console.log(failure);
-				},			);
+				},
+			);
 		}
 		for (const [k, v] of Object.entries(themeProps)) {
 			if (k.startsWith('font')) continue;
