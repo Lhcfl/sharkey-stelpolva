@@ -35,7 +35,7 @@ describe('FileInfoService', () => {
 		delete fi.porn;
 
 		return fi;
-	}
+	};
 
 	beforeAll(async () => {
 		app = await Test.createTestingModule({

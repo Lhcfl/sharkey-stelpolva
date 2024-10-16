@@ -314,7 +314,7 @@ describe('ActivityPub', () => {
 			// actor2Note is from a different server and needs to be fetched again
 			assert.deepStrictEqual(
 				resolver.remoteGetTrials(),
-				[actor1.id, `${actor1.id}/outbox`, actor1.featured, actor2Note.id, actor2.id, `${actor2.id}/outbox` ],
+				[actor1.id, `${actor1.id}/outbox`, actor1.featured, actor2Note.id, actor2.id, `${actor2.id}/outbox`],
 			);
 
 			const note = await noteService.fetchNote(actor2Note.id);
@@ -440,7 +440,7 @@ describe('ActivityPub', () => {
 		});
 	});
 
-	describe('JSON-LD', () =>{
+	describe('JSON-LD', () => {
 		test('Compaction', async () => {
 			const jsonLd = jsonLdService.use();
 

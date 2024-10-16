@@ -89,8 +89,8 @@ describe('SigninWithPasskeyApiService', () => {
 		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
 			providers: [
-				SigninWithPasskeyApiService, 
-				{ provide: RateLimiterService, useClass: FakeLimiter }, 
+				SigninWithPasskeyApiService,
+				{ provide: RateLimiterService, useClass: FakeLimiter },
 				{ provide: SigninService, useClass: FakeSigninService },
 			],
 		}).useMocker((token) => {
@@ -116,7 +116,7 @@ describe('SigninWithPasskeyApiService', () => {
 
 		const dummyUser = {
 			id: uid, username: uid, usernameLower: uid.toLocaleLowerCase(), uri: null, host: null,
-		 };
+		};
 		const dummyProfile = {
 			userId: uid,
 			password: 'qwerty',
