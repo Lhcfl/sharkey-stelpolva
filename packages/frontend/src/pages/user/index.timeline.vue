@@ -29,7 +29,10 @@ const timetraveled = ref<Date>();
 const withRenotes = ref(true);
 const onlyFiles = ref(false);
 const withReplies = ref(true);
+const withRepliesToSelf = ref(true);
 const withChannelNotes = ref(true);
+const withNonPublic = ref(true);
+const withQuotes = ref(true);
 
 const pagination = computed(() => tab.value === 'featured' ? {
 	endpoint: 'users/featured-notes' as const,
@@ -44,6 +47,9 @@ const pagination = computed(() => tab.value === 'featured' ? {
 		userId: props.user.id,
 		withRenotes: withRenotes.value,
 		withReplies: withReplies.value,
+		withRepliesToSelf: withRepliesToSelf.value,
+		withNonPublic: withNonPublic.value,
+		withQuotes: withQuotes.value,
 		withChannelNotes: withChannelNotes.value,
 		withFiles: onlyFiles.value,
 		untilDate: timetraveled.value ? Number(timetraveled.value) : undefined,
@@ -78,8 +84,20 @@ const headerActions = computed(() => [
 			os.popupMenu([
 				{
 					type: 'switch',
-					text: i18n.ts.withReplies,
+					text: 'With replies to others',
 					ref: withReplies,
+				}, {
+					type: 'switch',
+					text: 'With replies to self',
+					ref: withRepliesToSelf,
+				}, {
+					type: 'switch',
+					text: 'With quotes',
+					ref: withQuotes,
+				}, {
+					type: 'switch',
+					text: 'With non-public',
+					ref: withNonPublic,
 				}, {
 					type: 'switch',
 					text: i18n.ts.showRenotes,
