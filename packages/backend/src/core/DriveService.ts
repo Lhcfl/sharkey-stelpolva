@@ -227,25 +227,27 @@ export class DriveService {
 			const thumbnailAccessKey = 'thumbnail-' + randomUUID();
 			const webpublicAccessKey = 'webpublic-' + randomUUID();
 
-			const url = this.internalStorageService.saveFromPath(accessKey, path);
-
-			let thumbnailUrl: string | null = null;
-			let webpublicUrl: string | null = null;
+			// Ugly type is just to help TS figure out that 2nd / 3rd promises are optional.
+			const promises: [Promise<string>, ...(Promise<string> | undefined)[]] = [
+				this.internalStorageService.saveFromPath(accessKey, path),
+			];
 
 			if (alts.thumbnail) {
-				thumbnailUrl = this.internalStorageService.saveFromBuffer(thumbnailAccessKey, alts.thumbnail.data);
+				promises.push(this.internalStorageService.saveFromBuffer(thumbnailAccessKey, alts.thumbnail.data));
 				this.registerLogger.info(`thumbnail stored: ${thumbnailAccessKey}`);
 			}
 
 			if (alts.webpublic) {
-				webpublicUrl = this.internalStorageService.saveFromBuffer(webpublicAccessKey, alts.webpublic.data);
+				promises.push(this.internalStorageService.saveFromBuffer(webpublicAccessKey, alts.webpublic.data));
 				this.registerLogger.info(`web stored: ${webpublicAccessKey}`);
 			}
 
+			const [url, thumbnailUrl, webpublicUrl] = await Promise.all(promises);
+
 			file.storedInternal = true;
 			file.url = url;
-			file.thumbnailUrl = thumbnailUrl;
-			file.webpublicUrl = webpublicUrl;
+			file.thumbnailUrl = thumbnailUrl ?? null;
+			file.webpublicUrl = webpublicUrl ?? null;
 			file.accessKey = accessKey;
 			file.thumbnailAccessKey = thumbnailAccessKey;
 			file.webpublicAccessKey = webpublicAccessKey;
@@ -720,19 +722,19 @@ export class DriveService {
 
 	@bindThis
 	public async deleteFileSync(file: MiDriveFile, isExpired = false, deleter?: MiUser) {
+		const promises = [];
+
 		if (file.storedInternal) {
-			this.internalStorageService.del(file.accessKey!);
+			promises.push(this.internalStorageService.del(file.accessKey!));
 
 			if (file.thumbnailUrl) {
-				this.internalStorageService.del(file.thumbnailAccessKey!);
+				promises.push(this.internalStorageService.del(file.thumbnailAccessKey!));
 			}
 
 			if (file.webpublicUrl) {
-				this.internalStorageService.del(file.webpublicAccessKey!);
+				promises.push(this.internalStorageService.del(file.webpublicAccessKey!));
 			}
 		} else if (!file.isLink) {
-			const promises = [];
-
 			promises.push(this.deleteObjectStorageFile(file.accessKey!));
 
 			if (file.thumbnailUrl) {
@@ -742,9 +744,9 @@ export class DriveService {
 			if (file.webpublicUrl) {
 				promises.push(this.deleteObjectStorageFile(file.webpublicAccessKey!));
 			}
-
-			await Promise.all(promises);
 		}
+
+		await Promise.all(promises);
 
 		this.deletePostProcess(file, isExpired, deleter);
 	}
