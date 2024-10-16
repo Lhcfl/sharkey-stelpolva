@@ -5,11 +5,13 @@
 
 import { ref } from 'vue';
 import { Interpreter, Parser, utils, values } from '@syuilo/aiscript';
+import { misskeyApi } from './scripts/misskey-api.js';
 import { aiScriptReadline, createAiScriptEnv } from '@/scripts/aiscript/api.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 import { Plugin, noteActions, notePostInterruptors, noteViewInterruptors, postFormActions, userActions, pageViewInterruptors } from '@/store.js';
 import { warningExternalWebsite } from '@/scripts/warning-external-website.js';
+import { useRouter } from '@/router/supplier.js';
 
 const parser = new Parser();
 const pluginContexts = new Map<string, Interpreter>();
@@ -180,4 +182,30 @@ function registerPageViewInterruptor({ pluginId, handler }): void {
 			return utils.valToJs(await pluginContext.execFn(handler, [utils.jsToVal(page)]));
 		},
 	});
+}
+
+/**
+ * Stelpolva Edition
+ *
+ * Expose some javascript api to the client.
+ *
+ * Why?
+ *
+ * Improve the ability for technical users to write plugins directly via Sharkey's API using Tampermonkey, etc.
+ */
+export function exposeJavascriptApis() {
+	const exposeApi = {
+		os,
+		registerNoteAction,
+		registerNotePostInterruptor,
+		registerNoteViewInterruptor,
+		registerPageViewInterruptor,
+		registerPostFormAction,
+		registerUserAction,
+		misskeyApi,
+		i18n,
+		useRouter,
+	};
+
+	(window as unknown as { SharkeyStelpolvaApi: typeof exposeApi }).SharkeyStelpolvaApi = exposeApi;
 }

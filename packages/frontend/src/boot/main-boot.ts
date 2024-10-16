@@ -69,6 +69,10 @@ export async function mainBoot() {
 		});
 	}
 
+	import('@/plugin.js').then(({ exposeJavascriptApis }) => {
+		exposeJavascriptApis();
+	});
+
 	try {
 		if (defaultStore.state.enableSeasonalScreenEffect) {
 			const month = new Date().getMonth() + 1;
