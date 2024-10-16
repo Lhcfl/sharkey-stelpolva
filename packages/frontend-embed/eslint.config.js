@@ -92,4 +92,13 @@ export default [
 			'vue/attribute-hyphenation': ['error', 'never'],
 		},
 	},
+	{
+		ignores: [
+			"**/lib/",
+			"**/temp/",
+			"**/built/",
+			"**/coverage/",
+			"**/node_modules/",
+		]
+	},
 ];

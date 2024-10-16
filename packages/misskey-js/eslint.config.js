@@ -26,4 +26,13 @@ export default [
 			},
 		},
 	},
+	{
+		ignores: [
+			"**/lib/",
+			"**/temp/",
+			"**/built/",
+			"**/coverage/",
+			"**/node_modules/",
+		]
+	},
 ];
