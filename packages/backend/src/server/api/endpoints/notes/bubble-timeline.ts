@@ -7,9 +7,9 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
-import { ApiError } from '../../error.js';
 import { CacheService } from '@/core/CacheService.js';
 import { MetaService } from '@/core/MetaService.js';
+import { ApiError } from '../../error.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -79,7 +79,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('note.visibility = \'public\'')
 				.andWhere('note.channelId IS NULL')
-				.andWhere('note.userHost IN (:...hosts)', { hosts: instance.bubbleInstances })
+				.andWhere(new Brackets(qb => {
+					qb.where('note.userHost IN (:...hosts)', { hosts: instance.bubbleInstances });
+					if (instance.bubbleInstances.includes('#local')) {
+						qb.orWhere('note.userHost IS NULL');
+					}
+				}))
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('note.reply', 'reply')
 				.leftJoinAndSelect('note.renote', 'renote')
@@ -97,7 +102,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (!ps.withBots) query.andWhere('user.isBot = FALSE');
-			
+
 			if (ps.withRenotes === false) {
 				query.andWhere(new Brackets(qb => {
 					qb.where('note.renoteId IS NULL');
