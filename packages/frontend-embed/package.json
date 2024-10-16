@@ -7,7 +7,7 @@
 		"dev": "vite --config vite.config.local-dev.ts --debug hmr",
 		"build": "vite build",
 		"typecheck": "vue-tsc --noEmit",
-		"eslint": "eslint --quiet \"src/**/*.{ts,vue}\"",
+		"eslint": "eslint --quiet \"{src,test,js,@types}/**/*.{js,jsx,ts,tsx,vue}\" --cache",
 		"lint": "pnpm typecheck && pnpm eslint"
 	},
 	"dependencies": {

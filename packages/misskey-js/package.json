@@ -22,7 +22,7 @@
 		"tsd": "tsd",
 		"api": "pnpm api-extractor run --local --verbose",
 		"api-prod": "pnpm api-extractor run --verbose",
-		"eslint": "eslint './**/*.{js,jsx,ts,tsx}' --cache",
+		"eslint": "eslint --quiet \"{src,test,js,@types}/**/*.{js,jsx,ts,tsx,vue}\" --cache",
 		"typecheck": "tsc --noEmit",
 		"lint": "pnpm typecheck && pnpm eslint",
 		"jest": "jest --coverage --detectOpenHandles",
