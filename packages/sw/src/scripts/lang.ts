@@ -11,7 +11,7 @@ import { I18n } from '@@/js/i18n.js';
 import type { Locale } from '../../../../locales/index.js';
 
 class SwLang {
-	public cacheName = `mk-cache-${_VERSION_}`;
+	public cacheName = `mk-cache-${_LANGS_VERSION_}`;
 
 	public lang: Promise<string> = get('lang').then(async prelang => {
 		if (!prelang) return 'en-US';
@@ -32,7 +32,7 @@ class SwLang {
 
 	private async _fetch(): Promise<I18n<Locale>> {
 		// Service Workerは何度も起動しそのたびにlocaleを読み込むので、CacheStorageを使う
-		const localeUrl = `/assets/locales/${await this.lang}.${_VERSION_}.json`;
+		const localeUrl = `/assets/locales/${await this.lang}.${_LANGS_VERSION_}.json`;
 		let localeRes = await caches.match(localeUrl);
 
 		// _DEV_がtrueの場合は常に最新化
