@@ -75,7 +75,7 @@ async function deleteAccount() {
 	if (typed.canceled) return;
 
 	if (typed.result === props.user.username) {
-		await os.apiWithDialog('admin/delete-account', {
+		await os.apiWithDialog('admin/decline-user', {
 			userId: props.user.id,
 		});
 		emits('deleted', props.user.id);

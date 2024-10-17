@@ -56,6 +56,7 @@ export const moderationLogTypes = [
 	'updateServerSettings',
 	'suspend',
 	'approve',
+	'decline',
 	'unsuspend',
 	'updateUserNote',
 	'addCustomEmoji',

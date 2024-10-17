@@ -78,6 +78,7 @@ export const permissions = [
 	'read:admin:show-user',
 	'write:admin:suspend-user',
 	'write:admin:approve-user',
+	'write:admin:decline-user',
 	'write:admin:nsfw-user',
 	'write:admin:unnsfw-user',
 	'write:admin:silence-user',
@@ -200,6 +201,11 @@ export type ModerationLogPayloads = {
 		userHost: string | null;
 	};
 	approve: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+	};
+	decline: {
 		userId: string;
 		userUsername: string;
 		userHost: string | null;
