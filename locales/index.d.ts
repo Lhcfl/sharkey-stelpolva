@@ -5238,6 +5238,10 @@ export interface Locale extends ILocale {
      */
     "useGroupedNotifications": string;
     /**
+     * ポップアップ通知のクリックを許可する
+     */
+    "allowClickingNotifications": string;
+    /**
      * メールアドレスの確認中に問題が発生しました。リンクの有効期限が切れている可能性があります。
      */
     "signupPendingError": string;
