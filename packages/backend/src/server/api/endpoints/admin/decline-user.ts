@@ -35,14 +35,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private usedUsernamesRepository: UsedUsernamesRepository,
 
 		private moderationLogService: ModerationLogService,
-        private emailService: EmailService,
+		private emailService: EmailService,
 		private deleteAccountService: DeleteAccountService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({ id: ps.userId });
 
-			if (user == null) {
-				throw new Error('user not found');
+			if (user == null || user.isDeleted) {
+				throw new Error('user not found or already deleted');
 			}
 
 			const profile = await this.userProfilesRepository.findOneBy({ userId: ps.userId });
