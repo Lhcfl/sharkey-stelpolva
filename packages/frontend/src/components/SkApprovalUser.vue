@@ -69,22 +69,10 @@ async function deleteAccount() {
 	});
 	if (confirm.canceled) return;
 
-	const typed = await os.inputText({
-		text: i18n.t('typeToConfirm', { x: props.user.username }),
+	await os.apiWithDialog('admin/decline-user', {
+		userId: props.user.id,
 	});
-	if (typed.canceled) return;
-
-	if (typed.result === props.user.username) {
-		await os.apiWithDialog('admin/decline-user', {
-			userId: props.user.id,
-		});
-		emits('deleted', props.user.id);
-	} else {
-		os.alert({
-			type: 'error',
-			text: 'input not match',
-		});
-	}
+	emits('deleted', props.user.id);
 }
 
 async function approveAccount() {
