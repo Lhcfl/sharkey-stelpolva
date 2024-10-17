@@ -124,6 +124,11 @@ export type ModerationLogPayloads = {
 		userUsername: string;
 		userHost: string | null;
 	};
+	decline: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+	};
 	unsuspend: {
 		userId: string;
 		userUsername: string;
