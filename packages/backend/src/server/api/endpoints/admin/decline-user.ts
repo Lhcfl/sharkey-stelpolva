@@ -45,6 +45,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new Error('user not found or already deleted');
 			}
 
+			if (user.approved) {
+				throw new Error('user is already approved');
+			}
+
+			if (user.host) {
+				throw new Error('user is not local');
+			}
+
 			const profile = await this.userProfilesRepository.findOneBy({ userId: ps.userId });
 
 			if (profile?.email) {
