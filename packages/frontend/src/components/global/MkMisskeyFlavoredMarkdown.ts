@@ -58,7 +58,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 	provide('linkNavigationBehavior', props.linkNavigationBehavior);
 
 	const isNote = props.isNote ?? true;
-	const shouldNyaize = props.nyaize === 'respect' && props.author?.isCat && props.author?.speakAsCat && !defaultStore.state.disableCatSpeak;
+	const shouldNyaize = props.nyaize === 'respect' && props.author?.isCat && props.author.speakAsCat && !defaultStore.state.disableCatSpeak;
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (props.text == null || props.text === '') return;
 
@@ -342,7 +342,11 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 							if (!disableNyaize && shouldNyaize) {
 								text = doNyaize(text);
 							}
-							return h('ruby', {}, [text.split(' ')[0], h('rt', text.split(' ')[1])]);
+							if (text.includes('|')) {
+								return h('ruby', {}, [text.split('|')[0], h('rt', text.split('|')[1])]);
+							} else {
+								return h('ruby', {}, [text.split(' ')[0], h('rt', text.split(' ')[1])]);
+							}
 						} else {
 							const rt = token.children.at(-1)!;
 							let text = rt.type === 'text' ? rt.props.text : '';
@@ -459,7 +463,6 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'emojiCode': {
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				if (props.author?.host == null) {
 					return [h(MkCustomEmoji, {
 						key: Math.random(),

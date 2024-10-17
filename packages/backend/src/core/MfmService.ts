@@ -208,6 +208,21 @@ export class MfmService {
 					break;
 				}
 
+				case 'ruby': {
+					const rtText = node.childNodes
+						.filter((n) => n.nodeName === 'rt')
+						.map((n) => getText(n)).join(' ');
+					const rubyText = node.childNodes
+						.filter((n) => treeAdapter.isTextNode(n))
+						.map((n) => getText(n)).join(' ');
+					if (rubyText && rtText) {
+						text += `$[ruby ${rubyText}|${rtText} ]`;
+					} else {
+						appendChildren(node.childNodes);
+					}
+					break;
+				}
+
 				case 'p':
 				case 'h4':
 				case 'h5':
@@ -316,8 +331,14 @@ export class MfmService {
 							const rpEndEl = doc.createElement('rp');
 							rpEndEl.appendChild(doc.createTextNode(')'));
 
-							rubyEl.appendChild(doc.createTextNode(text.split(' ')[0]));
-							rtEl.appendChild(doc.createTextNode(text.split(' ')[1]));
+							// Optimization for Latin users
+							if (text.includes('|')) {
+								rubyEl.appendChild(doc.createTextNode(text.split('|')[0]));
+								rtEl.appendChild(doc.createTextNode(text.split('|')[1]));
+							} else {
+								rubyEl.appendChild(doc.createTextNode(text.split(' ')[0]));
+								rtEl.appendChild(doc.createTextNode(text.split(' ')[1]));
+							}
 							rubyEl.appendChild(rpStartEl);
 							rubyEl.appendChild(rtEl);
 							rubyEl.appendChild(rpEndEl);
