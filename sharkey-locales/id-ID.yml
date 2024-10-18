@@ -1,0 +1,10 @@
+---
+disableDrawer: "Jangan gunakan menu bergaya laci"
+forwardReport: "Teruskan laporan ke instansi luar"
+forwardReportIsAnonymous: "Untuk melindungi privasi akun kamu, akun anonim dari sistem akan digunakan sebagai pelapor pada instansi luar."
+abuseMarkAsResolved: "Tandai laporan sebagai selesai"
+replies: "Balasan"
+_initialTutorial:
+  _reaction:
+    letsTryReacting: "Reaksi dapat ditambahkan dengan mengklik tombol '{reaction}' pada catatan. Coba lakukan mereaksi contoh catatan ini!"
+    reactDone: "Kamu dapat mengurungkan reaksi dengan menekan tombol '{undo}'."

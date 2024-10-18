@@ -4,14 +4,15 @@
  */
 
 import { URLSearchParams } from 'node:url';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { MetaService } from '@/core/MetaService.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { ApiError } from '../../error.js';
+import { MiMeta } from '@/models/_.js';
+import { DI } from '@/di-symbols.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -59,9 +60,11 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
+		@Inject(DI.meta)
+		private serverSettings: MiMeta,
+
 		private noteEntityService: NoteEntityService,
 		private getterService: GetterService,
-		private metaService: MetaService,
 		private httpRequestService: HttpRequestService,
 		private roleService: RoleService,
 	) {
@@ -84,13 +87,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return;
 			}
 
-			const instance = await this.metaService.fetch();
-
-			if (instance.deeplAuthKey == null && !instance.deeplFreeMode) {
+			if (this.serverSettings.deeplAuthKey == null && !this.serverSettings.deeplFreeMode) {
 				throw new ApiError(meta.errors.unavailable);
 			}
 
-			if (instance.deeplFreeMode && !instance.deeplFreeInstance) {
+			if (this.serverSettings.deeplFreeMode && !this.serverSettings.deeplFreeInstance) {
 				throw new ApiError(meta.errors.unavailable);
 			}
 
@@ -98,11 +99,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (targetLang.includes('-')) targetLang = targetLang.split('-')[0];
 
 			const params = new URLSearchParams();
-			if (instance.deeplAuthKey) params.append('auth_key', instance.deeplAuthKey);
+			if (this.serverSettings.deeplAuthKey) params.append('auth_key', this.serverSettings.deeplAuthKey);
 			params.append('text', note.text);
 			params.append('target_lang', targetLang);
 
-			const endpoint = instance.deeplFreeMode && instance.deeplFreeInstance ? instance.deeplFreeInstance : instance.deeplIsPro ? 'https://api.deepl.com/v2/translate' : 'https://api-free.deepl.com/v2/translate';
+			const endpoint = this.serverSettings.deeplFreeMode && this.serverSettings.deeplFreeInstance ? this.serverSettings.deeplFreeInstance : this.serverSettings.deeplIsPro ? 'https://api.deepl.com/v2/translate' : 'https://api-free.deepl.com/v2/translate';
 
 			const res = await this.httpRequestService.send(endpoint, {
 				method: 'POST',
@@ -112,7 +113,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				},
 				body: params.toString(),
 			});
-			if (instance.deeplAuthKey) {
+			if (this.serverSettings.deeplAuthKey) {
 				const json = (await res.json()) as {
 					translations: {
 						detected_source_language: string;

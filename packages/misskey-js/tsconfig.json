@@ -16,6 +16,7 @@
 		"noImplicitReturns": true,
 		"esModuleInterop": true,
 		"exactOptionalPropertyTypes": true,
+		"skipLibCheck": true,
 		"typeRoots": [
 			"./node_modules/@types"
 		],

@@ -208,12 +208,12 @@ export class ApRequestService {
 		const contentType = res.headers.get('content-type');
 
 		if (
-			res.ok
-			&& (contentType ?? '').split(';')[0].trimEnd().toLowerCase() === 'text/html'
-			&& _followAlternate === true
+			res.ok &&
+			(contentType ?? '').split(';')[0].trimEnd().toLowerCase() === 'text/html' &&
+			_followAlternate === true
 		) {
 			const html = await res.text();
-			const window = new Window({
+			const { window, happyDOM } = new Window({
 				settings: {
 					disableJavaScriptEvaluation: true,
 					disableJavaScriptFileLoading: true,
@@ -247,7 +247,7 @@ export class ApRequestService {
 			} catch (e) {
 				// something went wrong parsing the HTML, ignore the whole thing
 			} finally {
-				await window.happyDOM.close();
+				happyDOM.close().catch(err => {});
 			}
 		}
 		//#endregion

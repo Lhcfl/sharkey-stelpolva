@@ -24,7 +24,6 @@ import { MiMeta, MiNote, UserProfilesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { DownloadService } from '@/core/DownloadService.js';
-import { MetaService } from '@/core/MetaService.js';
 import type { MiRemoteUser } from '@/models/User.js';
 import { genAidx } from '@/misc/id/aidx.js';
 import { MockResolver } from '../misc/mock-resolver.js';
@@ -107,7 +106,14 @@ describe('ActivityPub', () => {
 		sensitiveWords: [] as string[],
 		prohibitedWords: [] as string[],
 	} as MiMeta;
-	let meta = metaInitial;
+	const meta = { ...metaInitial };
+
+	function updateMeta(newMeta: Partial<MiMeta>): void {
+		for (const key in meta) {
+			delete (meta as any)[key];
+		}
+		Object.assign(meta, newMeta);
+	}
 
 	beforeAll(async () => {
 		const app = await Test.createTestingModule({
@@ -120,11 +126,8 @@ describe('ActivityPub', () => {
 					};
 				},
 			})
-			.overrideProvider(MetaService).useValue({
-				async fetch(): Promise<MiMeta> {
-					return meta;
-				},
-			}).compile();
+			.overrideProvider(DI.meta).useFactory({ factory: () => meta })
+			.compile();
 
 		await app.init();
 		app.enableShutdownHooks();
@@ -311,7 +314,7 @@ describe('ActivityPub', () => {
 			// actor2Note is from a different server and needs to be fetched again
 			assert.deepStrictEqual(
 				resolver.remoteGetTrials(),
-				[actor1.id, `${actor1.id}/outbox`, actor1.featured, actor2Note.id, actor2.id, `${actor2.id}/outbox` ],
+				[actor1.id, `${actor1.id}/outbox`, actor1.featured, actor2Note.id, actor2.id, `${actor2.id}/outbox`],
 			);
 
 			const note = await noteService.fetchNote(actor2Note.id);
@@ -367,7 +370,7 @@ describe('ActivityPub', () => {
 		});
 
 		test('cacheRemoteFiles=false disables caching', async () => {
-			meta = { ...metaInitial, cacheRemoteFiles: false };
+			updateMeta({ ...metaInitial, cacheRemoteFiles: false });
 
 			const imageObject: IApDocument = {
 				type: 'Document',
@@ -396,7 +399,7 @@ describe('ActivityPub', () => {
 		});
 
 		test('cacheRemoteSensitiveFiles=false only affects sensitive files', async () => {
-			meta = { ...metaInitial, cacheRemoteSensitiveFiles: false };
+			updateMeta({ ...metaInitial, cacheRemoteSensitiveFiles: false });
 
 			const imageObject: IApDocument = {
 				type: 'Document',
@@ -437,7 +440,7 @@ describe('ActivityPub', () => {
 		});
 	});
 
-	describe('JSON-LD', () =>{
+	describe('JSON-LD', () => {
 		test('Compaction', async () => {
 			const jsonLd = jsonLdService.use();
 

@@ -21,9 +21,11 @@
 		"allowSyntheticDefaultImports": true,
 		"isolatedModules": true,
 		"useDefineForClassFields": true,
+		"skipLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@@/*": ["../frontend-shared/*"]
 		},
 		"typeRoots": [
 			"./@types",
@@ -48,6 +50,7 @@
 		"./**/*.vue"
 	],
 	"exclude": [
+		"node_modules",
 		".storybook/**/*"
 	]
 }

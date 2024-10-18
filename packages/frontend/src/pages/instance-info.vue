@@ -172,7 +172,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
 import * as Misskey from 'misskey-js';
-import MkChart from '@/components/MkChart.vue';
+import MkChart, { type ChartSrc } from '@/components/MkChart.vue';
 import MkObjectView from '@/components/MkObjectView.vue';
 import FormLink from '@/components/form/link.vue';
 import MkLink from '@/components/MkLink.vue';
@@ -188,7 +188,7 @@ import { iAmModerator, iAmAdmin } from '@/account.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { i18n } from '@/i18n.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
-import MkPagination from '@/components/MkPagination.vue';
+import MkPagination, { type Paging } from '@/components/MkPagination.vue';
 import MkHorizontalSwipe from '@/components/MkHorizontalSwipe.vue';
 import { getProxiedImageUrlNullable } from '@/scripts/media-proxy.js';
 import { dateString } from '@/filters/date.js';
@@ -201,7 +201,7 @@ const props = defineProps<{
 
 const tab = ref('overview');
 
-const chartSrc = ref('instance-requests');
+const chartSrc = ref<ChartSrc>('instance-requests');
 const meta = ref<Misskey.entities.AdminMetaResponse | null>(null);
 const instance = ref<Misskey.entities.FederationInstance | null>(null);
 const suspensionState = ref<'none' | 'manuallySuspended' | 'goneSuspended' | 'autoSuspendedForNotResponding'>('none');
@@ -230,7 +230,7 @@ const isBaseSilenced = computed(() => meta.value && baseDomains.value.some(d => 
 const isBaseMediaSilenced = computed(() => meta.value && baseDomains.value.some(d => meta.value?.mediaSilencedHosts.includes(d)));
 
 const usersPagination = {
-	endpoint: iAmModerator ? 'admin/show-users' : 'users' as const,
+	endpoint: iAmModerator ? 'admin/show-users' : 'users',
 	limit: 10,
 	params: {
 		sort: '+updatedAt',
@@ -238,7 +238,7 @@ const usersPagination = {
 		hostname: props.host,
 	},
 	offsetMode: true,
-};
+} satisfies Paging;
 
 const followingPagination = {
 	endpoint: 'federation/following' as const,
@@ -260,9 +260,12 @@ const followersPagination = {
 	offsetMode: false,
 };
 
-watch(moderationNote, async () => {
-	await misskeyApi('admin/federation/update-instance', { host: instance.value.host, moderationNote: moderationNote.value });
-});
+if (iAmModerator) {
+	watch(moderationNote, async () => {
+		if (instance.value == null) return;
+		await misskeyApi('admin/federation/update-instance', { host: instance.value.host, moderationNote: moderationNote.value });
+	});
+}
 
 async function fetch(): Promise<void> {
 	if (iAmAdmin) {
@@ -272,7 +275,7 @@ async function fetch(): Promise<void> {
 		host: props.host,
 	});
 	suspensionState.value = instance.value?.suspensionState ?? 'none';
-	isSuspended.value = instance.value?.suspensionState !== 'none';
+	isSuspended.value = suspensionState.value !== 'none';
 	isBlocked.value = instance.value?.isBlocked ?? false;
 	isSilenced.value = instance.value?.isSilenced ?? false;
 	isNSFW.value = instance.value?.isNSFW ?? false;
@@ -283,6 +286,7 @@ async function fetch(): Promise<void> {
 }
 
 async function toggleBlock(): Promise<void> {
+	if (!iAmAdmin) return;
 	if (!meta.value) throw new Error('No meta?');
 	if (!instance.value) throw new Error('No instance?');
 	const { host } = instance.value;
@@ -292,6 +296,7 @@ async function toggleBlock(): Promise<void> {
 }
 
 async function toggleSilenced(): Promise<void> {
+	if (!iAmAdmin) return;
 	if (!meta.value) throw new Error('No meta?');
 	if (!instance.value) throw new Error('No instance?');
 	const { host } = instance.value;
@@ -302,6 +307,7 @@ async function toggleSilenced(): Promise<void> {
 }
 
 async function toggleMediaSilenced(): Promise<void> {
+	if (!iAmAdmin) return;
 	if (!meta.value) throw new Error('No meta?');
 	if (!instance.value) throw new Error('No instance?');
 	const { host } = instance.value;
@@ -312,6 +318,7 @@ async function toggleMediaSilenced(): Promise<void> {
 }
 
 async function toggleSuspended(): Promise<void> {
+	if (!iAmModerator) return;
 	if (!instance.value) throw new Error('No instance?');
 	suspensionState.value = isSuspended.value ? 'manuallySuspended' : 'none';
 	await misskeyApi('admin/federation/update-instance', {
@@ -321,6 +328,7 @@ async function toggleSuspended(): Promise<void> {
 }
 
 async function toggleNSFW(): Promise<void> {
+	if (!iAmModerator) return;
 	if (!instance.value) throw new Error('No instance?');
 	await misskeyApi('admin/federation/update-instance', {
 		host: instance.value.host,
@@ -329,6 +337,7 @@ async function toggleNSFW(): Promise<void> {
 }
 
 async function toggleRejectReports(): Promise<void> {
+	if (!iAmModerator) return;
 	if (!instance.value) throw new Error('No instance?');
 	await misskeyApi('admin/federation/update-instance', {
 		host: instance.value.host,
@@ -337,6 +346,7 @@ async function toggleRejectReports(): Promise<void> {
 }
 
 function refreshMetadata(): void {
+	if (!iAmModerator) return;
 	if (!instance.value) throw new Error('No instance?');
 	misskeyApi('admin/federation/refresh-remote-instance-metadata', {
 		host: instance.value.host,
@@ -346,41 +356,48 @@ function refreshMetadata(): void {
 	});
 }
 
-async function deleteAllFiles(): void {
+async function deleteAllFiles(): Promise<void> {
+	if (!iAmModerator) return;
+	if (!instance.value) throw new Error('No instance?');
+
 	const confirm = await os.confirm({
-		type: 'danger',
+		type: 'warning',
 		text: i18n.ts.deleteAllFilesConfirm,
 	});
 	if (confirm.canceled) return;
 
-	if (!instance.value) throw new Error('No instance?');
-	await misskeyApi('admin/federation/delete-all-files', {
-		host: instance.value.host,
-	});
-	await os.alert({
-		text: i18n.ts.deleteAllFilesQueued,
-	});
+	await Promise.all([
+		misskeyApi('admin/federation/delete-all-files', {
+			host: instance.value.host,
+		}),
+		os.alert({
+			text: i18n.ts.deleteAllFilesQueued,
+		}),
+	]);
 }
 
-async function severAllFollowRelations(): void {
+async function severAllFollowRelations(): Promise<void> {
+	if (!iAmModerator) return;
 	if (!instance.value) throw new Error('No instance?');
 
 	const confirm = await os.confirm({
-		type: 'danger',
+		type: 'warning',
 		text: i18n.tsx.severAllFollowRelationsConfirm({
-			instanceName: meta.value.shortName ?? meta.value.name,
+			instanceName: instance.value.name ?? instance.value.host,
 			followingCount: instance.value.followingCount,
 			followersCount: instance.value.followersCount,
 		}),
 	});
 	if (confirm.canceled) return;
 
-	await misskeyApi('admin/federation/remove-all-following', {
-		host: instance.value.host,
-	});
-	await os.alert({
-		text: i18n.tsx.severAllFollowRelationsQueued({ host: instance.value.host }),
-	});
+	await Promise.all([
+		misskeyApi('admin/federation/remove-all-following', {
+			host: instance.value.host,
+		}),
+		os.alert({
+			text: i18n.tsx.severAllFollowRelationsQueued({ host: instance.value.host }),
+		}),
+	]);
 }
 
 fetch();

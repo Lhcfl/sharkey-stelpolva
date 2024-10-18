@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { DI } from '@/di-symbols.js';
+import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { ReactionService } from '@/core/ReactionService.js';
-import { MetaService } from '@/core/MetaService.js';
+import type { MiMeta } from '@/models/_.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -26,6 +27,12 @@ export const meta = {
 			code: 'YOU_HAVE_BEEN_BLOCKED',
 			id: '20ef5475-9f38-4e4c-bd33-de6d979498ec',
 		},
+
+		cannotReactToRenote: {
+			message: 'You cannot like a Renote.',
+			code: 'CANNOT_REACT_TO_RENOTE',
+			id: 'eaccdc08-ddef-43fe-908f-d108faad57f5',
+		},
 	},
 } as const;
 
@@ -41,13 +48,14 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
+		@Inject(DI.meta)
+		private serverSettings: MiMeta,
+
 		private getterService: GetterService,
 		private reactionService: ReactionService,
-		private metaService: MetaService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const instance = await this.metaService.fetch();
-			const like = ps.override ?? instance.defaultLike;
+			const like = ps.override ?? this.serverSettings.defaultLike;
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {
 				if (err.id === '9725d0ce-ba28-4dde-95a7-2cbb2c15de24') throw new ApiError(meta.errors.noSuchNote);
 				throw err;
@@ -58,6 +66,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					return;
 				}
 				if (err.id === 'e70412a4-7197-4726-8e74-f3e0deb92aa7') throw new ApiError(meta.errors.youHaveBeenBlocked);
+				if (err.id === '12c35529-3c79-4327-b1cc-e2cf63a71925') throw new ApiError(meta.errors.cannotReactToRenote);
 				throw err;
 			});
 			return;

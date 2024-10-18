@@ -46,7 +46,7 @@ import MkMediaList from '@/components/MkMediaList.vue';
 import MkPoll from '@/components/MkPoll.vue';
 import MkButton from '@/components/MkButton.vue';
 import { i18n } from '@/i18n.js';
-import { shouldCollapsed } from '@/scripts/collapsed.js';
+import { shouldCollapsed } from '@@/js/collapsed.js';
 import { defaultStore } from '@/store.js';
 import { useRouter } from '@/router/supplier.js';
 import * as os from '@/os.js';
@@ -110,7 +110,7 @@ watch(() => props.expandAllCws, (expandAllCws) => {
 			left: 0;
 			width: 100%;
 			height: 64px;
-			//background: linear-gradient(0deg, var(--panel), var(--X15));
+			// background: linear-gradient(0deg, var(--panel), color(from var(--panel) srgb r g b / 0));
 
 			> .fadeLabel {
 				display: inline-block;

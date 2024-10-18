@@ -156,7 +156,7 @@ describe('Webリソース', () => {
 
 		describe(' has entry such ', () => {
 			beforeEach(() => {
-				post(alice, { text: "**a**" })
+				post(alice, { text: "**a**" });
 			});
 
 			test('MFMを含まない。', async () => {
@@ -169,7 +169,7 @@ describe('Webリソース', () => {
 					throw new Error("MFM shouldn't be included");
 				}
 			});
-		})
+		});
 	});
 
 	describe.each([{ path: '/api/foo' }])('$path', ({ path }) => {

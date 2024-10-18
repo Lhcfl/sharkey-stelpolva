@@ -45,10 +45,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts">
 import { computed, ComputedRef, isRef, nextTick, onActivated, onBeforeMount, onBeforeUnmount, onDeactivated, ref, shallowRef, watch, type Ref } from 'vue';
 import * as Misskey from 'misskey-js';
+import { useDocumentVisibility } from '@@/js/use-document-visibility.js';
+import { onScrollTop, isTopVisible, getBodyScrollHeight, getScrollContainer, onScrollBottom, scrollToBottom, scroll, isBottomVisible } from '@@/js/scroll.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
-import { onScrollTop, isTopVisible, getBodyScrollHeight, getScrollContainer, onScrollBottom, scrollToBottom, scroll, isBottomVisible } from '@/scripts/scroll.js';
-import { useDocumentVisibility } from '@/scripts/use-document-visibility.js';
 import { defaultStore } from '@/store.js';
 import { MisskeyEntity } from '@/types/date-separated-list.js';
 import { i18n } from '@/i18n.js';
@@ -126,8 +126,6 @@ const items = ref<MisskeyEntityMap>(new Map());
  */
 const queue = ref<MisskeyEntityMap>(new Map());
 
-const offset = ref(0);
-
 /**
  * 初期化中かどうか（trueならMkLoadingで全て隠す）
  */
@@ -180,7 +178,9 @@ watch([backed, contentEl], () => {
 	if (!backed.value) {
 		if (!contentEl.value) return;
 
-		scrollRemove.value = (props.pagination.reversed ? onScrollBottom : onScrollTop)(contentEl.value, executeQueue, TOLERANCE);
+		scrollRemove.value = props.pagination.reversed
+			? onScrollBottom(contentEl.value, executeQueue, TOLERANCE)
+			: onScrollTop(contentEl.value, (topVisible) => { if (topVisible) executeQueue(); }, TOLERANCE);
 	} else {
 		if (scrollRemove.value) scrollRemove.value();
 		scrollRemove.value = null;
@@ -230,7 +230,6 @@ async function init(): Promise<void> {
 			more.value = true;
 		}
 
-		offset.value = res.length;
 		error.value = false;
 		fetching.value = false;
 
@@ -254,7 +253,7 @@ const fetchMore = async (): Promise<void> => {
 		...params,
 		limit: SECOND_FETCH_LIMIT,
 		...(offsetMode ? {
-			offset: offset.value,
+			offset: items.value.size,
 		} : {
 			untilId: Array.from(items.value.keys()).at(-1),
 		}),
@@ -304,7 +303,6 @@ const fetchMore = async (): Promise<void> => {
 				moreFetching.value = false;
 			}
 		}
-		offset.value += res.length;
 	}, err => {
 		moreFetching.value = false;
 	});
@@ -319,7 +317,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 		...params,
 		limit: SECOND_FETCH_LIMIT,
 		...(offsetMode ? {
-			offset: offset.value,
+			offset: items.value.size,
 		} : {
 			sinceId: Array.from(items.value.keys()).at(-1),
 		}),
@@ -331,7 +329,6 @@ const fetchMoreAhead = async (): Promise<void> => {
 			items.value = concatMapWithArray(items.value, res);
 			more.value = true;
 		}
-		offset.value += res.length;
 		moreFetching.value = false;
 	}, err => {
 		moreFetching.value = false;

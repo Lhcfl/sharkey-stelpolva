@@ -9,7 +9,6 @@ import JSON5 from 'json5';
 import type { Packed } from '@/misc/json-schema.js';
 import type { MiMeta } from '@/models/Meta.js';
 import type { AdsRepository } from '@/models/_.js';
-import { MetaService } from '@/core/MetaService.js';
 import { bindThis } from '@/decorators.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { InstanceActorService } from '@/core/InstanceActorService.js';
@@ -23,11 +22,13 @@ export class MetaEntityService {
 		@Inject(DI.config)
 		private config: Config,
 
+		@Inject(DI.meta)
+		private meta: MiMeta,
+
 		@Inject(DI.adsRepository)
 		private adsRepository: AdsRepository,
 
 		private userEntityService: UserEntityService,
-		private metaService: MetaService,
 		private instanceActorService: InstanceActorService,
 	) { }
 
@@ -36,7 +37,7 @@ export class MetaEntityService {
 		let instance = meta;
 
 		if (!instance) {
-			instance = await this.metaService.fetch();
+			instance = this.meta;
 		}
 
 		const ads = await this.adsRepository.createQueryBuilder('ads')
@@ -134,6 +135,7 @@ export class MetaEntityService {
 			mediaProxy: this.config.mediaProxy,
 			enableUrlPreview: instance.urlPreviewEnabled,
 			noteSearchableScope: (this.config.meilisearch == null || this.config.meilisearch.scope !== 'local') ? 'global' : 'local',
+			maxFileSize: this.config.maxFileSize,
 		};
 
 		return packed;
@@ -144,7 +146,7 @@ export class MetaEntityService {
 		let instance = meta;
 
 		if (!instance) {
-			instance = await this.metaService.fetch();
+			instance = this.meta;
 		}
 
 		const packed = await this.pack(instance);

@@ -4,9 +4,9 @@
  */
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import type { MiMeta } from '@/models/_.js';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
-import { MetaService } from '@/core/MetaService.js';
 import { RedisKVCache } from '@/misc/cache.js';
 import { bindThis } from '@/decorators.js';
 
@@ -15,10 +15,11 @@ export class SponsorsService implements OnApplicationShutdown {
 	private cache: RedisKVCache<void[]>;
 
 	constructor(
+		@Inject(DI.meta)
+		private meta: MiMeta,
+
 		@Inject(DI.redis)
 		private redisClient: Redis.Redis,
-		
-		private metaService: MetaService,
 	) {
 		this.cache = new RedisKVCache<void[]>(this.redisClient, 'sponsors', {
 			lifetime: 1000 * 60 * 60,
@@ -34,14 +35,12 @@ export class SponsorsService implements OnApplicationShutdown {
 
 	@bindThis
 	private async fetchInstanceSponsors() {
-		const meta = await this.metaService.fetch();
-
-		if (!(meta.donationUrl && meta.donationUrl.includes('opencollective.com'))) {
+		if (!(this.meta.donationUrl && this.meta.donationUrl.includes('opencollective.com'))) {
 			return [];
 		}
 
 		try {
-			const backers = await fetch(`${meta.donationUrl}/members/users.json`).then((response) => response.json());
+			const backers = await fetch(`${this.meta.donationUrl}/members/users.json`).then((response) => response.json());
 
 			// Merge both together into one array and make sure it only has Active subscriptions
 			const allSponsors = [...backers].filter(sponsor => sponsor.isActive === true && sponsor.role === 'BACKER' && sponsor.tier);

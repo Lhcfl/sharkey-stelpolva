@@ -42,7 +42,7 @@ export class DownloadService {
 
 		const timeout = options.timeout ?? 30 * 1000;
 		const operationTimeout = options.operationTimeout ?? 60 * 1000;
-		const maxSize = options.maxSize ?? this.config.maxFileSize ?? 262144000;
+		const maxSize = options.maxSize ?? this.config.maxFileSize;
 
 		const urlObj = new URL(url);
 		let filename = urlObj.pathname.split('/').pop() ?? 'untitled';

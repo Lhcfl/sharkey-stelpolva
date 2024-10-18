@@ -1,0 +1,53 @@
+---
+introMisskey: "Willkommen! Sharkey ist eine dezentralisierte Open-Source Microblogging-Platform.\nVerfasse „Notizen“ um mitzuteilen, was gerade passiert oder um Ereignisse mit anderen zu teilen. 📡\nMit „Reaktionen“ kannst du außerdem schnell deine Gefühle über Notizen anderer Benutzer zum Ausdruck bringen. 👍\nEine neue Welt wartet auf dich! 🚀"
+poweredByMisskeyDescription: "{name} ist einer der durch die Open-Source-Plattform <b>Sharkey</b> betriebenen Dienste die auf Misskey basiert ist (meist als \"Misskey-Instanz\" bezeichnet)."
+renotedBy: "Geboostet von {user}"
+renote: "Boost"
+unrenote: "Boost zurücknehmen"
+renoted: "Boost getätigt."
+cantRenote: "Boosten dieses Beitrags nicht möglich."
+cantReRenote: "Boosten von einen Boost nicht möglich."
+inChannelRenote: "Kanal-interner Boost"
+flagAsBotDescription: "Aktiviere diese Option, falls dieses Benutzerkonto durch ein Programm gesteuert wird. Falls aktiviert, agiert es als Flag für andere Entwickler zur Verhinderung von endlosen Kettenreaktionen mit anderen Bots und lässt Sharkeys interne Systeme dieses Benutzerkonto als Bot behandeln."
+intro: "Sharkey ist installiert! Lass uns nun ein Administratorkonto einrichten."
+aboutMisskey: "Über Sharkey"
+disableDrawer: "Keine ausfahrbaren Menüs verwenden"
+scratchpadDescription: "Die Testumgebung bietet einen Bereich für AiScript-Experimente. Dort kannst du AiScript schreiben, ausführen sowie dessen Auswirkungen auf Sharkey überprüfen."
+forwardReport: "Meldung an fremde Instanz weiterleiten"
+forwardReportIsAnonymous: "Anstatt deines Benutzerkontos wird bei der fremden Instanz ein anonymes Systemkonto als Melder angezeigt."
+abuseMarkAsResolved: "Meldung als gelöst markieren"
+renotedCount: "Anzahl erhaltener Boosts"
+sendErrorReportsDescription: "Ist diese Option aktiviert, so werden beim Auftreten von Fehlern detaillierte Fehlerinformationen an Sharkey weitergegeben, was zur Verbesserung der Qualität von Sharkey beiträgt.\nEnthalten in diesen Informationen sind u.a. die Version deines Betriebssystems, welchen Browser du verwendest und ein Verlauf deiner Aktivitäten innerhalb Sharkey."
+misskeyUpdated: "Sharkey wurde aktualisiert!"
+didYouLikeMisskey: "Gefällt dir Sharkey?"
+pleaseDonate: "Sharkey ist die kostenlose Software, die von {host} verwendet wird. Wir würden uns über Spenden freuen, damit dessen Entwicklung weitergeführt werden kann!"
+pleaseDonateInstance: "Du kannst {host} auch direkt unterstützen, indem du an deine Instanz Administration spendest."
+goToMisskey: "Zu Sharkey"
+donation: "Spenden"
+donationUrl: "Spenden-URL"
+_accountMigration:
+  moveAccountDescription: "Hierdurch wird dein Konto zu einem anderen migriert.\n ・Follower von diesem Konto werden automatisch auf das neue Konto migriert\n ・Dieses Konto wird allen Nutzern, denen es derzeit folgt, nicht mehr folgen\n ・Mit diesem Konto können keine neuen Notizen usw. erstellt werden\n\nWährend die Migration der Follower automatisch erfolgt, muss die Migration der Konten, denen du folgst, manuell vorbereitet werden. Exportiere hierzu die Liste der gefolgten Nutzer über das Einstellungsmenu, und importiere diese Liste im neuen Konto. Das gleiche Verfahren gilt für erstellte Listen und stummgeschaltete oder blockierte Nutzer.\n\n(Diese Erklärung gilt für Sharkey v13.12.0 oder später. Die Funktionsweise andere ActivityPub-Software, beispielsweise Mastodon,  kann hiervon abweichen.)"
+_achievements:
+  _types:
+    _notes1:
+      title: "Hallo Sharkey!"
+      flavor: "Hab eine schöne Zeit mit Sharkey!"
+    _login1000:
+      flavor: "Danke, dass du Sharkey nutzt!"
+    _iLoveMisskey:
+      title: "I Love Sharkey"
+      description: "Sende \"I ❤ #Sharkey\""
+      flavor: "Danke, dass du Sharkey verwendest! - vom Entwicklerteam"
+    _client30min:
+      description: "Habe Sharkey für mindestens 30 Minuten geöffnet"
+    _client60min:
+      title: "Munter mit Sharkey"
+      description: "Habe Sharkey für mindestens 60 Minuten geöffnet"
+    _brainDiver:
+      flavor: "Sharkey-Sharkey La-Tu-Ma"
+_aboutMisskey:
+  about: "Sharkey ist Open-Source-Software basiert auf Misskey welche von syuilo seit 2014 entwickelt wird."
+  translation: "Sharkey übersetzen"
+  donate: "An Sharkey spenden"
+_notification:
+  youRenoted: "Boost deiner Notiz von {name}"

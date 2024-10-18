@@ -23,11 +23,10 @@ import { MfmService } from '@/core/MfmService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import type { MiUserKeypair } from '@/models/UserKeypair.js';
-import type { UsersRepository, UserProfilesRepository, NotesRepository, DriveFilesRepository, PollsRepository, InstancesRepository } from '@/models/_.js';
+import type { UsersRepository, UserProfilesRepository, NotesRepository, DriveFilesRepository, PollsRepository, InstancesRepository, MiMeta } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { IdService } from '@/core/IdService.js';
-import { MetaService } from '../MetaService.js';
 import { JsonLdService } from './JsonLdService.js';
 import { ApMfmService } from './ApMfmService.js';
 import { CONTEXT } from './misc/contexts.js';
@@ -38,6 +37,9 @@ export class ApRendererService {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
+
+		@Inject(DI.meta)
+		private meta: MiMeta,
 
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
@@ -65,7 +67,6 @@ export class ApRendererService {
 		private apMfmService: ApMfmService,
 		private mfmService: MfmService,
 		private idService: IdService,
-		private metaService: MetaService,
 	) {
 	}
 
@@ -273,10 +274,9 @@ export class ApRendererService {
 	@bindThis
 	public async renderLike(noteReaction: MiNoteReaction, note: { uri: string | null }): Promise<ILike> {
 		const reaction = noteReaction.reaction;
-		const meta = await this.metaService.fetch(true);
 		let isMastodon = false;
 
-		if (meta.defaultLike && reaction.replaceAll(':', '') === meta.defaultLike.replaceAll(':', '')) {
+		if (this.meta.defaultLike && reaction.replaceAll(':', '') === this.meta.defaultLike.replaceAll(':', '')) {
 			const note = await this.notesRepository.findOneBy({ id: noteReaction.noteId });
 
 			if (note && note.userHost) {
@@ -518,6 +518,7 @@ export class ApRendererService {
 			name: user.name,
 			summary: profile.description ? this.mfmService.toHtml(mfm.parse(profile.description)) : null,
 			_misskey_summary: profile.description,
+			_misskey_followedMessage: profile.followedMessage,
 			icon: avatar ? this.renderImage(avatar) : null,
 			image: banner ? this.renderImage(banner) : null,
 			backgroundUrl: background ? this.renderImage(background) : null,
