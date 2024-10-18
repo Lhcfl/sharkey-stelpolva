@@ -441,6 +441,7 @@ export type NotesMentionsResponse = operations['notes___mentions']['responses'][
 export type NotesPollsRecommendationRequest = operations['notes___polls___recommendation']['requestBody']['content']['application/json'];
 export type NotesPollsRecommendationResponse = operations['notes___polls___recommendation']['responses']['200']['content']['application/json'];
 export type NotesPollsVoteRequest = operations['notes___polls___vote']['requestBody']['content']['application/json'];
+export type NotesPollsRefreshRequest = operations['notes___polls___refresh']['requestBody']['content']['application/json'];
 export type NotesReactionsRequest = operations['notes___reactions']['requestBody']['content']['application/json'];
 export type NotesReactionsResponse = operations['notes___reactions']['responses']['200']['content']['application/json'];
 export type NotesReactionsCreateRequest = operations['notes___reactions___create']['requestBody']['content']['application/json'];

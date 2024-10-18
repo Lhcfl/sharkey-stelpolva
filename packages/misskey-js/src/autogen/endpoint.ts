@@ -438,6 +438,7 @@ import type {
 	NotesPollsRecommendationRequest,
 	NotesPollsRecommendationResponse,
 	NotesPollsVoteRequest,
+	NotesPollsRefreshRequest,
 	NotesReactionsRequest,
 	NotesReactionsResponse,
 	NotesReactionsCreateRequest,
@@ -888,6 +889,7 @@ export type Endpoints = {
 	'notes/mentions': { req: NotesMentionsRequest; res: NotesMentionsResponse };
 	'notes/polls/recommendation': { req: NotesPollsRecommendationRequest; res: NotesPollsRecommendationResponse };
 	'notes/polls/vote': { req: NotesPollsVoteRequest; res: EmptyResponse };
+	'notes/polls/refresh': { req: NotesPollsRefreshRequest; res: EmptyResponse };
 	'notes/reactions': { req: NotesReactionsRequest; res: NotesReactionsResponse };
 	'notes/reactions/create': { req: NotesReactionsCreateRequest; res: EmptyResponse };
 	'notes/reactions/delete': { req: NotesReactionsDeleteRequest; res: EmptyResponse };
@@ -1286,6 +1288,7 @@ export const endpointReqTypes: Record<keyof Endpoints, 'application/json' | 'mul
 	'notes/mentions': 'application/json',
 	'notes/polls/recommendation': 'application/json',
 	'notes/polls/vote': 'application/json',
+	'notes/polls/refresh': 'application/json',
 	'notes/reactions': 'application/json',
 	'notes/reactions/create': 'application/json',
 	'notes/reactions/delete': 'application/json',
