@@ -30,7 +30,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 	:enterFromClass="defaultStore.state.animation ? $style.transition_notification_enterFrom : ''"
 	:leaveToClass="defaultStore.state.animation ? $style.transition_notification_leaveTo : ''"
 >
-	<div v-for="notification in notifications" :key="notification.id" :class="$style.notification">
+	<div
+		v-for="notification in notifications" :key="notification.id" :class="$style.notification" :style="{
+			pointerEvents: getPointerEvents()
+		}"
+	>
 		<XNotification :notification="notification"/>
 	</div>
 </TransitionGroup>
@@ -101,6 +105,10 @@ if ($i) {
 		swInject();
 	}
 }
+
+function getPointerEvents() {
+	return defaultStore.state.notificationClickable ? undefined : 'none';
+}
 </script>
 
 <style lang="scss" module>
@@ -122,7 +130,6 @@ if ($i) {
 	position: fixed;
 	z-index: 3900000;
 	padding: 0 var(--margin);
-	pointer-events: none;
 	display: flex;
 
 	&.notificationsPosition_leftTop {

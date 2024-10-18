@@ -85,6 +85,7 @@ import * as ep___admin_silenceUser from './endpoints/admin/silence-user.js';
 import * as ep___admin_unsilenceUser from './endpoints/admin/unsilence-user.js';
 import * as ep___admin_suspendUser from './endpoints/admin/suspend-user.js';
 import * as ep___admin_approveUser from './endpoints/admin/approve-user.js';
+import * as ep___admin_declineUser from './endpoints/admin/decline-user.js';
 import * as ep___admin_unsuspendUser from './endpoints/admin/unsuspend-user.js';
 import * as ep___admin_updateMeta from './endpoints/admin/update-meta.js';
 import * as ep___admin_deleteAccount from './endpoints/admin/delete-account.js';
@@ -483,6 +484,7 @@ const eps = [
 	['admin/unsilence-user', ep___admin_unsilenceUser],
 	['admin/suspend-user', ep___admin_suspendUser],
 	['admin/approve-user', ep___admin_approveUser],
+	['admin/decline-user', ep___admin_declineUser],
 	['admin/unsuspend-user', ep___admin_unsuspendUser],
 	['admin/update-meta', ep___admin_updateMeta],
 	['admin/delete-account', ep___admin_deleteAccount],

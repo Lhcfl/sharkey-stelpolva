@@ -481,6 +481,10 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'device',
 		default: 'horizontal' as 'vertical' | 'horizontal',
 	},
+	notificationClickable: {
+		where: 'device',
+		default: false,
+	},
 	enableCondensedLine: {
 		where: 'device',
 		default: true,

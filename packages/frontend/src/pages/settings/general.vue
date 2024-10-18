@@ -170,6 +170,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<option value="horizontal"><i class="ti ti-carousel-horizontal"></i> {{ i18n.ts.horizontal }}</option>
 			</MkRadios>
 
+			<MkSwitch v-model="notificationClickable">{{ i18n.ts.allowClickingNotifications }}</MkSwitch>
+
 			<MkButton @click="testNotification">{{ i18n.ts._notification.checkNotificationBehavior }}</MkButton>
 		</div>
 	</FormSection>
@@ -414,6 +416,7 @@ const showAvatarDecorations = computed(defaultStore.makeGetterSetter('showAvatar
 const mediaListWithOneImageAppearance = computed(defaultStore.makeGetterSetter('mediaListWithOneImageAppearance'));
 const notificationPosition = computed(defaultStore.makeGetterSetter('notificationPosition'));
 const notificationStackAxis = computed(defaultStore.makeGetterSetter('notificationStackAxis'));
+const notificationClickable = computed(defaultStore.makeGetterSetter('notificationClickable'));
 const keepScreenOn = computed(defaultStore.makeGetterSetter('keepScreenOn'));
 const disableStreamingTimeline = computed(defaultStore.makeGetterSetter('disableStreamingTimeline'));
 const useGroupedNotifications = computed(defaultStore.makeGetterSetter('useGroupedNotifications'));
