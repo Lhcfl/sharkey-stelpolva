@@ -110,7 +110,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 				<MkA v-if="appearNote.channel && !inChannel" :class="$style.channel" :to="`/channels/${appearNote.channel.id}`"><i class="ti ti-device-tv"></i> {{ appearNote.channel.name }}</MkA>
 			</div>
-			<MkReactionsViewer v-if="appearNote.reactionAcceptance !== 'likeOnly'" :note="appearNote" :maxNumber="16" @click.stop @mockUpdateMyReaction="emitUpdReaction">
+			<MkReactionsViewer v-if="appearNote.reactionAcceptance !== 'likeOnly' && !defaultStore.state.stpvDisableAllReactions" :note="appearNote" :maxNumber="16" @click.stop @mockUpdateMyReaction="emitUpdReaction">
 				<template #more>
 					<MkA :to="`/notes/${appearNote.id}/reactions`" :class="[$style.reactionOmitted]">{{ i18n.ts.more }}</MkA>
 				</template>
@@ -145,15 +145,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 				>
 					<i class="ph-quotes ph-bold ph-lg"></i>
 				</button>
-				<button v-if="appearNote.myReaction == null && appearNote.reactionAcceptance !== 'likeOnly'" ref="likeButton" :class="$style.footerButton" class="_button" @click.stop @click="like()">
+				<button v-if="appearNote.myReaction == null && appearNote.reactionAcceptance !== 'likeOnly' && !stpvDisableReactions" ref="likeButton" :class="$style.footerButton" class="_button" @click.stop @click="like()">
 					<i class="ph-heart ph-bold ph-lg"></i>
 				</button>
 				<button ref="reactButton" :class="$style.footerButton" class="_button" @click="toggleReact()" @click.stop>
-					<i v-if="appearNote.reactionAcceptance === 'likeOnly' && appearNote.myReaction != null" class="ti ti-heart-filled" style="color: var(--eventReactionHeart);"></i>
+					<i v-if="(appearNote.reactionAcceptance === 'likeOnly' || stpvDisableReactions) && appearNote.myReaction != null" class="ti ti-heart-filled" style="color: var(--eventReactionHeart);"></i>
 					<i v-else-if="appearNote.myReaction != null" class="ti ti-minus" style="color: var(--accent);"></i>
-					<i v-else-if="appearNote.reactionAcceptance === 'likeOnly'" class="ti ti-heart"></i>
+					<i v-else-if="appearNote.reactionAcceptance === 'likeOnly' || stpvDisableReactions" class="ti ti-heart"></i>
 					<i v-else class="ph-smiley ph-bold ph-lg"></i>
-					<p v-if="(appearNote.reactionAcceptance === 'likeOnly' || defaultStore.state.showReactionsCount) && appearNote.reactionCount > 0" :class="$style.footerButtonCount">{{ number(appearNote.reactionCount) }}</p>
+					<p v-if="(appearNote.reactionAcceptance === 'likeOnly' || stpvDisableReactions || defaultStore.state.showReactionsCount) && appearNote.reactionCount > 0" :class="$style.footerButtonCount">{{ number(appearNote.reactionCount) }}</p>
 				</button>
 				<button v-if="defaultStore.state.showClipButtonInNoteFooter" ref="clipButton" :class="$style.footerButton" class="_button" @mousedown.prevent="clip()">
 					<i class="ti ti-paperclip"></i>
@@ -331,6 +331,8 @@ const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({
 	url: `https://${host}/notes/${appearNote.value.id}`,
 }));
 
+const stpvDisableReactions = defaultStore.reactiveState.stpvDisableAllReactions;
+
 /* Overload FunctionにLintが対応していないのでコメントアウト
 function checkMute(noteToCheck: Misskey.entities.Note, mutedWords: Array<string | string[]> | undefined | null, checkOnly: true): boolean;
 function checkMute(noteToCheck: Misskey.entities.Note, mutedWords: Array<string | string[]> | undefined | null, checkOnly: false): boolean | 'sensitiveMute';
@@ -468,7 +470,7 @@ if (!props.mock) {
 		renoted.value = appearNote.value.renotedByMe || (isPureRenote(note.value) && note.value.userId === $i.id);
 	}
 
-	if (appearNote.value.reactionAcceptance === 'likeOnly') {
+	if (appearNote.value.reactionAcceptance === 'likeOnly' || defaultStore.state.stpvDisableAllReactions) {
 		useTooltip(reactButton, async (showing) => {
 			const reactions = await misskeyApiGet('notes/reactions', {
 				noteId: appearNote.value.id,
@@ -653,7 +655,7 @@ function like(): void {
 function react(viaKeyboard = false): void {
 	pleaseLogin(undefined, pleaseLoginContext.value);
 	showMovedDialog();
-	if (appearNote.value.reactionAcceptance === 'likeOnly') {
+	if (appearNote.value.reactionAcceptance === 'likeOnly' || defaultStore.state.stpvDisableAllReactions) {
 		sound.playMisskeySfx('reaction');
 
 		if (props.mock) {

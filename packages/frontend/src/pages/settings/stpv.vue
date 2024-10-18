@@ -44,6 +44,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</option>
 				</MkRadios>
 			</div>
+			<div class="_gaps_s">
+				<MkSwitch v-model="stpvDisableAllReactions">
+					前端禁用表情回应功能 Disable all reactions
+					<template #caption>该设置只是前端更改，别人仍然可以对你的帖子做出回应。只对Sharkey风格Note生效</template>
+				</MkSwitch>
+			</div>
 		</div>
 	</FormSection>
 
@@ -101,6 +107,7 @@ const defaultFont = getDefaultFontSettings();
 console.log(defaultFont);
 
 const autoSpacingBehaviour = computed(defaultStore.makeGetterSetter('chineseAutospacing'));
+const stpvDisableAllReactions = computed(defaultStore.makeGetterSetter('stpvDisableAllReactions'));
 
 // const headerActions = computed(() => []);
 

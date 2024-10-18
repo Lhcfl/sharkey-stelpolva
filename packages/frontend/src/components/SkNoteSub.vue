@@ -56,11 +56,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<button v-else class="_button" :class="$style.noteFooterButton" disabled>
 					<i class="ph-prohibit ph-bold ph-lg"></i>
 				</button>
-				<button v-if="note.myReaction == null && note.reactionAcceptance !== 'likeOnly'" ref="likeButton" :class="$style.noteFooterButton" class="_button" @mousedown="like()">
+				<button v-if="note.myReaction == null && note.reactionAcceptance !== 'likeOnly' && !stpvDisableReactions" ref="likeButton" :class="$style.noteFooterButton" class="_button" @mousedown="like()">
 					<i class="ph-heart ph-bold ph-lg"></i>
 				</button>
 				<button v-if="note.myReaction == null" ref="reactButton" :class="$style.noteFooterButton" class="_button" @mousedown="react()">
-					<i v-if="note.reactionAcceptance === 'likeOnly'" class="ph-heart ph-bold ph-lg"></i>
+					<i v-if="note.reactionAcceptance === 'likeOnly' || stpvDisableReactions" class="ph-heart ph-bold ph-lg"></i>
 					<i v-else class="ph-smiley ph-bold ph-lg"></i>
 				</button>
 				<button v-if="note.myReaction != null" ref="reactButton" class="_button" :class="[$style.noteFooterButton, $style.reacted]" @click="undoReact(note)">
@@ -155,6 +155,8 @@ let appearNote = computed(() => spacingNote(isRenote ? props.note.renote as Miss
 const defaultLike = computed(() => defaultStore.state.like ? defaultStore.state.like : null);
 const replies = ref<Misskey.entities.Note[]>([]);
 
+const stpvDisableReactions = defaultStore.reactiveState.stpvDisableAllReactions;
+
 function noteclick(id: string) {
 	const selection = document.getSelection();
 	if (selection?.toString().length === 0) {
@@ -215,7 +217,7 @@ function react(viaKeyboard = false): void {
 	pleaseLogin();
 	showMovedDialog();
 	sound.playMisskeySfx('reaction');
-	if (props.note.reactionAcceptance === 'likeOnly') {
+	if (props.note.reactionAcceptance === 'likeOnly' || stpvDisableReactions.value) {
 		misskeyApi('notes/like', {
 			noteId: props.note.id,
 			override: defaultLike.value,
