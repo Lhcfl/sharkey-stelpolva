@@ -100,6 +100,7 @@ export type AdminSilenceUserRequest = operations['admin___silence-user']['reques
 export type AdminUnsilenceUserRequest = operations['admin___unsilence-user']['requestBody']['content']['application/json'];
 export type AdminSuspendUserRequest = operations['admin___suspend-user']['requestBody']['content']['application/json'];
 export type AdminApproveUserRequest = operations['admin___approve-user']['requestBody']['content']['application/json'];
+export type AdminDeclineUserRequest = operations['admin___decline-user']['requestBody']['content']['application/json'];
 export type AdminUnsuspendUserRequest = operations['admin___unsuspend-user']['requestBody']['content']['application/json'];
 export type AdminUpdateMetaRequest = operations['admin___update-meta']['requestBody']['content']['application/json'];
 export type AdminDeleteAccountRequest = operations['admin___delete-account']['requestBody']['content']['application/json'];
