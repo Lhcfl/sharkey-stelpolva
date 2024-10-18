@@ -75,6 +75,15 @@ class BubbleTimelineChannel extends Channel {
 
 		if (note.user.isSilenced && !this.following[note.userId] && note.userId !== this.user!.id) return;
 
+		if (this.isNoteMutedOrBlocked(note)) return;
+
+		if (this.user && isRenotePacked(note) && !isQuotePacked(note)) {
+			if (note.renote && Object.keys(note.renote.reactions).length > 0) {
+				const myRenoteReaction = await this.noteEntityService.populateMyReaction(note.renote, this.user.id);
+				note.renote.myReaction = myRenoteReaction;
+			}
+		}
+
 		this.connection.cacheNote(note);
 
 		this.send('note', note);
