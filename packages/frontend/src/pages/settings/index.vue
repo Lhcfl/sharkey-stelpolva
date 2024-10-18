@@ -105,6 +105,11 @@ const menuDef = computed(() => [{
 		to: '/settings/general',
 		active: currentPage.value?.route.name === 'general',
 	}, {
+		icon: 'ph-planet ph-bold ph-lg',
+		text: 'Stelpolva Plus',
+		to: '/settings/stpv',
+		active: currentPage.value?.route.name === 'stpv',
+	}, {
 		icon: 'ti ti-palette',
 		text: i18n.ts.theme,
 		to: '/settings/theme',

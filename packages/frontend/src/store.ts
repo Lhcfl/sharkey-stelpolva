@@ -7,6 +7,7 @@ import { markRaw, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { miLocalStorage } from './local-storage.js';
 import { searchEngineMap } from './scripts/search-engine-map.js';
+import { stpvDefaultStoreExtension } from './stpv-store-ext.js';
 import type { SoundType } from '@/scripts/sound.js';
 import { Storage } from '@/pizzax.js';
 import { hemisphere } from '@/scripts/intl-const.js';
@@ -467,10 +468,7 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'device',
 		default: false,
 	},
-	chineseAutospacing: {
-		where: 'device',
-		default: null as 'all' | 'special' | null,
-	},
+	...stpvDefaultStoreExtension,
 	mediaListWithOneImageAppearance: {
 		where: 'device',
 		default: 'expand' as 'expand' | '16_9' | '1_1' | '2_3',

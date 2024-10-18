@@ -179,35 +179,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<div class="_gaps_m">
 			<div class="_gaps_s">
-				<MkSelect v-model="defaultFont.fontFace">
-					<template #label>Default Font</template>
-					<template #caption>
-						Some Chinese font files are large, please wait for a while for the font to load after switching.
-						为了更好的体验，仅支持简体的峄山碑篆体和仅支持繁体的崇羲篆體会互相补充。
-					</template>
-					<option
-						v-for="item in defaultFont.fontList"
-						:key="item.id"
-						:value="item.id"
-					>
-						{{ item.name }}
-					</option>
-				</MkSelect>
-				<MkRadios v-if="defaultFont.availableTypes.length > 0" v-model="defaultFont.fontFaceType">
-					<template #label>Font Type</template>
-					<template #caption>
-						选择字体的子属性
-					</template>
-					<option
-						v-for="item in defaultFont.availableTypes"
-						:key="item.id"
-						:value="item.id"
-					>
-						{{ item.name }}
-					</option>
-				</MkRadios>
-			</div>
-			<div class="_gaps_s">
 				<MkSwitch v-model="reduceAnimation">{{ i18n.ts.reduceUiAnimation }}</MkSwitch>
 				<MkSwitch v-model="useBlurEffect">{{ i18n.ts.useBlurEffect }}</MkSwitch>
 				<MkSwitch v-model="useBlurEffectForModal">{{ i18n.ts.useBlurEffectForModal }}</MkSwitch>
@@ -283,13 +254,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<option value="app">{{ i18n.ts._contextMenu.app }}</option>
 				<option value="appWithShift">{{ i18n.ts._contextMenu.appWithShift }}</option>
 				<option value="native">{{ i18n.ts._contextMenu.native }}</option>
-			</MkSelect>
-			<MkSelect v-model="autoSpacingBehaviour">
-				<template #label>自动空格</template>
-				<option :value="null">{{ i18n.ts.disabled }}</option>
-				<option value="all">{{ i18n.ts.all }}</option>
-				<option value="special">智能</option>
-				<template #caption>在帖子正文的中文与英文之间自动加入缺失的空格。当选择“智能”时，一部分通常认为是混合词的（B超，X光等）会被保留</template>
 			</MkSelect>
 			<MkRange v-model="numberOfPageCache" :min="1" :max="10" :step="1" easing>
 				<template #label>{{ i18n.ts.numberOfPageCache }}</template>
@@ -399,8 +363,6 @@ const fontSizeNumber = ref(Number(miLocalStorage.getItem('fontSize') || 2));
 const fontSizeNumberOld = ref(fontSizeNumber.value);
 const cornerRadius = ref(miLocalStorage.getItem('cornerRadius'));
 const useSystemFont = ref(miLocalStorage.getItem('useSystemFont') != null);
-const defaultFont = getDefaultFontSettings();
-console.log(defaultFont);
 const dataSaver = ref(defaultStore.state.dataSaver);
 
 const fontSizePx = computed(() => fontSizeNumber.value + 14);
@@ -485,7 +447,6 @@ const alwaysConfirmFollow = computed(defaultStore.makeGetterSetter('alwaysConfir
 const confirmWhenRevealingSensitiveMedia = computed(defaultStore.makeGetterSetter('confirmWhenRevealingSensitiveMedia'));
 const contextMenu = computed(defaultStore.makeGetterSetter('contextMenu'));
 const warnExternalUrl = computed(defaultStore.makeGetterSetter('warnExternalUrl'));
-const autoSpacingBehaviour = computed(defaultStore.makeGetterSetter('chineseAutospacing'));
 
 watch(lang, () => {
 	miLocalStorage.setItem('lang', lang.value as string);

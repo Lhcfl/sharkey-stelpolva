@@ -153,10 +153,14 @@
 		document.documentElement.classList.add('useSystemFont');
 	}
 
-	const defaultFontFace = localStorage.getItem('defaultFontFace') || 'maokentangyuan';
-	if (defaultFontFace) {
-		document.documentElement.classList.add(`default-font-${defaultFontFace}`);
+	function stpvCustomLoader() {
+		const defaultFontFace = localStorage.getItem('defaultFontFace') || 'maokentangyuan';
+		if (defaultFontFace) {
+			document.documentElement.classList.add(`default-font-${defaultFontFace}`);
+		}
 	}
+
+	stpvCustomLoader();
 
 	const wallpaper = localStorage.getItem('wallpaper');
 	if (wallpaper) {

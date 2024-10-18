@@ -181,6 +181,10 @@ const routes: RouteDef[] = [{
 		name: 'other',
 		component: page(() => import('@/pages/settings/other.vue')),
 	}, {
+		path: '/stpv',
+		name: 'stpv',
+		component: page(() => import('@/pages/settings/stpv.vue')),
+	}, {
 		path: '/',
 		component: page(() => import('@/pages/_empty_.vue')),
 	}],

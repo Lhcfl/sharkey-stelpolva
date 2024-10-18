@@ -3,7 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+type KeysStpv =
+	'defaultFontFace';
+
 type Keys =
+	KeysStpv |
 	'v' |
 	'lastVersion' |
 	'instance' |
@@ -22,7 +26,6 @@ type Keys =
 	'theme' |
 	'colorScheme' |
 	'useSystemFont' |
-	'defaultFontFace' |
 	'fontSize' |
 	'cornerRadius' |
 	'ui' |
