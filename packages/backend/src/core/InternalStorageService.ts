@@ -24,7 +24,7 @@ export class InternalStorageService {
 		@Inject(DI.config)
 		private config: Config,
 	) {
-		// No one should erase the working directly *while the server is running*.
+		// No one should erase the working directory *while the server is running*.
 		fs.mkdirSync(path, { recursive: true });
 	}
 
