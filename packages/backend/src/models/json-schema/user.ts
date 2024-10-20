@@ -516,6 +516,10 @@ export const packedMeDetailedOnlySchema = {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},
+		defaultSensitive: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
 		autoSensitive: {
 			type: 'boolean',
 			nullable: false, optional: false,

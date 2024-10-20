@@ -3994,6 +3994,7 @@ export type components = {
       injectFeaturedNote: boolean;
       receiveAnnouncementEmail: boolean;
       alwaysMarkNsfw: boolean;
+      defaultSensitive: boolean;
       autoSensitive: boolean;
       carefulBot: boolean;
       autoAcceptFollowed: boolean;
@@ -20545,6 +20546,7 @@ export type operations = {
           injectFeaturedNote?: boolean;
           receiveAnnouncementEmail?: boolean;
           alwaysMarkNsfw?: boolean;
+          defaultSensitive?: boolean;
           autoSensitive?: boolean;
           /** @enum {string} */
           followingVisibility?: 'public' | 'followers' | 'private';
