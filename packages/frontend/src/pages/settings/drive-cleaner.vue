@@ -62,7 +62,7 @@ import { definePageMetadata } from '@/scripts/page-metadata.js';
 import MkSelect from '@/components/MkSelect.vue';
 import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
 
-let paginationComponent = shallowRef<InstanceType<typeof MkPagination>>();
+const paginationComponent = shallowRef<InstanceType<typeof MkPagination>>();
 
 const sortMode = ref('+size');
 const pagination = {
