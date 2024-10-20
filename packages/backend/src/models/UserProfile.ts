@@ -199,6 +199,11 @@ export class MiUserProfile {
 	@Column('boolean', {
 		default: false,
 	})
+	public defaultSensitive: boolean;
+
+	@Column('boolean', {
+		default: false,
+	})
 	public autoSensitive: boolean;
 
 	@Column('boolean', {
