@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Brackets } from 'typeorm';
-import type { NotesRepository } from '@/models/_.js';
+import type { NotesRepository, MiMeta } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -8,7 +8,6 @@ import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { CacheService } from '@/core/CacheService.js';
-import { MetaService } from '@/core/MetaService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { ApiError } from '../../error.js';
 
@@ -59,6 +58,9 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
+		@Inject(DI.meta)
+		private serverSettings: MiMeta,
+
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
@@ -67,12 +69,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 		private activeUsersChart: ActiveUsersChart,
 		private cacheService: CacheService,
-		private metaService: MetaService,
 		private userFollowingService: UserFollowingService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me ? me.id : null);
-			const instance = await this.metaService.fetch();
 			if (!policies.btlAvailable) {
 				throw new ApiError(meta.errors.btlDisabled);
 			}
@@ -91,8 +91,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.andWhere('note.visibility = \'public\'')
 				.andWhere('note.channelId IS NULL')
 				.andWhere(new Brackets(qb => {
-					qb.where('note.userHost IN (:...hosts)', { hosts: instance.bubbleInstances });
-					if (instance.bubbleInstances.includes('#local')) {
+					qb.where('note.userHost IN (:...hosts)', { hosts: this.serverSettings.bubbleInstances });
+					if (this.serverSettings.bubbleInstances.includes('#local')) {
 						qb.orWhere('note.userHost IS NULL');
 					}
 				}))

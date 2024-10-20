@@ -10,12 +10,16 @@ import RE2 from 're2';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
+import { MiMeta } from '@/models/Meta.js';
 
 @Injectable()
 export class UtilityService {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
+
+		@Inject(DI.meta)
+		private meta: MiMeta,
 	) {
 	}
 
@@ -111,5 +115,19 @@ export class UtilityService {
 		const urlObj = new URL(url);
 		const host = `${this.toPuny(urlObj.hostname)}${urlObj.port.length > 0 ? ':' + urlObj.port : ''}`;
 		return host;
+	}
+
+	public isFederationAllowedHost(host: string): boolean {
+		if (this.meta.federation === 'none') return false;
+		if (this.meta.federation === 'specified' && !this.meta.federationHosts.some(x => `.${host.toLowerCase()}`.endsWith(`.${x}`))) return false;
+		if (this.isBlockedHost(this.meta.blockedHosts, host)) return false;
+
+		return true;
+	}
+
+	@bindThis
+	public isFederationAllowedUri(uri: string): boolean {
+		const host = this.extractDbHost(uri);
+		return this.isFederationAllowedHost(host);
 	}
 }

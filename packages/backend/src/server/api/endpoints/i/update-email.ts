@@ -8,7 +8,7 @@ import ms from 'ms';
 //import bcrypt from 'bcryptjs';
 import * as argon2 from 'argon2';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { UserProfilesRepository } from '@/models/_.js';
+import type { MiMeta, UserProfilesRepository } from '@/models/_.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { EmailService } from '@/core/EmailService.js';
 import type { Config } from '@/config.js';
@@ -16,7 +16,6 @@ import { DI } from '@/di-symbols.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
-import { MetaService } from '@/core/MetaService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -71,10 +70,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.config)
 		private config: Config,
 
+		@Inject(DI.meta)
+		private serverSettings: MiMeta,
+
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
-		private metaService: MetaService,
 		private userEntityService: UserEntityService,
 		private emailService: EmailService,
 		private userAuthService: UserAuthService,
@@ -106,7 +107,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				if (!res.available) {
 					throw new ApiError(meta.errors.unavailable);
 				}
-			} else if ((await this.metaService.fetch()).emailRequiredForSignup) {
+			} else if (this.serverSettings.emailRequiredForSignup) {
 				throw new ApiError(meta.errors.emailRequired);
 			}
 

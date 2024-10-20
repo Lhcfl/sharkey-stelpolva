@@ -48,7 +48,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #label>{{ i18n.ts.keepOriginalFilename }}</template>
 				<template #caption>{{ i18n.ts.keepOriginalFilenameDescription }}</template>
 			</MkSwitch>
-			<MkSwitch v-model="alwaysMarkNsfw" @update:modelValue="saveProfile()">
+			<MkSwitch v-model="defaultSensitive" @update:modelValue="saveProfile()">
 				<template #label>{{ i18n.ts.alwaysMarkSensitive }}</template>
 			</MkSwitch>
 		</div>
@@ -80,7 +80,7 @@ const fetching = ref(true);
 const usage = ref<number | null>(null);
 const capacity = ref<number | null>(null);
 const uploadFolder = ref<Misskey.entities.DriveFolder | null>(null);
-const alwaysMarkNsfw = ref($i.alwaysMarkNsfw);
+const defaultSensitive = ref($i.defaultSensitive);
 
 const meterStyle = computed(() => {
 	if (!capacity.value || !usage.value) return {};
@@ -127,14 +127,14 @@ function chooseUploadFolder() {
 
 function saveProfile() {
 	misskeyApi('i/update', {
-		alwaysMarkNsfw: !!alwaysMarkNsfw.value,
+		defaultSensitive: !!defaultSensitive.value,
 	}).catch(err => {
 		os.alert({
 			type: 'error',
 			title: i18n.ts.error,
 			text: err.message,
 		});
-		alwaysMarkNsfw.value = true;
+		defaultSensitive.value = true;
 	});
 }
 

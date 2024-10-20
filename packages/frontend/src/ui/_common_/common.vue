@@ -30,7 +30,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 	:enterFromClass="defaultStore.state.animation ? $style.transition_notification_enterFrom : ''"
 	:leaveToClass="defaultStore.state.animation ? $style.transition_notification_leaveTo : ''"
 >
-	<div v-for="notification in notifications" :key="notification.id" :class="$style.notification">
+	<div
+		v-for="notification in notifications" :key="notification.id" :class="$style.notification" :style="{
+			pointerEvents: getPointerEvents()
+		}"
+	>
 		<XNotification :notification="notification"/>
 	</div>
 </TransitionGroup>
@@ -39,7 +43,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <div v-if="pendingApiRequestsCount > 0" id="wait"></div>
 
-<div v-if="dev" id="devTicker"><span>DEV BUILD</span></div>
+<div v-if="dev" id="devTicker"><span style="animation: dev-ticker-blink 2s infinite;">DEV BUILD</span></div>
 
 <div v-if="$i && $i.isBot" id="botWarn"><span>{{ i18n.ts.loggedInAsBot }}</span></div>
 
@@ -101,6 +105,10 @@ if ($i) {
 		swInject();
 	}
 }
+
+function getPointerEvents() {
+	return defaultStore.state.notificationClickable ? undefined : 'none';
+}
 </script>
 
 <style lang="scss" module>
@@ -122,7 +130,6 @@ if ($i) {
 	position: fixed;
 	z-index: 3900000;
 	padding: 0 var(--margin);
-	pointer-events: none;
 	display: flex;
 
 	&.notificationsPosition_leftTop {
@@ -263,10 +270,6 @@ if ($i) {
 	font-size: 14px;
 	pointer-events: none;
 	user-select: none;
-
-	> span {
-		animation: dev-ticker-blink 2s infinite;
-	}
 }
 
 #devTicker {
@@ -280,9 +283,5 @@ if ($i) {
 	font-size: 14px;
 	pointer-events: none;
 	user-select: none;
-
-	> span {
-		animation: dev-ticker-blink 2s infinite;
-	}
 }
 </style>

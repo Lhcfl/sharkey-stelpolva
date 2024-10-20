@@ -1,0 +1,10 @@
+---
+disableDrawer: "No mostrar els menús en calaixos"
+forwardReport: "Transferir la denúncia a una instància remota"
+forwardReportIsAnonymous: "En lloc del teu compte, es farà servir un compte anònim com a denunciant al servidor remot."
+abuseMarkAsResolved: "Marca la denúncia com a resolta"
+replies: "Respostes"
+_initialTutorial:
+  _reaction:
+    letsTryReacting: "Es poden afegir reaccions fent clic al botó '{reaction}'. Prova reaccionant a aquesta nota!"
+    reactDone: "Pots desfer una reacció fent clic al botó '{undo}'."

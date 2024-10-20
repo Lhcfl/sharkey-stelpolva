@@ -1,0 +1,9 @@
+---
+disableDrawer: "Không dùng menu thanh bên"
+forwardReport: "Chuyển tiếp báo cáo cho máy chủ từ xa"
+forwardReportIsAnonymous: "Thay vì tài khoản của bạn, một tài khoản hệ thống ẩn danh sẽ được hiển thị dưới dạng người báo cáo ở máy chủ từ xa."
+abuseMarkAsResolved: "Đánh dấu đã xử lý"
+_achievements:
+  _types:
+    _notes1:
+      title: "just setting up my shonk"

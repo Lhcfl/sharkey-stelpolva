@@ -1,0 +1,6 @@
+---
+disableDrawer: "Nepoužívať šuflíkové menu"
+forwardReport: "Preposlať nahlásenie na server"
+forwardReportIsAnonymous: "Namiesto vášho účtu bude zobrazený anonymný systémový účet na vzdialenom serveri ako autor nahlásenia."
+abuseMarkAsResolved: "Označiť nahlásenia ako vyriešené"
+replies: "Odpovede"

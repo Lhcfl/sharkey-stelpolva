@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<option v-for="x in sortOptions" :key="x.value" :value="x.value">{{ x.displayName }}</option>
 	</MkSelect>
 	<div v-if="!fetching">
-		<MkPagination v-slot="{items}" :pagination="pagination">
+		<MkPagination v-slot="{items}" ref="paginationComponent" :pagination="pagination">
 			<div class="_gaps">
 				<div
 					v-for="file in items" :key="file.id"
@@ -48,8 +48,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, type StyleValue } from 'vue';
+import { computed, ref, shallowRef, watch, type StyleValue } from 'vue';
 import tinycolor from 'tinycolor2';
+import * as Misskey from 'misskey-js';
+import type { MenuItem } from '@/types/menu.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import MkPagination from '@/components/MkPagination.vue';
@@ -58,13 +60,16 @@ import { i18n } from '@/i18n.js';
 import bytes from '@/filters/bytes.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import MkSelect from '@/components/MkSelect.vue';
-import { getDriveFileMenu } from '@/scripts/get-drive-file-menu.js';
+import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
+
+const paginationComponent = shallowRef<InstanceType<typeof MkPagination>>();
 
 const sortMode = ref('+size');
 const pagination = {
 	endpoint: 'drive/files' as const,
 	limit: 10,
 	params: computed(() => ({ sort: sortMode.value })),
+	offsetMode: true,
 };
 
 const sortOptions = [
@@ -107,6 +112,46 @@ function genUsageBar(fsize: number): StyleValue {
 		width: `${fsize / usage.value * 100}%`,
 		background: tinycolor({ h: 180 - (fsize / usage.value * 180), s: 0.7, l: 0.5 }).toHslString(),
 	};
+}
+
+async function deleteFile(file: Misskey.entities.DriveFile) {
+	const { canceled } = await os.confirm({
+		type: 'warning',
+		text: i18n.tsx.driveFileDeleteConfirm({ name: file.name }),
+	});
+
+	if (canceled) return;
+	misskeyApi('drive/files/delete', {
+		fileId: file.id,
+	});
+
+	if (paginationComponent.value) {
+		paginationComponent.value.items.delete(file.id);
+	}
+}
+
+function getDriveFileMenu(file: Misskey.entities.DriveFile): MenuItem[] {
+	const menuItems: MenuItem[] = [];
+
+	menuItems.push({
+		text: i18n.ts.copyUrl,
+		icon: 'ti ti-link',
+		action: () => copyToClipboard(file.url),
+	}, {
+		type: 'a',
+		href: file.url,
+		target: '_blank',
+		text: i18n.ts.download,
+		icon: 'ti ti-download',
+		download: file.name,
+	}, { type: 'divider' }, {
+		text: i18n.ts.delete,
+		icon: 'ti ti-trash',
+		danger: true,
+		action: () => deleteFile(file),
+	});
+
+	return menuItems;
 }
 
 function onClick(ev: MouseEvent, file) {

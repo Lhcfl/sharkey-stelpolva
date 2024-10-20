@@ -126,10 +126,6 @@ export const packedUserLiteSchema = {
 			nullable: false, optional: true,
 			default: false,
 		},
-		isSilenced: {
-			type: 'boolean',
-			nullable: false, optional: false,
-		},
 		noindex: {
 			type: 'boolean',
 			nullable: false, optional: false,
@@ -145,6 +141,10 @@ export const packedUserLiteSchema = {
 		speakAsCat: {
 			type: 'boolean',
 			nullable: false, optional: true,
+		},
+		isSilenced: {
+			type: 'boolean',
+			nullable: false, optional: false,
 		},
 		instance: {
 			type: 'object',
@@ -274,6 +274,10 @@ export const packedUserDetailedNotMeOnlySchema = {
 			nullable: true, optional: false,
 		},
 		isLocked: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
+		isSilenced: {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},
@@ -412,6 +416,10 @@ export const packedUserDetailedNotMeOnlySchema = {
 				ref: 'RoleLite',
 			},
 		},
+		followedMessage: {
+			type: 'string',
+			nullable: true, optional: true,
+		},
 		memo: {
 			type: 'string',
 			nullable: true, optional: false,
@@ -484,6 +492,10 @@ export const packedMeDetailedOnlySchema = {
 			nullable: true, optional: false,
 			format: 'id',
 		},
+		followedMessage: {
+			type: 'string',
+			nullable: true, optional: false,
+		},
 		isModerator: {
 			type: 'boolean',
 			nullable: true, optional: false,
@@ -501,6 +513,10 @@ export const packedMeDetailedOnlySchema = {
 			nullable: false, optional: false,
 		},
 		alwaysMarkNsfw: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
+		defaultSensitive: {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},

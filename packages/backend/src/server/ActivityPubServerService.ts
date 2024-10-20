@@ -21,7 +21,6 @@ import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import { QueueService } from '@/core/QueueService.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
-import { MetaService } from '@/core/MetaService.js';
 import { UserKeypairService } from '@/core/UserKeypairService.js';
 import { InstanceActorService } from '@/core/InstanceActorService.js';
 import type { MiUserPublickey } from '@/models/UserPublickey.js';
@@ -75,7 +74,6 @@ export class ActivityPubServerService {
 		@Inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
-		private metaService: MetaService,
 		private utilityService: UtilityService,
 		private userEntityService: UserEntityService,
 		private instanceActorService: InstanceActorService,
@@ -175,8 +173,7 @@ export class ActivityPubServerService {
 			return true;
 		}
 
-		const meta = await this.metaService.fetch();
-		if (this.utilityService.isBlockedHost(meta.blockedHosts, keyHost)) {
+		if (!this.utilityService.isFederationAllowedHost(keyHost)) {
 			/* blocked instance: refuse (we don't care if the signature is
 				 good, if they even pretend to be from a blocked instance,
 				 they're out) */
@@ -795,7 +792,7 @@ export class ActivityPubServerService {
 
 		fastify.get<{ Params: { user: string; } }>('/users/:user', { constraints: { apOrHtml: 'ap' } }, async (request, reply) => {
 			if (await this.shouldRefuseGetRequest(request, reply, request.params.user)) return;
-			
+
 			vary(reply.raw, 'Accept');
 
 			const userId = request.params.user;
@@ -811,7 +808,7 @@ export class ActivityPubServerService {
 
 		fastify.get<{ Params: { user: string; } }>('/@:user', { constraints: { apOrHtml: 'ap' } }, async (request, reply) => {
 			if (await this.shouldRefuseGetRequest(request, reply, request.params.user)) return;
-			
+
 			vary(reply.raw, 'Accept');
 
 			const user = await this.usersRepository.findOneBy({

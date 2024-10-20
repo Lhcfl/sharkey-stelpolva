@@ -94,7 +94,7 @@ describe(SkLatestNote, () => {
 
 		it('should return true when keys match with different file counts', () => {
 			const first = new MiNote({ id: '1', userId: 'abc123', visibility: 'public', replyId: null, renoteId: null, fileIds: ['1'] });
-			const second = new MiNote({ id: '2', userId: 'abc123', visibility: 'public', replyId: null, renoteId: null, fileIds: ['1','2'] });
+			const second = new MiNote({ id: '2', userId: 'abc123', visibility: 'public', replyId: null, renoteId: null, fileIds: ['1', '2'] });
 
 			const result = SkLatestNote.areEquivalent(first, second);
 

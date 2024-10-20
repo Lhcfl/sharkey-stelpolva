@@ -1,0 +1,18 @@
+---
+stpvAntennaPatch: "Sharkey Stelpolva Edition 为天线的设置添加了额外的关键词语法。\n具体而言， `domain:example.com` 这个特殊关键词会匹配所有来自 `example.com` 的帖子。这个关键词同样能使用在 OR 语法中。\n特别地，你必须用 `domain:here` 来匹配本实例的帖子。\n"
+stpvPgroongaSearchInstru: "可以使用 `A OR B` 的词法来搜索包含 A 或者 B 的帖子。`A B`（中间有空格）代表同时包含关键词 A 和 B 的帖子。"
+timeTravel: "时光机"
+timeTravelDescription: "显示该日期以前的帖子"
+makePrivate:
+  text: "私密化"
+  description: "私密化帖子将使帖子变得仅自己可见，并向远程服务器发送删除标记。"
+  confirm: "你确定要私密化该帖字吗？"
+  warn: "批量私密化帖子是**永久的、不可逆**的过程，并且对服务器有一定负载。请谨慎操作。你每小时只能批量私密化一次帖子。"
+  sinceDate: "开始日期"
+  untilDate: "结束日期"
+  dangerTip: "由于这是一个非常危险的操作，请输入 `{text}` 来启用这项功能"
+  manyCount: "共有 {count} 个帖子将会被私密化"
+  textmany: "批量私密化！"
+  manyWarn: "真的要批量私密化这 {count} 个帖子吗？这个操作不可逆，你的这些帖子会永远只有你自己可见（真的！）"
+  didStart: "私密化进程已经开始"
+  bulkText: "批量私密化帖子"

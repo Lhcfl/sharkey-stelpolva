@@ -5,14 +5,13 @@
 
 import { Brackets } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import type { NotesRepository } from '@/models/_.js';
+import type { NotesRepository, MiMeta } from '@/models/_.js';
 import { safeForSql } from '@/misc/safe-for-sql.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { DI } from '@/di-symbols.js';
-import { MetaService } from '@/core/MetaService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 
@@ -69,18 +68,18 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
+		@Inject(DI.meta)
+		private serverSettings: MiMeta,
+
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
-		private metaService: MetaService,
 		private cacheService: CacheService,
 		private utilityService: UtilityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const meta = await this.metaService.fetch(true);
-
 			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
 				// .andWhere(new Brackets(qb => {
 				// 	qb.orWhere('note.visibility = \'public\'');
@@ -94,7 +93,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('reply.user', 'replyUser')
 				.leftJoinAndSelect('renote.user', 'renoteUser');
 
-			if (!meta.enableBotTrending) query.andWhere('user.isBot = FALSE');
+			if (!this.serverSettings.enableBotTrending) query.andWhere('user.isBot = FALSE');
 
 			this.queryService.generateVisibilityQuery(query, me);
 			if (me) this.queryService.generateMutedUserQuery(query, me);
@@ -161,8 +160,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			notes = notes.filter(note => {
 				if (note.user?.isSilenced && me && followings && note.userId !== me.id && !followings[note.userId]) return false;
 				if (note.user?.isSuspended) return false;
-				if (this.utilityService.isBlockedHost(meta.blockedHosts, note.userHost)) return false;
-				if (this.utilityService.isSilencedHost(meta.silencedHosts, note.userHost)) return false;
+				if (note.userHost) {
+					if (!this.utilityService.isFederationAllowedHost(note.userHost)) return false;
+					if (this.utilityService.isSilencedHost(this.serverSettings.silencedHosts, note.userHost)) return false;
+				}
 				return true;
 			});
 

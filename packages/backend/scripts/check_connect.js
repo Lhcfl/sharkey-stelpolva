@@ -34,4 +34,5 @@ function connectToRedis(redisOptions) {
 	config.redisForPubsub,
 	config.redisForJobQueue,
 	config.redisForTimelines,
+	config.redisForReactions,
 ])).forEach(connectToRedis);

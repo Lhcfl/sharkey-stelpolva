@@ -1,0 +1,8 @@
+---
+disableDrawer: "Nie używaj menu w stylu szuflady"
+forwardReport: "Przekaż zgłoszenie do innej instancji"
+forwardReportIsAnonymous: "Zamiast twojego konta, anonimowe konto systemowe będzie wyświetlone jako zgłaszający na instancji zdalnej."
+abuseMarkAsResolved: "Oznacz zgłoszenie jako rozwiązane"
+usernameInfo: "Nazwa, która identyfikuje Twoje konto spośród innych na tym serwerze. Możesz użyć alfabetu (a~z, A~Z), cyfr (0~9) lub podkreślników (_). Nazwy użytkownika nie mogą być później zmieniane."
+replies: "Odpowiedzi"
+renotes: "Udostępnień"

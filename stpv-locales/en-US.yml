@@ -1,0 +1,21 @@
+---
+stpvAntennaPatch: |
+  Sharkey Stelpolva Edition adds additional keyword syntax to the antenna settings.
+  That means, the special keyword `domain:example.com` will match all posts from `example.com`. This keyword can also be used in OR syntax.
+  Specifically, you must use `domain:here` to match posts in this instance.
+stpvPgroongaSearchInstru: Use the `A OR B` syntax to search for notes containing either A or B. `A B` (with a space in between) means posts containing both keywords A and B.
+timeTravel: Time Travel
+timeTravelDescription: Show posts before this date
+makePrivate:
+  text: Make private
+  description: Making a post private will make it visible only to you and send a deletion request to remote servers.
+  confirm: Are you sure you want to make this post private?
+  warn: Making posts private in batches is a **permanent, irreversible** process and places a certain amount of load on the server. Please proceed with caution. You can only make posts private in batches once an hour.
+  sinceDate: Since Date
+  untilDate: Until Date
+  dangerTip: Since this is a very dangerous operation, please enter `{text}` to enable this feature
+  manyCount: There are {count} posts that will be made private
+  textmany: Make posts private!
+  manyWarn: Do you really want to make these {count} posts private in batches? This operation is irreversible and your posts will only be visible to you forever (really!)
+  didStart: The making-private process has started
+  bulkText: Bulk make posts private

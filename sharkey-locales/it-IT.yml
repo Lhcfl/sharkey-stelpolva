@@ -1,0 +1,18 @@
+---
+openRemoteProfile: "Apri profilo remoto"
+disableDrawer: "Non mostrare il menù sul drawer"
+forwardReport: "Inoltro di un report a un'istanza remota."
+forwardReportIsAnonymous: "L'istanza remota non vedrà le tue informazioni, apparirai come profilo di sistema, anonimo."
+abuseMarkAsResolved: "Risolvi segnalazione"
+makeIndexable: "Non indicizzare le note pubbliche"
+makeIndexableDescription: "Le tue note pubbliche non saranno cercabili"
+defaultLike: "Emoji predefinita per \"mi piace\""
+_delivery:
+  stop: "Sospendi la distribuzione di attività"
+  resume: "Riprendi la distribuzione di attività"
+_initialTutorial:
+  _reaction:
+    letsTryReacting: "Puoi aggiungere una Reazione cliccando il bottone \"{reaction}\" della relativa Nota. Prova ad aggiungerne una a questa Nota di esempio!"
+    reactDone: "Annulla la tua Reazione premendo il bottone \"{undo}\""
+_serverDisconnectedBehavior:
+  disabled: "Non visualizzare l'avviso"

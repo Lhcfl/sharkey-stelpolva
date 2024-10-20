@@ -10,7 +10,6 @@ import { SummalyResult } from '@misskey-dev/summaly/built/summary.js';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
-import { MetaService } from '@/core/MetaService.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import type Logger from '@/logger.js';
 import { query } from '@/misc/prelude/url.js';
@@ -33,7 +32,9 @@ export class UrlPreviewService {
 		@Inject(DI.redis)
 		private redisClient: Redis.Redis,
 
-		private metaService: MetaService,
+		@Inject(DI.meta)
+		private meta: MiMeta,
+
 		private httpRequestService: HttpRequestService,
 		private loggerService: LoggerService,
 	) {
@@ -76,9 +77,7 @@ export class UrlPreviewService {
 			return;
 		}
 
-		const meta = await this.metaService.fetch();
-
-		if (!meta.urlPreviewEnabled) {
+		if (!this.meta.urlPreviewEnabled) {
 			reply.code(403);
 			return {
 				error: new ApiError({
@@ -99,14 +98,14 @@ export class UrlPreviewService {
 			return cached;
 		}
 
-		this.logger.info(meta.urlPreviewSummaryProxyUrl
+		this.logger.info(this.meta.urlPreviewSummaryProxyUrl
 			? `(Proxy) Getting preview of ${key} ...`
 			: `Getting preview of ${key} ...`);
 
 		try {
-			const summary = meta.urlPreviewSummaryProxyUrl
-				? await this.fetchSummaryFromProxy(url, meta, lang)
-				: await this.fetchSummary(url, meta, lang);
+			const summary = this.meta.urlPreviewSummaryProxyUrl
+				? await this.fetchSummaryFromProxy(url, this.meta, lang)
+				: await this.fetchSummary(url, this.meta, lang);
 
 			this.logger.succ(`Got preview of ${url}: ${summary.title}`);
 

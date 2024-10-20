@@ -73,6 +73,7 @@ async function buildBackendScript() {
 
   for (const file of [
     './packages/backend/src/server/web/boot.js',
+    './packages/backend/src/server/web/boot.embed.js',
     './packages/backend/src/server/web/bios.js',
     './packages/backend/src/server/web/cli.js'
   ]) {
@@ -89,6 +90,7 @@ async function buildBackendStyle() {
 
   for (const file of [
     './packages/backend/src/server/web/style.css',
+    './packages/backend/src/server/web/style.embed.css',
     './packages/backend/src/server/web/bios.css',
     './packages/backend/src/server/web/cli.css',
     './packages/backend/src/server/web/error.css'

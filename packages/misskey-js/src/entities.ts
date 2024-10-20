@@ -51,6 +51,9 @@ export type ModerationLog = {
 	type: 'approve';
 	info: ModerationLogPayloads['approve'];
 } | {
+	type: 'decline';
+	info: ModerationLogPayloads['decline'];
+} | {
 	type: 'suspend';
 	info: ModerationLogPayloads['suspend'];
 } | {
@@ -272,6 +275,17 @@ export type SigninRequest = {
 	username: string;
 	password: string;
 	token?: string;
+};
+
+export type SigninWithPasskeyRequest = {
+	credential?: object;
+	context?: string;
+};
+
+export type SigninWithPasskeyResponse = {
+	option?: object;
+	context?: string;
+	signinResponse?: SigninResponse;
 };
 
 export type SigninResponse = {

@@ -103,6 +103,7 @@ const decorationsForPreview = computed(() => {
 		offsetX: offsetX.value,
 		offsetY: offsetY.value,
 		showBelow: showBelow.value,
+		blink: true,
 	};
 	const decorations = [...$i.avatarDecorations];
 	if (props.usingIndex != null) {
