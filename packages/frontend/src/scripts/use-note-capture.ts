@@ -22,7 +22,7 @@ export function useNoteCapture(props: {
 	const pureNote = props.pureNote !== undefined ? props.pureNote : props.note;
 	const connection = $i ? useStream() : null;
 
-	async function onStreamNoteUpdated(noteData): void {
+	async function onStreamNoteUpdated(noteData): Promise<void> {
 		const { type, id, body } = noteData;
 
 		if ((id !== note.value.id) && (id !== pureNote.value.id)) return;
@@ -81,7 +81,7 @@ export function useNoteCapture(props: {
 			case 'pollVoted': {
 				const choice = body.choice;
 
-				const choices = [...note.value.poll.choices];
+				const choices = [...note.value.poll!.choices];
 				choices[choice] = {
 					...choices[choice],
 					votes: choices[choice].votes + 1,
@@ -90,7 +90,7 @@ export function useNoteCapture(props: {
 					} : {}),
 				};
 
-				note.value.poll.choices = choices;
+				note.value.poll!.choices = choices;
 				break;
 			}
 
