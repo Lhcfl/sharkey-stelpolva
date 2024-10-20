@@ -234,15 +234,21 @@ export class DriveService {
 
 			if (alts.thumbnail) {
 				promises.push(this.internalStorageService.saveFromBuffer(thumbnailAccessKey, alts.thumbnail.data));
-				this.registerLogger.info(`thumbnail stored: ${thumbnailAccessKey}`);
 			}
 
 			if (alts.webpublic) {
 				promises.push(this.internalStorageService.saveFromBuffer(webpublicAccessKey, alts.webpublic.data));
-				this.registerLogger.info(`web stored: ${webpublicAccessKey}`);
 			}
 
 			const [url, thumbnailUrl, webpublicUrl] = await Promise.all(promises);
+
+			if (thumbnailUrl) {
+				this.registerLogger.info(`thumbnail stored: ${thumbnailAccessKey}`);
+			}
+
+			if (webpublicUrl) {
+				this.registerLogger.info(`web stored: ${webpublicAccessKey}`);
+			}
 
 			file.storedInternal = true;
 			file.url = url;
