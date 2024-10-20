@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import yaml from "js-yaml";
 
-const en = yaml.load(fs.readFileSync("locales/en-US.yml").toString());
+const en = yaml.load(fs.readFileSync("sharkey-locales/en-US.yml").toString());
 
 const lang = process.argv[process.argv.length - 1]
 console.log("Reading", lang, "defination...");
-const another = yaml.load(fs.readFileSync(`locales/${lang}.yml`));
+const another = yaml.load(fs.readFileSync(`sharkey-locales/${lang}.yml`));
 
 function deepCompare(obj1, obj2) {
 	for (const k of Object.keys(obj1)) {
@@ -20,7 +20,7 @@ function deepCompare(obj1, obj2) {
 
 deepCompare(en, another);
 
-fs.writeFileSync(`locales/${lang}.yml`, "---\n" + yaml.dump(another, {
+fs.writeFileSync(`sharkey-locales/${lang}.yml`, "---\n" + yaml.dump(another, {
 	quotingType: '"',
 	lineWidth: 999,
 	forceQuotes: true,
