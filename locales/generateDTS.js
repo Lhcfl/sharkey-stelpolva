@@ -4,6 +4,7 @@ import { dirname } from 'node:path';
 import * as yaml from 'js-yaml';
 import ts from 'typescript';
 import { merge } from './index.js';
+import { tryReadFile } from './index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -57,9 +58,9 @@ function createMembers(record) {
 }
 
 export default function generateDTS() {
-	const sharkeyLocale = yaml.load(fs.readFileSync(`${__dirname}/../sharkey-locales/en-US.yml`, 'utf-8'));
-	const stpvLocale = yaml.load(fs.readFileSync(`${__dirname}/../stpv-locales/zh-CN.yml`, 'utf-8'));
-	const misskeyLocale = yaml.load(fs.readFileSync(`${__dirname}/ja-JP.yml`, 'utf-8'));
+	const sharkeyLocale = yaml.load(tryReadFile(`${__dirname}/../sharkey-locales/en-US.yml`, 'utf-8'));
+	const stpvLocale = yaml.load(tryReadFile(`${__dirname}/../stpv-locales/zh-CN.yml`, 'utf-8'));
+	const misskeyLocale = yaml.load(tryReadFile(`${__dirname}/ja-JP.yml`, 'utf-8'));
 	const locale = merge(misskeyLocale, sharkeyLocale, stpvLocale);
 
 	const members = createMembers(locale);
