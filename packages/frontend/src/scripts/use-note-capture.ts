@@ -5,18 +5,18 @@
 
 import { onUnmounted, Ref, ShallowRef } from 'vue';
 import * as Misskey from 'misskey-js';
+import { misskeyApi } from './misskey-api.js';
 import { useStream } from '@/stream.js';
 import { $i } from '@/account.js';
 import * as os from '@/os.js';
-import { misskeyApi } from './misskey-api.js';
 
 export function useNoteCapture(props: {
 	rootEl: ShallowRef<HTMLElement | undefined>;
 	note: Ref<Misskey.entities.Note>;
-	pureNote: Ref<Misskey.entities.Note>;
+	pureNote?: Ref<Misskey.entities.Note>;
 	isDeletedRef: Ref<boolean>;
-	onReplyCallback: (replyNote: Misskey.entities.Note) => void | undefined;
-	onDeleteCallback: (id: Misskey.entities.Note['id']) => void | undefined;
+	onReplyCallback?: (replyNote: Misskey.entities.Note) => void | Promise<void>;
+	onDeleteCallback?: (id: Misskey.entities.Note['id']) => void | Promise<void>;
 }) {
 	const note = props.note;
 	const pureNote = props.pureNote !== undefined ? props.pureNote : props.note;
@@ -39,7 +39,7 @@ export function useNoteCapture(props: {
 
 					await props.onReplyCallback(replyNote);
 				} catch { /* empty */ }
-				
+
 				break;
 			}
 
@@ -106,7 +106,7 @@ export function useNoteCapture(props: {
 					const editedNote = await misskeyApi('notes/show', {
 						noteId: id,
 					});
-					
+
 					const keys = new Set<string>();
 					Object.keys(editedNote)
 						.concat(Object.keys(note.value))
