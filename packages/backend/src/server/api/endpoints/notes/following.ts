@@ -63,7 +63,32 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.setParameter('me', me.id)
 
 				// Limit to latest notes
-				.innerJoin(SkLatestNote, 'latest', 'note.id = latest.note_id')
+				.innerJoin(
+					(sub: SelectQueryBuilder<SkLatestNote>) => {
+						sub
+							.from(SkLatestNote, 'latest')
+
+							// Return only one note per user
+							.addSelect('latest.user_id', 'user_id')
+							.addSelect('MAX(latest.note_id)', 'note_id')
+							.groupBy('latest.user_id');
+
+						// Match selected note types.
+						if (!ps.includeNonPublic) {
+							sub.andWhere('latest.is_public = true');
+						}
+						if (!ps.includeReplies) {
+							sub.andWhere('latest.is_reply = false');
+						}
+						if (!ps.includeQuotes) {
+							sub.andWhere('latest.is_quote = false');
+						}
+
+						return sub;
+					},
+					'latest',
+					'note.id = latest.note_id',
+				)
 
 				// Avoid N+1 queries from the "pack" method
 				.innerJoinAndSelect('note.user', 'user')
@@ -85,17 +110,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// Limit to files, if requested
 			if (ps.filesOnly) {
 				query.andWhere('note."fileIds" != \'{}\'');
-			}
-
-			// Match selected note types.
-			if (!ps.includeNonPublic) {
-				query.andWhere('latest.is_public');
-			}
-			if (!ps.includeReplies) {
-				query.andWhere('latest.is_reply = false');
-			}
-			if (!ps.includeQuotes) {
-				query.andWhere('latest.is_quote = false');
 			}
 
 			// Match selected user types.
