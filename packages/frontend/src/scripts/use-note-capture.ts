@@ -5,10 +5,10 @@
 
 import { onUnmounted, Ref, ShallowRef } from 'vue';
 import * as Misskey from 'misskey-js';
-import { misskeyApi } from './misskey-api.js';
 import { useStream } from '@/stream.js';
 import { $i } from '@/account.js';
 import * as os from '@/os.js';
+import { misskeyApi } from './misskey-api.js';
 
 export function useNoteCapture(props: {
 	rootEl: ShallowRef<HTMLElement | undefined>;
