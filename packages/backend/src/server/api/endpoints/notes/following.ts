@@ -27,6 +27,14 @@ export const meta = {
 			ref: 'Note',
 		},
 	},
+
+	errors: {
+		bothWithRepliesAndWithFiles: {
+			message: 'Specifying both includeReplies and filesOnly is not supported',
+			code: 'BOTH_INCLUDE_REPLIES_AND_FILES_ONLY',
+			id: '91c8cb9f-36ed-46e7-9ca2-7df96ed6e222',
+		},
+	},
 } as const;
 
 export const paramDef = {
@@ -58,6 +66,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			if (ps.includeReplies && ps.filesOnly) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
+
 			const query = this.notesRepository
 				.createQueryBuilder('note')
 				.setParameter('me', me.id)
