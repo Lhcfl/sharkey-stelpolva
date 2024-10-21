@@ -346,6 +346,9 @@ export function getNoteMenu(props: {
 		}, getCopyNoteLinkMenu(appearNote, i18n.ts.copyLink));
 
 		if (appearNote.url || appearNote.uri) {
+			menuItems.push(
+				getCopyNoteOriginLinkMenu(appearNote, 'Copy link (Origin)')
+			);
 			menuItems.push({
 				icon: 'ti ti-external-link',
 				text: i18n.ts.showOnRemote,
