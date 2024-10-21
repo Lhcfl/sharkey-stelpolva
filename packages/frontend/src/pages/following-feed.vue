@@ -5,7 +5,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div :class="$style.root">
-	<MkPageHeader v-model:tab="userList" :class="$style.header" :tabs="headerTabs" :actions="headerActions" :displayBackButton="true" @update:tab="onChangeTab"/>
+	<div :class="$style.header">
+		<MkPageHeader v-model:tab="userList" :tabs="headerTabs" :actions="headerActions" :displayBackButton="true" @update:tab="onChangeTab"/>
+		<MkInfo v-if="showRemoteWarning" :class="$style.remoteWarning" warn closable @close="remoteWarningDismissed = true">{{ i18n.ts.remoteFollowersWarning }}</MkInfo>
+	</div>
 
 	<div ref="noteScroll" :class="$style.notes">
 		<MkHorizontalSwipe v-model:tab="userList" :tabs="headerTabs">
@@ -66,6 +69,7 @@ import { useScrollPositionManager } from '@/nirax.js';
 import { defaultStore } from '@/store.js';
 import { deepMerge } from '@/scripts/merge.js';
 import MkPagination, { Paging } from '@/components/MkPagination.vue';
+import MkInfo from '@/components/MkInfo.vue';
 
 const withNonPublic = computed({
 	get: () => {
@@ -94,6 +98,10 @@ const userList = computed({
 	get: () => defaultStore.reactiveState.followingFeed.value.userList,
 	set: value => saveFollowingFilter('userList', value),
 });
+const remoteWarningDismissed = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.remoteWarningDismissed,
+	set: value => saveFollowingFilter('remoteWarningDismissed', value),
+});
 
 // Based on timeline.saveTlFilter()
 function saveFollowingFilter<Key extends keyof typeof defaultStore.state.followingFeed>(key: Key, value: (typeof defaultStore.state.followingFeed)[Key]) {
@@ -106,6 +114,8 @@ const router = useRouter();
 const userRecentNotes = shallowRef<InstanceType<typeof SkUserRecentNotes>>();
 const userScroll = shallowRef<HTMLElement>();
 const noteScroll = shallowRef<HTMLElement>();
+
+const showRemoteWarning = computed(() => userList.value === 'followers' && !remoteWarningDismissed.value);
 
 // We have to disable the per-user feed on small displays, and it must be done through JS instead of CSS.
 // Otherwise, the second column will waste resources in the background.
@@ -314,6 +324,10 @@ definePageMetadata(() => ({
 	overflow-y: auto;
 }
 
+.remoteWarning {
+	margin: 12px 12px 0 12px;
+}
+
 .userInfo {
 	margin-bottom: 12px;
 }
@@ -326,6 +340,10 @@ definePageMetadata(() => ({
 			"header header header header"
 			"lm notes user rm";
 		gap: 24px;
+	}
+
+	.remoteWarning {
+		margin: 24px 24px 0 24px;
 	}
 
 	.userInfo {

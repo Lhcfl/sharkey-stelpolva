@@ -251,6 +251,7 @@ export const defaultStore = markRaw(new Storage('base', {
 			withReplies: false,
 			onlyFiles: false,
 			userList: 'following' as FollowingFeedTab,
+			remoteWarningDismissed: false,
 		},
 	},
 
