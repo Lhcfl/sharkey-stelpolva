@@ -4,12 +4,14 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
+import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 import { SkLatestNote, MiFollowing } from '@/models/_.js';
 import type { NotesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { QueryService } from '@/core/QueryService.js';
+import { ApiError } from '@/server/api/error.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -34,13 +36,19 @@ export const meta = {
 			code: 'BOTH_INCLUDE_REPLIES_AND_FILES_ONLY',
 			id: '91c8cb9f-36ed-46e7-9ca2-7df96ed6e222',
 		},
+		bothWithFollowersAndIncludeNonPublic: {
+			message: 'Specifying both list:followers and includeNonPublic is not supported',
+			code: 'BOTH_LIST_FOLLOWERS_AND_INCLUDE_NON_PUBLIC',
+			id: '7a1b9cb6-235b-4e58-9c00-32c1796f502c',
+		},
 	},
 } as const;
 
 export const paramDef = {
 	type: 'object',
 	properties: {
-		mutualsOnly: { type: 'boolean', default: false },
+		list: { type: 'string', enum: ['following', 'followers', 'mutuals'], default: 'following' },
+
 		filesOnly: { type: 'boolean', default: false },
 		includeNonPublic: { type: 'boolean', default: false },
 		includeReplies: { type: 'boolean', default: false },
@@ -67,6 +75,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.includeReplies && ps.filesOnly) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
+			if (ps.list === 'followers' && ps.includeNonPublic) throw new ApiError(meta.errors.bothWithFollowersAndIncludeNonPublic);
 
 			const query = this.notesRepository
 				.createQueryBuilder('note')
@@ -107,14 +116,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('reply.user', 'replyUser')
 				.leftJoinAndSelect('renote.user', 'renoteUser')
 				.leftJoinAndSelect('note.channel', 'channel')
+			;
 
-				// Limit to followers
-				.innerJoin(MiFollowing, 'following', 'latest.user_id = following."followeeId"')
-				.andWhere('following."followerId" = :me');
-
-			// Limit to mutuals, if requested
-			if (ps.mutualsOnly) {
-				query.innerJoin(MiFollowing, 'mutuals', 'latest.user_id = mutuals."followerId" AND mutuals."followeeId" = :me');
+			// Select the appropriate collection of users
+			if (ps.list === 'followers') {
+				addFollower(query);
+			} else if (ps.list === 'following') {
+				addFollowee(query);
+			} else {
+				addMutual(query);
 			}
 
 			// Limit to files, if requested
@@ -142,4 +152,27 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			return await this.noteEntityService.packMany(notes, me);
 		});
 	}
+}
+
+/**
+ * Limit to followers (they follow us)
+ */
+function addFollower<T extends SelectQueryBuilder<ObjectLiteral>>(query: T): T {
+	return query.innerJoin(MiFollowing, 'follower', 'follower."followerId" = latest.user_id AND follower."followeeId" = :me');
+}
+
+/**
+ * Limit to followees (we follow them)
+ */
+function addFollowee<T extends SelectQueryBuilder<ObjectLiteral>>(query: T): T {
+	return query.innerJoin(MiFollowing, 'followee', 'followee."followerId" = :me AND followee."followeeId" = latest.user_id');
+}
+
+/**
+ * Limit to mutuals (they follow us AND we follow them)
+ */
+function addMutual<T extends SelectQueryBuilder<ObjectLiteral>>(query: T): T {
+	addFollower(query);
+	addFollowee(query);
+	return query;
 }
