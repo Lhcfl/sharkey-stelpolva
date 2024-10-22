@@ -11403,6 +11403,46 @@ export interface Locale extends ILocale {
          */
         "bulkText": string;
     };
+    "_stpvPlus": {
+        /**
+         * Stelpolva Plus 设置
+         */
+        "title": string;
+        /**
+         * 这些设置是 Sharkey Stelpolva 添加的设置，是普通Sharkey实例没有的。
+         */
+        "info": string;
+        "disableAllReactions": {
+            /**
+             * 前端禁用回应表情功能
+             */
+            "label": string;
+            /**
+             * 该设置只是前端更改，别人仍然可以对你的帖子做出回应。只对Sharkey风格Note生效
+             */
+            "caption": string;
+        };
+        "defaultFont": {
+            /**
+             * 默认字体
+             */
+            "label": string;
+            /**
+             * 一些中文字体文件较大，请切换字体后等待一会儿字体文件的加载。为了更好的体验，仅支持简体的峄山碑篆体和仅支持繁体的崇羲篆體会互相补充。
+             */
+            "caption": string;
+        };
+        "fontType": {
+            /**
+             * 字体属性
+             */
+            "label": string;
+            /**
+             * 选择字体的子属性
+             */
+            "caption": string;
+        };
+    };
 }
 declare const locales: {
     [lang: string]: Locale;

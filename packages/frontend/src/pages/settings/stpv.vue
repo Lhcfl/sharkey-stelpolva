@@ -6,8 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div class="_gaps_m">
 	<MkInfo>
-		<p> 这些设置是 Sharkey Stelpolva 添加的设置，是普通Sharkey实例没有的。</p>
-		<p> These settings are added by Sharkey Stelpolva and are not available in normal Sharkey instances. </p>
+		{{ i18n.ts._stpvPlus.info }}
 	</MkInfo>
 
 	<FormSection first>
@@ -16,11 +15,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps_m">
 			<div class="_gaps_s">
 				<MkSelect v-model="defaultFont.fontFace">
-					<template #label>默认字体 Default Font</template>
+					<template #label>{{ i18n.ts._stpvPlus.defaultFont.label }}</template>
 					<template #caption>
-						<p>Some Chinese font files are large, please wait for a while for the font to load after switching.</p>
-						<p>一些中文字体文件较大，请切换字体后等待一会儿字体文件的加载。</p>
-						<p>为了更好的体验，仅支持简体的峄山碑篆体和仅支持繁体的崇羲篆體会互相补充。</p>
+						{{ i18n.ts._stpvPlus.defaultFont.caption }}
 					</template>
 					<option
 						v-for="item in defaultFont.fontList"
@@ -31,9 +28,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</option>
 				</MkSelect>
 				<MkRadios v-if="defaultFont.availableTypes.length > 0" v-model="defaultFont.fontFaceType">
-					<template #label>字体属性 Font Type</template>
+					<template #label>{{ i18n.ts._stpvPlus.fontType.label }}</template>
 					<template #caption>
-						选择字体的子属性
+						{{ i18n.ts._stpvPlus.fontType.caption }}
 					</template>
 					<option
 						v-for="item in defaultFont.availableTypes"
@@ -46,8 +43,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 			<div class="_gaps_s">
 				<MkSwitch v-model="stpvDisableAllReactions">
-					前端禁用表情回应功能 Disable all reactions
-					<template #caption>该设置只是前端更改，别人仍然可以对你的帖子做出回应。只对Sharkey风格Note生效</template>
+					{{ i18n.ts._stpvPlus.disableAllReactions.label }}
+					<template #caption>{{ i18n.ts._stpvPlus.disableAllReactions.caption }}</template>
 				</MkSwitch>
 			</div>
 		</div>
@@ -114,7 +111,7 @@ const stpvDisableAllReactions = computed(defaultStore.makeGetterSetter('stpvDisa
 // const headerTabs = computed(() => []);
 
 definePageMetadata(() => ({
-	title: 'Sharkey Stelpolva Plus Settings',
+	title: i18n.ts._stpvPlus.title,
 	icon: 'ti ti-dots',
 }));
 </script>

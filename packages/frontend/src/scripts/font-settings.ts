@@ -1,4 +1,5 @@
 import { computed, ref, watch } from 'vue';
+import type { Ref, ComputedRef } from 'vue';
 import { miLocalStorage } from '@/local-storage.js';
 import { i18n } from '@/i18n.js';
 
@@ -87,5 +88,17 @@ export function getDefaultFontSettings() {
 		fontFace,
 		fontFaceType,
 		availableTypes,
-	});
+	}) as Ref<{
+		fontList: {
+			id: string;
+			name: string;
+		}[];
+		fontFace: string;
+		fontFaceType: string;
+		availableTypes: {
+			id: string;
+			name: string;
+			default?: boolean;
+		}[];
+	}>;
 }

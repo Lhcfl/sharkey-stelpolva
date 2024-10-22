@@ -16,3 +16,15 @@ makePrivate:
   manyWarn: "真的要批量私密化这 {count} 个帖子吗？这个操作不可逆，你的这些帖子会永远只有你自己可见（真的！）"
   didStart: "私密化进程已经开始"
   bulkText: "批量私密化帖子"
+_stpvPlus:
+  title: Stelpolva Plus 设置
+  info: 这些设置是 Sharkey Stelpolva 添加的设置，是普通Sharkey实例没有的。
+  disableAllReactions:
+    label: 前端禁用回应表情功能
+    caption: 该设置只是前端更改，别人仍然可以对你的帖子做出回应。只对Sharkey风格Note生效
+  defaultFont:
+    label: 默认字体
+    caption: 一些中文字体文件较大，请切换字体后等待一会儿字体文件的加载。为了更好的体验，仅支持简体的峄山碑篆体和仅支持繁体的崇羲篆體会互相补充。
+  fontType:
+    label: 字体属性
+    caption: 选择字体的子属性

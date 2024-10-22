@@ -19,3 +19,15 @@ makePrivate:
   manyWarn: Do you really want to make these {count} posts private in batches? This operation is irreversible and your posts will only be visible to you forever (really!)
   didStart: The making-private process has started
   bulkText: Bulk make posts private
+_stpvPlus:
+  title: Stelpolva Plus Settings
+  info: These settings are added by Sharkey Stelpolva and are not available in normal Sharkey instances.
+  disableAllReactions:
+    label: Disable all reactions for front-end
+    caption: This only includes front-end changes, so other people can still react emojis to you. Only available for Sharkey style note.
+  defaultFont:
+    label: Default Font
+    caption: Some Chinese font files are large, please wait for a while for the font to load after switching. 为了更好的体验，仅支持简体的峄山碑篆体和仅支持繁体的崇羲篆體会互相补充。
+  fontType:
+    label: Font Type
+    caption: Select subfont for the font
