@@ -22547,8 +22547,11 @@ export type operations = {
     requestBody: {
       content: {
         'application/json': {
-          /** @default false */
-          mutualsOnly?: boolean;
+          /**
+           * @default following
+           * @enum {string}
+           */
+          list?: 'following' | 'followers' | 'mutuals';
           /** @default false */
           filesOnly?: boolean;
           /** @default false */

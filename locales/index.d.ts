@@ -11334,6 +11334,10 @@ export interface Locale extends ILocale {
          */
         "trustThisDomain": string;
     };
+    /**
+     * Remote followers may have incomplete or outdated activity
+     */
+    "remoteFollowersWarning": string;
 }
 declare const locales: {
     [lang: string]: Locale;
