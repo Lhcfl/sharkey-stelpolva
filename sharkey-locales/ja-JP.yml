@@ -135,6 +135,7 @@ repositoryUrlDescription: "ソースコードが公開されているリポジ�
 donation: "寄付する"
 donationUrl: "寄付URL"
 showBelowAvatar: "アイコンの後ろに表示"
+allowClickingNotifications: "ポップアップ通知のクリックを許可する"
 seasonalScreenEffect: "季節に応じた画面の演出"
 noDescription: "説明文はありません"
 sensitiveMediaRevealConfirm: "センシティブなメディアです。表示しますか？"
