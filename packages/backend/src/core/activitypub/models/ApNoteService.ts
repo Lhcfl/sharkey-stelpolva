@@ -5,6 +5,7 @@
 
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
+import * as Bull from 'bullmq';
 import { DI } from '@/di-symbols.js';
 import type { PollsRepository, EmojisRepository, NotesRepository, ChannelsRepository, MiMeta } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -238,11 +239,19 @@ export class ApNoteService {
 				})
 				.catch(async err => {
 					this.logger.warn(`Error in inReplyTo ${note.inReplyTo} - ${err.statusCode ?? err}`);
-					if (visibility === 'followers') {
-						throw err;
-					} else {
-						return null;
+					if (visibility === 'followers') { throw err; } // private reply
+					if (err.message === 'Instance is blocked') { throw err; }
+					if (err.message === 'blocked host') { throw err; }
+					if (err instanceof IdentifiableError) {
+						if (err.id === '85ab9bd7-3a41-4530-959d-f07073900109') { throw err; } // actor has been suspended
 					}
+					if (err instanceof StatusError) {
+						if (err.statusCode === 404) { return null; } // eat 404 error
+					}
+					if (err instanceof Bull.UnrecoverableError) {
+						return null; // eat unrecoverableerror
+					}
+					throw err;
 				})
 			: null;
 
