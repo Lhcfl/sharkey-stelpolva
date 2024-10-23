@@ -28,3 +28,13 @@ _stpvPlus:
   fontType:
     label: 字体属性
     caption: 选择字体的子属性
+  softMutedUsers:
+    label: 在时间线上折叠的用户 ID
+    caption: 填写从 Raw 上可以看到的用户 ID，一行一个。最多不能超过100个，超出的部分会被自动删除。
+  softMutedNotes:
+    label: 在时间线上折叠的帖子 ID
+    caption: 填写从 URL 上可以看到的帖子 ID，一行一个。最多不能超过100个，超出的部分会被自动删除。
+stpvMuteUser: "在时间线上折叠该用户的帖子"
+stpvUnmuteUser: "在时间线上恢复显示该用户的帖子"
+stpvMuteNote: "以后在时间线上折叠"
+stpvUnmuteNote: "以后在时间线上恢复显示"

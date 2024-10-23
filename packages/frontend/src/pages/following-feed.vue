@@ -164,6 +164,9 @@ async function onChangeTab(): Promise<void> {
 }
 
 function isSoftMuted(note: Misskey.entities.Note): boolean {
+	if (defaultStore.state.stpvClientMutedNotes.includes(note.id)) { return true; }
+	if (note.replyId && defaultStore.state.stpvClientMutedNotes.includes(note.replyId)) { return true; }
+	if (note.renoteId && defaultStore.state.stpvClientMutedNotes.includes(note.renoteId)) { return true; }
 	return isMuted(note, $i?.mutedWords);
 }
 

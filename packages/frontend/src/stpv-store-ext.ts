@@ -7,4 +7,12 @@ export const stpvDefaultStoreExtension = {
 		where: 'device',
 		default: false as boolean,
 	},
+	stpvClientMutedUsers: {
+		where: 'account',
+		default: [] as string[],
+	},
+	stpvClientMutedNotes: {
+		where: 'account',
+		default: [] as string[],
+	},
 } as const;

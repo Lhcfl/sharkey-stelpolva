@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div
-	v-if="!hardMuted && muted === false"
+	v-if="!hardMuted && (muted === false || softMuteExpanded)"
 	v-show="!isDeleted"
 	ref="rootEl"
 	v-hotkey="keymap"
@@ -173,7 +173,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</article>
 </div>
-<div v-else-if="!hardMuted" :class="$style.muted" @click="muted = false">
+<div v-else-if="!hardMuted && !softMuteExpanded" :class="$style.muted" @click="softMuteExpanded = true">
 	<I18n v-if="muted === 'sensitiveMute'" :src="i18n.ts.userSaysSomethingSensitive" tag="small">
 		<template #name>
 			<MkA v-user-preview="appearNote.userId" :to="userPage(appearNote.user)">
@@ -246,6 +246,7 @@ import { type Keymap } from '@/scripts/hotkey.js';
 import { focusPrev, focusNext } from '@/scripts/focus.js';
 import { getAppearNote } from '@/scripts/get-appear-note.js';
 import { spacingNote } from '@/scripts/autospacing';
+import { checkStpvSoftMute } from '@/scripts/check-stpv-soft-mute';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note;
@@ -318,7 +319,10 @@ const isLong = shouldCollapsed(appearNote.value, urls.value ?? []);
 const collapsed = ref(defaultStore.state.expandLongNote && appearNote.value.cw == null && isLong ? false : appearNote.value.cw == null && isLong);
 const isDeleted = ref(false);
 const renoted = ref(false);
-const muted = ref(checkMute(appearNote.value, $i?.mutedWords));
+
+const muted = computed(() => checkStpvSoftMute(appearNote) || checkMute(appearNote.value, $i?.mutedWords));
+const softMuteExpanded = ref(false);
+
 const hardMuted = ref(props.withHardMute && checkMute(appearNote.value, $i?.hardMutedWords, true));
 const translation = ref<Misskey.entities.NotesTranslateResponse | null>(null);
 const translating = ref(false);

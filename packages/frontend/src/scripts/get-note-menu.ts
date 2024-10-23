@@ -360,7 +360,7 @@ export function getNoteMenu(props: {
 
 		if (appearNote.url || appearNote.uri) {
 			menuItems.push(
-				getCopyNoteOriginLinkMenu(appearNote, 'Copy link (Origin)')
+				getCopyNoteOriginLinkMenu(appearNote, 'Copy link (Origin)'),
 			);
 			menuItems.push({
 				icon: 'ti ti-external-link',
@@ -407,6 +407,24 @@ export function getNoteMenu(props: {
 			text: i18n.ts.clip,
 			children: () => getNoteClipMenu(props),
 		});
+
+		menuItems.push(defaultStore.state.stpvClientMutedNotes.includes(props.note.id)
+			? {
+				icon: 'ph-eye-closed ph-bold ph-lg',
+				text: i18n.ts.stpvUnmuteNote,
+				action: () => {
+					defaultStore.set('stpvClientMutedNotes', defaultStore.state.stpvClientMutedNotes.filter((x) => x !== props.note.id).filter(x => x));
+				},
+			}
+			: {
+				icon: 'ph-eye-closed ph-bold ph-lg',
+				text: i18n.ts.stpvMuteNote,
+				action: () => {
+					// Limit max 100 notes
+					defaultStore.set('stpvClientMutedNotes', [props.note.id, ...defaultStore.state.stpvClientMutedNotes.filter(x => x).slice(0, 100)]);
+				},
+			},
+		);
 
 		menuItems.push(statePromise.then(state => state.isMutedThread ? {
 			icon: 'ti ti-message-off',

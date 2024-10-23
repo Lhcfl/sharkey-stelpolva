@@ -66,6 +66,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</FormSection>
 
 	<FormSection>
+		<template #label>{{ i18n.ts.muteAndBlock }}</template>
+		<div class="_gaps_m">
+			<div class="_gaps_s">
+				<MkTextarea v-model="stpvMutedUsersList" manualSave>
+					<template #label>{{ i18n.ts._stpvPlus.softMutedUsers.label }}</template>
+					<template #caption>{{ i18n.ts._stpvPlus.softMutedUsers.caption }}</template>
+				</MkTextarea>
+			</div>
+			<div class="_gaps_s">
+				<MkTextarea v-model="stpvMutedNotesList" manualSave>
+					<template #label>{{ i18n.ts._stpvPlus.softMutedNotes.label }}</template>
+					<template #caption>{{ i18n.ts._stpvPlus.softMutedNotes.caption }}</template>
+				</MkTextarea>
+			</div>
+		</div>
+	</FormSection>
+
+	<FormSection>
 		<template #label>{{ i18n.ts.operations }}</template>
 		<div class="_gaps_m">
 			<div class="_gaps_s">
@@ -77,7 +95,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import FormLink from '@/components/form/link.vue';
 import MkFolder from '@/components/MkFolder.vue';
@@ -96,6 +114,7 @@ import { unisonReload } from '@/scripts/unison-reload.js';
 import FormSection from '@/components/form/section.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import { getDefaultFontSettings } from '@/scripts/font-settings';
+import MkTextarea from '@/components/MkTextarea.vue';
 
 // Uncomment the next line when signInRequired settings added
 // const $i = signinRequired();
@@ -105,6 +124,19 @@ console.log(defaultFont);
 
 const autoSpacingBehaviour = computed(defaultStore.makeGetterSetter('chineseAutospacing'));
 const stpvDisableAllReactions = computed(defaultStore.makeGetterSetter('stpvDisableAllReactions'));
+
+const stpvMutedUsersList = computed({
+	get: () => defaultStore.reactiveState.stpvClientMutedUsers.value.filter(x => x).join('\n'),
+	set: (v) => {
+		defaultStore.set('stpvClientMutedUsers', v.split('\n').filter(x => x.trim()).slice(0, 100));
+	},
+});
+const stpvMutedNotesList = computed({
+	get: () => defaultStore.reactiveState.stpvClientMutedNotes.value.filter(x => x).join('\n'),
+	set: (v) => {
+		defaultStore.set('stpvClientMutedNotes', v.split('\n').filter(x => x.trim()).slice(0, 100));
+	},
+});
 
 // const headerActions = computed(() => []);
 

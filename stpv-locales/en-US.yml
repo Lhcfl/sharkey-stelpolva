@@ -31,3 +31,13 @@ _stpvPlus:
   fontType:
     label: Font Type
     caption: Select subfont for the font
+  softMutedUsers:
+    label: User IDs soft muted on the timeline
+    caption: Fill in the user IDs that can be found on Raw, one per line. At most 100 IDs, and any exceeded will be deleted.
+  softMutedNotes:
+    label: Post IDs soft muted on the timeline
+    caption: Fill in the note IDs that can be found on URL, one per line. At most 100 IDs, and any exceeded will be deleted.
+stpvMuteUser: "Soft mute notes in timeline"
+stpvUnmuteUser: "Don't soft mute notes in timeline"
+stpvMuteNote: "Soft mute this note later"
+stpvUnmuteNote: "Unmute this note"

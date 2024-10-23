@@ -244,6 +244,7 @@ import { isEnabledUrlPreview } from '@/instance.js';
 import { type Keymap } from '@/scripts/hotkey.js';
 import { focusPrev, focusNext } from '@/scripts/focus.js';
 import { getAppearNote } from '@/scripts/get-appear-note.js';
+import { checkStpvSoftMute } from '@/scripts/check-stpv-soft-mute';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note;
@@ -316,7 +317,9 @@ const isLong = shouldCollapsed(appearNote.value, urls.value ?? []);
 const collapsed = ref(defaultStore.state.expandLongNote && appearNote.value.cw == null && isLong ? false : appearNote.value.cw == null && isLong);
 const isDeleted = ref(false);
 const renoted = ref(false);
-const muted = ref(checkMute(appearNote.value, $i?.mutedWords));
+
+const muted = ref(checkStpvSoftMute(appearNote) || checkMute(appearNote.value, $i?.mutedWords));
+
 const hardMuted = ref(props.withHardMute && checkMute(appearNote.value, $i?.hardMutedWords, true));
 const translation = ref<Misskey.entities.NotesTranslateResponse | null>(null);
 const translating = ref(false);

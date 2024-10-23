@@ -11446,7 +11446,43 @@ export interface Locale extends ILocale {
              */
             "caption": string;
         };
+        "softMutedUsers": {
+            /**
+             * 在时间线上折叠的用户 ID
+             */
+            "label": string;
+            /**
+             * 填写从 Raw 上可以看到的用户 ID，一行一个。最多不能超过100个，超出的部分会被自动删除。
+             */
+            "caption": string;
+        };
+        "softMutedNotes": {
+            /**
+             * 在时间线上折叠的帖子 ID
+             */
+            "label": string;
+            /**
+             * 填写从 URL 上可以看到的帖子 ID，一行一个。最多不能超过100个，超出的部分会被自动删除。
+             */
+            "caption": string;
+        };
     };
+    /**
+     * 在时间线上折叠该用户的帖子
+     */
+    "stpvMuteUser": string;
+    /**
+     * 在时间线上恢复显示该用户的帖子
+     */
+    "stpvUnmuteUser": string;
+    /**
+     * 以后在时间线上折叠
+     */
+    "stpvMuteNote": string;
+    /**
+     * 以后在时间线上恢复显示
+     */
+    "stpvUnmuteNote": string;
 }
 declare const locales: {
     [lang: string]: Locale;
