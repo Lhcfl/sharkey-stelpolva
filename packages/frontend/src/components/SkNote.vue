@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkA v-user-preview="appearNote.reply.userId" :class="$style.name" :to="userPage(appearNote.reply.user)">
 			<MkAcct :user="appearNote.reply.user"/>
 		</MkA>:
-		<Mfm :text="getNoteSummary(appearNote.reply)" :plain="true" :nowrap="true" :author="appearNote.reply.user" :nyaize="'respect'" :class="$style.collapsedInReplyToText" @click="inReplyToCollapsed = false"/>
+		<Mfm :text="getNoteSummary(appearNote.reply)" :stpvInline="true" :nowrap="true" :author="appearNote.reply.user" :nyaize="'respect'" :class="$style.collapsedInReplyToText" @click="inReplyToCollapsed = false"/>
 	</div>
 	<div v-if="pinned" :class="$style.tip"><i class="ti ti-pin"></i> {{ i18n.ts.pinnedNote }}</div>
 	<!--<div v-if="appearNote._prId_" class="tip"><i class="ti ti-speakerphone"></i> {{ i18n.ts.promotion }}<button class="_textButton hide" @click="readPromo()">{{ i18n.ts.hideThisNote }} <i class="ti ti-x"></i></button></div>-->
@@ -52,7 +52,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div v-if="renoteCollapsed" :class="$style.collapsedRenoteTarget">
 		<MkAvatar :class="$style.collapsedRenoteTargetAvatar" :user="appearNote.user" link preview/>
-		<Mfm :text="getNoteSummary(appearNote)" :isBlock="true" :plain="true" :nowrap="true" :author="appearNote.user" :nyaize="'respect'" :class="$style.collapsedRenoteTargetText" @click="renoteCollapsed = false; inReplyToCollapsed = false"/>
+		<Mfm :text="getNoteSummary(appearNote)" :isBlock="true" :stpvInline="true" :nowrap="true" :author="appearNote.user" :nyaize="'respect'" :class="$style.collapsedRenoteTargetText" @click="renoteCollapsed = false; inReplyToCollapsed = false"/>
 	</div>
 	<article v-else :class="$style.article" @contextmenu.stop="onContextmenu">
 		<div style="display: flex; padding-bottom: 10px;">
