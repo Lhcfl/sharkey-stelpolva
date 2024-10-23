@@ -461,7 +461,12 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'blockCode': {
-				if (props.stpvInline) { return [h('code', {}, token.props.code)]; }
+				if (props.stpvInline) {
+					return [h('span', h(MkCodeInline, {
+						key: Math.random(),
+						code: token.props.code.replaceAll('\n', '  '),
+					}))];
+				}
 				return [h('bdi', { class: 'block' }, h(MkCode, {
 					key: Math.random(),
 					code: token.props.code,
