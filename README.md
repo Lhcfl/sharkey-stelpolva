@@ -87,7 +87,8 @@
 
 ## 从 Sharkey 迁移？ 
 
-> [!WARNING] Take your risk!
+> [!WARNING]
+> Take your risk!
 > We follow the develop branch of Sharkey, not the stable branch. So you may encounter features that are not so "stable".
 
 > [!NOTE]
