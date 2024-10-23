@@ -87,6 +87,9 @@
 
 ## 从 Sharkey 迁移？ 
 
+> [!WARN] Take your risk!
+> We follow the develop branch of Sharkey, not the stable branch. So you may encounter features that are not so "stable".
+
 > [!NOTE]
 > Sharkey Stelpolva Edition 不提供 Docker 安装方式。如果需要 Docker 安装你可以自己编辑 Docker Compose 并添加下面的额外依赖。
 
