@@ -53,6 +53,7 @@
 
 - 更好的中文翻译
 - 允许的界面字体范围大大增加，默认字体从14px改为16px
+- 处于 collapsed 状态的被回复/被折叠帖子现在采用 stpvInline MFM，提供完整但inline的MFM体验
 
 #### Features
 
