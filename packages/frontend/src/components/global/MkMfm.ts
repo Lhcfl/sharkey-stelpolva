@@ -424,7 +424,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'url': {
-				if (props.stpvInline) { return [h('i', {}, token.props.url)]; }
+				if (props.stpvInline) { return [h('span', { style: 'color: var(--link);' }, token.props.url)]; }
 				return [h('bdi', h(MkUrl, {
 					key: Math.random(),
 					url: token.props.url,
@@ -433,7 +433,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'link': {
-				if (props.stpvInline) { return [h('i', {}, genEl(token.children, scale))]; }
+				if (props.stpvInline) { return [h('span', { style: 'color: var(--link);' }, genEl(token.children, scale))]; }
 				return [h('bdi', h(MkLink, {
 					key: Math.random(),
 					url: token.props.url,
