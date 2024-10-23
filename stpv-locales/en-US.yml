@@ -37,7 +37,12 @@ _stpvPlus:
   softMutedNotes:
     label: Post IDs soft muted on the timeline
     caption: Fill in the note IDs that can be found on URL, one per line. At most 100 IDs, and any exceeded will be deleted.
+  softMutedDomains:
+    label: Domain names soft muted on the timeline
+    caption: Fill in the domain names, one per line. At most 100 domains, and any exceeded will be deleted.
 stpvMuteUser: "Soft mute notes in timeline"
 stpvUnmuteUser: "Don't soft mute notes in timeline"
 stpvMuteNote: "Soft mute this note later"
 stpvUnmuteNote: "Unmute this note"
+stpvMuteInstance: "Soft mute notes from this instance in timeline"
+stpvDomainUserSaysSomething: "{name} from {domain} said something"

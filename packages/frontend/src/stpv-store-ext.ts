@@ -15,4 +15,8 @@ export const stpvDefaultStoreExtension = {
 		where: 'account',
 		default: [] as string[],
 	},
+	stpvClientMutedDomains: {
+		where: 'account',
+		default: [] as string[],
+	},
 } as const;

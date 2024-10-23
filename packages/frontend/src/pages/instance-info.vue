@@ -37,6 +37,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</template>
 				</MkKeyValue>
 
+				<FormSection v-if="$i">
+					<template #label>{{ i18n.ts.muteAndBlock }}</template>
+					<div class="_gaps_s">
+						<MkSwitch v-model="isSoftMuted">{{ i18n.ts.stpvMuteInstance }}</MkSwitch>
+					</div>
+				</FormSection>
+
 				<FormSection v-if="iAmModerator">
 					<template #label>Moderation</template>
 					<div class="_gaps_s">
@@ -189,7 +196,7 @@ import MkSwitch from '@/components/MkSwitch.vue';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import number from '@/filters/number.js';
-import { iAmModerator, iAmAdmin } from '@/account.js';
+import { $i, iAmModerator, iAmAdmin } from '@/account.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { i18n } from '@/i18n.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
@@ -200,6 +207,7 @@ import { dateString } from '@/filters/date.js';
 import MkTextarea from '@/components/MkTextarea.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import sanitizeHtml from '@/scripts/sanitize-html';
+import { defaultStore } from '@/store';
 
 const props = defineProps<{
 	host: string;
@@ -237,6 +245,21 @@ const baseDomains = computed(() => {
 const isBaseBlocked = computed(() => meta.value && baseDomains.value.some(d => meta.value?.blockedHosts.includes(d)));
 const isBaseSilenced = computed(() => meta.value && baseDomains.value.some(d => meta.value?.silencedHosts.includes(d)));
 const isBaseMediaSilenced = computed(() => meta.value && baseDomains.value.some(d => meta.value?.mediaSilencedHosts.includes(d)));
+
+const isSoftMuted = computed({
+	get: () => defaultStore.reactiveState.stpvClientMutedDomains.value.includes(props.host),
+	set: (v) => {
+		if (v) {
+			defaultStore.set('stpvClientMutedDomains', [props.host, ...defaultStore.state.stpvClientMutedDomains].slice(0, 100));
+		} else {
+			defaultStore.set('stpvClientMutedDomains', defaultStore.state.stpvClientMutedDomains
+				.filter(x => x !== props.host)
+				.filter(x => x)
+				.slice(0, 100),
+			);
+		}
+	},
+});
 
 const usersPagination = {
 	endpoint: iAmModerator ? 'admin/show-users' : 'users',

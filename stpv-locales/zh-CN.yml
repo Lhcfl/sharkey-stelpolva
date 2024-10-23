@@ -34,7 +34,12 @@ _stpvPlus:
   softMutedNotes:
     label: 在时间线上折叠的帖子 ID
     caption: 填写从 URL 上可以看到的帖子 ID，一行一个。最多不能超过100个，超出的部分会被自动删除。
+  softMutedDomains:
+    label: Domain names soft muted on the timeline
+    caption: Fill in the domain names, one per line. At most 100 domains, and any exceeded will be deleted.
 stpvMuteUser: "在时间线上折叠该用户的帖子"
 stpvUnmuteUser: "在时间线上恢复显示该用户的帖子"
 stpvMuteNote: "以后在时间线上折叠"
 stpvUnmuteNote: "以后在时间线上恢复显示"
+stpvMuteInstance: "在时间线上折叠来自此实例的帖子"
+stpvDomainUserSaysSomething: "来自 {domain} 的 {name} 说了什么"

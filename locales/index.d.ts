@@ -11466,6 +11466,16 @@ export interface Locale extends ILocale {
              */
             "caption": string;
         };
+        "softMutedDomains": {
+            /**
+             * Domain names soft muted on the timeline
+             */
+            "label": string;
+            /**
+             * Fill in the domain names, one per line. At most 100 domains, and any exceeded will be deleted.
+             */
+            "caption": string;
+        };
     };
     /**
      * 在时间线上折叠该用户的帖子
@@ -11483,6 +11493,14 @@ export interface Locale extends ILocale {
      * 以后在时间线上恢复显示
      */
     "stpvUnmuteNote": string;
+    /**
+     * 在时间线上折叠来自此实例的帖子
+     */
+    "stpvMuteInstance": string;
+    /**
+     * 来自 {domain} 的 {name} 说了什么
+     */
+    "stpvDomainUserSaysSomething": ParameterizedString<"domain" | "name">;
 }
 declare const locales: {
     [lang: string]: Locale;

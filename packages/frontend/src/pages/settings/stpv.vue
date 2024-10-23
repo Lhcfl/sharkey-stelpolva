@@ -80,6 +80,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #caption>{{ i18n.ts._stpvPlus.softMutedNotes.caption }}</template>
 				</MkTextarea>
 			</div>
+			<div class="_gaps_s">
+				<MkTextarea v-model="stpvMutedDomainsList" manualSave>
+					<template #label>{{ i18n.ts._stpvPlus.softMutedDomains.label }}</template>
+					<template #caption>{{ i18n.ts._stpvPlus.softMutedDomains.caption }}</template>
+				</MkTextarea>
+			</div>
 		</div>
 	</FormSection>
 
@@ -133,6 +139,12 @@ const stpvMutedUsersList = computed({
 });
 const stpvMutedNotesList = computed({
 	get: () => defaultStore.reactiveState.stpvClientMutedNotes.value.filter(x => x).join('\n'),
+	set: (v) => {
+		defaultStore.set('stpvClientMutedNotes', v.split('\n').filter(x => x.trim()).slice(0, 100));
+	},
+});
+const stpvMutedDomainsList = computed({
+	get: () => defaultStore.reactiveState.stpvClientMutedDomains.value.filter(x => x).join('\n'),
 	set: (v) => {
 		defaultStore.set('stpvClientMutedNotes', v.split('\n').filter(x => x.trim()).slice(0, 100));
 	},

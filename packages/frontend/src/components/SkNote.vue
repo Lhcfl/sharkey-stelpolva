@@ -181,6 +181,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkA>
 		</template>
 	</I18n>
+	<I18n v-else-if="typeof muted === 'string' && muted.startsWith('mutedByDomain:')" :src="i18n.ts.stpvDomainUserSaysSomething" tag="small">
+		<template #name>
+			<MkA v-user-preview="appearNote.userId" :to="userPage(appearNote.user)">
+				<MkUserName :user="appearNote.user"/>
+			</MkA>
+		</template>
+		<template #domain>
+			<MkA :to="`/instance-info/${muted.split('mutedByDomain:')[1]}`" behavior="window">{{ muted.split('mutedByDomain:')[1] }}</MkA>
+		</template>
+	</I18n>
 	<I18n v-else :src="i18n.ts.userSaysSomething" tag="small">
 		<template #name>
 			<MkA v-user-preview="appearNote.userId" :to="userPage(appearNote.user)">
@@ -205,6 +215,7 @@ import { isPureRenote } from 'misskey-js/note.js';
 import { isLink } from '@@/js/is-link.js';
 import { shouldCollapsed } from '@@/js/collapsed.js';
 import { host } from '@@/js/config.js';
+import SkInstanceTicker from './SkInstanceTicker.vue';
 import type { MenuItem } from '@/types/menu.js';
 import SkNoteSub from '@/components/SkNoteSub.vue';
 import SkNoteHeader from '@/components/SkNoteHeader.vue';
