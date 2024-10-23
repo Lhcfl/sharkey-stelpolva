@@ -27,26 +27,44 @@
 
 ## 相对于 Sharkey 的修改：
 
+> [!NOTE]
+> We only provide Chinese README.md to explain our changes relative to upstream Sharkey. Fortunately, the Chinese below is accurate under Google Translate.
+
 ### DATABASE CHANGES
 
 - 添加了 pgroonga 用于全文搜索
 
 ### Other
 
-- 许多微小的可能影响体验的bug/feature修复
-- 添加了 Google Translation Fallback
-- 更好的中文翻译
-- 在 MkPostForm 上添加了 autosize （自动随着打字扩张文本框）
+#### Behaviour Changes
+
 - 还原了 Misskey 的 Hashtag 搜索设置，即你能搜到任何你可见的打了某个 Hashtag 的帖子
+- 限制了非meilisearch使用搜索可以搜到的visibility，防止随意搜到他人的unlisted/home帖子
+- 在 Sharkey Stelpolva 中，递归地 fetch 被回复帖子时如果出错不再一定会递归地将错误抛下，导致整个任务失败，而是会视情况静默吞下该错误
+- 限制 proxyAccount 当且仅当本地用户没有关注远程用户的时候发送关注请求
+
+#### Fixes
+
+- 许多微小的可能影响体验的 bug/feature 修复
+- 修复了 SkDetailedNote 帖子被编辑后不会更新 MFM 的问题
+- 修复一些 `@click.stop` 缺失的问题
+
+#### Improvements
+
+- 更好的中文翻译
+- 允许的界面字体范围大大增加，默认字体从14px改为16px
+
+#### Features
+
+- 添加了 Google Translation Fallback
+- 在 MkPostForm 上添加了 autosize （自动随着打字扩张文本框）
 - MkUrlPreview中添加了对 ActivityPub Note 的 Quote-style 预览支持
 - 允许 MkUrlPreview 打开 Bilibili 播放器
 - 更好的 Notification Read 逻辑，自动使得通知变为已读
 - Firefish 风格的 InstanceTicker（点击打开实例信息页面而不是转到原帖子）
 - 注册dialog上面可以写多行文本和MFM
-- 修复了SkDetailedNote帖子被编辑后不会更新MFM的问题
 - 允许多行 CW
 - 允许切换界面字体，并添加了大量中文字体
-- 允许的界面字体范围大大增加，默认字体从14px改为16px
 - 在天线中添加特殊关键词
 	- `domain:xxx.com` 匹配来自 `xxx.com` 的任意帖子
 	- `domain:here` 匹配来自本实例的任意帖子
@@ -55,17 +73,19 @@
 	- 它是允许加载 Misskey 的头像挂件的白名单实例
 	- 启用了 MediaProxy，因此应该不用担心安全风险
 - 添加功能允许自动在中文与英文之间添加空格
-- 限制了非meilisearch使用搜索可以搜到的visibility，防止随意搜到他人的unlisted/home帖子
 - 对于含有需要高亮的代码的帖子，fallback显示非高亮的代码而非MkLoading
-- 在 EmojiPicker 添加预览表情
-- 在 Sharkey Stelpolva 中，递归地 fetch 被回复帖子时如果出错不再会递归地将错误抛下，导致整个任务失败，而是会静默吞下该错误
+- 在 EmojiPicker 添加 emoji 预览
 - 帖子时光机：可以查看某日期的时间线和用户发帖
 - 私密化：可以批量/单独私密化某些帖子
-- 允许用户查看她们发送但对方还没批准的关注请求
 - 允许频道发布非仅本地的帖子
-- 限制 proxyAccount 当且仅当本地用户没有关注远程用户的时候发送关注请求
+- 允许在前端禁用 Reactions 功能
+- 允许搜索以 `.bsky.social` 结尾的 Bluesky 用户
 
-## 从 Sharkey 迁移？
+#### Changes merged from upstream
+
+- 允许用户查看她们发送但对方还没批准的关注请求
+
+## 从 Sharkey 迁移？ 
 
 > [!NOTE]
 > Sharkey Stelpolva Edition 不提供 Docker 安装方式。如果需要 Docker 安装你可以自己编辑 Docker Compose 并添加下面的额外依赖。
