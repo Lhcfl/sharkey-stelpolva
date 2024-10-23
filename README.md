@@ -80,6 +80,7 @@
 - 允许频道发布非仅本地的帖子
 - 允许在前端禁用 Reactions 功能
 - 允许搜索以 `.bsky.social` 结尾的 Bluesky 用户
+- 允许在前端折叠（Soft mute）用户/某个帖子
 
 #### Changes merged from upstream
 
