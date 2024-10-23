@@ -12,6 +12,7 @@ import { miLocalStorage } from './local-storage.js';
 import { searchEngineMap } from './scripts/search-engine-map.js';
 import { stpvDefaultStoreExtension } from './stpv-store-ext.js';
 import type { SoundType } from '@/scripts/sound.js';
+import type { FollowingFeedTab } from '@/pages/following-feed.vue';
 import { Storage } from '@/pizzax.js';
 
 interface PostFormAction {
@@ -250,7 +251,8 @@ export const defaultStore = markRaw(new Storage('base', {
 			withBots: true,
 			withReplies: false,
 			onlyFiles: false,
-			onlyMutuals: false,
+			userList: 'following' as FollowingFeedTab,
+			remoteWarningDismissed: false,
 		},
 	},
 

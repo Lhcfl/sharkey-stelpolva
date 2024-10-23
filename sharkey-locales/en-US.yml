@@ -383,3 +383,4 @@ _externalNavigationWarning:
   title: "Navigate to an external site"
   description: "Leave {host} and go to an external site"
   trustThisDomain: "Trust this domain on this device in the future"
+remoteFollowersWarning: "Remote followers may have incomplete or outdated activity"

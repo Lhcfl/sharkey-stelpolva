@@ -11335,6 +11335,10 @@ export interface Locale extends ILocale {
         "trustThisDomain": string;
     };
     /**
+     * Remote followers may have incomplete or outdated activity
+     */
+    "remoteFollowersWarning": string;
+    /**
      * Sharkey Stelpolva Edition 为天线的设置添加了额外的关键词语法。
      * 具体而言， `domain:example.com` 这个特殊关键词会匹配所有来自 `example.com` 的帖子。这个关键词同样能使用在 OR 语法中。
      * 特别地，你必须用 `domain:here` 来匹配本实例的帖子。

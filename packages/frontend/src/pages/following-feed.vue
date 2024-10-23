@@ -5,10 +5,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div :class="$style.root">
-	<MkPageHeader v-model:tab="currentTab" :class="$style.header" :tabs="headerTabs" :actions="headerActions" :displayBackButton="true" @update:tab="onChangeTab"/>
+	<div :class="$style.header">
+		<MkPageHeader v-model:tab="userList" :tabs="headerTabs" :actions="headerActions" :displayBackButton="true" @update:tab="onChangeTab"/>
+		<MkInfo v-if="showRemoteWarning" :class="$style.remoteWarning" warn closable @close="remoteWarningDismissed = true">{{ i18n.ts.remoteFollowersWarning }}</MkInfo>
+	</div>
 
 	<div ref="noteScroll" :class="$style.notes">
-		<MkHorizontalSwipe v-model:tab="currentTab" :tabs="headerTabs">
+		<MkHorizontalSwipe v-model:tab="userList" :tabs="headerTabs">
 			<MkPullToRefresh :refresher="() => reloadLatestNotes()">
 				<MkPagination ref="latestNotesPaging" :pagination="latestNotesPagination" @init="onListReady">
 					<template #empty>
@@ -29,21 +32,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 
 	<div v-if="isWideViewport" ref="userScroll" :class="$style.user">
-		<MkHorizontalSwipe v-if="selectedUserId" v-model:tab="currentTab" :tabs="headerTabs">
+		<MkHorizontalSwipe v-if="selectedUserId" v-model:tab="userList" :tabs="headerTabs">
 			<SkUserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withNonPublic="withNonPublic" :withQuotes="withQuotes" :withBots="withBots" :withReplies="withReplies" :onlyFiles="onlyFiles"/>
 		</MkHorizontalSwipe>
 	</div>
 </div>
 </template>
 
+<script lang="ts">
+export const followingTab = 'following' as const;
+export const mutualsTab = 'mutuals' as const;
+export const followersTab = 'followers' as const;
+export type FollowingFeedTab = typeof followingTab | typeof mutualsTab | typeof followersTab;
+</script>
+
 <script lang="ts" setup>
 import { computed, Ref, ref, shallowRef } from 'vue';
 import * as Misskey from 'misskey-js';
+import { getScrollContainer } from '@@/js/scroll.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 import { i18n } from '@/i18n.js';
 import MkHorizontalSwipe from '@/components/MkHorizontalSwipe.vue';
 import MkPullToRefresh from '@/components/MkPullToRefresh.vue';
-import MkPagination, { Paging } from '@/components/MkPagination.vue';
 import { infoImageUrl } from '@/instance.js';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 import { Tab } from '@/components/global/MkPageHeader.tabs.vue';
@@ -56,12 +66,16 @@ import { $i } from '@/account.js';
 import { checkWordMute } from '@/scripts/check-word-mute.js';
 import SkUserRecentNotes from '@/components/SkUserRecentNotes.vue';
 import { useScrollPositionManager } from '@/nirax.js';
-import { getScrollContainer } from '@@/js/scroll.js';
 import { defaultStore } from '@/store.js';
 import { deepMerge } from '@/scripts/merge.js';
+import MkPagination, { Paging } from '@/components/MkPagination.vue';
+import MkInfo from '@/components/MkInfo.vue';
 
 const withNonPublic = computed({
-	get: () => defaultStore.reactiveState.followingFeed.value.withNonPublic,
+	get: () => {
+		if (userList.value === 'followers') return false;
+		return defaultStore.reactiveState.followingFeed.value.withNonPublic;
+	},
 	set: value => saveFollowingFilter('withNonPublic', value),
 });
 const withQuotes = computed({
@@ -80,29 +94,28 @@ const onlyFiles = computed({
 	get: () => defaultStore.reactiveState.followingFeed.value.onlyFiles,
 	set: value => saveFollowingFilter('onlyFiles', value),
 });
-const onlyMutuals = computed({
-	get: () => defaultStore.reactiveState.followingFeed.value.onlyMutuals,
-	set: value => saveFollowingFilter('onlyMutuals', value),
+const userList = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.userList,
+	set: value => saveFollowingFilter('userList', value),
+});
+const remoteWarningDismissed = computed({
+	get: () => defaultStore.reactiveState.followingFeed.value.remoteWarningDismissed,
+	set: value => saveFollowingFilter('remoteWarningDismissed', value),
 });
 
 // Based on timeline.saveTlFilter()
-function saveFollowingFilter(key: keyof typeof defaultStore.state.followingFeed, value: boolean) {
+function saveFollowingFilter<Key extends keyof typeof defaultStore.state.followingFeed>(key: Key, value: (typeof defaultStore.state.followingFeed)[Key]) {
 	const out = deepMerge({ [key]: value }, defaultStore.state.followingFeed);
 	defaultStore.set('followingFeed', out);
 }
 
 const router = useRouter();
 
-const followingTab = 'following' as const;
-const mutualsTab = 'mutuals' as const;
-const currentTab = computed({
-	get: () => onlyMutuals.value ? mutualsTab : followingTab,
-	set: value => onlyMutuals.value = (value === mutualsTab),
-});
-
 const userRecentNotes = shallowRef<InstanceType<typeof SkUserRecentNotes>>();
 const userScroll = shallowRef<HTMLElement>();
 const noteScroll = shallowRef<HTMLElement>();
+
+const showRemoteWarning = computed(() => userList.value === 'followers' && !remoteWarningDismissed.value);
 
 // We have to disable the per-user feed on small displays, and it must be done through JS instead of CSS.
 // Otherwise, the second column will waste resources in the background.
@@ -137,9 +150,12 @@ async function reload() {
 
 async function onListReady(): Promise<void> {
 	if (!selectedUserId.value && latestNotesPaging.value?.items.size) {
-		// This just gets the first user ID
-		const selectedNote: Misskey.entities.Note = latestNotesPaging.value.items.values().next().value;
-		selectedUserId.value = selectedNote.userId;
+		// This looks messy, but actually just gets the first user ID.
+		const selectedNote = latestNotesPaging.value.items.values().next().value;
+
+		// We know this to be non-null because of the size check above.
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		selectedUserId.value = selectedNote!.userId;
 	}
 }
 
@@ -184,7 +200,7 @@ const latestNotesPagination: Paging<'notes/following'> = {
 	endpoint: 'notes/following' as const,
 	limit: 20,
 	params: computed(() => ({
-		mutualsOnly: onlyMutuals.value,
+		list: userList.value,
 		filesOnly: onlyFiles.value,
 		includeNonPublic: withNonPublic.value,
 		includeReplies: withReplies.value,
@@ -208,6 +224,7 @@ const headerActions: PageHeaderItem[] = [
 					type: 'switch',
 					text: i18n.ts.showNonPublicNotes,
 					ref: withNonPublic,
+					disabled: userList.value === 'followers',
 				},
 				{
 					type: 'switch',
@@ -249,6 +266,11 @@ const headerTabs = computed(() => [
 		key: mutualsTab,
 		icon: 'ph-user-switch ph-bold ph-lg',
 		title: i18n.ts.mutuals,
+	} satisfies Tab,
+	{
+		key: followersTab,
+		icon: 'ph-user ph-bold ph-lg',
+		title: i18n.ts.followers,
 	} satisfies Tab,
 ]);
 
@@ -302,6 +324,10 @@ definePageMetadata(() => ({
 	overflow-y: auto;
 }
 
+.remoteWarning {
+	margin: 12px 12px 0 12px;
+}
+
 .userInfo {
 	margin-bottom: 12px;
 }
@@ -314,6 +340,10 @@ definePageMetadata(() => ({
 			"header header header header"
 			"lm notes user rm";
 		gap: 24px;
+	}
+
+	.remoteWarning {
+		margin: 24px 24px 0 24px;
 	}
 
 	.userInfo {
