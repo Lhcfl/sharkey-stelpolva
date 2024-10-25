@@ -94,7 +94,7 @@ export function build() {
 			const [lang] = k.split('-');
 			switch (k) {
 				case 'ja-JP': return merge(locales['en-US'], v);
-				case 'ja-KS':
+				case 'ja-KS': return merge(locales['en-US'], locales['ja-JP'], v);
 				case 'en-US': return merge(locales['ja-JP'], v);
 				default: return merge(
 					locales['ja-JP'],
