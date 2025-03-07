@@ -66,3 +66,5 @@ stpvWarnNoQueryLocalFonts: 啊哦! 你的浏览器不支持 queryLocalFonts 方�
 
 wordMute: "折叠关键词"
 hardWordMute: "屏蔽关键词"
+mute: "静音"
+block: "屏蔽"
