@@ -591,7 +591,7 @@ export interface Locale extends ILocale {
      */
     "enterFileName": string;
     /**
-     * ミュート
+     * 静音
      */
     "mute": string;
     /**
@@ -607,7 +607,7 @@ export interface Locale extends ILocale {
      */
     "renoteUnmute": string;
     /**
-     * ブロック
+     * 屏蔽
      */
     "block": string;
     /**

@@ -191,6 +191,8 @@ function registerPageViewInterruptor({ pluginId, handler }): void {
  *
  * Improve the ability for technical users to write plugins directly via Sharkey's API using Tampermonkey, etc.
  */
+import * as os from '@/os';
+import { i18n } from '@/i18n.js';
 export function exposeJavascriptApis() {
 	const exposeApi = {
 		os,
