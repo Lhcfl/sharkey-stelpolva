@@ -116,13 +116,15 @@ async function build() {
 await build();
 
 if (process.argv.includes('--watch')) {
-	const watcher = fs.watch('./locales');
-	for await (const event of watcher) {
-		const filename = event.filename?.replaceAll('\\', '/');
-		if (/^[a-z]+-[A-Z]+\.yml/.test(filename)) {
-			console.log(`update ${filename} ...`)
-			locales = buildLocales();
-			await copyFrontendLocales()
+	['./locales', './sharkey-locales', './stpv-locales'].forEach(async (dir) => {
+		const watcher = fs.watch(dir);
+		for await (const event of watcher) {
+			const filename = event.filename?.replaceAll('\\', '/');
+			if (/^[a-z]+-[A-Z]+\.yml/.test(filename)) {
+				console.log(`update ${filename} ...`)
+				locales = buildLocales();
+				await copyFrontendLocales()
+			}
 		}
-	}
+	})
 }
