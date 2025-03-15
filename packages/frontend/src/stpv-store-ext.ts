@@ -55,4 +55,8 @@ export const stpvDefaultStoreExtension = {
 		where: 'device',
 		default: [] as (typeof TimelineSwipeKeys[number])[],
 	},
+	stpvEmojiPickerItemSize: {
+		where: 'device',
+		default: 1.25 as number,
+	},
 } as const;

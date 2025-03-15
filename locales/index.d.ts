@@ -12460,6 +12460,10 @@ export interface Locale extends ILocale {
      * 啊哦! 你的浏览器不支持 queryLocalFonts 方法，因此请在文本框中手动填写字体名。
      */
     "stpvWarnNoQueryLocalFonts": string;
+    /**
+     * 表情符号大小
+     */
+    "stpvEmojiPickerItemSize": string;
 }
 declare const locales: {
     [lang: string]: Locale;

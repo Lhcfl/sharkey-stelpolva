@@ -162,7 +162,10 @@ const {
 	emojiPickerWidth,
 	emojiPickerHeight,
 	recentlyUsedEmojis,
+	stpvEmojiPickerItemSize,
 } = defaultStore.reactiveState;
+
+const emojiSize = computed(() => `${stpvEmojiPickerItemSize.value}em`);
 
 const recentlyUsedEmojisDef = computed(() => {
 	return recentlyUsedEmojis.value.map(getDef).filter(x => x != null);
@@ -749,7 +752,7 @@ defineExpose({
 					}
 
 					> .emoji {
-						height: 1.25em;
+						height: v-bind("emojiSize");
 						vertical-align: -.25em;
 						pointer-events: none;
 						width: 100%;

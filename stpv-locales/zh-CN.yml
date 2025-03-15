@@ -63,6 +63,7 @@ stpvReactionsStatDescription: 显示了你发布的前100多emoji的数量
 stpvPFprefix: "前缀..."
 stpvPFsuffix: "...后缀"
 stpvWarnNoQueryLocalFonts: 啊哦! 你的浏览器不支持 queryLocalFonts 方法，因此请在文本框中手动填写字体名。
+stpvEmojiPickerItemSize: "表情符号大小"
 
 wordMute: "折叠关键词"
 hardWordMute: "屏蔽关键词"

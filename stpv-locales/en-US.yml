@@ -66,3 +66,4 @@ stpvReactionsStatDescription: "Shows the the first 100 of emojis mostly reacted"
 stpvPFprefix: "prefix..."
 stpvPFsuffix: "...suffix"
 stpvWarnNoQueryLocalFonts: Oops! Your browser doesn't support the queryLocalFonts method, so please fill in the font name manually in the text box.
+stpvEmojiPickerItemSize: "Emoji size"
