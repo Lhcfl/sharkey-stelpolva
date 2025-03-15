@@ -278,6 +278,8 @@ _widgets:
 _poll:
   multiple: "Multiple choices"
 _profile:
+  updateAvatar: "Update avatar"
+  removeAvatar: "Remove avatar"
   updateBanner: "Update banner"
   removeBanner: "Remove banner"
   changeBackground: "Change background"

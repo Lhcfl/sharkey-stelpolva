@@ -351,7 +351,7 @@ const allowAnim = ref(defaultStore.state.advancedMfm && defaultStore.state.anima
 
 const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({
 	type: 'lookup',
-	url: `https://${host}/notes/${appearNote.value.id}`,
+	url: appearNote.value.url ?? appearNote.value.uri ?? `https://${host}/notes/${appearNote.value.id}`,
 }));
 
 const mergedCW = computed(() => computeMergedCw(appearNote.value));

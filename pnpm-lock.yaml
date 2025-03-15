@@ -162,8 +162,8 @@ importers:
         specifier: 1.9.2
         version: 1.9.2
       '@transfem-org/sfm-js':
-        specifier: 0.24.5
-        version: 0.24.5
+        specifier: 0.24.6
+        version: 0.24.6
       '@twemoji/parser':
         specifier: 15.1.1
         version: 15.1.1
@@ -740,8 +740,8 @@ importers:
         specifier: 0.19.0
         version: 0.19.0
       '@transfem-org/sfm-js':
-        specifier: 0.24.5
-        version: 0.24.5
+        specifier: 0.24.6
+        version: 0.24.6
       '@twemoji/parser':
         specifier: 15.1.1
         version: 15.1.1
@@ -4297,6 +4297,9 @@ packages:
 
   '@transfem-org/sfm-js@0.24.5':
     resolution: {integrity: sha1-c9qJO12lIG+kovDGKjZmK2qPqcw=, tarball: https://activitypub.software/api/v4/projects/2/packages/npm/@transfem-org/sfm-js/-/@transfem-org/sfm-js-0.24.5.tgz}
+
+  '@transfem-org/sfm-js@0.24.6':
+    resolution: {integrity: sha1-7t+TkCd3PZk+RbbrGbZ/iMs2y7o=, tarball: https://activitypub.software/api/v4/projects/2/packages/npm/@transfem-org/sfm-js/-/@transfem-org/sfm-js-0.24.6.tgz}
 
   '@trysound/sax@0.2.0':
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
@@ -14412,6 +14415,10 @@ snapshots:
   '@tokenizer/token@0.3.0': {}
 
   '@transfem-org/sfm-js@0.24.5':
+    dependencies:
+      '@twemoji/parser': 15.0.0
+
+  '@transfem-org/sfm-js@0.24.6':
     dependencies:
       '@twemoji/parser': 15.0.0
 

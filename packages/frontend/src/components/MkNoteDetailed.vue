@@ -371,7 +371,7 @@ let renoting = false;
 
 const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({
 	type: 'lookup',
-	url: `https://${host}/notes/${appearNote.value.id}`,
+	url: appearNote.value.url ?? appearNote.value.uri ?? `https://${host}/notes/${appearNote.value.id}`,
 }));
 
 const keymap = {

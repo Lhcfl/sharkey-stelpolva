@@ -22,12 +22,12 @@ export interface TimelineArgs {
 
 // Values taken from https://docs.joinmastodon.org/client/intro/#boolean
 export function toBoolean(value: string | undefined): boolean | undefined {
-	if (value === undefined) return undefined;
+	if (!value) return undefined;
 	return !['0', 'f', 'F', 'false', 'FALSE', 'off', 'OFF'].includes(value);
 }
 
 export function toInt(value: string | undefined): number | undefined {
-	if (value === undefined) return undefined;
+	if (!value) return undefined;
 	return parseInt(value);
 }
 

@@ -407,6 +407,18 @@ export class MiMeta {
 		length: 1024,
 		nullable: true,
 	})
+	public libreTranslateURL: string | null;
+
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
+	public libreTranslateKey: string | null;
+
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
 	public termsOfServiceUrl: string | null;
 
 	@Column('varchar', {

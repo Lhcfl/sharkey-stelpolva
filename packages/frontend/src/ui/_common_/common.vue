@@ -107,7 +107,7 @@ if ($i) {
 }
 
 function getPointerEvents() {
-	return defaultStore.state.notificationClickable ? undefined : 'none';
+	return defaultStore.state.notificationClickable ? 'all' : 'none';
 }
 </script>
 
@@ -131,6 +131,7 @@ function getPointerEvents() {
 	z-index: 3900000;
 	padding: 0 var(--MI-margin);
 	display: flex;
+	pointer-events: none;
 
 	&.notificationsPosition_leftTop {
 		top: var(--MI-margin);

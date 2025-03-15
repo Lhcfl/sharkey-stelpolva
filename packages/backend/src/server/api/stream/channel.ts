@@ -83,10 +83,9 @@ export default abstract class Channel {
 	}
 
 	/**
-	 * Please make sure you did `assignMyReaction` before this function.
-	 * See Dakker's comment regarding the same object will leading to wrong value.
-	 * @param note The note to **CHANGE**
-	 * @see assignMyReaction
+	 * This function modifies {@link note}, please make sure it has been shallow cloned.
+	 * See Dakkar's comment of {@link assignMyReaction} for more
+	 * @param note The note to change
 	 */
 	protected async hideNote(note: Packed<'Note'>): Promise<void> {
 		if (note.renote) {

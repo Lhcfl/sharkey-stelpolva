@@ -93,125 +93,85 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return;
 			}
 
-			// if (this.serverSettings.deeplAuthKey == null && !this.serverSettings.deeplFreeMode) {
-			// 	throw new ApiError(meta.errors.unavailable);
-			// }
-
-			// if (this.serverSettings.deeplFreeMode && !this.serverSettings.deeplFreeInstance) {
-			// 	throw new ApiError(meta.errors.unavailable);
-			// }
+			const canDeeplFree = this.serverSettings.deeplFreeMode && !!this.serverSettings.deeplFreeInstance;
+			const canDeepl = !!this.serverSettings.deeplAuthKey || canDeeplFree;
+			const canLibre = !!this.serverSettings.libreTranslateURL;
 
 			let targetLang = ps.targetLang;
 			if (targetLang.includes('-')) targetLang = targetLang.split('-')[0];
 
-			const translateByGoogle = async (text: string) => {
-				const MAX_TRANSLATE = 15000;
-				const MAX_TRANSLATE_PER_REQ = 1500;
+			if (!canDeepl && !canLibre) return await this.translateByGoogle(note.text, targetLang);
 
-				const toTranslate: string[] = [];
+			// DeepL/DeepLX handling
+			if (canDeepl) {
+				const params = new URLSearchParams();
+				if (this.serverSettings.deeplAuthKey) params.append('auth_key', this.serverSettings.deeplAuthKey);
+				params.append('text', note.text);
+				params.append('target_lang', targetLang);
+				const endpoint = canDeeplFree ? this.serverSettings.deeplFreeInstance as string : this.serverSettings.deeplIsPro ? 'https://api.deepl.com/v2/translate' : 'https://api-free.deepl.com/v2/translate';
 
-				for (
-					let i = 0;
-					i < text.length && i < MAX_TRANSLATE;
-					i += MAX_TRANSLATE_PER_REQ
-				) {
-					toTranslate.push(text.slice(i, i + MAX_TRANSLATE_PER_REQ));
-				}
-
-				const googleTranslate = async (toTranslate: string) => {
-					const googleUrl = new URL(
-						'https://translate.google.com/translate_a/single?client=gtx&dt=t&dj=1&ie=UTF-8&sl=auto',
-					);
-					googleUrl.searchParams.append('tl', targetLang);
-					googleUrl.searchParams.append('q', toTranslate);
-
-					const res = await this.httpRequestService.send(googleUrl.toString());
+				const res = await this.httpRequestService.send(endpoint, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						Accept: 'application/json, */*',
+					},
+					body: params.toString(),
+				});
+				if (this.serverSettings.deeplAuthKey) {
 					const json = (await res.json()) as {
-						sentences: {
-							/** translated text */
-							trans: string;
-							/** original text */
-							orig: string;
+						translations: {
+							detected_source_language: string;
+							text: string;
 						}[];
-						src: string;
 					};
 
 					return {
-						sourceLang: json.src,
-						text: json.sentences.map((s) => s.trans).join(' '),
+						sourceLang: json.translations[0].detected_source_language,
+						text: json.translations[0].text,
 					};
-				};
+				} else {
+					const json = (await res.json()) as {
+						code: number,
+						message: string,
+						data: string,
+						source_lang: string,
+						target_lang: string,
+						alternatives: string[],
+					};
 
-				const result: {
-					sourceLang: string;
-					text: string;
-				} = {
-					sourceLang: '',
-					text: '',
-				};
+					const languageNames = new Intl.DisplayNames(['en'], {
+						type: 'language',
+					});
 
-				for (const text of toTranslate) {
-					// If it is not the first request, sleep 500 milliseconds to prevent 429 too many requests.
-					if (!result.text) {
-						await new Promise((r) => setTimeout(r, 500));
-					}
-					try {
-						const res = await googleTranslate(text);
-						result.sourceLang ||= res.sourceLang;
-						result.text += res.text;
-					} catch (err) {
-						console.error(err);
-						result.text += '... (an error occurred during translate)';
-						return result;
-					}
+					return {
+						sourceLang: languageNames.of(json.source_lang),
+						text: json.data,
+					};
 				}
-
-				if (text.length > MAX_TRANSLATE + MAX_TRANSLATE_PER_REQ) {
-					result.text += '... (text is too long to translate)';
-				}
-
-				return result;
-			};
-
-			if (this.serverSettings.deeplAuthKey == null && !this.serverSettings.deeplFreeMode || this.serverSettings.deeplFreeMode && !this.serverSettings.deeplFreeInstance) {
-				return await translateByGoogle(note.text);
 			}
 
-			const params = new URLSearchParams();
-			if (this.serverSettings.deeplAuthKey) params.append('auth_key', this.serverSettings.deeplAuthKey);
-			params.append('text', note.text);
-			params.append('target_lang', targetLang);
+			// LibreTranslate handling
+			if (canLibre) {
+				const res = await this.httpRequestService.send(this.serverSettings.libreTranslateURL as string, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Accept: 'application/json, */*',
+					},
+					body: JSON.stringify({
+						q: note.text,
+						source: 'auto',
+						target: targetLang,
+						format: 'text',
+						api_key: this.serverSettings.libreTranslateKey ?? '',
+					}),
+				});
 
-			const endpoint = this.serverSettings.deeplFreeMode && this.serverSettings.deeplFreeInstance ? this.serverSettings.deeplFreeInstance : this.serverSettings.deeplIsPro ? 'https://api.deepl.com/v2/translate' : 'https://api-free.deepl.com/v2/translate';
-
-			const res = await this.httpRequestService.send(endpoint, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-					Accept: 'application/json, */*',
-				},
-				body: params.toString(),
-			});
-			if (this.serverSettings.deeplAuthKey) {
 				const json = (await res.json()) as {
-					translations: {
-						detected_source_language: string;
-						text: string;
-					}[];
-				};
-
-				return {
-					sourceLang: json.translations[0].detected_source_language,
-					text: json.translations[0].text,
-				};
-			} else {
-				const json = (await res.json()) as {
-					code: number,
-					message: string,
-					data: string,
-					source_lang: string,
-					target_lang: string,
 					alternatives: string[],
+					detectedLanguage: { [key: string]: string | number },
+					translatedText: string,
 				};
 
 				const languageNames = new Intl.DisplayNames(['en'], {
@@ -219,10 +179,81 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				});
 
 				return {
-					sourceLang: languageNames.of(json.source_lang),
-					text: json.data,
+					sourceLang: languageNames.of(json.detectedLanguage.language as string),
+					text: json.translatedText,
 				};
 			}
+
+			return;
 		});
+	}
+
+	async translateByGoogle(text: string, targetLang: string) {
+		const MAX_TRANSLATE = 15000;
+		const MAX_TRANSLATE_PER_REQ = 1500;
+	
+		const toTranslate: string[] = [];
+	
+		for (
+			let i = 0;
+			i < text.length && i < MAX_TRANSLATE;
+			i += MAX_TRANSLATE_PER_REQ
+		) {
+			toTranslate.push(text.slice(i, i + MAX_TRANSLATE_PER_REQ));
+		}
+	
+		const googleTranslate = async (toTranslate: string) => {
+			const googleUrl = new URL(
+				'https://translate.google.com/translate_a/single?client=gtx&dt=t&dj=1&ie=UTF-8&sl=auto',
+			);
+			googleUrl.searchParams.append('tl', targetLang);
+			googleUrl.searchParams.append('q', toTranslate);
+	
+			const res = await this.httpRequestService.send(googleUrl.toString());
+			const json = (await res.json()) as {
+				sentences: {
+					/** translated text */
+					trans: string;
+					/** original text */
+					orig: string;
+				}[];
+				src: string;
+			};
+	
+			return {
+				sourceLang: json.src,
+				text: json.sentences.map((s) => s.trans).join(' '),
+			};
+		};
+	
+		const result: {
+			sourceLang: string;
+			text: string;
+		} = {
+			sourceLang: '',
+			text: '',
+		};
+	
+		for (const text of toTranslate) {
+			// If it is not the first request, sleep 500 milliseconds to prevent 429 too many requests.
+			if (!result.text) {
+				await new Promise((r) => setTimeout(r, 500));
+			}
+			try {
+				const res = await googleTranslate(text);
+				result.sourceLang ||= res.sourceLang;
+				result.text += res.text;
+			} catch (err) {
+				console.error(err);
+				result.text += '... (an error occurred during translate)';
+				return result;
+			}
+		}
+	
+		if (text.length > MAX_TRANSLATE + MAX_TRANSLATE_PER_REQ) {
+			result.text += '... (text is too long to translate)';
+		}
+	
+		return result;
 	}
 }

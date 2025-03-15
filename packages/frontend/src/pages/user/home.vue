@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkRemoteCaution v-if="user.host != null" :href="user.url ?? user.uri!" class="warn"/>
 
 				<div :key="user.id" class="main _panel">
-					<div class="banner-container" :class="{ [$style.bannerContainerTall]: useTallBanner }" :style="style">
+					<div class="banner-container" :class="{ [$style.bannerContainerTall]: useTallBanner }">
 						<div ref="bannerEl" class="banner" :style="style"></div>
 						<div class="fade"></div>
 						<div class="title">

@@ -159,7 +159,7 @@ export const paramDef = {
 		visibleUserIds: { type: 'array', uniqueItems: true, items: {
 			type: 'string', format: 'misskey:id',
 		} },
-		cw: { type: 'string', nullable: true, minLength: 1 },
+		cw: { type: 'string', nullable: true },
 		localOnly: { type: 'boolean', default: false },
 		reactionAcceptance: { type: 'string', nullable: true, enum: [null, 'likeOnly', 'likeOnlyForRemote', 'nonSensitiveOnly', 'nonSensitiveOnlyForLocalLikeOnlyForRemote'], default: null },
 		noExtractMentions: { type: 'boolean', default: false },
@@ -400,7 +400,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					text: ps.text ?? undefined,
 					reply,
 					renote,
-					cw: ps.cw,
+					cw: ps.cw || null,
 					localOnly: ps.localOnly,
 					reactionAcceptance: ps.reactionAcceptance,
 					visibility: ps.visibility,

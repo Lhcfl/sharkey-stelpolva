@@ -7,13 +7,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div class="_gaps_m">
 	<div class="_panel">
 		<div :class="$style.banner" :style="{ backgroundImage: $i.bannerUrl ? `url(${ $i.bannerUrl })` : null }">
-			<MkButton primary rounded :class="$style.bannerEdit" @click="changeBanner">{{ i18n.ts._profile.changeBanner }}</MkButton>
-			<MkButton primary rounded :class="$style.backgroundEdit" @click="changeBackground">{{ i18n.ts._profile.changeBackground }}</MkButton>
+			<MkButton primary rounded :class="$style.bannerEdit" @click="changeOrRemoveBanner">{{ i18n.ts._profile.changeBanner }}</MkButton>
+			<MkButton primary rounded :class="$style.backgroundEdit" @click="changeOrRemoveBackground">{{ i18n.ts._profile.changeBackground }}</MkButton>
 		</div>
 		<div :class="$style.avatarContainer">
-			<MkAvatar :class="$style.avatar" :user="$i" forceShowDecoration @click="changeAvatar"/>
+			<MkAvatar :class="$style.avatar" :user="$i" forceShowDecoration @click="changeOrRemoveAvatar"/>
 			<div class="_buttonsCenter">
-				<MkButton primary rounded @click="changeAvatar">{{ i18n.ts._profile.changeAvatar }}</MkButton>
+				<MkButton primary rounded @click="changeOrRemoveAvatar">{{ i18n.ts._profile.changeAvatar }}</MkButton>
 				<MkButton primary rounded link to="/settings/avatar-decoration">{{ i18n.ts.decorate }} <i class="ti ti-sparkles"></i></MkButton>
 			</div>
 		</div>
@@ -271,39 +271,88 @@ function changeAvatar(ev) {
 		$i.avatarId = i.avatarId;
 		$i.avatarUrl = i.avatarUrl;
 		globalEvents.emit('requestClearPageCache');
-		claimAchievement('profileFilled');
 	});
 }
 
 function changeBanner(ev) {
+	selectFile(ev.currentTarget ?? ev.target, i18n.ts.banner).then(async (file) => {
+		let originalOrCropped = file;
+
+		const { canceled } = await os.confirm({
+			type: 'question',
+			text: i18n.ts.cropImageAsk,
+			okText: i18n.ts.cropYes,
+			cancelText: i18n.ts.cropNo,
+		});
+
+		if (!canceled) {
+			originalOrCropped = await os.cropImage(file, {
+				aspectRatio: 2,
+			});
+		}
+
+		const i = await os.apiWithDialog('i/update', {
+			bannerId: originalOrCropped.id,
+		});
+		$i.bannerId = i.bannerId;
+		$i.bannerUrl = i.bannerUrl;
+		globalEvents.emit('requestClearPageCache');
+	});
+}
+
+function changeBackground(ev) {
+	selectFile(ev.currentTarget ?? ev.target, i18n.ts.background).then(async (file) => {
+		let originalOrCropped = file;
+
+		const { canceled } = await os.confirm({
+			type: 'question',
+			text: i18n.ts.cropImageAsk,
+			okText: i18n.ts.cropYes,
+			cancelText: i18n.ts.cropNo,
+		});
+
+		if (!canceled) {
+			originalOrCropped = await os.cropImage(file, {
+				aspectRatio: 1,
+			});
+		}
+
+		const i = await os.apiWithDialog('i/update', {
+			backgroundId: originalOrCropped.id,
+		});
+		$i.backgroundId = i.backgroundId;
+		$i.backgroundUrl = i.backgroundUrl;
+		globalEvents.emit('requestClearPageCache');
+	});
+}
+
+function changeOrRemoveAvatar(ev) {
+	if ($i.avatarId) {
+		os.popupMenu([{
+			text: i18n.ts._profile.updateAvatar,
+			action: () => changeAvatar(ev),
+		}, {
+			text: i18n.ts._profile.removeAvatar,
+			action: async () => {
+				const i = await os.apiWithDialog('i/update', {
+					avatarId: null,
+				});
+				$i.avatarId = i.avatarId;
+				$i.avatarUrl = i.avatarUrl;
+				globalEvents.emit('requestClearPageCache');
+			},
+		}], ev.currentTarget ?? ev.target);
+	} else {
+		changeAvatar(ev);
+		claimAchievement('profileFilled');
+	}
+}
+
+function changeOrRemoveBanner(ev) {
 	if ($i.bannerId) {
 		os.popupMenu([{
 			text: i18n.ts._profile.updateBanner,
-			action: async () => {
-				selectFile(ev.currentTarget ?? ev.target, i18n.ts.banner).then(async (file) => {
-					let originalOrCropped = file;
-
-					const { canceled } = await os.confirm({
-						type: 'question',
-						text: i18n.ts.cropImageAsk,
-						okText: i18n.ts.cropYes,
-						cancelText: i18n.ts.cropNo,
-					});
-
-					if (!canceled) {
-						originalOrCropped = await os.cropImage(file, {
-							aspectRatio: 2,
-						});
-					}
-
-					const i = await os.apiWithDialog('i/update', {
-						bannerId: originalOrCropped.id,
-					});
-					$i.bannerId = i.bannerId;
-					$i.bannerUrl = i.bannerUrl;
-					globalEvents.emit('requestClearPageCache');
-				});
-			},
+			action: () => changeBanner(ev),
 		}, {
 			text: i18n.ts._profile.removeBanner,
 			action: async () => {
@@ -316,61 +365,16 @@ function changeBanner(ev) {
 			},
 		}], ev.currentTarget ?? ev.target);
 	} else {
-		selectFile(ev.currentTarget ?? ev.target, i18n.ts.banner).then(async (file) => {
-			let originalOrCropped = file;
-
-			const { canceled } = await os.confirm({
-				type: 'question',
-				text: i18n.ts.cropImageAsk,
-				okText: i18n.ts.cropYes,
-				cancelText: i18n.ts.cropNo,
-			});
-
-			if (!canceled) {
-				originalOrCropped = await os.cropImage(file, {
-					aspectRatio: 2,
-				});
-			}
-
-			const i = await os.apiWithDialog('i/update', {
-				bannerId: originalOrCropped.id,
-			});
-			$i.bannerId = i.bannerId;
-			$i.bannerUrl = i.bannerUrl;
-			globalEvents.emit('requestClearPageCache');
-		});
+		changeBanner(ev);
+		claimAchievement('profileFilled');
 	}
 }
 
-function changeBackground(ev) {
+function changeOrRemoveBackground(ev) {
 	if ($i.backgroundId) {
 		os.popupMenu([{
 			text: i18n.ts._profile.updateBackground,
-			action: async () => {
-				selectFile(ev.currentTarget ?? ev.target, i18n.ts.background).then(async (file) => {
-					let originalOrCropped = file;
-
-					const { canceled } = await os.confirm({
-						type: 'question',
-						text: i18n.ts.cropImageAsk,
-						okText: i18n.ts.cropYes,
-						cancelText: i18n.ts.cropNo,
-					});
-
-					if (!canceled) {
-						originalOrCropped = await os.cropImage(file, {
-							aspectRatio: 1,
-						});
-					}
-
-					const i = await os.apiWithDialog('i/update', {
-						backgroundId: originalOrCropped.id,
-					});
-					$i.backgroundId = i.backgroundId;
-					$i.backgroundUrl = i.backgroundUrl;
-					globalEvents.emit('requestClearPageCache');
-				});
-			},
+			action: () => changeBackground(ev),
 		}, {
 			text: i18n.ts._profile.removeBackground,
 			action: async () => {
@@ -383,29 +387,8 @@ function changeBackground(ev) {
 			},
 		}], ev.currentTarget ?? ev.target);
 	} else {
-		selectFile(ev.currentTarget ?? ev.target, i18n.ts.background).then(async (file) => {
-			let originalOrCropped = file;
-
-			const { canceled } = await os.confirm({
-				type: 'question',
-				text: i18n.ts.cropImageAsk,
-				okText: i18n.ts.cropYes,
-				cancelText: i18n.ts.cropNo,
-			});
-
-			if (!canceled) {
-				originalOrCropped = await os.cropImage(file, {
-					aspectRatio: 1,
-				});
-			}
-
-			const i = await os.apiWithDialog('i/update', {
-				backgroundId: originalOrCropped.id,
-			});
-			$i.backgroundId = i.backgroundId;
-			$i.backgroundUrl = i.backgroundUrl;
-			globalEvents.emit('requestClearPageCache');
-		});
+		changeBackground(ev);
+		claimAchievement('profileFilled');
 	}
 }
 

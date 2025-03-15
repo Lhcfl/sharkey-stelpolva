@@ -9065,6 +9065,14 @@ export interface Locale extends ILocale {
          */
         "followedMessageDescriptionForLockedAccount": string;
         /**
+         * Update avatar
+         */
+        "updateAvatar": string;
+        /**
+         * Remove avatar
+         */
+        "removeAvatar": string;
+        /**
          * Update banner
          */
         "updateBanner": string;

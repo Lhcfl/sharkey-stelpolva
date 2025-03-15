@@ -1119,7 +1119,7 @@ export default class Misskey implements MegalodonInterface {
       }
       if (options.sensitive) {
         params = Object.assign(params, {
-          cw: ''
+          cw: ' '
         })
       }
       if (options.spoiler_text) {
@@ -1198,7 +1198,7 @@ export default class Misskey implements MegalodonInterface {
       }
       if (_options.sensitive) {
         params = Object.assign(params, {
-          cw: ''
+          cw: ' '
         })
       }
       if (_options.spoiler_text) {
