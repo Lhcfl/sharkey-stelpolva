@@ -52,6 +52,9 @@ _stpvPlus:
   disableTimeline:
     label: 禁用时间线
     caption: "禁用 {name} 时间线"
+  aprilFools:
+    label: 愚人节彩蛋
+    caption: "打开后在 4 月 1 日有意外惊喜（？）"
 stpvMuteUser: "在时间线上折叠该用户的帖子"
 stpvUnmuteUser: "在时间线上恢复显示该用户的帖子"
 stpvMuteNote: "以后在时间线上折叠"

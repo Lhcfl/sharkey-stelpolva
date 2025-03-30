@@ -41,12 +41,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<span v-else-if="reactionAcceptance === 'likeOnlyForRemote'"><i class="ti ti-heart-plus"></i></span>
 				<span v-else><i class="ph-smiley ph-bold ph-lg"></i></span>
 			</button>
-			<button v-click-anime class="_button" :class="$style.submit" :disabled="!canPost" data-cy-open-post-form-submit @click="post">
+			<button
+				v-click-anime
+				v-tooltip="displayApirlFools ? 'April Fools!' : undefined"
+				class="_button"
+				:class="[$style.submit, displayApirlFools && $style.aprilFools]"
+				:disabled="!canPost"
+				data-cy-open-post-form-submit
+				@click="post">
 				<div :class="$style.submitInner">
-					<template v-if="posted"></template>
-					<template v-else-if="posting"><MkEllipsis/></template>
-					<template v-else>{{ submitText }}</template>
-					<i style="margin-left: 6px;" :class="posted ? 'ti ti-check' : reply ? 'ti ti-arrow-back-up' : renoteTargetNote ? 'ti ti-quote' : 'ti ti-send'"></i>
+					<div>
+						<template v-if="posted"></template>
+						<template v-else-if="posting"><MkEllipsis/></template>
+						<template v-else>{{ submitText }}</template>
+						<i style="margin-left: 6px;" :class="posted ? 'ti ti-check' : reply ? 'ti ti-arrow-back-up' : renoteTargetNote ? 'ti ti-quote' : 'ti ti-send'"></i>
+					</div>
 				</div>
 			</button>
 		</div>
@@ -211,6 +220,16 @@ const scheduleNote = ref<{
 	scheduledAt: number | null;
 } | null>(null);
 const renoteTargetNote: ShallowRef<PostFormProps['renote'] | null> = shallowRef(props.renote);
+
+const today = ref(new Date());
+const isAprilFoolsDay = computed(() =>
+	instance.stpvAprilFoolsEnabled &&
+	// .getMonth() is a zero-based value
+	today.value.getMonth() === 3 &&
+	// ...but .getDate() is a one-based value
+	today.value.getDate() === 1,
+);
+const displayApirlFools = computed(() => isAprilFoolsDay.value && defaultStore.reactiveState.stpvAprilFools.value);
 
 const draftKey = computed((): string => {
 	let key = props.channel ? `channel:${props.channel.id}` : '';
@@ -1290,6 +1309,15 @@ defineExpose({
 .submit {
 	margin: 12px 12px 12px 6px;
 	vertical-align: bottom;
+
+	&.aprilFools > .submitInner > div {
+		rotate: 180deg;
+		transition: rotate 0.6s;
+	}
+
+	&.aprilFools:hover > .submitInner > div {
+		rotate: 720deg;
+	}
 
 	&:focus-visible {
 		outline: none;

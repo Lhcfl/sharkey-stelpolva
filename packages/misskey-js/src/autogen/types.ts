@@ -8897,6 +8897,7 @@ export type operations = {
             urlPreviewSummaryProxyUrl: string | null;
             trustedLinkUrlPatterns: string[];
             federation: string;
+            stpvAprilFoolsEnabled?: boolean | null;
             federationHosts: string[];
           };
         };

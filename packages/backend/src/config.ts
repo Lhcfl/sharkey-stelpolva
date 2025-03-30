@@ -124,6 +124,7 @@ type Source = {
 	pidFile: string;
 
 	avatarDecorationAllowedHosts: string[] | undefined;
+	stpvAprilFoolsEnabled?: boolean,
 	filePermissionBits?: string;
 
 	logging?: {
@@ -240,6 +241,7 @@ export type Config = {
 	perChannelMaxNoteCacheCount: number;
 	perUserNotificationsMaxCount: number;
 	deactivateAntennaThreshold: number;
+	stpvAprilFoolsEnabled?: boolean;
 
 	import: {
 		downloadTimeout: number;
@@ -397,6 +399,7 @@ export function loadConfig(): Config {
 		import: config.import,
 		pidFile: config.pidFile,
 		avatarDecorationAllowedHosts: config.avatarDecorationAllowedHosts,
+		stpvAprilFoolsEnabled: config.stpvAprilFoolsEnabled,
 		filePermissionBits: config.filePermissionBits,
 		logging: config.logging,
 		activityLogging: {

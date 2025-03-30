@@ -581,6 +581,11 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: false,
 			},
+			stpvAprilFoolsEnabled: {
+				type: 'boolean',
+				optional: true,
+				nullable: true,
+			},
 			federationHosts: {
 				type: 'array',
 				optional: false, nullable: false,
@@ -744,6 +749,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				urlPreviewSummaryProxyUrl: instance.urlPreviewSummaryProxyUrl,
 				trustedLinkUrlPatterns: instance.trustedLinkUrlPatterns,
 				federation: instance.federation,
+				stpvAprilFoolsEnabled: config.stpvAprilFoolsEnabled,
 				federationHosts: instance.federationHosts,
 			};
 		});

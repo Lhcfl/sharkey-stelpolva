@@ -59,4 +59,8 @@ export const stpvDefaultStoreExtension = {
 		where: 'device',
 		default: 1.25 as number,
 	},
+	stpvAprilFools: {
+		where: 'device',
+		default: true as boolean,
+	},
 } as const;

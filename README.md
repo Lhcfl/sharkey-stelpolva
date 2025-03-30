@@ -40,6 +40,10 @@
 
 ### Other
 
+#### 彩蛋
+
+`config.stpvAprilFoolsEnabled`: 在 4 月 1 日给用户可关闭的愚人节彩蛋
+
 #### Behaviour Changes
 
 - 还原了 Misskey 的 Hashtag 搜索设置，即你能搜到任何你可见的打了某个 Hashtag 的帖子

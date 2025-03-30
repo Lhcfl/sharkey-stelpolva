@@ -12415,6 +12415,16 @@ export interface Locale extends ILocale {
              */
             "caption": ParameterizedString<"name">;
         };
+        "aprilFools": {
+            /**
+             * 愚人节彩蛋
+             */
+            "label": string;
+            /**
+             * 打开后在 4 月 1 日有意外惊喜（？）
+             */
+            "caption": string;
+        };
     };
     /**
      * 在时间线上折叠该用户的帖子
