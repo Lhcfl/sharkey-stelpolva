@@ -5400,6 +5400,7 @@ export type components = {
        */
       noteSearchableScope: 'local' | 'global';
       trustedLinkUrlPatterns: string[];
+      stpvAprilFoolsEnabled?: boolean | null;
       maxFileSize: number;
       /** @enum {string} */
       federation: 'all' | 'specified' | 'none';

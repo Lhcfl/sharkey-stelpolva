@@ -137,6 +137,8 @@ export class MetaEntityService {
 
 			translatorAvailable: true, // instance.deeplAuthKey != null || instance.libreTranslateURL != null || instance.deeplFreeMode && instance.deeplFreeInstance != null,
 
+			stpvAprilFoolsEnabled: this.config.stpvAprilFoolsEnabled,
+
 			serverRules: instance.serverRules,
 
 			policies: { ...DEFAULT_POLICIES, ...instance.policies },
