@@ -103,6 +103,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<!-- <button v-if="postFormActions.length > 0" v-tooltip="i18n.ts.plugins" class="_button" :class="$style.footerButton" @click="showActions"><i class="ti ti-plug"></i></button> -->
 			<button v-tooltip="i18n.ts.emoji" :class="['_button', $style.footerButton]" @click="insertEmoji"><i class="ti ti-mood-happy"></i></button>
 			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
+			<button v-tooltip="i18n.ts.other" class="_button" :class="$style.footerButton" @click="showOtherMenu"><i class="ti ti-dots"></i></button>
 		</div>
 		<div :class="$style.footerRight">
 			<button v-tooltip="i18n.ts.previewNoteText" class="_button" :class="[$style.footerButton, { [$style.previewButtonActive]: showPreview }]" @click="showPreview = !showPreview"><i class="ti ti-eye"></i></button>
@@ -1181,29 +1182,27 @@ function toggleScheduleNote() {
 function showOtherMenu(ev: MouseEvent) {
 	const menuItems: MenuItem[] = [];
 
-	if ($i.policies.scheduleNoteMax > 0) {
-		menuItems.push({
-			type: 'button',
-			text: i18n.ts.schedulePost,
-			icon: 'ti ti-calendar-time',
-			action: toggleScheduleNote,
-		}, {
-			type: 'button',
-			text: i18n.ts.schedulePostList,
-			icon: 'ti ti-calendar-event',
-			action: () => {
-				const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkSchedulePostListDialog.vue')), {}, {
-					closed: () => {
-						dispose();
-					},
-				});
-			},
-		});
-	}
+	// if ($i.policies.scheduleNoteMax > 0) {
+	// 	menuItems.push({
+	// 		type: 'button',
+	// 		text: i18n.ts.schedulePost,
+	// 		icon: 'ti ti-calendar-time',
+	// 		action: toggleScheduleNote,
+	// 	}, {
+	// 		type: 'button',
+	// 		text: i18n.ts.schedulePostList,
+	// 		icon: 'ti ti-calendar-event',
+	// 		action: () => {
+	// 			const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkSchedulePostListDialog.vue')), {}, {
+	// 				closed: () => {
+	// 					dispose();
+	// 				},
+	// 			});
+	// 		},
+	// 	});
+	// }
 
 	menuItems.push({
-		type: 'divider',
-	}, {
 		type: 'button',
 		text: i18n.ts.mention,
 		icon: 'ti ti-at',
