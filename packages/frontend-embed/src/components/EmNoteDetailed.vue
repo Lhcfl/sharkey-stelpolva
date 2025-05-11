@@ -176,7 +176,6 @@ const isDeleted = ref(false);
 const parsed = appearNote.value.text ? mfm.parse(appearNote.value.text) : null;
 const isLong = shouldCollapsed(appearNote.value, []);
 const collapsed = ref(appearNote.value.cw == null && isLong);
-
 const mergedCW = computed(() => computeMergedCw(appearNote.value));
 </script>
 

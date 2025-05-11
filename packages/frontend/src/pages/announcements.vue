@@ -4,11 +4,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkStickyContainer>
-	<template #header><MkPageHeader v-model:tab="tab" :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :contentMax="800">
-		<MkHorizontalSwipe v-model:tab="tab" :tabs="headerTabs">
-			<div :key="tab" class="_gaps">
+<PageWithHeader v-model:tab="tab" :actions="headerActions" :tabs="headerTabs" :swipable="true">
+	<div class="_spacer" style="--MI_SPACER-w: 800px;">
+		<MkSwiper v-model:tab="tab" :tabs="headerTabs">
+			<div class="_gaps">
 				<MkInfo v-if="$i && $i.hasUnreadAnnouncement && tab === 'current'" warn>{{ i18n.ts.youHaveUnreadAnnouncements }}</MkInfo>
 				<MkPagination ref="paginationEl" :key="tab" v-slot="{items}" :pagination="tab === 'current' ? paginationCurrent : paginationPast" class="_gaps">
 					<section v-for="announcement in items" :key="announcement.id" class="_panel" :class="$style.announcement">
@@ -24,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkA :to="`/announcements/${announcement.id}`"><span>{{ announcement.title }}</span></MkA>
 						</div>
 						<div :class="$style.content">
-							<Mfm :text="announcement.text" :isBlock="true" />
+							<Mfm :text="announcement.text" :isBlock="true" class="_selectable"/>
 							<img v-if="announcement.imageUrl" :src="announcement.imageUrl"/>
 							<MkA :to="`/announcements/${announcement.id}`">
 								<div style="margin-top: 8px; opacity: 0.7; font-size: 85%;">
@@ -41,9 +40,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</section>
 				</MkPagination>
 			</div>
-		</MkHorizontalSwipe>
-	</MkSpacer>
-</MkStickyContainer>
+		</MkSwiper>
+	</div>
+</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
@@ -51,12 +50,12 @@ import { ref, computed } from 'vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkInfo from '@/components/MkInfo.vue';
-import MkHorizontalSwipe from '@/components/MkHorizontalSwipe.vue';
 import * as os from '@/os.js';
-import { misskeyApi } from '@/scripts/misskey-api.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
-import { definePageMetadata } from '@/scripts/page-metadata.js';
-import { $i, updateAccountPartial } from '@/account.js';
+import { definePage } from '@/page.js';
+import { $i } from '@/i.js';
+import { updateCurrentAccountPartial } from '@/accounts.js';
 
 const paginationCurrent = {
 	endpoint: 'announcements' as const,
@@ -94,7 +93,7 @@ async function read(target) {
 		return a;
 	});
 	misskeyApi('i/read-announcement', { announcementId: target.id });
-	updateAccountPartial({
+	updateCurrentAccountPartial({
 		unreadAnnouncements: $i!.unreadAnnouncements.filter(a => a.id !== target.id),
 	});
 }
@@ -111,7 +110,7 @@ const headerTabs = computed(() => [{
 	icon: 'ti ti-point',
 }]);
 
-definePageMetadata(() => ({
+definePage(() => ({
 	title: i18n.ts.announcements,
 	icon: 'ti ti-speakerphone',
 }));

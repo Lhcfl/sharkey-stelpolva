@@ -281,7 +281,6 @@ niraxは、Misskeyで使用しているオリジナルのフロントエンド�
 	query?: Record<string, string>;
 	loginRequired?: boolean;
 	hash?: string;
-	globalCacheKey?: string;
 	children?: RouteDef[];
 }
 ```
@@ -660,54 +659,44 @@ seems to do a decent job)
 *after that commit*, do all the extra work, on the same branch:
 
 * copy all changes (commit after each step):
-    * in
-      `packages/backend/src/core/activitypub/models/ApNoteService.ts`,
-      from `createNote` to `updateNote`
-    * from `packages/backend/src/core/NoteCreateService.ts` to
-      `packages/backend/src/core/NoteEditService.ts`
-    * from `packages/backend/src/server/api/endpoints/notes/create.ts`
-      to `packages/backend/src/server/api/endpoints/notes/edit.ts`
-    * from `packages/frontend/src/components/MkNote*.vue` to
-      `packages/frontend/src/components/SkNote*.vue` (if sensible)
+    * in `packages/backend/src/core/activitypub/models/ApNoteService.ts`, from `createNote` to `updateNote`
+    * from `packages/backend/src/core/NoteCreateService.ts` to `packages/backend/src/core/NoteEditService.ts`
+    * from `packages/backend/src/server/api/endpoints/notes/create.ts` to `packages/backend/src/server/api/endpoints/notes/edit.ts`
+    * from MK note components to SK note components (if sensible)
+        * from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/SkNote.vue`
+        * from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/SkNoteDetailed.vue`
+        * from `packages/frontend/src/components/MkNoteHeader.vue` to `packages/frontend/src/components/SkNoteHeader.vue`
+        * from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/SkNoteSimple.vue`
+        * from `packages/frontend/src/components/MkNoteSub.vue` to `packages/frontend/src/components/SkNoteSub.vue`
+    * from MK note components to Dynamic note components (if the public signature changed)
+        * from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/DynamicNote.vue`
+        * from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/DynamicNoteDetailed.vue`
+        * from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/DynamicNoteSimple.vue`
     * from the global timeline to the bubble timeline
-      (`packages/backend/src/server/api/stream/channels/global-timeline.ts`,
-      `packages/backend/src/server/api/stream/channels/bubble-timeline.ts`,
-      `packages/frontend/src/timelines.ts`,
-      `packages/frontend/src/components/MkTimeline.vue`,
-      `packages/frontend/src/pages/timeline.vue`,
-      `packages/frontend/src/ui/deck/tl-column.vue`,
-      `packages/frontend/src/widgets/WidgetTimeline.vue`)
-* if there have been any changes to the federated user data (the
-  `renderPerson` function in
-  `packages/backend/src/core/activitypub/ApRendererService.ts`), make
-  sure that the set of fields in `userNeedsPublishing` and
-  `profileNeedsPublishing` in
-  `packages/backend/src/server/api/endpoints/i/update.ts` are still
-  correct
-* check the changes against our `develop` (`git diff develop`) and
-  against Misskey (`git diff misskey/develop`)
+        * `packages/backend/src/server/api/stream/channels/global-timeline.ts`
+        * `packages/backend/src/server/api/stream/channels/bubble-timeline.ts`
+        * `packages/frontend/src/timelines.ts`
+        * `packages/frontend/src/components/MkTimeline.vue`
+        * `packages/frontend/src/pages/timeline.vue`
+        * `packages/frontend/src/ui/deck/tl-column.vue`
+        * `packages/frontend/src/widgets/WidgetTimeline.vue`
+    * from `packages/backend/src/queue/processors/InboxProcessorService.ts` to `packages/backend/src/core/UpdateInstanceQueue.ts`, where `updateInstanceQueue` is impacted
+    * from `.config/example.yml` to `.config/ci.yml` and `chart/files/default.yml`
+    * in `packages/backend/src/core/MfmService.ts`, from `toHtml` to `toMastoApiHtml`
+    * from `verifyLink` in `packages/backend/src/core/activitypub/models/ApPersonService.ts` to `verifyFieldLinks` in `packages/backend/src/misc/verify-field-link.ts` (if sensible)
+* if there have been any changes to the federated user data (the `renderPerson` function in `packages/backend/src/core/activitypub/ApRendererService.ts`), make sure that the set of fields in `userNeedsPublishing` and `profileNeedsPublishing` in `packages/backend/src/server/api/endpoints/i/update.ts` are still correct.
+* check the changes against our `develop` (`git diff develop`) and against Misskey (`git diff misskey/develop`)
 * re-generate `misskey-js` (`pnpm build-misskey-js-with-types`) and commit
-* build the frontend: `rm -rf built/; NODE_ENV=development pnpm
-  --filter=frontend --filter=frontend-embed --filter=frontend-shared
-  build` (the `development` tells it to keep some of the original
-  filenames in the built files)
-* make sure there aren't any new `ti-*` classes (Tabler Icons), and
-  replace them with appropriate `ph-*` ones (Phosphor Icons) in
-  [`vite.replaceicons.ts`](packages/frontend/vite.replaceIcons.ts).
-  This command should show you want to change: `grep -ohrP
-  '(?<=["'\'']ti )(ti-(?!fw)[\w\-]+)' --exclude \*.map -- built/ |
-  sort -u`.
+* re-generate locales (`pnpm run build-assets`) and commit
+* build the frontend: `rm -rf built/; NODE_ENV=development pnpm --filter=frontend --filter=frontend-embed --filter=frontend-shared build` (the `development` tells it to keep some of the original filenames in the built files)
+* make sure there aren't any new `ti-*` classes (Tabler Icons), and replace them with appropriate `ph-*` ones (Phosphor Icons) in [`vite.replaceicons.ts`](packages/frontend/vite.replaceIcons.ts).
+    * This command should show you want to change: `grep -ohrP '(?<=["'\'']ti )(ti-(?!fw)[\w\-]+)' --exclude \*.map -- built/ | sort -u`.
     * NOTE: `ti-fw` is a special class that's defined by Misskey, leave it alone.
-    * After every change, re-build the frontend and check again, until
-      there are no more `ti-*` classes in the built files.
+    * After every change, re-build the frontend and check again, until there are no more `ti-*` classes in the built files.
     * Commit!
-* double-check the new migration, that they won't conflict with our db
-  changes: `git diff develop -- packages/backend/migration/`
+* double-check the new migration, that they won't conflict with our db changes: `git diff develop -- packages/backend/migration/`
 * `pnpm clean; pnpm build`
-* run tests `pnpm test; pnpm --filter backend test:e2e` (requires a
-  test database, [see above](#testing)) and fix as much as you can
-* run lint `pnpm --filter=backend --filter=frontend-shared lint` +
-  `pnpm --filter=frontend --filter=frontend-embed eslint` and fix as
-  much as you can
+* run tests `pnpm test; pnpm --filter backend test:e2e` (requires a test database, [see above](#testing)) and fix as much as you can.
+* run lint `pnpm --filter=backend --filter=frontend-shared lint` + `pnpm --filter=frontend --filter=frontend-embed eslint` and fix as much as you can.
 
 Then push and open a Merge Request.

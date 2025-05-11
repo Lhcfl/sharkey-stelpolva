@@ -6,7 +6,7 @@
 import { URL } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
 import * as parse5 from 'parse5';
-import { Window, XMLSerializer } from 'happy-dom';
+import { type Document, type HTMLParagraphElement, Window } from 'happy-dom';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { intersperse } from '@/misc/prelude/array.js';
@@ -22,6 +22,8 @@ type ChildNode = DefaultTreeAdapterMap['childNode'];
 
 const urlRegex = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+/;
 const urlRegexFull = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+$/;
+
+export type Appender = (document: Document, body: HTMLParagraphElement) => void;
 
 @Injectable()
 export class MfmService {
@@ -179,7 +181,7 @@ export class MfmService {
 					break;
 				}
 
-					// this is here only to catch upstream changes!
+				// this is here only to catch upstream changes!
 				case 'ruby--': {
 					let ruby: [string, string][] = [];
 					for (const child of node.childNodes) {
@@ -358,7 +360,7 @@ export class MfmService {
 	}
 
 	@bindThis
-	public toHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = []) {
+	public toHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = [], additionalAppenders: Appender[] = []) {
 		if (nodes == null) {
 			return null;
 		}
@@ -597,7 +599,11 @@ export class MfmService {
 
 		appendChildren(nodes, body);
 
-		const serialized = new XMLSerializer().serializeToString(body);
+		for (const additionalAppender of additionalAppenders) {
+			additionalAppender(doc, body);
+		}
+
+		const serialized = body.outerHTML;
 
 		happyDOM.close().catch(err => {});
 
@@ -605,9 +611,10 @@ export class MfmService {
 	}
 
 	// the toMastoApiHtml function was taken from Iceshrimp and written by zotan and modified by marie to work with the current MK version
+	// additionally modified by hazelnoot to remove async
 
 	@bindThis
-	public async toMastoApiHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = [], inline = false, quoteUri: string | null = null) {
+	public toMastoApiHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = [], inline = false, quoteUri: string | null = null) {
 		if (nodes == null) {
 			return null;
 		}
@@ -618,50 +625,50 @@ export class MfmService {
 
 		const body = doc.createElement('p');
 
-		async function appendChildren(children: mfm.MfmNode[], targetElement: any): Promise<void> {
+		function appendChildren(children: mfm.MfmNode[], targetElement: any): void {
 			if (children) {
-				for (const child of await Promise.all(children.map(async (x) => await (handlers as any)[x.type](x)))) targetElement.appendChild(child);
+				for (const child of children.map((x) => (handlers as any)[x.type](x))) targetElement.appendChild(child);
 			}
 		}
 
 		const handlers: {
 			[K in mfm.MfmNode['type']]: (node: mfm.NodeType<K>) => any;
 		} = {
-			async bold(node) {
+			bold(node) {
 				const el = doc.createElement('span');
 				el.textContent = '**';
-				await appendChildren(node.children, el);
+				appendChildren(node.children, el);
 				el.textContent += '**';
 				return el;
 			},
 
-			async small(node) {
+			small(node) {
 				const el = doc.createElement('small');
-				await appendChildren(node.children, el);
+				appendChildren(node.children, el);
 				return el;
 			},
 
-			async strike(node) {
+			strike(node) {
 				const el = doc.createElement('span');
 				el.textContent = '~~';
-				await appendChildren(node.children, el);
+				appendChildren(node.children, el);
 				el.textContent += '~~';
 				return el;
 			},
 
-			async italic(node) {
+			italic(node) {
 				const el = doc.createElement('span');
 				el.textContent = '*';
-				await appendChildren(node.children, el);
+				appendChildren(node.children, el);
 				el.textContent += '*';
 				return el;
 			},
 
-			async fn(node) {
+			fn(node) {
 				switch (node.props.name) {
 					case 'group': { // hack for ruby
 						const el = doc.createElement('span');
-						await appendChildren(node.children, el);
+						appendChildren(node.children, el);
 						return el;
 					}
 					case 'ruby': {
@@ -687,7 +694,7 @@ export class MfmService {
 
 							if (!rt) {
 								const el = doc.createElement('span');
-								await appendChildren(node.children, el);
+								appendChildren(node.children, el);
 								return el;
 							}
 
@@ -700,7 +707,7 @@ export class MfmService {
 							const rpEndEl = doc.createElement('rp');
 							rpEndEl.appendChild(doc.createTextNode(')'));
 
-							await appendChildren(node.children.slice(0, node.children.length - 1), rubyEl);
+							appendChildren(node.children.slice(0, node.children.length - 1), rubyEl);
 							rtEl.appendChild(doc.createTextNode(text.trim()));
 							rubyEl.appendChild(rpStartEl);
 							rubyEl.appendChild(rtEl);
@@ -712,7 +719,7 @@ export class MfmService {
 					default: {
 						const el = doc.createElement('span');
 						el.textContent = '*';
-						await appendChildren(node.children, el);
+						appendChildren(node.children, el);
 						el.textContent += '*';
 						return el;
 					}
@@ -735,9 +742,9 @@ export class MfmService {
 				return pre;
 			},
 
-			async center(node) {
+			center(node) {
 				const el = doc.createElement('div');
-				await appendChildren(node.children, el);
+				appendChildren(node.children, el);
 				return el;
 			},
 
@@ -776,16 +783,16 @@ export class MfmService {
 				return el;
 			},
 
-			async link(node) {
+			link(node) {
 				const a = doc.createElement('a');
 				a.setAttribute('rel', 'nofollow noopener noreferrer');
 				a.setAttribute('target', '_blank');
 				a.setAttribute('href', node.props.url);
-				await appendChildren(node.children, a);
+				appendChildren(node.children, a);
 				return a;
 			},
 
-			async mention(node) {
+			mention(node) {
 				const { username, host, acct } = node.props;
 				const resolved = mentionedRemoteUsers.find(remoteUser => remoteUser.username === username && remoteUser.host === host);
 
@@ -808,9 +815,9 @@ export class MfmService {
 				return el;
 			},
 
-			async quote(node) {
+			quote(node) {
 				const el = doc.createElement('blockquote');
-				await appendChildren(node.children, el);
+				appendChildren(node.children, el);
 				return el;
 			},
 
@@ -843,14 +850,14 @@ export class MfmService {
 				return a;
 			},
 
-			async plain(node) {
+			plain(node) {
 				const el = doc.createElement('span');
-				await appendChildren(node.children, el);
+				appendChildren(node.children, el);
 				return el;
 			},
 		};
 
-		await appendChildren(nodes, body);
+		appendChildren(nodes, body);
 
 		if (quoteUri !== null) {
 			const a = doc.createElement('a');
@@ -867,13 +874,13 @@ export class MfmService {
 			body.appendChild(quote);
 		}
 
-		let result = new XMLSerializer().serializeToString(body);
+		let result = body.outerHTML;
 
 		if (inline) {
 			result = result.replace(/^<p>/, '').replace(/<\/p>$/, '');
 		}
 
-		happyDOM.close().catch(e => {});
+		happyDOM.close().catch(() => {});
 
 		return result;
 	}

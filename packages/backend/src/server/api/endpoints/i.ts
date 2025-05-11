@@ -34,7 +34,8 @@ export const meta = {
 	// up to 20 calls, then 1 per second.
 	// This handles bursty traffic when all tabs reload as a group
 	limit: {
-		max: 20,
+		type: 'bucket',
+		size: 20,
 		dripSize: 1,
 		dripRate: 1000,
 	},

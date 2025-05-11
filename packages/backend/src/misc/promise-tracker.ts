@@ -5,6 +5,10 @@
 
 const promiseRefs: Set<WeakRef<Promise<unknown>>> = new Set();
 
+export function trackTask(task: () => Promise<unknown>): void {
+	trackPromise(task());
+}
+
 /**
  * This tracks promises that other modules decided not to wait for,
  * and makes sure they are all settled before fully closing down the server.

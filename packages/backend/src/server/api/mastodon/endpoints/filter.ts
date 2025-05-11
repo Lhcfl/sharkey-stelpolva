@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { toBoolean } from '@/server/api/mastodon/timelineArgs.js';
-import { convertFilter } from '../converters.js';
-import type { MegalodonInterface } from 'megalodon';
-import type { FastifyRequest } from 'fastify';
+import { Injectable } from '@nestjs/common';
+import { toBoolean } from '@/server/api/mastodon/argsUtils.js';
+import { MastodonClientService } from '@/server/api/mastodon/MastodonClientService.js';
+import { convertFilter } from '../MastodonConverters.js';
+import type { FastifyInstance } from 'fastify';
 
-export interface ApiFilterMastodonRoute {
+interface ApiFilterMastodonRoute {
 	Params: {
 		id?: string,
 	},
@@ -21,55 +22,78 @@ export interface ApiFilterMastodonRoute {
 	}
 }
 
+@Injectable()
 export class ApiFilterMastodon {
 	constructor(
-		private readonly request: FastifyRequest<ApiFilterMastodonRoute>,
-		private readonly client: MegalodonInterface,
+		private readonly clientService: MastodonClientService,
 	) {}
 
-	public async getFilters() {
-		const data = await this.client.getFilters();
-		return data.data.map((filter) => convertFilter(filter));
-	}
+	public register(fastify: FastifyInstance): void {
+		fastify.get('/v1/filters', async (_request, reply) => {
+			const client = this.clientService.getClient(_request);
 
-	public async getFilter() {
-		if (!this.request.params.id) throw new Error('Missing required parameter "id"');
-		const data = await this.client.getFilter(this.request.params.id);
-		return convertFilter(data.data);
-	}
+			const data = await client.getFilters();
+			const response = data.data.map((filter) => convertFilter(filter));
 
-	public async createFilter() {
-		if (!this.request.body.phrase) throw new Error('Missing required payload "phrase"');
-		if (!this.request.body.context) throw new Error('Missing required payload "context"');
-		const options = {
-			phrase: this.request.body.phrase,
-			context: this.request.body.context,
-			irreversible: toBoolean(this.request.body.irreversible),
-			whole_word: toBoolean(this.request.body.whole_word),
-			expires_in: this.request.body.expires_in,
-		};
-		const data = await this.client.createFilter(this.request.body.phrase, this.request.body.context, options);
-		return convertFilter(data.data);
-	}
+			return reply.send(response);
+		});
 
-	public async updateFilter() {
-		if (!this.request.params.id) throw new Error('Missing required parameter "id"');
-		if (!this.request.body.phrase) throw new Error('Missing required payload "phrase"');
-		if (!this.request.body.context) throw new Error('Missing required payload "context"');
-		const options = {
-			phrase: this.request.body.phrase,
-			context: this.request.body.context,
-			irreversible: toBoolean(this.request.body.irreversible),
-			whole_word: toBoolean(this.request.body.whole_word),
-			expires_in: this.request.body.expires_in,
-		};
-		const data = await this.client.updateFilter(this.request.params.id, this.request.body.phrase, this.request.body.context, options);
-		return convertFilter(data.data);
-	}
+		fastify.get<ApiFilterMastodonRoute & { Params: { id?: string } }>('/v1/filters/:id', async (_request, reply) => {
+			if (!_request.params.id) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required parameter "id"' });
 
-	public async rmFilter() {
-		if (!this.request.params.id) throw new Error('Missing required parameter "id"');
-		const data = await this.client.deleteFilter(this.request.params.id);
-		return data.data;
+			const client = this.clientService.getClient(_request);
+			const data = await client.getFilter(_request.params.id);
+			const response = convertFilter(data.data);
+
+			return reply.send(response);
+		});
+
+		fastify.post<ApiFilterMastodonRoute>('/v1/filters', async (_request, reply) => {
+			if (!_request.body.phrase) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required payload "phrase"' });
+			if (!_request.body.context) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required payload "context"' });
+
+			const options = {
+				phrase: _request.body.phrase,
+				context: _request.body.context,
+				irreversible: toBoolean(_request.body.irreversible),
+				whole_word: toBoolean(_request.body.whole_word),
+				expires_in: _request.body.expires_in,
+			};
+
+			const client = this.clientService.getClient(_request);
+			const data = await client.createFilter(_request.body.phrase, _request.body.context, options);
+			const response = convertFilter(data.data);
+
+			return reply.send(response);
+		});
+
+		fastify.post<ApiFilterMastodonRoute & { Params: { id?: string } }>('/v1/filters/:id', async (_request, reply) => {
+			if (!_request.params.id) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required parameter "id"' });
+			if (!_request.body.phrase) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required payload "phrase"' });
+			if (!_request.body.context) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required payload "context"' });
+
+			const options = {
+				phrase: _request.body.phrase,
+				context: _request.body.context,
+				irreversible: toBoolean(_request.body.irreversible),
+				whole_word: toBoolean(_request.body.whole_word),
+				expires_in: _request.body.expires_in,
+			};
+
+			const client = this.clientService.getClient(_request);
+			const data = await client.updateFilter(_request.params.id, _request.body.phrase, _request.body.context, options);
+			const response = convertFilter(data.data);
+
+			return reply.send(response);
+		});
+
+		fastify.delete<ApiFilterMastodonRoute & { Params: { id?: string } }>('/v1/filters/:id', async (_request, reply) => {
+			if (!_request.params.id) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required parameter "id"' });
+
+			const client = this.clientService.getClient(_request);
+			const data = await client.deleteFilter(_request.params.id);
+
+			return reply.send(data.data);
+		});
 	}
 }

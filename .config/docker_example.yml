@@ -1,5 +1,5 @@
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Misskey configuration
+# Sharkey configuration
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 #   ┌──────────────────────────────┐
@@ -9,14 +9,14 @@
 # First of all, let me tell you a story that may possibly be
 # boring to you and possibly important to you.
 #
-# Misskey is licensed under the AGPLv3 license. This license is
+# Sharkey is licensed under the AGPLv3 license. This license is
 # known to be often misunderstood.  Please read the following
 # instructions carefully and select the appropriate option so
 # that you do not negligently cause a license violation.
 #
 
 # --------
-# Option 1: If you host Misskey AS-IS (without any changes to
+# Option 1: If you host Sharkey AS-IS (without any changes to
 #           the source code. forks are not included).
 #
 # Step 1: Congratulations! You don't need to do anything.
@@ -28,8 +28,8 @@
 #           this repository.  Strictly speaking, it doesn't have
 #           to be a Git repository, but you'll probably use Git!
 #
-# Step 1: Build and run the Misskey server first.
-# Step 2: Open <https://your.misskey.example/admin/settings> in
+# Step 1: Build and run the Sharkey server first.
+# Step 2: Open <https://your.sharkey.example/admin/settings> in
 #         your browser with the administrator account.
 # Step 3: Enter the URL of your Git repository in the
 #         "Repository URL" field.
@@ -37,7 +37,7 @@
 # --------
 # Option 3: If neither of the above applies to you.
 #           (In this case, the source code should be published
-#           on the Misskey interface.  IT IS NOT ENOUGH TO
+#           on the Sharkey interface.  IT IS NOT ENOUGH TO
 #           DISCLOSE THE SOURCE CODE WHEN A USER REQUESTS IT BY
 #           E-MAIL OR OTHER MEANS.  If you are not satisfied
 #           with this, it is recommended that you read the
@@ -59,6 +59,20 @@
 #
 # publishTarballInsteadOfProvideRepositoryUrl: true
 
+#   ┌────────────────────────┐
+#───┘ Initial Setup Password └─────────────────────────────────────────────────────
+
+# Password to initiate setting up admin account.
+# It will not be used after the initial setup is complete.
+#
+# Be sure to change this when you set up Sharkey via the Internet.
+#
+# The provider of the service who sets up Sharkey on behalf of the customer should
+# set this value to something unique when generating the Sharkey config file,
+# and provide it to the customer.
+#
+# setupPassword: example_password_please_change_this_or_you_will_get_hacked
+
 #   ┌─────┐
 #───┘ URL └─────────────────────────────────────────────────────
 
@@ -73,11 +87,11 @@ url: https://example.tld/
 #───┘ Port and TLS settings └───────────────────────────────────
 
 #
-# Misskey requires a reverse proxy to support HTTPS connections.
+# Sharkey requires a reverse proxy to support HTTPS connections.
 #
 #                 +----- https://example.tld/ ------------+
 #   +------+      |+-------------+      +----------------+|
-#   | User | ---> || Proxy (443) | ---> | Misskey (3000) ||
+#   | User | ---> || Proxy (443) | ---> | Sharkey (3000) ||
 #   +------+      |+-------------+      +----------------+|
 #                 +---------------------------------------+
 #
@@ -85,7 +99,7 @@ url: https://example.tld/
 #   An encrypted connection with HTTPS is highly recommended
 #   because tokens may be transferred in GET requests.
 
-# The port that your Misskey server should listen on.
+# The port that your Sharkey server should listen on.
 port: 3000
 
 #   ┌──────────────────────────┐
@@ -110,6 +124,9 @@ db:
   # Extra Connection options
   #extra:
   #  ssl: true
+  #  # Set a higher value if you have timeout issues during migration
+  #  statement_timeout: 10000
+
 
 dbReplications: false
 
@@ -138,6 +155,8 @@ redis:
   #pass: example-pass
   #prefix: example-prefix
   #db: 1
+  # You can specify more ioredis options...
+  #username: example-username
 
 #redisForPubsub:
 #  host: redis
@@ -146,6 +165,8 @@ redis:
 #  #pass: example-pass
 #  #prefix: example-prefix
 #  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
 
 #redisForJobQueue:
 #  host: redis
@@ -154,6 +175,8 @@ redis:
 #  #pass: example-pass
 #  #prefix: example-prefix
 #  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
 
 #redisForTimelines:
 #  host: redis
@@ -162,6 +185,8 @@ redis:
 #  #pass: example-pass
 #  #prefix: example-prefix
 #  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
 
 #redisForReactions:
 #  host: redis
@@ -170,6 +195,8 @@ redis:
 #  #pass: example-pass
 #  #prefix: example-prefix
 #  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
 
 #redisForRateLimit:
 #  host: localhost
@@ -195,6 +222,19 @@ fulltextSearch:
   #   You need to install pgroonga and configure it as a PostgreSQL extension.
   #   In addition to the above, you need to create a pgroonga index on the text column of the note table.
   #   see: https://pgroonga.github.io/tutorial/
+  # - sqlTsvector
+  #   Use Postgres tsvectors.
+  #   You need to create a generated column and index on the note table to use this, followed by an ANALYZE on the table. Beware, this will take a while to be created and the database will remain locked during this process.
+  #   This also enables advanced search syntax, see documentation of websearch_to_tsquery: https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
+  #   Support for multiple languages is currently rather poor and will be improved once post languages become a feature.
+  #
+  #   Example to set up tsvectors for an English instance:
+  #   ALTER TABLE note ADD COLUMN tsvector_embedding tsvector GENERATED ALWAYS AS ( to_tsvector('english', COALESCE(text, '') || ' ' || COALESCE(cw, '') || ' ' || COALESCE(name, ''))) STORED;
+  #   CREATE INDEX vector_idx ON note USING GIN (tsvector_embedding);
+  #   ANALYZE note;
+  #
+  #   Note: You can opt to use a different dictionary for better results if your main instance language is not English.
+  #   To get a list, use "SELECT cfgname FROM pg_ts_config;" and replace 'english' with the desired dictionary name.
   # - meilisearch
   #   Use Meilisearch.
   #   You need to install Meilisearch and configure.
@@ -244,6 +284,11 @@ id: 'aidx'
 #    dsn: 'https://examplePublicKey@o0.ingest.sentry.io/0'
 
 #sentryForFrontend:
+#  vueIntegration:
+#    tracingOptions:
+#      trackComponents: true
+#  browserTracingIntegration:
+#  replayIntegration:
 #  options:
 #    dsn: 'https://examplePublicKey@o0.ingest.sentry.io/0'
 
@@ -257,20 +302,20 @@ id: 'aidx'
 #clusterLimit: 1
 
 # Job concurrency per worker
-# deliverJobConcurrency: 128
-# inboxJobConcurrency: 16
-# relationshipJobConcurrency: 16
-#  What's relationshipJob?:
-#   Follow, unfollow, block and unblock(ings) while following-imports, etc. or account migrations.
+#deliverJobConcurrency: 128
+#inboxJobConcurrency: 16
+#relationshipJobConcurrency: 16
+# What's relationshipJob?:
+#  Follow, unfollow, block and unblock(ings) while following-imports, etc. or account migrations.
 
 # Job rate limiter
-# deliverJobPerSec: 128
-# inboxJobPerSec: 32
-# relationshipJobPerSec: 64
+#deliverJobPerSec: 128
+#inboxJobPerSec: 32
+#relationshipJobPerSec: 64
 
 # Job attempts
-# deliverJobMaxAttempts: 12
-# inboxJobMaxAttempts: 8
+#deliverJobMaxAttempts: 12
+#inboxJobMaxAttempts: 8
 
 # Local address used for outgoing requests
 #outgoingAddress: 127.0.0.1
@@ -307,6 +352,9 @@ proxyBypassHosts:
 #proxySmtp: socks5://127.0.0.1:1080 # use SOCKS5
 
 # Media Proxy
+# Reference Implementation: https://github.com/misskey-dev/media-proxy
+# * Deliver a common cache between instances
+# * Perform image compression (on a different server resource than the main process)
 #mediaProxy: https://example.com/proxy
 
 # Proxy remote files (default: true)
@@ -315,7 +363,7 @@ proxyRemoteFiles: true
 
 # Movie Thumbnail Generation URL
 # There is no reference implementation.
-# For example, Misskey will point to the following URL:
+# For example, Sharkey will point to the following URL:
 #   https://example.com/thumbnail.webp?thumbnail=1&url=https%3A%2F%2Fstorage.example.com%2Fpath%2Fto%2Fvideo.mp4
 #videoThumbnailGenerator: https://example.com
 
@@ -326,8 +374,6 @@ signToActivityPubGet: true
 # When using authorized fetch, this is often undesired as any signed activity can be forwarded to a blocked instance by relays and other instances.
 # This setting allows admins to disable LD signatures for increased privacy, at the expense of fewer relayed activities and additional inbound fetch (GET) requests.
 attachLdSignatureForRelays: true
-# check that inbound ActivityPub GET requests are signed ("authorized fetch")
-checkActivityPubGetSignature: false
 
 # For security reasons, uploading attachments from the intranet is prohibited,
 # but exceptions can be made from the following settings. Default value is "undefined".
@@ -338,8 +384,18 @@ checkActivityPubGetSignature: false
 
 #customMOTD: ['Hello World', 'The sharks rule all', 'Shonks']
 
+# Disable automatic redirect for ActivityPub object lookup. (default: false)
+# This is a strong defense against potential impersonation attacks if the viewer instance has inadequate validation.
+# However it will make it impossible for other instances to lookup third-party user and notes through your URL.
+#disallowExternalApRedirect: true
+
 # Upload or download file size limits (bytes)
 #maxFileSize: 262144000
+
+# timeout (in milliseconds) and maximum size for imports (e.g. note imports)
+#import:
+#  downloadTimeout: 30000
+#  maxFileSize: 262144000
 
 # CHMod-style permission bits to apply to uploaded files.
 # Permission bits are specified as a base-8 string representing User/Group/Other permissions.
@@ -355,6 +411,9 @@ checkActivityPubGetSignature: false
 #     # Disable query truncation. If set to true, the full text of the query will be output to the log.
 #     # default: false
 #     disableQueryTruncation: false
+#   # Shows debug log messages after instance startup. To capture earlier debug logs, set the MK_VERBOSE environment variable.
+#   # default: false in production, true otherwise.
+#   #verbose: false
 
 # Settings for the activity logger, which records inbound activities to the database.
 # Disabled by default due to the large volume of data it saves.
@@ -370,3 +429,17 @@ checkActivityPubGetSignature: false
   # How long to save each log entry before deleting it.
   # Default: 2592000000 (1 week)
   #maxAge: 2592000000
+
+# Transparently compress every websocket message on clients that support it.
+# Trades server CPU usage for reduced bandwidth usage and a faster frontend on the client.
+# If you're not using jemalloc, this may cause memory fragmentation and performance issues! (https://www.npmjs.com/package/ws#websocket-compression)
+# jemalloc is used by default in the Sharkey Docker image and may be set up manually otherwise: https://github.com/jemalloc/jemalloc/wiki/getting-started
+websocketCompression: false
+
+# Inject arbitrary HTML tags to customize Sharkey without having to fork it
+#customHtml:
+#  head: |
+#    <!-- The possibilities are limitless! -->
+#    <script>console.log("Hello, world!")</script>
+#    <style>.whatever { color: red; }</style>
+#    <link rel="stylesheet" href="https://example.com/styles.css">

@@ -1,5 +1,14 @@
 # Upgrade Notes
 
+## 2025.X.X
+
+### Authorized Fetch
+
+This version retires the configuration entry `checkActivityPubGetSignature`, which is now replaced with the new "Authorized Fetch" settings under Control Panel/Security.
+The database migrations will automatically import the value of this configuration file, but it will never be read again after upgrading.
+To avoid confusion and possible mis-configuration, please remove the entry **after** completing the upgrade.
+Do not remove it before migration, or else the setting will reset to default (disabled)!
+
 ## 2024.10.0
 
 ### Hellspawns

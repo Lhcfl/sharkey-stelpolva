@@ -34,12 +34,17 @@ Header meanings and usage have been devised by adapting common patterns to work 
 
 ## Performance
 
-SkRateLimiterService makes between 1 and 4 redis transactions per rate limit check.
+SkRateLimiterService makes between 0 and 4 redis transactions per rate limit check.
 The first call is read-only, while the others perform at least one write operation.
+No calls are made if a client has already been blocked at least once, as the block status is stored in a short-term memory cache.
 Two integer keys are stored per client/subject, and both expire together after the maximum duration of the limit.
 While performance has not been formally tested, it's expected that SkRateLimiterService has an impact roughly on par with the legacy RateLimiterService.
 Redis memory usage should be notably lower due to the reduced number of keys and avoidance of set / array constructions.
 If redis load does become a concern, then a dedicated node can be assigned via the `redisForRateLimit` config setting.
+
+To prevent Redis DoS, SkRateLimiterService internally tracks the number of concurrent requests for each unique client/endpoint combination.
+If the number of requests exceeds the limit's maximum value, then any further requests are automatically rejected.
+The lockout will automatically end when the number of active requests drops to within the limit value.
 
 ## Concurrency and Multi-Node Correctness
 
@@ -53,6 +58,12 @@ There is one non-atomic `Set` operation used to populate the initial Timestamp v
 Any possible conflict would have to occur within a few-milliseconds window, which means that the final value can be no more than a few milliseconds off from the expected value.
 This error does not compound, as all further operations are relative (Increment and Add).
 Thus, it's considered an acceptable tradeoff given the limitations imposed by Redis and ioredis.
+
+In-process memory caches are used sparingly to avoid consistency problems.
+Besides the role factor cache, there is one "important" cache which directly impacts limit calculations: the lockout cache.
+This cache stores response data for blocked limits, preventing repeated calls to redis if a client ignores the 429 errors and continues making requests.
+Consistency is guaranteed by only caching blocked limits (allowances are not cached), and by limiting cached data to the duration of the block.
+This ensures that stale limit info is never used.
 
 ## Algorithm Pseudocode
 

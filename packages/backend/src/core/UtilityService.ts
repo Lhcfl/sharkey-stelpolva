@@ -39,6 +39,16 @@ export class UtilityService {
 		return this.punyHost(uri) === this.toPuny(this.config.host);
 	}
 
+	// メールアドレスのバリデーションを行う
+	// https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
+	@bindThis
+	public validateEmailFormat(email: string): boolean {
+		// Note: replaced MK's complicated regex with a simpler one that is more efficient and reliable.
+		const regexp = /^.+@.+$/;
+		//const regexp = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+		return regexp.test(email);
+	}
+
 	@bindThis
 	public isBlockedHost(blockedHosts: string[], host: string | null): boolean {
 		if (host == null) return false;
@@ -106,13 +116,22 @@ export class UtilityService {
 
 	@bindThis
 	public toPuny(host: string): string {
-		return domainToASCII(host.toLowerCase());
+		// domainToASCII will return an empty string if we give it a
+		// string like `name:123`, but `host` may well be in that form
+		// (e.g. when testing locally, you'll get `localhost:3000`); split
+		// the port off, and add it back later
+		const hostParts = host.toLowerCase().match(/^(.+?)(:.+)?$/);
+		if (!hostParts) return '';
+		const hostname = hostParts[1];
+		const port = hostParts[2] ?? '';
+
+		return domainToASCII(hostname) + port;
 	}
 
 	@bindThis
 	public toPunyNullable(host: string | null | undefined): string | null {
 		if (host == null) return null;
-		return domainToASCII(host.toLowerCase());
+		return this.toPuny(host);
 	}
 
 	@bindThis
@@ -156,5 +175,15 @@ export class UtilityService {
 	public isFederationAllowedUri(uri: string): boolean {
 		const host = this.extractDbHost(uri);
 		return this.isFederationAllowedHost(host);
+	}
+
+	@bindThis
+	public getUrlScheme(url: string): string {
+		try {
+			// Returns in the format "https:" or an empty string
+			return new URL(url).protocol;
+		} catch {
+			return '';
+		}
 	}
 }

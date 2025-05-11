@@ -195,6 +195,10 @@ export class FileServerService {
 				reply.header('Content-Length', file.file.size);
 
 				if (!image) {
+					if (file.file.size > 0) {
+						reply.header('Accept-Ranges', 'bytes');
+					}
+
 					if (request.headers.range && file.file.size > 0) {
 						const range = request.headers.range as string;
 						const parts = range.replace(/bytes=/, '').split('-');
@@ -215,7 +219,6 @@ export class FileServerService {
 						};
 
 						reply.header('Content-Range', `bytes ${start}-${end}/${file.file.size}`);
-						reply.header('Accept-Ranges', 'bytes');
 						reply.header('Content-Length', chunksize);
 						reply.code(206);
 					} else {
@@ -257,6 +260,10 @@ export class FileServerService {
 				reply.header('Cache-Control', 'max-age=31536000, immutable');
 				reply.header('Content-Disposition', contentDisposition('inline', filename));
 
+				if (file.file.size > 0) {
+					reply.header('Accept-Ranges', 'bytes');
+				}
+
 				if (request.headers.range && file.file.size > 0) {
 					const range = request.headers.range as string;
 					const parts = range.replace(/bytes=/, '').split('-');
@@ -271,7 +278,6 @@ export class FileServerService {
 						end,
 					});
 					reply.header('Content-Range', `bytes ${start}-${end}/${file.file.size}`);
-					reply.header('Accept-Ranges', 'bytes');
 					reply.header('Content-Length', chunksize);
 					reply.code(206);
 					return fileStream;
@@ -284,6 +290,10 @@ export class FileServerService {
 				reply.header('Cache-Control', 'max-age=31536000, immutable');
 				reply.header('Content-Disposition', contentDisposition('inline', file.filename));
 
+				if (file.file.size > 0) {
+					reply.header('Accept-Ranges', 'bytes');
+				}
+
 				if (request.headers.range && file.file.size > 0) {
 					const range = request.headers.range as string;
 					const parts = range.replace(/bytes=/, '').split('-');
@@ -298,7 +308,6 @@ export class FileServerService {
 						end,
 					});
 					reply.header('Content-Range', `bytes ${start}-${end}/${file.file.size}`);
-					reply.header('Accept-Ranges', 'bytes');
 					reply.header('Content-Length', chunksize);
 					reply.code(206);
 					return fileStream;
@@ -442,6 +451,10 @@ export class FileServerService {
 			}
 
 			if (!image) {
+				if (file.file && file.file.size > 0) {
+					reply.header('Accept-Ranges', 'bytes');
+				}
+
 				if (request.headers.range && file.file && file.file.size > 0) {
 					const range = request.headers.range as string;
 					const parts = range.replace(/bytes=/, '').split('-');
@@ -462,7 +475,6 @@ export class FileServerService {
 					};
 
 					reply.header('Content-Range', `bytes ${start}-${end}/${file.file.size}`);
-					reply.header('Accept-Ranges', 'bytes');
 					reply.header('Content-Length', chunksize);
 					reply.code(206);
 				} else {
@@ -519,7 +531,7 @@ export class FileServerService {
 
 	@bindThis
 	private async downloadAndDetectTypeFromUrl(url: string): Promise<
-		{ state: 'remote' ; mime: string; ext: string | null; path: string; cleanup: () => void; filename: string; }
+		{ state: 'remote'; mime: string; ext: string | null; path: string; cleanup: () => void; filename: string; }
 	> {
 		const [path, cleanup] = await createTemp();
 		try {

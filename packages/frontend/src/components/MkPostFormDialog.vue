@@ -4,17 +4,32 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkModal ref="modal" :preferType="'dialog'" @click="modal?.close()" @closed="onModalClosed()" @esc="modal?.close()">
-	<MkPostForm ref="form" :class="$style.form" v-bind="props" autofocus freezeAfterPosted @posted="onPosted" @cancel="onCancel" @esc="onCancel"/>
+<MkModal
+	ref="modal"
+	:preferType="'dialog'"
+	@click="modal?.close()"
+	@closed="onModalClosed()"
+	@esc="modal?.close()"
+>
+	<MkPostForm
+		ref="form"
+		:class="$style.form"
+		v-bind="props"
+		autofocus
+		freezeAfterPosted
+		@posted="onPosted"
+		@cancel="onCancel"
+		@esc="onCancel"
+	/>
 </MkModal>
 </template>
 
 <script lang="ts" setup>
-import { shallowRef } from 'vue';
+import { useTemplateRef } from 'vue';
+import type { PostFormProps } from '@/types/post-form.js';
 import MkModal from '@/components/MkModal.vue';
 import MkPostForm from '@/components/MkPostForm.vue';
 import * as Misskey from 'misskey-js';
-import type { PostFormProps } from '@/types/post-form.js';
 
 const props = withDefaults(defineProps<PostFormProps & {
 	instant?: boolean;
@@ -29,8 +44,7 @@ const emit = defineEmits<{
 	(ev: 'closed', cancelled: boolean): void;
 }>();
 
-const modal = shallowRef<InstanceType<typeof MkModal>>();
-const form = shallowRef<InstanceType<typeof MkPostForm>>();
+const modal = useTemplateRef('modal');
 
 function onPosted() {
 	modal.value?.close({

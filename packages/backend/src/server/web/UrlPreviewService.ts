@@ -8,6 +8,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { summaly } from '@misskey-dev/summaly';
 import { SummalyResult } from '@misskey-dev/summaly/built/summary.js';
 import * as Redis from 'ioredis';
+import { IsNull, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
@@ -19,29 +20,48 @@ import { ApiError } from '@/server/api/error.js';
 import { MiMeta } from '@/models/Meta.js';
 import { RedisKVCache } from '@/misc/cache.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
+import type { NotesRepository } from '@/models/_.js';
+import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
+import { ApRequestService } from '@/core/activitypub/ApRequestService.js';
+import { SystemAccountService } from '@/core/SystemAccountService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
+
+export type LocalSummalyResult = SummalyResult & {
+	haveNoteLocally?: boolean;
+};
+
+// Increment this to invalidate cached previews after a major change.
+const cacheFormatVersion = 2;
 
 @Injectable()
 export class UrlPreviewService {
 	private logger: Logger;
-	private previewCache: RedisKVCache<SummalyResult>;
+	private previewCache: RedisKVCache<LocalSummalyResult>;
 
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
 
 		@Inject(DI.redis)
-		private redisClient: Redis.Redis,
+		private readonly redisClient: Redis.Redis,
 
 		@Inject(DI.meta)
-		private meta: MiMeta,
+		private readonly meta: MiMeta,
+
+		@Inject(DI.notesRepository)
+		private readonly notesRepository: NotesRepository,
 
 		private httpRequestService: HttpRequestService,
 		private loggerService: LoggerService,
-		private utilityService: UtilityService,
+		private readonly utilityService: UtilityService,
+		private readonly apUtilityService: ApUtilityService,
+		private readonly apDbResolverService: ApDbResolverService,
+		private readonly apRequestService: ApRequestService,
+		private readonly systemAccountService: SystemAccountService,
 	) {
 		this.logger = this.loggerService.getLogger('url-preview');
-		this.previewCache = new RedisKVCache<SummalyResult>(this.redisClient, 'summaly', {
+		this.previewCache = new RedisKVCache<LocalSummalyResult>(this.redisClient, 'summaly', {
 			lifetime: 1000 * 60 * 60 * 24, // 1d
 			memoryCacheLifetime: 1000 * 60 * 10, // 10m
 			fetcher: () => { throw new Error('the UrlPreview cache should never fetch'); },
@@ -52,19 +72,21 @@ export class UrlPreviewService {
 
 	@bindThis
 	private wrap(url?: string | null): string | null {
-		return url != null
-			? url.match(/^https?:\/\//)
-				? `${this.config.mediaProxy}/preview.webp?${query({
-					url,
-					preview: '1',
-				})}`
-				: url
-			: null;
+		if (url == null) return null;
+
+		// Don't proxy our own media
+		if (this.utilityService.isUriLocal(url)) {
+			return url;
+		}
+
+		// But proxy everything else!
+		const mediaQuery = query({ url, preview: '1' });
+		return `${this.config.mediaProxy}/preview.webp?${mediaQuery}`;
 	}
 
 	@bindThis
 	public async handle(
-		request: FastifyRequest<{ Querystring: { url: string; lang?: string; } }>,
+		request: FastifyRequest<{ Querystring: { url?: string; lang?: string; } }>,
 		reply: FastifyReply,
 	): Promise<object | undefined> {
 		const url = request.query.url;
@@ -90,8 +112,7 @@ export class UrlPreviewService {
 			};
 		}
 
-		const host = new URL(url).host;
-		if (this.utilityService.isBlockedHost(this.meta.blockedHosts, host)) {
+		if (this.utilityService.isBlockedHost(this.meta.blockedHosts, new URL(url).host)) {
 			reply.code(403);
 			return {
 				error: new ApiError({
@@ -102,49 +123,65 @@ export class UrlPreviewService {
 			};
 		}
 
-		const key = `${url}@${lang}`;
-		const cached = await this.previewCache.get(key);
+		const cacheKey = `${url}@${lang}@${cacheFormatVersion}`;
+		const cached = await this.previewCache.get(cacheKey);
 		if (cached !== undefined) {
-			this.logger.info(`Returning cache preview of ${key}`);
-			// Cache 7days
-			reply.header('Cache-Control', 'max-age=604800, immutable');
+			// Cache 1 day (matching redis)
+			reply.header('Cache-Control', 'public, max-age=86400');
+
+			if (cached.activityPub) {
+				cached.haveNoteLocally = !! await this.apDbResolverService.getNoteFromApId(cached.activityPub);
+			}
 
 			return cached;
 		}
 
-		this.logger.info(this.meta.urlPreviewSummaryProxyUrl
-			? `(Proxy) Getting preview of ${key} ...`
-			: `Getting preview of ${key} ...`);
-
 		try {
-			const summary = this.meta.urlPreviewSummaryProxyUrl
+			const summary: LocalSummalyResult = this.meta.urlPreviewSummaryProxyUrl
 				? await this.fetchSummaryFromProxy(url, this.meta, lang)
 				: await this.fetchSummary(url, this.meta, lang);
 
-			this.logger.succ(`Got preview of ${url}: ${summary.title}`);
+			this.validateUrls(summary);
 
-			if (!(summary.url.startsWith('http://') || summary.url.startsWith('https://'))) {
-				throw new Error('unsupported schema included');
+			// Repeat check, since redirects are allowed.
+			if (this.utilityService.isBlockedHost(this.meta.blockedHosts, new URL(summary.url).host)) {
+				reply.code(403);
+				return {
+					error: new ApiError({
+						message: 'URL is blocked',
+						code: 'URL_PREVIEW_BLOCKED',
+						id: '50294652-857b-4b13-9700-8e5c7a8deae8',
+					}),
+				};
 			}
 
-			if (summary.player.url && !(summary.player.url.startsWith('http://') || summary.player.url.startsWith('https://'))) {
-				throw new Error('unsupported schema included');
-			}
+			this.logger.info(`Got preview of ${url} in ${lang}: ${summary.title}`);
 
 			summary.icon = this.wrap(summary.icon);
 			summary.thumbnail = this.wrap(summary.thumbnail);
 
-			this.previewCache.set(key, summary);
+			// Summaly cannot always detect links to a fedi post, so do some additional tests to try and find missed cases.
+			if (!summary.activityPub) {
+				await this.inferActivityPubLink(summary);
+			}
 
-			// Cache 7days
-			reply.header('Cache-Control', 'max-age=604800, immutable');
+			if (summary.activityPub) {
+				// Avoid duplicate checks in case inferActivityPubLink already set this.
+				summary.haveNoteLocally ||= !!await this.apDbResolverService.getNoteFromApId(summary.activityPub);
+			}
+
+			// Await this to avoid hammering redis when a bunch of URLs are fetched at once
+			await this.previewCache.set(cacheKey, summary);
+
+			// Cache 1 day (matching redis)
+			reply.header('Cache-Control', 'public, max-age=86400');
 
 			return summary;
 		} catch (err) {
-			this.logger.warn(`Failed to get preview of ${url}: ${err}`);
+			this.logger.warn(`Failed to get preview of ${url} for ${lang}: ${err}`);
 
 			reply.code(422);
-			reply.header('Cache-Control', 'max-age=86400, immutable');
+			reply.header('Cache-Control', 'max-age=3600');
 			return {
 				error: new ApiError({
 					message: 'Failed to get preview',
@@ -164,7 +201,7 @@ export class UrlPreviewService {
 			: undefined;
 
 		return summaly(url, {
-			followRedirects: false,
+			followRedirects: true,
 			lang: lang ?? 'ja-JP',
 			agent: agent,
 			userAgent: meta.urlPreviewUserAgent ?? undefined,
@@ -268,6 +305,7 @@ export class UrlPreviewService {
 	private fetchSummaryFromProxy(url: string, meta: MiMeta, lang?: string): Promise<SummalyResult> {
 		const proxy = meta.urlPreviewSummaryProxyUrl!;
 		const queryStr = query({
+			followRedirects: true,
 			url: url,
 			lang: lang ?? 'ja-JP',
 			userAgent: meta.urlPreviewUserAgent ?? undefined,
@@ -276,6 +314,84 @@ export class UrlPreviewService {
 			contentLengthRequired: meta.urlPreviewRequireContentLength,
 		});
 
-		return this.httpRequestService.getJson<SummalyResult>(`${proxy}?${queryStr}`, 'application/json, */*', undefined, true);
+		return this.httpRequestService.getJson<LocalSummalyResult>(`${proxy}?${queryStr}`, 'application/json, */*', undefined, true);
+	}
+
+	private validateUrls(summary: LocalSummalyResult) {
+		const urlScheme = this.utilityService.getUrlScheme(summary.url);
+		if (urlScheme !== 'http:' && urlScheme !== 'https:') {
+			throw new Error(`unsupported scheme in preview URL: "${urlScheme}"`);
+		}
+
+		if (summary.player.url) {
+			const playerScheme = this.utilityService.getUrlScheme(summary.player.url);
+			if (playerScheme !== 'http:' && playerScheme !== 'https:') {
+				this.logger.warn(`Redacting preview for ${summary.url}: player URL has unsupported scheme "${playerScheme}"`);
+				summary.player.url = null;
+			}
+		}
+
+		if (summary.icon) {
+			const iconScheme = this.utilityService.getUrlScheme(summary.icon);
+			if (iconScheme !== 'http:' && iconScheme !== 'https:') {
+				this.logger.warn(`Redacting preview for ${summary.url}: icon URL has unsupported scheme "${iconScheme}"`);
+				summary.icon = null;
+			}
+		}
+
+		if (summary.thumbnail) {
+			const thumbnailScheme = this.utilityService.getUrlScheme(summary.thumbnail);
+			if (thumbnailScheme !== 'http:' && thumbnailScheme !== 'https:') {
+				this.logger.warn(`Redacting preview for ${summary.url}: thumbnail URL has unsupported scheme "${thumbnailScheme}"`);
+				summary.thumbnail = null;
+			}
+		}
+
+		if (summary.activityPub) {
+			const activityPubScheme = this.utilityService.getUrlScheme(summary.activityPub);
+			if (activityPubScheme !== 'http:' && activityPubScheme !== 'https:') {
+				this.logger.warn(`Redacting preview for ${summary.url}: ActivityPub URL has unsupported scheme "${activityPubScheme}"`);
+				summary.activityPub = null;
+			}
+		}
+	}
+
+	private async inferActivityPubLink(summary: LocalSummalyResult) {
+		// Match canonical URI first.
+		// This covers local and remote links.
+		const isCanonicalUri = !!await this.apDbResolverService.getNoteFromApId(summary.url);
+		if (isCanonicalUri) {
+			summary.activityPub = summary.url;
+			summary.haveNoteLocally = true;
+			return;
+		}
+
+		// Try public URL next.
+		// This is necessary for Mastodon and other software with a different public URL.
+		const urlMatches = await this.notesRepository.find({
+			select: {
+				uri: true,
+			},
+			where: {
+				url: summary.url,
+				uri: Not(IsNull()),
+			},
+		}) as { uri: string }[];
+
+		// Older versions did not validate URL, so do it now to avoid impersonation.
+		const matchByUrl = urlMatches.find(({ uri }) => this.apUtilityService.haveSameAuthority(uri, summary.url));
+		if (matchByUrl) {
+			summary.activityPub = matchByUrl.uri;
+			summary.haveNoteLocally = true;
+			return;
+		}
+
+		// Finally, attempt a signed GET in case it's a direct link to an instance with authorized fetch.
+		const instanceActor = await this.systemAccountService.getInstanceActor();
+		const remoteObject = await this.apRequestService.signedGet(summary.url, instanceActor).catch(() => null);
+		if (remoteObject && this.apUtilityService.haveSameAuthority(remoteObject.id, summary.url)) {
+			summary.activityPub = remoteObject.id;
+			return;
+		}
 	}
 }

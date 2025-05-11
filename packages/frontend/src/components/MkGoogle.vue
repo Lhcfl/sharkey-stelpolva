@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { i18n } from '@/i18n.js';
-import { defaultStore } from '@/store';
+import { prefer } from '@/preferences.js';
 
 const props = defineProps<{
 	q: string;
@@ -23,7 +23,7 @@ const query = ref(props.q);
 
 const search = () => {
 	const searchQuery = encodeURIComponent(query.value);
-	const searchUrl = defaultStore.state.searchEngine.replace(/{query}|%s\b/g, searchQuery);
+	const searchUrl = prefer.s.searchEngine.replace(/{query}|%s\b/g, searchQuery);
 
 	window.open(searchUrl, '_blank', 'noopener');
 };

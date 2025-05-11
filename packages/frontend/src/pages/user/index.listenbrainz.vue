@@ -45,7 +45,7 @@ const props = withDefaults(
 const listenbrainz = { title: '', artist: '', lastlisten: '', img: '', musicbrainzurl: '', listenbrainzurl: '' };
 if (props.user.listenbrainz) {
 	const getLMData = async (title: string, artist: string) => {
-		const response = await fetch(`https://api.listenbrainz.org/1/metadata/lookup/?artist_name=${artist}&recording_name=${title}`, {
+		const response = await window.fetch(`https://api.listenbrainz.org/1/metadata/lookup/?artist_name=${artist}&recording_name=${title}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ if (props.user.listenbrainz) {
 		const listenbrainzurl: string = data.recording_mbid ? `https://listenbrainz.org/player?recording_mbids=${data.recording_mbid}` : '#';
 		return [titler, artistr, img, musicbrainzurl, listenbrainzurl];
 	};
-	const response = await fetch(`https://api.listenbrainz.org/1/user/${props.user.listenbrainz}/playing-now`, {
+	const response = await window.fetch(`https://api.listenbrainz.org/1/user/${props.user.listenbrainz}/playing-now`, {
 		method: 'GET',
 		headers: {
 			'Content-Type': 'application/json',

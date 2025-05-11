@@ -6,6 +6,7 @@
 /// <reference path="emoji.ts" />
 /// <reference path="card.ts" />
 /// <reference path="poll.ts" />
+/// <reference path="reaction.ts" />
 
 namespace MastodonEntity {
   export type Status = {
@@ -41,6 +42,8 @@ namespace MastodonEntity {
     // These parameters are unique parameters in fedibird.com for quote.
     quote_id?: string
     quote?: Status | null
+		// These parameters are unique to glitch-soc for emoji reactions.
+		reactions?: Reaction[]
   }
 
   export type StatusTag = {

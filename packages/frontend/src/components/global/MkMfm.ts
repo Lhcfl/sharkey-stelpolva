@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { VNode, h, defineAsyncComponent, SetupContext } from 'vue';
+import { h, defineAsyncComponent } from 'vue';
 import * as mfm from '@transfem-org/sfm-js';
 import * as Misskey from 'misskey-js';
 import { host } from '@@/js/config.js';
 import CkFollowMouse from '../CkFollowMouse.vue';
+import type { VNode, SetupContext } from 'vue';
+import type { MkABehavior } from '@/components/global/MkA.vue';
 import MkUrl from '@/components/global/MkUrl.vue';
 import MkTime from '@/components/global/MkTime.vue';
 import MkLink from '@/components/MkLink.vue';
@@ -18,8 +20,9 @@ import MkCode from '@/components/MkCode.vue';
 import MkCodeInline from '@/components/MkCodeInline.vue';
 import MkGoogle from '@/components/MkGoogle.vue';
 import MkSparkle from '@/components/MkSparkle.vue';
-import MkA, { MkABehavior } from '@/components/global/MkA.vue';
-import { defaultStore } from '@/store.js';
+import MkA from '@/components/global/MkA.vue';
+import { prefer } from '@/preferences.js';
+import { clamp } from '@@/js/math.js';
 
 function safeParseFloat(str: unknown): number | null {
 	if (typeof str !== 'string' || str === '') return null;
@@ -60,12 +63,12 @@ type MfmEvents = {
 };
 
 // eslint-disable-next-line import/no-default-export
-export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEvents>['emit'] }) {
+export default function MkMfm(props: MfmProps, { emit }: { emit: SetupContext<MfmEvents>['emit'] }) {
 	// こうしたいところだけど functional component 内では provide は使えない
 	//provide('linkNavigationBehavior', props.linkNavigationBehavior);
 
 	const isNote = props.isNote ?? true;
-	const shouldNyaize = props.nyaize === 'respect' && props.author?.isCat && props.author.speakAsCat && !defaultStore.state.disableCatSpeak;
+	const shouldNyaize = props.nyaize === 'respect' && props.author?.isCat && props.author?.speakAsCat && !prefer.s.disableCatSpeak;
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (props.text == null || props.text === '') return;
 
@@ -77,13 +80,12 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 		return t.match(/^\-?[0-9.]+s$/) ? t : null;
 	};
 
-	const useAnim = defaultStore.state.advancedMfm && defaultStore.state.animatedMfm ? true : props.isAnim ? true : false;
-
 	const validColor = (c: unknown): string | null => {
 		if (typeof c !== 'string') return null;
 		return c.match(/^[0-9a-f]{3,6}$/i) ? c : null;
 	};
 
+	const useAnim = props.isAnim ?? (prefer.s.advancedMfm && prefer.s.animatedMfm);
 	const isBlock = props.isBlock ?? false;
 
 	const SkFormula = defineAsyncComponent(() => import('@/components/SkFormula.vue'));
@@ -194,19 +196,19 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 					case 'x2': {
 						if (props.stpvInline) { return h('span', { style: 'font-size: 120%' }, genEl(token.children, scale * 1.2)); }
 						return h('span', {
-							class: defaultStore.state.advancedMfm ? 'mfm-x2' : '',
+							class: prefer.s.advancedMfm ? 'mfm-x2' : '',
 						}, genEl(token.children, scale * 2));
 					}
 					case 'x3': {
 						if (props.stpvInline) { return h('span', { style: 'font-size: 120%' }, genEl(token.children, scale * 1.2)); }
 						return h('span', {
-							class: defaultStore.state.advancedMfm ? 'mfm-x3' : '',
+							class: prefer.s.advancedMfm ? 'mfm-x3' : '',
 						}, genEl(token.children, scale * 3));
 					}
 					case 'x4': {
 						if (props.stpvInline) { return h('span', { style: 'font-size: 120%' }, genEl(token.children, scale * 1.2)); }
 						return h('span', {
-							class: defaultStore.state.advancedMfm ? 'mfm-x4' : '',
+							class: prefer.s.advancedMfm ? 'mfm-x4' : '',
 						}, genEl(token.children, scale * 4));
 					}
 					case 'font': {
@@ -289,7 +291,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 					}
 					case 'position': {
 						if (props.stpvInline) { style = 'font-style: italic;'; break; }
-						if (!defaultStore.state.advancedMfm) break;
+						if (!prefer.s.advancedMfm) break;
 						const x = safeParseFloat(token.props.args.x) ?? 0;
 						const y = safeParseFloat(token.props.args.y) ?? 0;
 						style = `transform: translateX(${x}em) translateY(${y}em);`;
@@ -313,14 +315,14 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 					}
 					case 'scale': {
 						if (props.stpvInline) { style = 'font-style: italic;'; break; }
-						if (!defaultStore.state.advancedMfm) {
+						if (!prefer.s.advancedMfm) {
 							style = '';
 							break;
 						}
-						const x = Math.min(safeParseFloat(token.props.args.x) ?? 1, 5);
-						const y = Math.min(safeParseFloat(token.props.args.y) ?? 1, 5);
+						const x = clamp(safeParseFloat(token.props.args.x) ?? 1, -5, 5);
+						const y = clamp(safeParseFloat(token.props.args.y) ?? 1, -5, 5);
 						style = `transform: scale(${x}, ${y});`;
-						scale = scale * Math.max(x, y);
+						scale = scale * Math.max(Math.abs(x), Math.abs(y));
 						break;
 					}
 					case 'fg': {
@@ -445,7 +447,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 					url: token.props.url,
 					rel: 'nofollow noopener',
 					navigationBehavior: props.linkNavigationBehavior,
-				}, genEl(token.children, scale, true)))];
+				}, () => genEl(token.children, scale, true)))];
 			}
 
 			case 'mention': {
@@ -466,7 +468,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 					to: isNote ? `/tags/${encodeURIComponent(token.props.hashtag)}` : `/user-tags/${encodeURIComponent(token.props.hashtag)}`,
 					style: 'color:var(--MI_THEME-hashtag);',
 					behavior: props.linkNavigationBehavior,
-				}, `#${token.props.hashtag}`))];
+				}, () => `#${token.props.hashtag}`))];
 			}
 
 			case 'blockCode': {

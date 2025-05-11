@@ -8,7 +8,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import * as yaml from 'js-yaml';
 import { globSync } from 'glob';
-import * as Sentry from '@sentry/node';
+import type * as Sentry from '@sentry/node';
+import type * as SentryVue from '@sentry/vue';
 import type { RedisOptions } from 'ioredis';
 
 type RedisOptionsSource = Partial<RedisOptions> & {
@@ -66,7 +67,12 @@ type Source = {
 		scope?: 'local' | 'global' | string[];
 	};
 	sentryForBackend?: { options: Partial<Sentry.NodeOptions>; enableNodeProfiling: boolean; };
-	sentryForFrontend?: { options: Partial<Sentry.NodeOptions> };
+	sentryForFrontend?: {
+		options: Partial<SentryVue.BrowserOptions> & { dsn: string };
+		vueIntegration?: SentryVue.VueIntegrationOptions | null;
+		browserTracingIntegration?: Parameters<typeof SentryVue.browserTracingIntegration>[0] | null;
+		replayIntegration?: Parameters<typeof SentryVue.replayIntegration>[0] | null;
+	};
 
 	publishTarballInsteadOfProvideRepositoryUrl?: boolean;
 
@@ -77,6 +83,7 @@ type Source = {
 	proxyBypassHosts?: string[];
 
 	allowedPrivateNetworks?: string[];
+	disallowExternalApRedirect?: boolean;
 
 	maxFileSize?: number;
 	maxNoteLength?: number;
@@ -129,9 +136,10 @@ type Source = {
 
 	logging?: {
 		sql?: {
-			disableQueryTruncation? : boolean,
-			enableQueryParamLogging? : boolean,
-		}
+			disableQueryTruncation?: boolean,
+			enableQueryParamLogging?: boolean,
+		};
+		verbose?: boolean;
 	}
 
 	activityLogging?: {
@@ -139,6 +147,12 @@ type Source = {
 		preSave?: boolean;
 		maxAge?: number;
 	};
+
+	websocketCompression?: boolean;
+
+	customHtml?: {
+		head?: string;
+	}
 };
 
 export type Config = {
@@ -180,6 +194,7 @@ export type Config = {
 	proxySmtp: string | undefined;
 	proxyBypassHosts: string[] | undefined;
 	allowedPrivateNetworks: string[] | undefined;
+	disallowExternalApRedirect: boolean;
 	maxFileSize: number;
 	maxNoteLength: number;
 	maxRemoteNoteLength: number;
@@ -203,12 +218,14 @@ export type Config = {
 	customMOTD: string[] | undefined;
 	signToActivityPubGet: boolean;
 	attachLdSignatureForRelays: boolean;
+	/** @deprecated Use MiMeta.allowUnsignedFetch instead */
 	checkActivityPubGetSignature: boolean | undefined;
 	logging?: {
 		sql?: {
-			disableQueryTruncation? : boolean,
-			enableQueryParamLogging? : boolean,
-		}
+			disableQueryTruncation?: boolean,
+			enableQueryParamLogging?: boolean,
+		};
+		verbose?: boolean;
 	}
 
 	version: string;
@@ -237,7 +254,12 @@ export type Config = {
 	redisForReactions: RedisOptions & RedisOptionsSource;
 	redisForRateLimit: RedisOptions & RedisOptionsSource;
 	sentryForBackend: { options: Partial<Sentry.NodeOptions>; enableNodeProfiling: boolean; } | undefined;
-	sentryForFrontend: { options: Partial<Sentry.NodeOptions> } | undefined;
+	sentryForFrontend: {
+		options: Partial<SentryVue.BrowserOptions> & { dsn: string };
+		vueIntegration?: SentryVue.VueIntegrationOptions | null;
+		browserTracingIntegration?: Parameters<typeof SentryVue.browserTracingIntegration>[0] | null;
+		replayIntegration?: Parameters<typeof SentryVue.replayIntegration>[0] | null;
+	} | undefined;
 	perChannelMaxNoteCacheCount: number;
 	perUserNotificationsMaxCount: number;
 	deactivateAntennaThreshold: number;
@@ -257,6 +279,12 @@ export type Config = {
 		preSave: boolean;
 		maxAge: number;
 	};
+
+	websocketCompression?: boolean;
+
+	customHtml: {
+		head: string;
+	}
 };
 
 export type FulltextSearchProvider = 'sqlLike' | 'sqlPgroonga' | 'meilisearch' | 'sqlTsvector';
@@ -360,6 +388,7 @@ export function loadConfig(): Config {
 		proxySmtp: config.proxySmtp,
 		proxyBypassHosts: config.proxyBypassHosts,
 		allowedPrivateNetworks: config.allowedPrivateNetworks,
+		disallowExternalApRedirect: config.disallowExternalApRedirect ?? false,
 		maxFileSize: config.maxFileSize ?? 262144000,
 		maxNoteLength: config.maxNoteLength ?? 3000,
 		maxRemoteNoteLength: config.maxRemoteNoteLength ?? 100000,
@@ -406,6 +435,10 @@ export function loadConfig(): Config {
 			enabled: config.activityLogging?.enabled ?? false,
 			preSave: config.activityLogging?.preSave ?? false,
 			maxAge: config.activityLogging?.maxAge ?? (1000 * 60 * 60 * 24 * 30),
+		},
+		websocketCompression: config.websocketCompression ?? false,
+		customHtml: {
+			head: config.customHtml?.head ?? '',
 		},
 	};
 }
@@ -485,7 +518,7 @@ function applyEnvOverrides(config: Source) {
 		}
 	}
 
-	function _step2name(step: string|number): string {
+	function _step2name(step: string | number): string {
 		return step.toString().replaceAll(/[^a-z0-9]+/gi, '').toUpperCase();
 	}
 
@@ -541,7 +574,7 @@ function applyEnvOverrides(config: Source) {
 
 	// these are all the settings that can be overridden
 
-	_apply_top([['url', 'port', 'address', 'socket', 'chmodSocket', 'disableHsts', 'id', 'dbReplications']]);
+	_apply_top([['url', 'port', 'address', 'socket', 'chmodSocket', 'disableHsts', 'id', 'dbReplications', 'websocketCompression']]);
 	_apply_top(['db', ['host', 'port', 'db', 'user', 'pass', 'disableCache']]);
 	_apply_top(['dbSlaves', Array.from((config.dbSlaves ?? []).keys()), ['host', 'port', 'db', 'user', 'pass']]);
 	_apply_top([
@@ -552,11 +585,16 @@ function applyEnvOverrides(config: Source) {
 	_apply_top(['meilisearch', ['host', 'port', 'apikey', 'ssl', 'index', 'scope']]);
 	_apply_top([['sentryForFrontend', 'sentryForBackend'], 'options', ['dsn', 'profileSampleRate', 'serverName', 'includeLocalVariables', 'proxy', 'keepAlive', 'caCerts']]);
 	_apply_top(['sentryForBackend', 'enableNodeProfiling']);
+	_apply_top(['sentryForFrontend', 'vueIntegration', ['attachProps', 'attachErrorHandler']]);
+	_apply_top(['sentryForFrontend', 'vueIntegration', 'tracingOptions', 'timeout']);
+	_apply_top(['sentryForFrontend', 'browserTracingIntegration', 'routeLabel']);
 	_apply_top([['clusterLimit', 'deliverJobConcurrency', 'inboxJobConcurrency', 'relashionshipJobConcurrency', 'deliverJobPerSec', 'inboxJobPerSec', 'relashionshipJobPerSec', 'deliverJobMaxAttempts', 'inboxJobMaxAttempts']]);
 	_apply_top([['outgoingAddress', 'outgoingAddressFamily', 'proxy', 'proxySmtp', 'mediaProxy', 'proxyRemoteFiles', 'videoThumbnailGenerator']]);
 	_apply_top([['maxFileSize', 'maxNoteLength', 'maxRemoteNoteLength', 'maxAltTextLength', 'maxRemoteAltTextLength', 'pidFile', 'filePermissionBits']]);
 	_apply_top(['import', ['downloadTimeout', 'maxFileSize']]);
-	_apply_top([['signToActivityPubGet', 'checkActivityPubGetSignature', 'setupPassword']]);
+	_apply_top([['signToActivityPubGet', 'checkActivityPubGetSignature', 'setupPassword', 'disallowExternalApRedirect']]);
 	_apply_top(['logging', 'sql', ['disableQueryTruncation', 'enableQueryParamLogging']]);
+	_apply_top(['logging', ['verbose']]);
 	_apply_top(['activityLogging', ['enabled', 'preSave', 'maxAge']]);
+	_apply_top(['customHtml', ['head']]);
 }

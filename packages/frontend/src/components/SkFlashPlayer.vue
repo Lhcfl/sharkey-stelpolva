@@ -6,14 +6,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div :class="$style.flash_player_container">
 	<canvas :class="$style.ratio" height="300" width="300"></canvas>
-	
+
 	<div v-if="hide" :class="$style.flash_player_disabled" @click="toggleVisible()">
 		<div>
 			<b><i class="ph-eye ph-bold ph-lg"></i> {{ i18n.ts.sensitive }}</b>
 			<span>{{ i18n.ts.clickToShow }}</span>
 		</div>
 	</div>
-	
+
 	<div v-else :class="$style.flash_player_enabled">
 		<div :class="$style.flash_display">
 			<div v-if="playerHide" :class="$style.player_hide" @click="dismissWarning()">
@@ -59,12 +59,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { ref, onDeactivated } from 'vue';
 import * as Misskey from 'misskey-js';
+import type { PublicAPI, PublicAPILike } from '@/types/ruffle/setup';
+import type { PlayerElement } from '@/types/ruffle/player';
 import MkEllipsis from '@/components/global/MkEllipsis.vue';
 import MkLoading from '@/components/global/MkLoading.vue';
 import { i18n } from '@/i18n.js';
-import { defaultStore } from '@/store.js';
-import { PublicAPI, PublicAPILike } from '@/types/ruffle/setup'; // This gives us the types for window.RufflePlayer, etc via side effects
-import { PlayerElement } from '@/types/ruffle/player';
+import { prefer } from '@/preferences.js';
 
 const props = defineProps<{
 	flashFile: Misskey.entities.DriveFile
@@ -73,7 +73,7 @@ const props = defineProps<{
 const isSensitive = props.flashFile.isSensitive;
 const url = props.flashFile.url;
 const comment = props.flashFile.comment ?? '';
-let hide = ref((defaultStore.state.nsfw === 'force') || isSensitive && (defaultStore.state.nsfw !== 'ignore'));
+let hide = ref((prefer.s.nsfw === 'force') || isSensitive && (prefer.s.nsfw !== 'ignore'));
 let playerHide = ref(true);
 let ruffleContainer = ref<HTMLDivElement>();
 let playPauseButtonKey = ref<number>(0);
@@ -126,7 +126,7 @@ async function loadRuffle() {
 		'maxExecutionDuration': 15,
 		'logLevel': 'error',
 		'base': null,
-		'menu': true,
+		'popupMenu': true,
 		'salign': '',
 		'forceAlign': false,
 		'scale': 'showAll',
@@ -177,11 +177,11 @@ async function loadContent() {
 		loadingStatus.value = undefined;
 	} catch (error) {
 		try {
-			await fetch('https://raw.esm.sh/', {
+			await window.fetch('https://raw.esm.sh/', {
 				mode: 'cors',
 			});
 			handleError(error); // Unexpected error
-		} catch (_) {
+		} catch {
 			// Must be CSP because esm.sh should be online if `loadRuffle()` didn't fail
 			handleError(i18n.ts._flash.cspError);
 		}

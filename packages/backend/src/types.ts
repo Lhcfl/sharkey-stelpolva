@@ -15,9 +15,11 @@
  * receiveFollowRequest - フォローリクエストされた
  * followRequestAccepted - 自分の送ったフォローリクエストが承認された
  * roleAssigned - ロールが付与された
+ * chatRoomInvitationReceived - チャットルームに招待された
  * achievementEarned - 実績を獲得
  * exportCompleted - エクスポートが完了
  * login - ログイン
+ * createToken - トークン作成
  * app - アプリ通知
  * test - テスト通知（サーバー側）
  */
@@ -34,9 +36,11 @@ export const notificationTypes = [
 	'receiveFollowRequest',
 	'followRequestAccepted',
 	'roleAssigned',
+	'chatRoomInvitationReceived',
 	'achievementEarned',
 	'exportCompleted',
 	'login',
+	'createToken',
 	'scheduledNoteFailed',
 	'scheduledNotePosted',
 	'app',
@@ -132,6 +136,7 @@ export const moderationLogTypes = [
 	'deletePage',
 	'deleteFlash',
 	'deleteGalleryPost',
+	'deleteChatRoom',
 	'acceptQuotesUser',
 	'rejectQuotesUser',
 	'acceptQuotesInstance',
@@ -151,6 +156,7 @@ export const moderationLogTypes = [
 	'createPromo',
 	'addRelay',
 	'removeRelay',
+	'updateProxyAccountDescription',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -450,6 +456,14 @@ export type ModerationLogPayloads = {
 		id: string;
 		host: string;
 	};
+	deleteChatRoom: {
+		roomId: string;
+		room: any;
+	};
+	updateProxyAccountDescription: {
+		before: string | null;
+		after: string | null;
+	};
 	clearUserFiles: {
 		userId: string;
 		userUsername: string;
@@ -518,21 +532,21 @@ export type ModerationLogPayloads = {
 
 export type Serialized<T> = {
 	[K in keyof T]:
-		T[K] extends Date
-			? string
-			: T[K] extends (Date | null)
-				? (string | null)
-				: T[K] extends Record<string, any>
-					? Serialized<T[K]>
-					: T[K] extends (Record<string, any> | null)
+	T[K] extends Date
+		? string
+		: T[K] extends (Date | null)
+			? (string | null)
+			: T[K] extends Record<string, any>
+				? Serialized<T[K]>
+				: T[K] extends (Record<string, any> | null)
 					? (Serialized<T[K]> | null)
-						: T[K] extends (Record<string, any> | undefined)
+					: T[K] extends (Record<string, any> | undefined)
 						? (Serialized<T[K]> | undefined)
-							: T[K];
+						: T[K];
 };
 
 export type FilterUnionByProperty<
-  Union,
-  Property extends string | number | symbol,
-  Condition
+	Union,
+	Property extends string | number | symbol,
+	Condition,
 > = Union extends Record<Property, Condition> ? Union : never;

@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkNoteHeader :class="$style.header" :classic="true" :note="note" :mini="true"/>
 		<div>
 			<p v-if="mergedCW != null" :class="$style.cw">
-				<Mfm v-if="mergedCW != ''" style="margin-right: 8px;" :text="mergedCW" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis" @click.stop="defaultStore.state.clickToOpen ? noteclick(note.id) : undefined"/>
+				<Mfm v-if="mergedCW != ''" style="margin-right: 8px;" :text="mergedCW" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis" @click.stop="prefer.s.clickToOpen ? noteclick(note.id) : undefined"/>
 				<MkCwButton v-model="showContent" :text="note.text" :files="note.files" :poll="note.poll" @click.stop/>
 			</p>
 			<div v-show="mergedCW == null || showContent">
@@ -28,8 +28,9 @@ import { computeMergedCw } from '@@/js/compute-merged-cw.js';
 import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
-import { defaultStore } from '@/store.js';
-import { useRouter } from '@/router/supplier.js';
+import { useRouter } from '@/router';
+import { prefer } from '@/preferences.js';
+import { state } from 'happy-dom/lib/PropertySymbol.js';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -37,7 +38,7 @@ const props = defineProps<{
 	hideFiles?: boolean;
 }>();
 
-let showContent = ref(defaultStore.state.uncollapseCW);
+let showContent = ref(prefer.s.uncollapseCW);
 
 const mergedCW = computed(() => computeMergedCw(props.note));
 

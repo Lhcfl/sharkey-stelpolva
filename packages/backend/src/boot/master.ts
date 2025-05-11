@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import * as os from 'node:os';
 import cluster from 'node:cluster';
+import * as net from 'node:net';
 import chalk from 'chalk';
 import chalkTemplate from 'chalk-template';
 import * as Sentry from '@sentry/node';
@@ -18,7 +19,6 @@ import type { Config } from '@/config.js';
 import { showMachineInfo } from '@/misc/show-machine-info.js';
 import { envOption } from '@/env.js';
 import { jobQueue, server } from './common.js';
-import * as net from 'node:net';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);

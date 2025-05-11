@@ -37,8 +37,15 @@ namespace MastodonEntity {
         min_expiration: number
         max_expiration: number
       }
+			accounts: {
+				max_featured_tags: number;
+				max_pinned_statuses: number;
+			}
+			reactions: {
+				max_reactions: number,
+			}
     }
-    contact_account: Account
+    contact_account: Account | null
     rules: Array<InstanceRule>
   }
 

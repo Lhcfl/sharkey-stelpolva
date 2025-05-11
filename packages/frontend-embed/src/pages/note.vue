@@ -17,7 +17,7 @@ import EmNoteDetailed from '@/components/EmNoteDetailed.vue';
 import XNotFound from '@/pages/not-found.vue';
 import { DI } from '@/di.js';
 import { misskeyApi } from '@/misskey-api.js';
-import { assertServerContext } from '@/server-context';
+import { assertServerContext } from '@/server-context.js';
 
 const props = defineProps<{
 	noteId: string;

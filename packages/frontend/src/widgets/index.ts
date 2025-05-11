@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { App, defineAsyncComponent } from 'vue';
+import { defineAsyncComponent } from 'vue';
+import type { App } from 'vue';
 
 export default function(app: App) {
 	app.component('WidgetProfile', defineAsyncComponent(() => import('./WidgetProfile.vue')));
@@ -35,6 +36,7 @@ export default function(app: App) {
 	app.component('WidgetClicker', defineAsyncComponent(() => import('./WidgetClicker.vue')));
 	app.component('WidgetSearch', defineAsyncComponent(() => import('./WidgetSearch.vue')));
 	app.component('WidgetBirthdayFollowings', defineAsyncComponent(() => import('./WidgetBirthdayFollowings.vue')));
+	app.component('WidgetChat', defineAsyncComponent(() => import('./WidgetChat.vue')));
 }
 
 // 連合関連のウィジェット（連合無効時に隠す）
@@ -71,6 +73,7 @@ export const widgets = [
 	'clicker',
 	'search',
 	'birthdayFollowings',
+	'chat',
 
 	...federationWidgets,
 ];

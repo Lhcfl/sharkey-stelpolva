@@ -70,3 +70,9 @@ https://github.com/sindresorhus/file-type/blob/main/supported.js
 https://github.com/sindresorhus/file-type/blob/main/core.js
 https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers
 */
+
+export const instanceUnsignedFetchOptions = ['never', 'always', 'essential'] as const;
+export type InstanceUnsignedFetchOption = (typeof instanceUnsignedFetchOptions)[number];
+
+export const userUnsignedFetchOptions = ['never', 'always', 'essential', 'staff'] as const;
+export type UserUnsignedFetchOption = (typeof userUnsignedFetchOptions)[number];

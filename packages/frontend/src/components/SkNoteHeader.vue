@@ -53,9 +53,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div v-if="note.user.isBot" :class="$style.isBot">bot</div>
 	<div :class="$style.classicUsername"><MkAcct :user="note.user"/></div>
 	<div v-if="note.user.badgeRoles" :class="$style.badgeRoles">
-		<img v-for="role in note.user.badgeRoles" :key="role.id" v-tooltip="role.name" :class="$style.badgeRole" :src="role.iconUrl"/>
+		<img v-for="(role, i) in note.user.badgeRoles" :key="i" v-tooltip="role.name" :class="$style.badgeRole" :src="role.iconUrl ?? ''"/>
 	</div>
-	<SkInstanceTicker v-if="showTicker && !isMobile && defaultStore.state.showTickerOnReplies" style="cursor: pointer; max-height: 5px; top: 3px; position: relative; margin-top: 0px !important;" :instance="note.user.instance" :host="note.user.host"/>
+	<SkInstanceTicker v-if="showTicker && !isMobile && prefer.s.showTickerOnReplies" style="cursor: pointer; max-height: 5px; top: 3px; position: relative; margin-top: 0px !important;" :instance="note.user.instance" :host="note.user.host"/>
 	<div :class="$style.classicInfo">
 		<div v-if="mock">
 			<MkTime :time="note.createdAt" colored/>
@@ -76,36 +76,34 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { inject, shallowRef, ref } from 'vue';
+import { inject, ref, shallowRef, useTemplateRef } from 'vue';
 import * as Misskey from 'misskey-js';
 import { i18n } from '@/i18n.js';
 import { notePage } from '@/filters/note.js';
 import { userPage } from '@/filters/user.js';
-import { getNoteVersionsMenu } from '@/scripts/get-note-versions-menu.js';
-import SkInstanceTicker from '@/components/SkInstanceTicker.vue';
+import { getNoteVersionsMenu } from '@/utility/get-note-versions-menu.js';
 import { popupMenu } from '@/os.js';
-import { defaultStore } from '@/store.js';
-import { useRouter } from '@/router/supplier.js';
-import { deviceKind } from '@/scripts/device-kind.js';
-import MkInstanceTicker from '@/components/MkInstanceTicker.vue';
+import { DI } from '@/di.js';
+import { prefer } from '@/preferences';
+import { useRouter } from '@/router';
+import { deviceKind } from '@/utility/device-kind';
+import SkInstanceTicker from '@/components/SkInstanceTicker.vue';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
 	classic?: boolean;
 }>();
 
-const menuVersionsButton = shallowRef<HTMLElement>();
+const menuVersionsButton = useTemplateRef('menuVersionsButton');
 const router = useRouter();
-const showTicker = (defaultStore.state.instanceTicker === 'always') || (defaultStore.state.instanceTicker === 'remote' && props.note.user.instance);
+const showTicker = (prefer.s.instanceTicker === 'always') || (prefer.s.instanceTicker === 'remote' && props.note.user.instance);
 
 const MOBILE_THRESHOLD = 500;
 const isMobile = ref(deviceKind === 'smartphone' || window.innerWidth <= MOBILE_THRESHOLD);
 
-async function menuVersions(viaKeyboard = false): Promise<void> {
-	const { menu, cleanup } = await getNoteVersionsMenu({ note: props.note, menuVersionsButton });
-	popupMenu(menu, menuVersionsButton.value, {
-		viaKeyboard,
-	}).then(focus).finally(cleanup);
+async function menuVersions(): Promise<void> {
+	const { menu, cleanup } = await getNoteVersionsMenu({ note: props.note });
+	popupMenu(menu, menuVersionsButton.value).then(focus).finally(cleanup);
 }
 
 function showOnRemote() {
@@ -113,7 +111,7 @@ function showOnRemote() {
 	else window.open(props.note.url ?? props.note.uri);
 }
 
-const mock = inject<boolean>('mock', false);
+const mock = inject(DI.mock, false);
 </script>
 
 <style lang="scss" module>

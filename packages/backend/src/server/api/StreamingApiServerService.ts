@@ -10,8 +10,9 @@ import * as WebSocket from 'ws';
 import proxyAddr from 'proxy-addr';
 import ms from 'ms';
 import { DI } from '@/di-symbols.js';
-import type { UsersRepository, MiAccessToken } from '@/models/_.js';
-import { NoteReadService } from '@/core/NoteReadService.js';
+import type { UsersRepository, MiAccessToken, MiUser } from '@/models/_.js';
+import type { Config } from '@/config.js';
+import type { Keyed, RateLimit } from '@/misc/rate-limit-utils.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { bindThis } from '@/decorators.js';
 import { CacheService } from '@/core/CacheService.js';
@@ -25,12 +26,16 @@ import { AuthenticateService, AuthenticationError } from './AuthenticateService.
 import MainStreamConnection from './stream/Connection.js';
 import { ChannelsService } from './stream/ChannelsService.js';
 import type * as http from 'node:http';
-import type { IEndpointMeta } from './endpoints.js';
+
+// Maximum number of simultaneous connections by client (user ID or IP address).
+// Excess connections will be closed automatically.
+const MAX_CONNECTIONS_PER_CLIENT = 32;
 
 @Injectable()
 export class StreamingApiServerService {
 	#wss: WebSocket.WebSocketServer;
 	#connections = new Map<WebSocket.WebSocket, number>();
+	#connectionsByClient = new Map<string, Set<WebSocket.WebSocket>>(); // key: IP / user ID -> value: connection
 	#cleanConnectionsIntervalId: NodeJS.Timeout | null = null;
 
 	constructor(
@@ -41,7 +46,6 @@ export class StreamingApiServerService {
 		private usersRepository: UsersRepository,
 
 		private cacheService: CacheService,
-		private noteReadService: NoteReadService,
 		private authenticateService: AuthenticateService,
 		private channelsService: ChannelsService,
 		private notificationService: NotificationService,
@@ -49,22 +53,17 @@ export class StreamingApiServerService {
 		private channelFollowingService: ChannelFollowingService,
 		private rateLimiterService: SkRateLimiterService,
 		private loggerService: LoggerService,
+
+		@Inject(DI.config)
+		private config: Config,
 	) {
 	}
 
 	@bindThis
 	private async rateLimitThis(
-		user: MiLocalUser | null | undefined,
-		requestIp: string,
-		limit: IEndpointMeta['limit'] & { key: NonNullable<string> },
+		limitActor: MiUser | string,
+		limit: Keyed<RateLimit>,
 	) : Promise<boolean> {
-		let limitActor: string | MiLocalUser;
-		if (user) {
-			limitActor = user;
-		} else {
-			limitActor = getIpHash(requestIp);
-		}
-
 		// Rate limit
 		const rateLimit = await this.rateLimiterService.limit(limit, limitActor);
 		return rateLimit.blocked;
@@ -74,26 +73,12 @@ export class StreamingApiServerService {
 	public attach(server: http.Server): void {
 		this.#wss = new WebSocket.WebSocketServer({
 			noServer: true,
+			perMessageDeflate: this.config.websocketCompression,
 		});
 
 		server.on('upgrade', async (request, socket, head) => {
 			if (request.url == null) {
 				socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
-				socket.destroy();
-				return;
-			}
-
-			// ServerServices sets `trustProxy: true`, which inside
-			// fastify/request.js ends up calling `proxyAddr` in this way,
-			// so we do the same
-			const requestIp = proxyAddr(request, () => { return true; } );
-
-			if (await this.rateLimitThis(null, requestIp, {
-				key: 'wsconnect',
-				duration: ms('5min'),
-				max: 32,
-			})) {
-				socket.write('HTTP/1.1 429 Rate Limit Exceeded\r\n\r\n');
 				socket.destroy();
 				return;
 			}
@@ -135,21 +120,55 @@ export class StreamingApiServerService {
 				return;
 			}
 
+			// ServerServices sets `trustProxy: true`, which inside fastify/request.js ends up calling `proxyAddr` in this way, so we do the same.
+			const requestIp = proxyAddr(request, () => true );
+			const limitActor = user?.id ?? getIpHash(requestIp);
+			if (await this.rateLimitThis(limitActor, {
+				// Up to 32 connections, then 1 every 10 seconds
+				type: 'bucket',
+				key: 'wsconnect',
+				size: 32,
+				dripRate: 10 * 1000,
+			})) {
+				socket.write('HTTP/1.1 429 Rate Limit Exceeded\r\n\r\n');
+				socket.destroy();
+				return;
+			}
+
+			// For performance and code simplicity, obtain and hold this reference for the lifetime of the connection.
+			// This should be safe because the map entry should only be deleted after *all* connections close.
+			let connectionsForClient = this.#connectionsByClient.get(limitActor);
+			if (!connectionsForClient) {
+				connectionsForClient = new Set();
+				this.#connectionsByClient.set(limitActor, connectionsForClient);
+			}
+
+			// Close excess connections
+			while (connectionsForClient.size >= MAX_CONNECTIONS_PER_CLIENT) {
+				// Set maintains insertion order, so first entry is the oldest.
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				const oldestConnection = connectionsForClient.values().next().value!;
+
+				// Technically, the close() handler should remove this entry.
+				// But if that ever fails, then we could enter an infinite loop.
+				// We manually remove the connection here just in case.
+				oldestConnection.close(1008, 'Disconnected - too many simultaneous connections');
+				connectionsForClient.delete(oldestConnection);
+			}
+
 			const rateLimiter = () => {
-				// rather high limit, because when catching up at the top of a
-				// timeline, the frontend may render many many notes, each of
-				// which causes a message via `useNoteCapture` to ask for
-				// realtime updates of that note
-				return this.rateLimitThis(user, requestIp, {
+				// Rather high limit because when catching up at the top of a timeline, the frontend may render many many notes.
+				// Each of which causes a message via `useNoteCapture` to ask for realtime updates of that note.
+				return this.rateLimitThis(limitActor, {
+					type: 'bucket',
 					key: 'wsmessage',
-					duration: ms('2sec'),
-					max: 4096,
+					size: 4096, // Allow spikes of up to 4096
+					dripRate: 50, // Then once every 50ms (20/second rate)
 				});
 			};
 
 			const stream = new MainStreamConnection(
 				this.channelsService,
-				this.noteReadService,
 				this.notificationService,
 				this.cacheService,
 				this.channelFollowingService,
@@ -161,6 +180,19 @@ export class StreamingApiServerService {
 			await stream.init();
 
 			this.#wss.handleUpgrade(request, socket, head, (ws) => {
+				connectionsForClient.add(ws);
+
+				// Call before emit() in case it throws an error.
+				// We don't want to leave dangling references!
+				ws.once('close', () => {
+					connectionsForClient.delete(ws);
+
+					// Make sure we don't leak the Set objects!
+					if (connectionsForClient.size < 1) {
+						this.#connectionsByClient.delete(limitActor);
+					}
+				});
+
 				this.#wss.emit('connection', ws, request, {
 					stream, user, app,
 				});

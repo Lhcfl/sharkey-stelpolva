@@ -11,35 +11,35 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 
 	<div ref="noteScroll" :class="$style.notes">
-		<MkHorizontalSwipe v-model:tab="userList" :tabs="headerTabs">
+		<MkSwiper v-model:tab="userList" :tabs="headerTabs">
 			<SkFollowingRecentNotes ref="followingRecentNotes" :selectedUserId="selectedUserId" :userList="userList" :withNonPublic="withNonPublic" :withQuotes="withQuotes" :withBots="withBots" :withReplies="withReplies" :onlyFiles="onlyFiles" @userSelected="userSelected" @loaded="listReady"/>
-		</MkHorizontalSwipe>
+		</MkSwiper>
 	</div>
 
-	<SkLazy ref="userScroll" :class="$style.user">
-		<MkHorizontalSwipe v-if="selectedUserId" v-model:tab="userList" :tabs="headerTabs">
+	<MkLazy ref="userScroll" :class="$style.user">
+		<MkSwiper v-if="selectedUserId" v-model:tab="userList" :tabs="headerTabs">
 			<SkUserRecentNotes ref="userRecentNotes" :userId="selectedUserId" :withNonPublic="withNonPublic" :withQuotes="withQuotes" :withBots="withBots" :withReplies="withReplies" :onlyFiles="onlyFiles"/>
-		</MkHorizontalSwipe>
-	</SkLazy>
+		</MkSwiper>
+	</MkLazy>
 </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ComputedRef, Ref, ref, shallowRef } from 'vue';
-import { getScrollContainer } from '@@/js/scroll.js';
-import { definePageMetadata } from '@/scripts/page-metadata.js';
+import { computed, ref, useTemplateRef } from 'vue';
+import type { ComputedRef, Ref } from 'vue';
+import type { Tab } from '@/components/global/MkPageHeader.tabs.vue';
+import type { PageHeaderItem } from '@/types/page-header.js';
 import { i18n } from '@/i18n.js';
-import MkHorizontalSwipe from '@/components/MkHorizontalSwipe.vue';
-import { Tab } from '@/components/global/MkPageHeader.tabs.vue';
-import { PageHeaderItem } from '@/types/page-header.js';
-import { useRouter } from '@/router/supplier.js';
+import MkSwiper from '@/components/MkSwiper.vue';
 import MkPageHeader from '@/components/global/MkPageHeader.vue';
 import SkUserRecentNotes from '@/components/SkUserRecentNotes.vue';
-import { useScrollPositionManager } from '@/nirax.js';
-import { createModel, createHeaderItem, followingFeedTabs, followingTabIcon, followingTabName, followingTab } from '@/scripts/following-feed-utils.js';
-import SkLazy from '@/components/global/SkLazy.vue';
+import { createModel, createHeaderItem, followingFeedTabs, followingTabIcon, followingTabName, followingTab } from '@/utility/following-feed-utils.js';
 import SkFollowingRecentNotes from '@/components/SkFollowingRecentNotes.vue';
 import SkRemoteFollowersWarning from '@/components/SkRemoteFollowersWarning.vue';
+import { useRouter } from '@/router.js';
+import { definePage } from '@/page.js';
+import MkLazy from '@/components/global/MkLazy.vue';
+import { useScrollPositionKeeper } from '@/use/use-scroll-position-keeper.js';
 
 const model = createModel();
 const {
@@ -53,10 +53,10 @@ const {
 
 const router = useRouter();
 
-const userRecentNotes = shallowRef<InstanceType<typeof SkUserRecentNotes>>();
-const followingRecentNotes = shallowRef<InstanceType<typeof SkFollowingRecentNotes>>();
-const userScroll = shallowRef<InstanceType<typeof SkLazy>>();
-const noteScroll = shallowRef<HTMLElement>();
+const userRecentNotes = useTemplateRef('userRecentNotes');
+const followingRecentNotes = useTemplateRef('followingRecentNotes');
+const userScroll = useTemplateRef('userScroll');
+const noteScroll = useTemplateRef('noteScroll');
 
 const selectedUserId: Ref<string | null> = ref(null);
 
@@ -100,9 +100,9 @@ const headerTabs: ComputedRef<Tab[]> = computed(() => followingFeedTabs.map(t =>
 	title: followingTabName(t),
 })));
 
-useScrollPositionManager(() => getScrollContainer(userScroll.value?.rootEl ?? null), router);
-useScrollPositionManager(() => getScrollContainer(noteScroll.value ?? null), router);
-definePageMetadata(() => ({
+useScrollPositionKeeper(computed(() => userScroll.value?.rootEl));
+useScrollPositionKeeper(computed(() => noteScroll.value));
+definePage(() => ({
 	title: i18n.ts.following,
 	icon: followingTabIcon(followingTab),
 }));
@@ -110,9 +110,6 @@ definePageMetadata(() => ({
 </script>
 
 <style lang="scss" module>
-//This inspection complains about duplicate "height" properties, but this is needed because "dvh" units are not supported in all browsers.
-//The earlier "vh" provide a "close enough" approximation for older browsers.
-//noinspection CssOverwrittenProperties
 .root {
 	display: grid;
 	grid-template-columns: min-content 1fr min-content;
@@ -122,18 +119,7 @@ definePageMetadata(() => ({
 		"lm notes rm";
 	gap: 12px;
 
-	height: 100vh;
-	height: 100dvh;
-
-	// The universal layout inserts a "spacer" thing that causes a stray scroll bar.
-	// We have to create fake "space" for it to "roll up" and back into the viewport, which removes the scrollbar.
-	margin-bottom: calc(-1 * var(--MI-minBottomSpacing));
-
-	// Some "just in case" backup properties.
-	// These should not be needed, but help to maintain the layout if the above trick ever stops working.
-	overflow: hidden;
-	position: sticky;
-	top: 0;
+	height: 100%;
 }
 
 .header {

@@ -17,21 +17,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script setup lang="ts">
 import * as Misskey from 'misskey-js';
-import { computed, defineAsyncComponent, shallowRef } from 'vue';
+import { computed, defineAsyncComponent, useTemplateRef } from 'vue';
 import type { ComponentExposed } from 'vue-component-type-helpers';
 import type MkNote from '@/components/MkNote.vue';
 import type SkNote from '@/components/SkNote.vue';
-import { defaultStore } from '@/store';
+import { prefer } from '@/preferences';
 
 const XNote = computed(() =>
-	defineAsyncComponent(() =>
-		defaultStore.reactiveState.noteDesign.value === 'misskey'
-			? import('@/components/MkNote.vue')
-			: import('@/components/SkNote.vue'),
-	),
+	prefer.r.noteDesign.value === 'misskey'
+		? defineAsyncComponent(() => import('@/components/MkNote.vue'))
+		: defineAsyncComponent(() => import('@/components/SkNote.vue')),
 );
 
-const rootEl = shallowRef<ComponentExposed<typeof MkNote | typeof SkNote>>();
+const rootEl = useTemplateRef<ComponentExposed<typeof MkNote | typeof SkNote>>('rootEl');
 
 defineExpose({ rootEl });
 

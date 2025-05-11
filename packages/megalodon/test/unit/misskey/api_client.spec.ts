@@ -1,7 +1,7 @@
 import MisskeyAPI from '@/misskey/api_client'
 import MegalodonEntity from '@/entity'
 import MisskeyEntity from '@/misskey/entity'
-import MegalodonNotificationType from '@/notification'
+import * as MegalodonNotificationType from '@/notification'
 import MisskeyNotificationType from '@/misskey/notification'
 
 const user: MisskeyEntity.User = {
@@ -269,12 +269,16 @@ describe('api_client', () => {
           {
             count: 1,
             me: false,
-            name: ':example1@.:'
+            name: 'example1',
+						static_url: undefined,
+						url: undefined,
           },
           {
             count: 2,
             me: false,
-            name: ':example2@example.com:'
+            name: 'example2@example.com',
+						static_url: 'https://example.com/emoji.png',
+						url: 'https://example.com/emoji.png',
           }
         ])
       })

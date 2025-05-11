@@ -126,9 +126,11 @@ export const notificationTypes = [
 	'receiveFollowRequest',
 	'followRequestAccepted',
 	'roleAssigned',
+	'chatRoomInvitationReceived',
 	'achievementEarned',
 	'exportCompleted',
 	'login',
+	'createToken',
 	'test',
 	'app',
 	'edited',
@@ -155,6 +157,7 @@ export const ROLE_POLICIES = [
 	'canUseTranslator',
 	'canHideAds',
 	'driveCapacityMb',
+	'maxFileSizeMb',
 	'alwaysMarkNsfw',
 	'canUpdateBioMedia',
 	'pinLimit',
@@ -172,13 +175,8 @@ export const ROLE_POLICIES = [
 	'canImportFollowing',
 	'canImportMuting',
 	'canImportUserLists',
+	'chatAvailability',
 ] as const;
-
-// なんか動かない
-//export const CURRENT_STICKY_TOP = Symbol('CURRENT_STICKY_TOP');
-//export const CURRENT_STICKY_BOTTOM = Symbol('CURRENT_STICKY_BOTTOM');
-export const CURRENT_STICKY_TOP = 'CURRENT_STICKY_TOP';
-export const CURRENT_STICKY_BOTTOM = 'CURRENT_STICKY_BOTTOM';
 
 export const DEFAULT_SERVER_ERROR_IMAGE_URL = '/client-assets/status/error.png';
 export const DEFAULT_NOT_FOUND_IMAGE_URL = '/client-assets/status/missingpage.webp';

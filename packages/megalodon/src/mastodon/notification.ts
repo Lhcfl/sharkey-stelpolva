@@ -1,16 +1,33 @@
-import MastodonEntity from './entity'
+export const Mention = 'mention' as const;
+export const Reblog = 'reblog' as const;
+export const Favourite = 'favourite' as const;
+export const Follow = 'follow' as const;
+export const Poll = 'poll' as const;
+export const FollowRequest = 'follow_request' as const;
+export const Status = 'status' as const;
+export const Update = 'update' as const;
+export const AdminSignup = 'admin.sign_up' as const;
+export const AdminReport = 'admin.report' as const;
+export const Reaction = 'reaction' as const;
+export const ModerationWarning = 'moderation_warning' as const;
+export const SeveredRelationships = 'severed_relationships' as const;
+export const AnnualReport = 'annual_report' as const;
 
-namespace MastodonNotificationType {
-  export const Mention: MastodonEntity.NotificationType = 'mention'
-  export const Reblog: MastodonEntity.NotificationType = 'reblog'
-  export const Favourite: MastodonEntity.NotificationType = 'favourite'
-  export const Follow: MastodonEntity.NotificationType = 'follow'
-  export const Poll: MastodonEntity.NotificationType = 'poll'
-  export const FollowRequest: MastodonEntity.NotificationType = 'follow_request'
-  export const Status: MastodonEntity.NotificationType = 'status'
-  export const Update: MastodonEntity.NotificationType = 'update'
-  export const AdminSignup: MastodonEntity.NotificationType = 'admin.sign_up'
-  export const AdminReport: MastodonEntity.NotificationType = 'admin.report'
-}
+export const mastodonNotificationTypes = [
+	Mention,
+	Reblog,
+	Favourite,
+	Follow,
+	Poll,
+	FollowRequest,
+	Status,
+	Update,
+	AdminSignup,
+	AdminReport,
+	Reaction,
+	ModerationWarning,
+	SeveredRelationships,
+	AnnualReport,
+];
 
-export default MastodonNotificationType
+export type MastodonNotificationType = typeof mastodonNotificationTypes[number];

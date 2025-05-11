@@ -17,7 +17,7 @@ type MinimumUser = {
 	uri: MiUser['uri'];
 };
 
-export type MiScheduleNoteType={
+export type MiScheduleNoteType = {
 	visibility: 'public' | 'home' | 'followers' | 'specified';
 	visibleUsers: MinimumUser[];
 	channel?: MiChannel['id'];
@@ -37,7 +37,7 @@ export type MiScheduleNoteType={
 	apMentions?: MinimumUser[] | null;
 	apHashtags?: string[] | null;
 	apEmojis?: string[] | null;
-}
+};
 
 @Entity('note_schedule')
 export class MiNoteSchedule {

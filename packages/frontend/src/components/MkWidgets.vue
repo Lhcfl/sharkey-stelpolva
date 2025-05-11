@@ -52,13 +52,13 @@ export type DefaultStoredWidget = {
 <script lang="ts" setup>
 import { defineAsyncComponent, ref, computed } from 'vue';
 import { v4 as uuid } from 'uuid';
+import { isLink } from '@@/js/is-link.js';
 import MkSelect from '@/components/MkSelect.vue';
 import MkButton from '@/components/MkButton.vue';
 import { widgets as widgetDefs, federationWidgets } from '@/widgets/index.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 import { instance } from '@/instance.js';
-import { isLink } from '@@/js/is-link.js';
 
 const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
 

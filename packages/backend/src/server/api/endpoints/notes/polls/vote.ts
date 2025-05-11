@@ -174,7 +174,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			// リモートフォロワーにUpdate配信
-			this.pollService.deliverQuestionUpdate(note.id);
+			this.pollService.deliverQuestionUpdate(note);
 		});
 	}
 }

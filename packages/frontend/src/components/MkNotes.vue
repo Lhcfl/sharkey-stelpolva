@@ -7,43 +7,35 @@ SPDX-License-Identifier: AGPL-3.0-only
 <MkPagination ref="pagingComponent" :pagination="pagination" :disableAutoLoad="disableAutoLoad">
 	<template #empty>
 		<div class="_fullinfo">
-			<img :src="infoImageUrl" class="_ghost"/>
+			<img :src="infoImageUrl" draggable="false"/>
 			<div>{{ i18n.ts.noNotes }}</div>
 		</div>
 	</template>
 
 	<template #default="{ items: notes }">
-		<div :class="[$style.root, { [$style.noGap]: noGap }]">
-			<MkDateSeparatedList
-				ref="notes"
-				v-slot="{ item: note }"
-				:items="notes"
-				:direction="pagination.reversed ? 'up' : 'down'"
-				:reversed="pagination.reversed"
-				:noGap="noGap"
-				:ad="true"
-				:class="$style.notes"
-			>
-				<MkNote :key="note._featuredId_ || note._prId_ || note.id" :class="$style.note" :note="note" :withHardMute="true"/>
-			</MkDateSeparatedList>
+		<div :class="[$style.root, { [$style.noGap]: noGap, '_gaps': !noGap, [$style.reverse]: pagination.reversed }]">
+			<template v-for="(note, i) in notes" :key="note.id">
+				<div v-if="note._shouldInsertAd_" :class="[$style.noteWithAd, { '_gaps': !noGap }]" :data-scroll-anchor="note.id">
+					<DynamicNote :class="$style.note" :note="note as Misskey.entities.Note" :withHardMute="true"/>
+					<div :class="$style.ad">
+						<MkAd :preferForms="['horizontal', 'horizontal-big']"/>
+					</div>
+				</div>
+				<DynamicNote v-else :class="$style.note" :note="note as Misskey.entities.Note" :withHardMute="true" :data-scroll-anchor="note.id"/>
+			</template>
 		</div>
 	</template>
 </MkPagination>
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, shallowRef } from 'vue';
-import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
-import MkPagination, { Paging } from '@/components/MkPagination.vue';
+import * as Misskey from 'misskey-js';
+import { useTemplateRef } from 'vue';
+import type { Paging } from '@/components/MkPagination.vue';
+import DynamicNote from '@/components/DynamicNote.vue';
+import MkPagination from '@/components/MkPagination.vue';
 import { i18n } from '@/i18n.js';
 import { infoImageUrl } from '@/instance.js';
-import { defaultStore } from '@/store.js';
-
-const MkNote = defineAsyncComponent(() =>
-	(defaultStore.state.noteDesign === 'misskey') ? import('@/components/MkNote.vue') :
-	(defaultStore.state.noteDesign === 'sharkey') ? import('@/components/SkNote.vue') :
-	null
-);
 
 const props = defineProps<{
 	pagination: Paging;
@@ -51,7 +43,7 @@ const props = defineProps<{
 	disableAutoLoad?: boolean;
 }>();
 
-const pagingComponent = shallowRef<InstanceType<typeof MkPagination>>();
+const pagingComponent = useTemplateRef('pagingComponent');
 
 defineExpose({
 	pagingComponent,
@@ -59,24 +51,40 @@ defineExpose({
 </script>
 
 <style lang="scss" module>
-.root {
-	&.noGap {
-		border-radius: var(--MI-radius);
+.reverse {
+	display: flex;
+	flex-direction: column-reverse;
+}
 
-		> .notes {
-			background: color-mix(in srgb, var(--MI_THEME-panel) 65%, transparent);
+.root {
+	container-type: inline-size;
+
+	&.noGap {
+		background: color-mix(in srgb, var(--MI_THEME-panel) 65%, transparent);
+
+		.note {
+			border-bottom: solid 0.5px var(--MI_THEME-divider);
+		}
+
+		.ad {
+			padding: 8px;
+			background-size: auto auto;
+			background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, var(--MI_THEME-bg) 8px, var(--MI_THEME-bg) 14px);
+			border-bottom: solid 0.5px var(--MI_THEME-divider);
 		}
 	}
 
 	&:not(.noGap) {
-		> .notes {
-			background: var(--MI_THEME-bg);
+		background: var(--MI_THEME-bg);
 
-			.note {
-				background: color-mix(in srgb, var(--MI_THEME-panel) 65%, transparent);
-				border-radius: var(--MI-radius);
-			}
+		.note {
+			background: color-mix(in srgb, var(--MI_THEME-panel) 65%, transparent);
+			border-radius: var(--MI-radius);
 		}
 	}
+}
+
+.ad:empty {
+	display: none;
 }
 </style>

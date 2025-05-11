@@ -3,17 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import querystring from 'querystring';
 import { Inject, Injectable } from '@nestjs/common';
-import megalodon, { MegalodonInterface } from 'megalodon';
 import { v4 as uuid } from 'uuid';
-/* import { kinds } from '@/misc/api-permissions.js';
-import type { Config } from '@/config.js';
-import { DI } from '@/di-symbols.js'; */
-import multer from 'fastify-multer';
 import { bindThis } from '@/decorators.js';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
+import { MastodonClientService } from '@/server/api/mastodon/MastodonClientService.js';
+import { getErrorData } from '@/server/api/mastodon/MastodonLogger.js';
+import { ServerUtilityService } from '@/server/ServerUtilityService.js';
 import type { FastifyInstance } from 'fastify';
 
 const kinds = [
@@ -51,19 +48,14 @@ const kinds = [
 	'write:gallery-likes',
 ];
 
-function getClient(BASE_URL: string, authorization: string | undefined): MegalodonInterface {
-	const accessTokenArr = authorization?.split(' ') ?? [null];
-	const accessToken = accessTokenArr[accessTokenArr.length - 1];
-	const generator = (megalodon as any).default;
-	const client = generator('misskey', BASE_URL, accessToken) as MegalodonInterface;
-	return client;
-}
-
 @Injectable()
 export class OAuth2ProviderService {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
+
+		private readonly mastodonClientService: MastodonClientService,
+		private readonly serverUtilityService: ServerUtilityService,
 	) { }
 
 	// https://datatracker.ietf.org/doc/html/rfc8414.html
@@ -100,105 +92,58 @@ export class OAuth2ProviderService {
 			});
 		}); */
 
-		const upload = multer({
-			storage: multer.diskStorage({}),
-			limits: {
-				fileSize: this.config.maxFileSize || 262144000,
-				files: 1,
-			},
-		});
+		this.serverUtilityService.addMultipartFormDataContentType(fastify);
+		this.serverUtilityService.addFormUrlEncodedContentType(fastify);
+		this.serverUtilityService.addCORS(fastify);
+		this.serverUtilityService.addFlattenedQueryType(fastify);
 
-		fastify.addHook('onRequest', (request, reply, done) => {
-			reply.header('Access-Control-Allow-Origin', '*');
-			done();
-		});
+		for (const url of ['/authorize', '/authorize/']) {
+			fastify.get<{ Querystring: Record<string, string | string[] | undefined> }>(url, async (request, reply) => {
+				if (typeof(request.query.client_id) !== 'string') return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required query "client_id"' });
 
-		fastify.addContentTypeParser('application/x-www-form-urlencoded', (request, payload, done) => {
-			let body = '';
-			payload.on('data', (data) => {
-				body += data;
+				const redirectUri = new URL(Buffer.from(request.query.client_id, 'base64').toString());
+				redirectUri.searchParams.set('mastodon', 'true');
+				if (request.query.state) redirectUri.searchParams.set('state', String(request.query.state));
+				if (request.query.redirect_uri) redirectUri.searchParams.set('redirect_uri', String(request.query.redirect_uri));
+
+				return reply.redirect(redirectUri.toString());
 			});
-			payload.on('end', () => {
-				try {
-					const parsed = querystring.parse(body);
-					done(null, parsed);
-				} catch (e: any) {
-					done(e);
-				}
-			});
-			payload.on('error', done);
-		});
+		}
 
-		fastify.register(multer.contentParser);
+		fastify.post<{ Body?: Record<string, string | string[] | undefined>, Querystring: Record<string, string | string[] | undefined> }>('/token', async (request, reply) => {
+			const body = request.body ?? request.query;
 
-		fastify.get('/authorize', async (request, reply) => {
-			const query: any = request.query;
-			let param = "mastodon=true";
-			if (query.state) param += `&state=${query.state}`;
-			if (query.redirect_uri) param += `&redirect_uri=${query.redirect_uri}`;
-			const client = query.client_id ? query.client_id : "";
-			reply.redirect(
-				`${Buffer.from(client.toString(), 'base64').toString()}?${param}`,
-			);
-		});
-
-		fastify.get('/authorize/', async (request, reply) => {
-			const query: any = request.query;
-			let param = "mastodon=true";
-			if (query.state) param += `&state=${query.state}`;
-			if (query.redirect_uri) param += `&redirect_uri=${query.redirect_uri}`;
-			const client = query.client_id ? query.client_id : "";
-			reply.redirect(
-				`${Buffer.from(client.toString(), 'base64').toString()}?${param}`,
-			);
-		});
-
-		fastify.post('/token', { preHandler: upload.none() }, async (request, reply) => {
-			const body: any = request.body || request.query;
-			if (body.grant_type === "client_credentials") {
+			if (body.grant_type === 'client_credentials') {
 				const ret = {
 					access_token: uuid(),
-					token_type: "Bearer",
-					scope: "read",
+					token_type: 'Bearer',
+					scope: 'read',
 					created_at: Math.floor(new Date().getTime() / 1000),
 				};
-				reply.send(ret);
+				return reply.send(ret);
 			}
-			let client_id: any = body.client_id;
-			const BASE_URL = `${request.protocol}://${request.hostname}`;
-			const client = getClient(BASE_URL, '');
-			let token = null;
-			if (body.code) {
-				//m = body.code.match(/^([a-zA-Z0-9]{8})([a-zA-Z0-9]{4})([a-zA-Z0-9]{4})([a-zA-Z0-9]{4})([a-zA-Z0-9]{12})/);
-				//if (!m.length) {
-				//	ctx.body = { error: "Invalid code" };
-				//	return;
-				//}
-				//token = `${m[1]}-${m[2]}-${m[3]}-${m[4]}-${m[5]}`
-				//console.log(body.code, token);
-				token = body.code;
-			}
-			if (client_id instanceof Array) {
-				client_id = client_id.toString();
-			} else if (!client_id) {
-				client_id = null;
-			}
+
 			try {
-				const atData = await client.fetchAccessToken(
-					client_id,
-					body.client_secret,
-					token ? token : "",
-				);
+				if (!body.client_secret) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required query "client_secret"' });
+
+				const clientId = body.client_id ? String(body.clientId) : null;
+				const secret = String(body.client_secret);
+				const code = body.code ? String(body.code) : '';
+
+				// TODO fetch the access token directly, then remove all oauth code from megalodon
+				const client = this.mastodonClientService.getClient(request);
+				const atData = await client.fetchAccessToken(clientId, secret, code);
+
 				const ret = {
 					access_token: atData.accessToken,
-					token_type: "Bearer",
-					scope: body.scope || "read write follow push",
-					created_at: Math.floor(new Date().getTime() / 1000),
+					token_type: 'Bearer',
+					scope: atData.scope || body.scope || 'read write follow push',
+					created_at: atData.createdAt || Math.floor(new Date().getTime() / 1000),
 				};
-				reply.send(ret);
-			} catch (err: any) {
-				/* console.error(err); */
-				reply.code(401).send(err.response.data);
+				return reply.send(ret);
+			} catch (e: unknown) {
+				const data = getErrorData(e);
+				return reply.code(401).send(data);
 			}
 		});
 	}

@@ -1,20 +1,16 @@
-import Entity from './entity'
-
-namespace NotificationType {
-  export const Follow: Entity.NotificationType = 'follow'
-  export const Favourite: Entity.NotificationType = 'favourite'
-  export const Reblog: Entity.NotificationType = 'reblog'
-  export const Mention: Entity.NotificationType = 'mention'
-  export const EmojiReaction: Entity.NotificationType = 'emoji_reaction'
-  export const FollowRequest: Entity.NotificationType = 'follow_request'
-  export const Status: Entity.NotificationType = 'status'
-  export const PollVote: Entity.NotificationType = 'poll_vote'
-  export const PollExpired: Entity.NotificationType = 'poll_expired'
-  export const Update: Entity.NotificationType = 'update'
-  export const Move: Entity.NotificationType = 'move'
-  export const AdminSignup: Entity.NotificationType = 'admin.sign_up'
-  export const AdminReport: Entity.NotificationType = 'admin.report'
-}
+export const Follow = 'follow' as const;
+export const Favourite = 'favourite' as const;
+export const Reblog = 'reblog' as const;
+export const Mention = 'mention' as const;
+export const EmojiReaction = 'emoji_reaction' as const;
+export const FollowRequest = 'follow_request' as const;
+export const Status = 'status' as const;
+export const PollVote = 'poll_vote' as const;
+export const PollExpired = 'poll_expired' as const;
+export const Update = 'update' as const;
+export const Move = 'move' as const;
+export const AdminSignup = 'admin.sign_up' as const;
+export const AdminReport = 'admin.report' as const;
 
 export class UnknownNotificationTypeError extends Error {
   constructor() {
@@ -23,4 +19,20 @@ export class UnknownNotificationTypeError extends Error {
   }
 }
 
-export default NotificationType
+export const notificationTypes = [
+	Follow,
+	Favourite,
+	Reblog,
+	Mention,
+	EmojiReaction,
+	FollowRequest,
+	Status,
+	PollVote,
+	PollExpired,
+	Update,
+	Move,
+	AdminSignup,
+	AdminReport,
+];
+
+export type NotificationType = typeof notificationTypes[number];

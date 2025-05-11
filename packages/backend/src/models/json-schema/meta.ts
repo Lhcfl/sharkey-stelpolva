@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { instanceUnsignedFetchOptions } from '@/const.js';
+
 export const packedMetaLiteSchema = {
 	type: 'object',
 	optional: false, nullable: false,
@@ -259,6 +261,38 @@ export const packedMetaLiteSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		sentryForFrontend: {
+			type: 'object',
+			optional: false, nullable: true,
+			properties: {
+				options: {
+					type: 'object',
+					optional: false, nullable: false,
+					properties: {
+						dsn: {
+							type: 'string',
+							optional: false, nullable: false,
+						},
+					},
+					additionalProperties: true,
+				},
+				vueIntegration: {
+					type: 'object',
+					optional: true, nullable: true,
+					additionalProperties: true,
+				},
+				browserTracingIntegration: {
+					type: 'object',
+					optional: true, nullable: true,
+					additionalProperties: true,
+				},
+				replayIntegration: {
+					type: 'object',
+					optional: true, nullable: true,
+					additionalProperties: true,
+				},
+			},
+		},
 		mediaProxy: {
 			type: 'string',
 			optional: false, nullable: false,
@@ -400,6 +434,11 @@ export const packedMetaDetailedOnlySchema = {
 		},
 		cacheRemoteSensitiveFiles: {
 			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		allowUnsignedFetch: {
+			type: 'string',
+			enum: instanceUnsignedFetchOptions,
 			optional: false, nullable: false,
 		},
 	},

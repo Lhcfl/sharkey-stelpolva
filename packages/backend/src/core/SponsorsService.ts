@@ -4,24 +4,47 @@
  */
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import type { MiMeta } from '@/models/_.js';
 import * as Redis from 'ioredis';
+import type { MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { RedisKVCache } from '@/misc/cache.js';
 import { bindThis } from '@/decorators.js';
 
+export interface Sponsor {
+	MemberId: number;
+	createdAt: string;
+	type: string;
+	role: string;
+	tier: string;
+	isActive: boolean;
+	totalAmountDonated: number;
+	currency: string;
+	lastTransactionAt: string;
+	lastTransactionAmount: number;
+	profile: string;
+	name: string;
+	company: string | null;
+	description: string | null;
+	image: string | null;
+	email: string | null;
+	newsletterOptIn: unknown | null;
+	twitter: string | null;
+	github: string | null;
+	website: string | null;
+}
+
 @Injectable()
 export class SponsorsService implements OnApplicationShutdown {
-	private cache: RedisKVCache<void[]>;
+	private readonly cache: RedisKVCache<Sponsor[]>;
 
 	constructor(
 		@Inject(DI.meta)
-		private meta: MiMeta,
+		private readonly meta: MiMeta,
 
 		@Inject(DI.redis)
-		private redisClient: Redis.Redis,
+		redisClient: Redis.Redis,
 	) {
-		this.cache = new RedisKVCache<void[]>(this.redisClient, 'sponsors', {
+		this.cache = new RedisKVCache<Sponsor[]>(redisClient, 'sponsors', {
 			lifetime: 1000 * 60 * 60,
 			memoryCacheLifetime: 1000 * 60,
 			fetcher: (key) => {
@@ -34,54 +57,54 @@ export class SponsorsService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async fetchInstanceSponsors() {
+	private async fetchInstanceSponsors(): Promise<Sponsor[]> {
 		if (!(this.meta.donationUrl && this.meta.donationUrl.includes('opencollective.com'))) {
 			return [];
 		}
 
 		try {
-			const backers = await fetch(`${this.meta.donationUrl}/members/users.json`).then((response) => response.json());
+			const backers = await fetch(`${this.meta.donationUrl}/members/users.json`).then((response) => response.json() as Promise<Sponsor[]>);
 
 			// Merge both together into one array and make sure it only has Active subscriptions
-			const allSponsors = [...backers].filter(sponsor => sponsor.isActive === true && sponsor.role === 'BACKER' && sponsor.tier);
+			const allSponsors = [...backers].filter(sponsor => sponsor.isActive && sponsor.role === 'BACKER' && sponsor.tier);
 
 			// Remove possible duplicates
 			return [...new Map(allSponsors.map(v => [v.profile, v])).values()];
-		} catch (error) {
+		} catch {
 			return [];
 		}
 	}
 
 	@bindThis
-	private async fetchSharkeySponsors() {
+	private async fetchSharkeySponsors(): Promise<Sponsor[]> {
 		try {
-			const backers = await fetch('https://opencollective.com/sharkey/tiers/backer/all.json').then((response) => response.json());
-			const sponsorsOC = await fetch('https://opencollective.com/sharkey/tiers/sponsor/all.json').then((response) => response.json());
+			const backers = await fetch('https://opencollective.com/sharkey/tiers/backer/all.json').then((response) => response.json() as Promise<Sponsor[]>);
+			const sponsorsOC = await fetch('https://opencollective.com/sharkey/tiers/sponsor/all.json').then((response) => response.json() as Promise<Sponsor[]>);
 
 			// Merge both together into one array and make sure it only has Active subscriptions
-			const allSponsors = [...sponsorsOC, ...backers].filter(sponsor => sponsor.isActive === true);
+			const allSponsors = [...sponsorsOC, ...backers].filter(sponsor => sponsor.isActive);
 
 			// Remove possible duplicates
 			return [...new Map(allSponsors.map(v => [v.profile, v])).values()];
-		} catch (error) {
+		} catch {
 			return [];
 		}
 	}
 
 	@bindThis
 	public async instanceSponsors(forceUpdate: boolean) {
-		if (forceUpdate) this.cache.refresh('instance');
+		if (forceUpdate) await this.cache.refresh('instance');
 		return this.cache.fetch('instance');
 	}
 
 	@bindThis
 	public async sharkeySponsors(forceUpdate: boolean) {
-		if (forceUpdate) this.cache.refresh('sharkey');
+		if (forceUpdate) await this.cache.refresh('sharkey');
 		return this.cache.fetch('sharkey');
 	}
 
 	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
+	public onApplicationShutdown(): void {
 		this.cache.dispose();
 	}
 }

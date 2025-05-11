@@ -5,6 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
+import { IsNull } from 'typeorm';
 import type { BlockingsRepository, FollowingsRepository, MutingsRepository, RenoteMutingsRepository, MiUserProfile, UserProfilesRepository, UsersRepository, MiFollowing } from '@/models/_.js';
 import { MemoryKVCache, RedisKVCache } from '@/misc/cache.js';
 import type { MiLocalUser, MiUser } from '@/models/User.js';
@@ -233,6 +234,13 @@ export class CacheService implements OnApplicationShutdown {
 	@bindThis
 	public findUserById(userId: MiUser['id']) {
 		return this.userByIdCache.fetch(userId, () => this.usersRepository.findOneByOrFail({ id: userId }));
+	}
+
+	@bindThis
+	public async findLocalUserById(userId: MiUser['id']): Promise<MiLocalUser | null> {
+		return await this.localUserByIdCache.fetchMaybe(userId, async () => {
+			return await this.usersRepository.findOneBy({ id: userId, host: IsNull() }) as MiLocalUser | null ?? undefined;
+		}) ?? null;
 	}
 
 	@bindThis

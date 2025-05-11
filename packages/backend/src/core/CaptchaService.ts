@@ -47,7 +47,7 @@ export type CaptchaSetting = {
 		siteKey: string | null;
 		secretKey: string | null;
 	}
-}
+};
 
 export class CaptchaError extends Error {
 	public readonly code: CaptchaErrorCode;
@@ -63,11 +63,11 @@ export class CaptchaError extends Error {
 
 export type CaptchaSaveSuccess = {
 	success: true;
-}
+};
 export type CaptchaSaveFailure = {
 	success: false;
 	error: CaptchaError;
-}
+};
 export type CaptchaSaveResult = CaptchaSaveSuccess | CaptchaSaveFailure;
 
 type CaptchaResponse = {
@@ -375,7 +375,7 @@ export class CaptchaService {
 					throw new CaptchaError(captchaErrorCodes.invalidParameters, 'frc-failed: secret and captureResult are required');
 				}
 
-				await this.verifyFriendlyCaptcha(params.captchaResult, params.captchaResult);
+				await this.verifyFriendlyCaptcha(params.secret, params.captchaResult);
 				await this.updateMeta(provider, params);
 			},
 		}[provider];

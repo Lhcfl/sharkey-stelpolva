@@ -7,6 +7,7 @@ import { Inject, Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs
 import * as Redis from 'ioredis';
 import { ModuleRef } from '@nestjs/core';
 import type { FollowingsRepository, UserListMembershipsRepository } from '@/models/_.js';
+import type { MiMeta } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiUserList } from '@/models/UserList.js';
 import type { MiUserListMembership } from '@/models/UserListMembership.js';
@@ -15,11 +16,11 @@ import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { ProxyAccountService } from '@/core/ProxyAccountService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueService } from '@/core/QueueService.js';
 import { RedisKVCache } from '@/misc/cache.js';
 import { RoleService } from '@/core/RoleService.js';
+import { SystemAccountService } from '@/core/SystemAccountService.js';
 
 @Injectable()
 export class UserListService implements OnApplicationShutdown, OnModuleInit {
@@ -43,11 +44,14 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 		@Inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
+		@Inject(DI.meta)
+		private readonly meta: MiMeta,
+
 		private userEntityService: UserEntityService,
 		private idService: IdService,
 		private globalEventService: GlobalEventService,
-		private proxyAccountService: ProxyAccountService,
 		private queueService: QueueService,
+		private systemAccountService: SystemAccountService,
 	) {
 		this.membersCache = new RedisKVCache<Set<string>>(this.redisClient, 'userListMembers', {
 			lifetime: 1000 * 60 * 30, // 30m
@@ -113,15 +117,9 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 		this.globalEventService.publishUserListStream(list.id, 'userAdded', await this.userEntityService.pack(target));
 
 		// このインスタンス内にこのリモートユーザーをフォローしているユーザーがいなくても投稿を受け取るためにダミーのユーザーがフォローしたということにする
-		if (this.userEntityService.isRemoteUser(target)) {
-			const proxy = await this.proxyAccountService.fetch();
-			if (proxy) {
-				const hasFollow = await this.followingsRepository.createQueryBuilder('f')
-					.where('f.followeeId = :userId', { userId: target.id })
-					.andWhere('f.followerHost IS NULL')
-					.getExists();
-				if (!hasFollow) this.queueService.createFollowJob([{ from: { id: proxy.id }, to: { id: target.id } }]);
-			}
+		if (this.userEntityService.isRemoteUser(target) && this.meta.enableProxyAccount) {
+			const proxy = await this.systemAccountService.fetch('proxy');
+			this.queueService.createFollowJob([{ from: { id: proxy.id }, to: { id: target.id } }]);
 		}
 	}
 

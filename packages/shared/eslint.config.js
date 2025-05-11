@@ -41,6 +41,13 @@ export default [
 			'@typescript-eslint/prefer-nullish-coalescing': ['warn', {
 				ignorePrimitives: true,
 			}],
+			'no-param-reassign': 'off',
 		},
+	},
+	{
+		files: ['src/**/*.stories.ts'],
+		rules: {
+			'no-restricted-globals': 'off',
+		}
 	},
 ];

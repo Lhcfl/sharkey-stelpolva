@@ -11,11 +11,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, type CSSProperties } from 'vue';
 import { instanceName as localInstanceName } from '@@/js/config.js';
+import { computed } from 'vue';
+import type { CSSProperties } from 'vue';
 import { instance as localInstance } from '@/instance.js';
-import { getProxiedImageUrlNullable } from '@/scripts/media-proxy.js';
 import * as os from '@/os.js';
+import { getProxiedImageUrlNullable } from '@/utility/media-proxy.js';
 
 const props = defineProps<{
 	host: string | null;
@@ -24,7 +25,6 @@ const props = defineProps<{
 		name?: string | null
 		themeColor?: string | null
 	}
-	host: string | null,
 }>();
 
 // if no instance data is given, this is for the local instance

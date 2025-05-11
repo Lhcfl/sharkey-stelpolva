@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		MFM Cheatsheet
 	</template>
 	<MkStickyContainer>
-		<MkSpacer :contentMax="800">
+		<div class="_spacer" style="--MI_SPACER-w: 800px;">
 			<div class="mfm-cheat-sheet">
 				<div>{{ i18n.ts._mfm.intro }}</div>
 				<br/>
@@ -432,7 +432,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</div>
 			</div>
-		</MkSpacer>
+		</div>
 	</MkStickyContainer>
 </MkWindow>
 </template>

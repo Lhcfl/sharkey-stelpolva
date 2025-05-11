@@ -7,7 +7,6 @@ import * as WebSocket from 'ws';
 import type { MiUser } from '@/models/User.js';
 import type { MiAccessToken } from '@/models/AccessToken.js';
 import type { Packed } from '@/misc/json-schema.js';
-import type { NoteReadService } from '@/core/NoteReadService.js';
 import type { NotificationService } from '@/core/NotificationService.js';
 import { bindThis } from '@/decorators.js';
 import { CacheService } from '@/core/CacheService.js';
@@ -23,6 +22,7 @@ import type { EventEmitter } from 'events';
 import type Channel from './channel.js';
 
 const MAX_CHANNELS_PER_CONNECTION = 32;
+const MAX_SUBSCRIPTIONS_PER_CONNECTION = 512;
 
 /**
  * Main stream connection
@@ -31,12 +31,10 @@ const MAX_CHANNELS_PER_CONNECTION = 32;
 export default class Connection {
 	public user?: MiUser;
 	public token?: MiAccessToken;
-	private rateLimiter?: () => Promise<boolean>;
 	private wsConnection: WebSocket.WebSocket;
 	public subscriber: StreamEventEmitter;
-	private channels: Channel[] = [];
-	private subscribingNotes: Partial<Record<string, number>> = {};
-	private cachedNotes: Packed<'Note'>[] = [];
+	private channels = new Map<string, Channel>();
+	private subscribingNotes = new Map<string, number>();
 	public userProfile: MiUserProfile | null = null;
 	public following: Record<string, Pick<MiFollowing, 'withReplies'> | undefined> = {};
 	public followingChannels: Set<string> = new Set();
@@ -45,13 +43,11 @@ export default class Connection {
 	public userIdsWhoMeMutingRenotes: Set<string> = new Set();
 	public userMutedInstances: Set<string> = new Set();
 	private fetchIntervalId: NodeJS.Timeout | null = null;
-	private activeRateLimitRequests = 0;
 	private closingConnection = false;
 	private logger: Logger;
 
 	constructor(
 		private channelsService: ChannelsService,
-		private noteReadService: NoteReadService,
 		private notificationService: NotificationService,
 		private cacheService: CacheService,
 		private channelFollowingService: ChannelFollowingService,
@@ -60,11 +56,10 @@ export default class Connection {
 		user: MiUser | null | undefined,
 		token: MiAccessToken | null | undefined,
 		private ip: string,
-		rateLimiter: () => Promise<boolean>,
+		private readonly rateLimiter: () => Promise<boolean>,
 	) {
 		if (user) this.user = user;
 		if (token) this.token = token;
-		if (rateLimiter) this.rateLimiter = rateLimiter;
 
 		this.logger = loggerService.getLogger('streaming', 'coral');
 	}
@@ -121,25 +116,13 @@ export default class Connection {
 
 		if (this.closingConnection) return;
 
-		if (this.rateLimiter) {
-			// this 4096 should match the `max` of the `rateLimiter`, see
-			// StreamingApiServerService
-			if (this.activeRateLimitRequests <= 4096) {
-				this.activeRateLimitRequests++;
-				const shouldRateLimit = await this.rateLimiter();
-				this.activeRateLimitRequests--;
+		// The rate limit is very high, so we can safely disconnect any client that hits it.
+		if (await this.rateLimiter()) {
+			this.logger.warn(`Closing a connection from ${this.ip} (user=${this.user?.id}}) due to an excessive influx of messages.`);
 
-				if (shouldRateLimit) return;
-				if (this.closingConnection) return;
-			} else {
-				let connectionInfo = `IP ${this.ip}`;
-				if (this.user) connectionInfo += `, user ID ${this.user.id}`;
-
-				this.logger.warn(`Closing a connection (${connectionInfo}) due to an excessive influx of messages.`);
-				this.closingConnection = true;
-				this.wsConnection.close(1008, 'Please stop spamming the streaming API.');
-				return;
-			}
+			this.closingConnection = true;
+			this.wsConnection.close(1008, 'Disconnected - too many requests');
+			return;
 		}
 
 		try {
@@ -154,7 +137,7 @@ export default class Connection {
 			case 'readNotification': this.onReadNotification(body); break;
 			case 'subNote': this.onSubscribeNote(body); break;
 			case 's': this.onSubscribeNote(body); break; // alias
-			case 'sr': this.onSubscribeNote(body); this.readNote(body); break;
+			case 'sr': this.onSubscribeNote(body); break;
 			case 'unsubNote': this.onUnsubscribeNote(body); break;
 			case 'un': this.onUnsubscribeNote(body); break; // alias
 			case 'connect': this.onChannelConnectRequested(body); break;
@@ -170,39 +153,6 @@ export default class Connection {
 	}
 
 	@bindThis
-	public cacheNote(note: Packed<'Note'>) {
-		const add = (note: Packed<'Note'>) => {
-			const existIndex = this.cachedNotes.findIndex(n => n.id === note.id);
-			if (existIndex > -1) {
-				this.cachedNotes[existIndex] = note;
-				return;
-			}
-
-			this.cachedNotes.unshift(note);
-			if (this.cachedNotes.length > 32) {
-				this.cachedNotes.splice(32);
-			}
-		};
-
-		add(note);
-		if (note.reply) add(note.reply);
-		if (note.renote) add(note.renote);
-	}
-
-	@bindThis
-	private readNote(body: JsonValue | undefined) {
-		if (!isJsonObject(body)) return;
-		const id = body.id;
-
-		const note = this.cachedNotes.find(n => n.id === id);
-		if (note == null) return;
-
-		if (this.user && (note.userId !== this.user.id)) {
-			this.noteReadService.read(this.user.id, [note]);
-		}
-	}
-
-	@bindThis
 	private onReadNotification(payload: JsonValue | undefined) {
 		this.notificationService.readAllNotification(this.user!.id);
 	}
@@ -215,9 +165,19 @@ export default class Connection {
 		if (!isJsonObject(payload)) return;
 		if (!payload.id || typeof payload.id !== 'string') return;
 
-		const current = this.subscribingNotes[payload.id] ?? 0;
+		const current = this.subscribingNotes.get(payload.id) ?? 0;
 		const updated = current + 1;
-		this.subscribingNotes[payload.id] = updated;
+		this.subscribingNotes.set(payload.id, updated);
+
+		// Limit the number of distinct notes that can be subscribed to.
+		while (this.subscribingNotes.size > MAX_SUBSCRIPTIONS_PER_CONNECTION) {
+			// Map maintains insertion order, so first key is always the oldest
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const oldestKey = this.subscribingNotes.keys().next().value!;
+
+			this.subscribingNotes.delete(oldestKey);
+			this.subscriber.off(`noteStream:${oldestKey}`, this.onNoteStreamMessage);
+		}
 
 		if (updated === 1) {
 			this.subscriber.on(`noteStream:${payload.id}`, this.onNoteStreamMessage);
@@ -232,12 +192,12 @@ export default class Connection {
 		if (!isJsonObject(payload)) return;
 		if (!payload.id || typeof payload.id !== 'string') return;
 
-		const current = this.subscribingNotes[payload.id];
+		const current = this.subscribingNotes.get(payload.id);
 		if (current == null) return;
 		const updated = current - 1;
-		this.subscribingNotes[payload.id] = updated;
+		this.subscribingNotes.set(payload.id, updated);
 		if (updated <= 0) {
-			delete this.subscribingNotes[payload.id];
+			this.subscribingNotes.delete(payload.id);
 			this.subscriber.off(`noteStream:${payload.id}`, this.onNoteStreamMessage);
 		}
 	}
@@ -304,7 +264,11 @@ export default class Connection {
 	 */
 	@bindThis
 	public connectChannel(id: string, params: JsonObject | undefined, channel: string, pong = false) {
-		if (this.channels.length >= MAX_CHANNELS_PER_CONNECTION) {
+		if (this.channels.has(id)) {
+			this.disconnectChannel(id);
+		}
+
+		if (this.channels.size >= MAX_CHANNELS_PER_CONNECTION) {
 			return;
 		}
 
@@ -320,12 +284,16 @@ export default class Connection {
 		}
 
 		// 共有可能チャンネルに接続しようとしていて、かつそのチャンネルに既に接続していたら無意味なので無視
-		if (channelService.shouldShare && this.channels.some(c => c.chName === channel)) {
-			return;
+		if (channelService.shouldShare) {
+			for (const c of this.channels.values()) {
+				if (c.chName === channel) {
+					return;
+				}
+			}
 		}
 
 		const ch: Channel = channelService.create(id, this);
-		this.channels.push(ch);
+		this.channels.set(ch.id, ch);
 		ch.init(params ?? {});
 
 		if (pong) {
@@ -341,11 +309,11 @@ export default class Connection {
 	 */
 	@bindThis
 	public disconnectChannel(id: string) {
-		const channel = this.channels.find(c => c.id === id);
+		const channel = this.channels.get(id);
 
 		if (channel) {
 			if (channel.dispose) channel.dispose();
-			this.channels = this.channels.filter(c => c.id !== id);
+			this.channels.delete(id);
 		}
 	}
 
@@ -360,7 +328,7 @@ export default class Connection {
 		if (typeof data.type !== 'string') return;
 		if (typeof data.body === 'undefined') return;
 
-		const channel = this.channels.find(c => c.id === data.id);
+		const channel = this.channels.get(data.id);
 		if (channel != null && channel.onMessage != null) {
 			channel.onMessage(data.type, data.body);
 		}
@@ -372,8 +340,15 @@ export default class Connection {
 	@bindThis
 	public dispose() {
 		if (this.fetchIntervalId) clearInterval(this.fetchIntervalId);
-		for (const c of this.channels.filter(c => c.dispose)) {
+		for (const c of this.channels.values()) {
 			if (c.dispose) c.dispose();
 		}
+		for (const k of this.subscribingNotes.keys()) {
+			this.subscriber.off(`noteStream:${k}`, this.onNoteStreamMessage);
+		}
+
+		this.fetchIntervalId = null;
+		this.channels.clear();
+		this.subscribingNotes.clear();
 	}
 }

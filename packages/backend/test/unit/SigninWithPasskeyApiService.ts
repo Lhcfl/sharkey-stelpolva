@@ -54,7 +54,7 @@ class DummyFastifyReply {
 }
 class DummyFastifyRequest {
 	public ip: string;
-	public body: {credential: any, context: string};
+	public body: { credential: any, context: string };
 	public headers: IncomingHttpHeaders = { 'accept': 'application/json' };
 	constructor(body?: any) {
 		this.ip = '0.0.0.0';
@@ -123,8 +123,8 @@ describe('SigninWithPasskeyApiService', () => {
 		jest.spyOn(webAuthnService, 'verifySignInWithPasskeyAuthentication').mockImplementation(FakeWebauthnVerify);
 
 		const dummyUser = {
-			id: uid, username: uid, usernameLower: uid.toLocaleLowerCase(), uri: null, host: null,
-		};
+			id: uid, username: uid, usernameLower: uid.toLowerCase(), uri: null, host: null,
+		 };
 		const dummyProfile = {
 			userId: uid,
 			password: 'qwerty',

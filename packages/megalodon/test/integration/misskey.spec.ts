@@ -1,7 +1,7 @@
 import MisskeyEntity from '@/misskey/entity'
 import MisskeyNotificationType from '@/misskey/notification'
 import Misskey from '@/misskey'
-import MegalodonNotificationType from '@/notification'
+import * as MegalodonNotificationType from '@/notification'
 import axios, { AxiosHeaders, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 
 jest.mock('axios')

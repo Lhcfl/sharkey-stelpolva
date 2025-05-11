@@ -417,7 +417,8 @@ export class NoteEntityService implements OnModuleInit {
 				bufferedReactions: Map<MiNote['id'], { deltas: Record<string, number>; pairs: ([MiUser['id'], string])[] }> | null;
 				myReactions: Map<MiNote['id'], string | null>;
 				packedFiles: Map<MiNote['fileIds'][number], Packed<'DriveFile'> | null>;
-				packedUsers: Map<MiUser['id'], Packed<'UserLite'>>
+				packedUsers: Map<MiUser['id'], Packed<'UserLite'>>;
+				mentionHandles: Record<string, string | undefined>;
 			};
 		},
 	): Promise<Packed<'Note'>> {
@@ -499,10 +500,12 @@ export class NoteEntityService implements OnModuleInit {
 				allowRenoteToExternal: channel.allowRenoteToExternal,
 				userId: channel.userId,
 			} : undefined,
-			mentions: note.mentions && note.mentions.length > 0 ? note.mentions : undefined,
+			mentions: note.mentions.length > 0 ? note.mentions : undefined,
+			mentionHandles: note.mentions.length > 0 ? this.getUserHandles(note.mentions, options?._hint_?.mentionHandles) : undefined,
 			uri: note.uri ?? undefined,
 			url: note.url ?? undefined,
 			poll: note.hasPoll ? this.populatePoll(note, meId) : undefined,
+
 			...(meId && Object.keys(reactions).length > 0 ? {
 				myReaction: this.populateMyReaction({
 					id: note.id,
@@ -551,31 +554,31 @@ export class NoteEntityService implements OnModuleInit {
 	) {
 		if (notes.length === 0) return [];
 
+		const targetNotes: MiNote[] = [];
+		for (const note of notes) {
+			if (isPureRenote(note)) {
+				// we may need to fetch 'my reaction' for renote target.
+				targetNotes.push(note.renote);
+				if (note.renote.reply) {
+					// idem if the renote is also a reply.
+					targetNotes.push(note.renote.reply);
+				}
+			} else {
+				if (note.reply) {
+					// idem for OP of a regular reply.
+					targetNotes.push(note.reply);
+				}
+
+				targetNotes.push(note);
+			}
+		}
+
 		const bufferedReactions = this.meta.enableReactionsBuffering ? await this.reactionsBufferingService.getMany([...getAppearNoteIds(notes)]) : null;
 
 		const meId = me ? me.id : null;
 		const myReactionsMap = new Map<MiNote['id'], string | null>();
 		if (meId) {
 			const idsNeedFetchMyReaction = new Set<MiNote['id']>();
-
-			const targetNotes: MiNote[] = [];
-			for (const note of notes) {
-				if (isPureRenote(note)) {
-					// we may need to fetch 'my reaction' for renote target.
-					targetNotes.push(note.renote);
-					if (note.renote.reply) {
-						// idem if the renote is also a reply.
-						targetNotes.push(note.renote.reply);
-					}
-				} else {
-					if (note.reply) {
-						// idem for OP of a regular reply.
-						targetNotes.push(note.reply);
-					}
-
-					targetNotes.push(note);
-				}
-			}
 
 			for (const note of targetNotes) {
 				const reactionsCount = Object.values(this.reactionsBufferingService.mergeReactions(note.reactions, bufferedReactions?.get(note.id)?.deltas ?? {})).reduce((a, b) => a + b, 0);
@@ -616,6 +619,15 @@ export class NoteEntityService implements OnModuleInit {
 		const packedUsers = await this.userEntityService.packMany(users, me)
 			.then(users => new Map(users.map(u => [u.id, u])));
 
+		// Recursively add all mentioned users from all notes + replies + renotes
+		const allMentionedUsers = targetNotes.reduce((users, note) => {
+			for (const user of note.mentions) {
+				users.add(user);
+			}
+			return users;
+		}, new Set<string>());
+		const mentionHandles = await this.getUserHandles(Array.from(allMentionedUsers));
+
 		return await Promise.all(notes.map(n => this.pack(n, me, {
 			...options,
 			_hint_: {
@@ -623,6 +635,7 @@ export class NoteEntityService implements OnModuleInit {
 				myReactions: myReactionsMap,
 				packedFiles,
 				packedUsers,
+				mentionHandles,
 			},
 		})));
 	}
@@ -657,5 +670,37 @@ export class NoteEntityService implements OnModuleInit {
 			where: { id },
 			relations: ['user'],
 		});
+	}
+
+	private async getUserHandles(userIds: string[], hint?: Record<string, string | undefined>): Promise<Record<string, string | undefined>> {
+		if (userIds.length < 1) return {};
+
+		// Hint is provided by packMany to avoid N+1 queries.
+		// It should already include all existing mentioned users.
+		if (hint) {
+			const handles = {} as Record<string, string | undefined>;
+			for (const id of userIds) {
+				handles[id] = hint[id];
+			}
+			return handles;
+		}
+
+		const users = await this.usersRepository.find({
+			select: {
+				id: true,
+				username: true,
+				host: true,
+			},
+			where: {
+				id: In(userIds),
+			},
+		});
+
+		return users.reduce((map, user) => {
+			map[user.id] = user.host
+				? `@${user.username}@${user.host}`
+				: `@${user.username}`;
+			return map;
+		}, {} as Record<string, string | undefined>);
 	}
 }

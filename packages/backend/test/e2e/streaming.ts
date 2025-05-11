@@ -148,7 +148,7 @@ describe('Streaming', () => {
 
 			test('フォローしているユーザーの投稿が流れる', async () => {
 				const fired = await waitFire(
-					ayano, 'homeTimeline',		// ayano:home
+					ayano, 'homeTimeline', // ayano:home
 					() => api('notes/create', { text: 'foo' }, kyoko),	// kyoko posts
 					msg => msg.type === 'note' && msg.body.userId === kyoko.id,	// wait kyoko
 				);
@@ -158,7 +158,7 @@ describe('Streaming', () => {
 
 			test('フォローしているユーザーの visibility: followers な投稿が流れる', async () => {
 				const fired = await waitFire(
-					ayano, 'homeTimeline',		// ayano:home
+					ayano, 'homeTimeline', // ayano:home
 					() => api('notes/create', { text: 'foo', visibility: 'followers' }, kyoko),	// kyoko posts
 					msg => msg.type === 'note' && msg.body.userId === kyoko.id,	// wait kyoko
 				);
@@ -170,7 +170,7 @@ describe('Streaming', () => {
 				const note = await post(kyoko, { text: 'foo', visibility: 'followers' });
 
 				const fired = await waitFire(
-					ayano, 'homeTimeline',		// ayano:home
+					ayano, 'homeTimeline', // ayano:home
 					() => api('notes/create', { text: 'bar', visibility: 'followers', replyId: note.id }, kyoko),	// kyoko posts
 					msg => msg.type === 'note' && msg.body.userId === kyoko.id && msg.body.reply.text === 'foo',
 				);
@@ -182,7 +182,7 @@ describe('Streaming', () => {
 				const chitoseNote = await post(chitose, { text: 'followers-only post', visibility: 'followers' });
 
 				const fired = await waitFire(
-					ayano, 'homeTimeline',	// ayano:home
+					ayano, 'homeTimeline', // ayano:home
 					() => api('notes/create', { text: 'reply to chitose\'s followers-only post', replyId: chitoseNote.id }, kyoko),	// kyoko's reply to chitose's followers-only post
 					msg => msg.type === 'note' && msg.body.userId === kyoko.id,	// wait kyoko
 				);
@@ -195,7 +195,7 @@ describe('Streaming', () => {
 				const kyokoReply = await post(kyoko, { text: 'reply to followers-only post', replyId: chitoseNote.id });
 
 				const fired = await waitFire(
-					ayano, 'homeTimeline',	// ayano:home
+					ayano, 'homeTimeline', // ayano:home
 					() => api('notes/create', { renoteId: kyokoReply.id }, kyoko),	// kyoko's renote of kyoko's reply to chitose's followers-only post
 					msg => msg.type === 'note' && msg.body.userId === kyoko.id,	// wait kyoko
 				);
@@ -205,7 +205,7 @@ describe('Streaming', () => {
 
 			test('フォローしていないユーザーの投稿は流れない', async () => {
 				const fired = await waitFire(
-					kyoko, 'homeTimeline',	// kyoko:home
+					kyoko, 'homeTimeline', // kyoko:home
 					() => api('notes/create', { text: 'foo' }, ayano),	// ayano posts
 					msg => msg.type === 'note' && msg.body.userId === ayano.id,	// wait ayano
 				);
@@ -215,7 +215,7 @@ describe('Streaming', () => {
 
 			test('フォローしているユーザーのダイレクト投稿が流れる', async () => {
 				const fired = await waitFire(
-					ayano, 'homeTimeline',	// ayano:home
+					ayano, 'homeTimeline', // ayano:home
 					() => api('notes/create', { text: 'foo', visibility: 'specified', visibleUserIds: [ayano.id] }, kyoko),	// kyoko dm => ayano
 					msg => msg.type === 'note' && msg.body.userId === kyoko.id,	// wait kyoko
 				);
@@ -225,7 +225,7 @@ describe('Streaming', () => {
 
 			test('フォローしているユーザーでも自分が指定されていないダイレクト投稿は流れない', async () => {
 				const fired = await waitFire(
-					ayano, 'homeTimeline',	// ayano:home
+					ayano, 'homeTimeline', // ayano:home
 					() => api('notes/create', { text: 'foo', visibility: 'specified', visibleUserIds: [chitose.id] }, kyoko),	// kyoko dm => chitose
 					msg => msg.type === 'note' && msg.body.userId === kyoko.id,	// wait kyoko
 				);
@@ -574,7 +574,7 @@ describe('Streaming', () => {
 
 			test('withReplies = falseでフォローしてる人によるリプライが流れてくる', async () => {
 				const fired = await waitFire(
-					ayano, 'globalTimeline',		// ayano:Global
+					ayano, 'globalTimeline', // ayano:Global
 					() => api('notes/create', { text: 'foo', replyId: kanakoNote.id }, kyoko),	// kyoko posts
 					msg => msg.type === 'note' && msg.body.userId === kyoko.id,	// wait kyoko
 				);

@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-//import bcrypt from 'bcryptjs';
 import * as argon2 from 'argon2';
 import { Inject, Injectable } from '@nestjs/common';
 import type { UserProfilesRepository, PasswordResetRequestsRepository } from '@/models/_.js';
@@ -60,7 +59,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			// Generate hash of password
-			//const salt = await bcrypt.genSalt(8);
 			const hash = await argon2.hash(ps.password);
 
 			await this.userProfilesRepository.update(req.userId, {

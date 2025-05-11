@@ -44,6 +44,8 @@ import { correctFilename } from '@/misc/correct-filename.js';
 import { isMimeImage } from '@/misc/is-mime-image.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { BunnyService } from '@/core/BunnyService.js';
+import { LoggerService } from './LoggerService.js';
 
 type AddFileArgs = {
 	/** User who wish to add file */
@@ -121,6 +123,7 @@ export class DriveService {
 		private downloadService: DownloadService,
 		private internalStorageService: InternalStorageService,
 		private s3Service: S3Service,
+		private bunnyService: BunnyService,
 		private imageProcessingService: ImageProcessingService,
 		private videoProcessingService: VideoProcessingService,
 		private globalEventService: GlobalEventService,
@@ -131,8 +134,10 @@ export class DriveService {
 		private perUserDriveChart: PerUserDriveChart,
 		private instanceChart: InstanceChart,
 		private utilityService: UtilityService,
+
+		loggerService: LoggerService,
 	) {
-		const logger = new Logger('drive', 'blue');
+		const logger = loggerService.getLogger('drive', 'blue');
 		this.registerLogger = logger.createSubLogger('register', 'yellow');
 		this.downloaderLogger = logger.createSubLogger('downloader');
 		this.deleteLogger = logger.createSubLogger('delete');
@@ -177,7 +182,8 @@ export class DriveService {
 				?? `${ this.meta.objectStorageUseSSL ? 'https' : 'http' }://${ this.meta.objectStorageEndpoint }${ this.meta.objectStoragePort ? `:${this.meta.objectStoragePort}` : '' }/${ this.meta.objectStorageBucket }`;
 
 			// for original
-			const key = `${this.meta.objectStoragePrefix}/${randomUUID()}${ext}`;
+			const prefix = this.meta.objectStoragePrefix ? `${this.meta.objectStoragePrefix}/` : '';
+			const key = `${prefix}${randomUUID()}${ext}`;
 			const url = `${ baseUrl }/${ key }`;
 
 			// for alts
@@ -194,7 +200,7 @@ export class DriveService {
 			];
 
 			if (alts.webpublic) {
-				webpublicKey = `${this.meta.objectStoragePrefix}/webpublic-${randomUUID()}.${alts.webpublic.ext}`;
+				webpublicKey = `${prefix}webpublic-${randomUUID()}.${alts.webpublic.ext}`;
 				webpublicUrl = `${ baseUrl }/${ webpublicKey }`;
 
 				this.registerLogger.info(`uploading webpublic: ${webpublicKey}`);
@@ -202,7 +208,7 @@ export class DriveService {
 			}
 
 			if (alts.thumbnail) {
-				thumbnailKey = `${this.meta.objectStoragePrefix}/thumbnail-${randomUUID()}.${alts.thumbnail.ext}`;
+				thumbnailKey = `${prefix}thumbnail-${randomUUID()}.${alts.thumbnail.ext}`;
 				thumbnailUrl = `${ baseUrl }/${ thumbnailKey }`;
 
 				this.registerLogger.info(`uploading thumbnail: ${thumbnailKey}`);
@@ -405,20 +411,28 @@ export class DriveService {
 		);
 		if (this.meta.objectStorageSetPublicRead) params.ACL = 'public-read';
 
-		await this.s3Service.upload(this.meta, params)
-			.then(
-				result => {
-					if ('Bucket' in result) { // CompleteMultipartUploadCommandOutput
-						this.registerLogger.debug(`Uploaded: ${result.Bucket}/${result.Key} => ${result.Location}`);
-					} else { // AbortMultipartUploadCommandOutput
-						this.registerLogger.error(`Upload Result Aborted: key = ${key}, filename = ${filename}`);
-					}
-				})
-			.catch(
+		if (this.bunnyService.usingBunnyCDN(this.meta)) {
+			await this.bunnyService.upload(this.meta, key, stream).catch(
 				err => {
 					this.registerLogger.error(`Upload Failed: key = ${key}, filename = ${filename}`, err);
 				},
 			);
+		} else {
+			await this.s3Service.upload(this.meta, params)
+				.then(
+					result => {
+						if ('Bucket' in result) { // CompleteMultipartUploadCommandOutput
+							this.registerLogger.debug(`Uploaded: ${result.Bucket}/${result.Key} => ${result.Location}`);
+						} else { // AbortMultipartUploadCommandOutput
+							this.registerLogger.error(`Upload Result Aborted: key = ${key}, filename = ${filename}`);
+						}
+					})
+				.catch(
+					err => {
+						this.registerLogger.error(`Upload Failed: key = ${key}, filename = ${filename}`, err);
+					},
+				);
+		}
 	}
 
 	// Expire oldest file (without avatar or banner) of remote user
@@ -514,11 +528,23 @@ export class DriveService {
 
 			const policies = await this.roleService.getUserPolicies(user.id);
 			const driveCapacity = 1024 * 1024 * policies.driveCapacityMb;
+			const maxFileSize = 1024 * 1024 * policies.maxFileSizeMb;
 			this.registerLogger.debug('drive capacity override applied');
 			this.registerLogger.debug(`overrideCap: ${driveCapacity}bytes, usage: ${usage}bytes, u+s: ${usage + info.size}bytes`);
 
+			if (maxFileSize < info.size) {
+				if (isLocalUser) {
+					throw new IdentifiableError('f9e4e5f3-4df4-40b5-b400-f236945f7073', 'Max file size exceeded.');
+				} else {
+					// For remote users, throwing an exception will break Activity processing.
+					// Instead, force "link" mode which does not cache the file locally.
+					isLink = true;
+				}
+			}
+
 			// If usage limit exceeded
-			if (driveCapacity < usage + info.size) {
+			// Repeat the "!isLink" check because it could be set to true by the previous block.
+			if (driveCapacity < usage + info.size && !isLink) {
 				if (isLocalUser) {
 					throw new IdentifiableError('c6244ed2-a39a-4e1c-bf93-f0fbd7764fa6', 'No free space.', true);
 				}
@@ -814,8 +840,11 @@ export class DriveService {
 				Bucket: this.meta.objectStorageBucket,
 				Key: key,
 			} as DeleteObjectCommandInput;
-
-			await this.s3Service.delete(this.meta, param);
+			if (this.bunnyService.usingBunnyCDN(this.meta)) {
+				await this.bunnyService.delete(this.meta, key);
+			} else {
+				await this.s3Service.delete(this.meta, param);
+			}
 		} catch (err: any) {
 			if (err.name === 'NoSuchKey') {
 				this.deleteLogger.warn(`The object storage had no such key to delete: ${key}. Skipping this.`, err as Error);

@@ -2,28 +2,24 @@ import FormData from 'form-data'
 import fs from 'fs';
 import MisskeyAPI from './misskey/api_client'
 import { DEFAULT_UA } from './default'
-import { ProxyConfig } from './proxy_config'
 import OAuth from './oauth'
 import Response from './response'
-import { MegalodonInterface, WebSocketInterface, NoImplementedError, ArgumentError, UnexpectedError } from './megalodon'
+import { MegalodonInterface, NoImplementedError, ArgumentError, UnexpectedError } from './megalodon'
 import { UnknownNotificationTypeError } from './notification'
 
 export default class Misskey implements MegalodonInterface {
   public client: MisskeyAPI.Interface
   public baseUrl: string
-  public proxyConfig: ProxyConfig | false
 
   /**
    * @param baseUrl hostname or base URL
    * @param accessToken access token from OAuth2 authorization
    * @param userAgent UserAgent is specified in header on request.
-   * @param proxyConfig Proxy setting, or set false if don't use proxy.
    */
   constructor(
     baseUrl: string,
     accessToken: string | null = null,
     userAgent: string | null = DEFAULT_UA,
-    proxyConfig: ProxyConfig | false = false
   ) {
     let token: string = ''
     if (accessToken) {
@@ -33,9 +29,8 @@ export default class Misskey implements MegalodonInterface {
     if (userAgent) {
       agent = userAgent
     }
-    this.client = new MisskeyAPI.Client(baseUrl, token, agent, proxyConfig)
+    this.client = new MisskeyAPI.Client(baseUrl, token, agent)
     this.baseUrl = baseUrl
-    this.proxyConfig = proxyConfig
   }
 
   public cancel(): void {
@@ -44,9 +39,9 @@ export default class Misskey implements MegalodonInterface {
 
   public async registerApp(
     client_name: string,
-    options: Partial<{ scopes: Array<string>; redirect_uris: string; website: string }> = {
+    options: Partial<{ scopes: Array<string>; redirect_uri: string; website?: string }> = {
       scopes: MisskeyAPI.DEFAULT_SCOPE,
-      redirect_uris: this.baseUrl
+      redirect_uri: this.baseUrl
     }
   ): Promise<OAuth.AppData> {
     return this.createApp(client_name, options).then(async appData => {
@@ -67,13 +62,14 @@ export default class Misskey implements MegalodonInterface {
    */
   public async createApp(
     client_name: string,
-    options: Partial<{ scopes: Array<string>; redirect_uris: string; website: string }> = {
+    options: Partial<{ scopes: Array<string>; redirect_uri: string; website?: string }> = {
       scopes: MisskeyAPI.DEFAULT_SCOPE,
-      redirect_uris: this.baseUrl
+      redirect_uri: this.baseUrl
     }
   ): Promise<OAuth.AppData> {
-    const redirect_uris = options.redirect_uris || this.baseUrl
+    const redirect_uri = options.redirect_uri || this.baseUrl
     const scopes = options.scopes || MisskeyAPI.DEFAULT_SCOPE
+		const website = options.website ?? '';
 
     const params: {
       name: string
@@ -82,9 +78,9 @@ export default class Misskey implements MegalodonInterface {
       callbackUrl: string
     } = {
       name: client_name,
-      description: '',
+      description: website,
       permission: scopes,
-      callbackUrl: redirect_uris
+      callbackUrl: redirect_uri
     }
 
     /**
@@ -106,7 +102,7 @@ export default class Misskey implements MegalodonInterface {
         website: null,
         redirect_uri: res.data.callbackUrl,
         client_id: '',
-        client_secret: res.data.secret
+        client_secret: res.data.secret!
       }
       return OAuth.AppData.from(appData)
     })
@@ -126,11 +122,8 @@ export default class Misskey implements MegalodonInterface {
   // ======================================
   // apps
   // ======================================
-  public async verifyAppCredentials(): Promise<Response<Entity.Application>> {
-    return new Promise((_, reject) => {
-      const err = new NoImplementedError('misskey does not support')
-      reject(err)
-    })
+  public async verifyAppCredentials(): Promise<Response<MisskeyAPI.Entity.App>> {
+		return await this.client.post<MisskeyAPI.Entity.App>('/api/app/current');
   }
 
   // ======================================
@@ -303,8 +296,8 @@ export default class Misskey implements MegalodonInterface {
       max_id?: string
       since_id?: string
       pinned?: boolean
-      exclude_replies: boolean
-      exclude_reblogs: boolean
+      exclude_replies?: boolean
+      exclude_reblogs?: boolean
       only_media?: boolean
     }
   ): Promise<Response<Array<Entity.Status>>> {
@@ -591,12 +584,12 @@ export default class Misskey implements MegalodonInterface {
    */
   public async getRelationship(id: string): Promise<Response<Entity.Relationship>> {
     return this.client
-      .post<MisskeyAPI.Entity.Relation>('/api/users/relation', {
+      .post<MisskeyAPI.Entity.Relation[]>('/api/users/relation', {
         userId: id
       })
       .then(res => {
         return Object.assign(res, {
-          data: MisskeyAPI.Converter.relation(res.data)
+          data: MisskeyAPI.Converter.relation(res.data[0])
         })
       })
   }
@@ -606,11 +599,16 @@ export default class Misskey implements MegalodonInterface {
    *
    * @param ids Array of account ID, for example `['1sdfag', 'ds12aa']`.
    */
-  public async getRelationships(ids: Array<string>): Promise<Response<Array<Entity.Relationship>>> {
-    return Promise.all(ids.map(id => this.getRelationship(id))).then(results => ({
-      ...results[0],
-      data: results.map(r => r.data)
-    }))
+  public async getRelationships(ids: string | Array<string>): Promise<Response<Array<Entity.Relationship>>> {
+		return this.client
+			.post<MisskeyAPI.Entity.Relation[]>('/api/users/relation', {
+				userId: ids
+			})
+			.then(res => {
+				return Object.assign(res, {
+					data: res.data.map(r => MisskeyAPI.Converter.relation(r))
+				})
+			})
   }
 
   /**
@@ -652,48 +650,82 @@ export default class Misskey implements MegalodonInterface {
   // ======================================
   // accounts/bookmarks
   // ======================================
-  public async getBookmarks(_options?: {
+	/**
+	 * POST /api/i/favorites
+	 */
+  public async getBookmarks(options?: {
     limit?: number
     max_id?: string
     since_id?: string
     min_id?: string
   }): Promise<Response<Array<Entity.Status>>> {
-    return new Promise((_, reject) => {
-      const err = new NoImplementedError('misskey does not support')
-      reject(err)
-    })
+		let params = {}
+		if (options) {
+			if (options.limit) {
+				params = Object.assign(params, {
+					limit: options.limit
+				})
+			}
+			if (options.max_id) {
+				params = Object.assign(params, {
+					untilId: options.max_id
+				})
+			}
+			if (options.min_id) {
+				params = Object.assign(params, {
+					sinceId: options.min_id
+				})
+			}
+		}
+		return this.client.post<Array<MisskeyAPI.Entity.Favorite>>('/api/i/favorites', params).then(res => {
+			return Object.assign(res, {
+				data: res.data.map(fav => MisskeyAPI.Converter.note(fav.note, this.baseUrl))
+			})
+		})
   }
+
+	/**
+	 * POST /api/users/reactions
+	 */
+	public async getReactions(userId: string, options?: { limit?: number; max_id?: string; min_id?: string }): Promise<Response<MisskeyEntity.NoteReaction[]>> {
+		let params = {
+			userId,
+		};
+		if (options) {
+			if (options.limit) {
+				params = Object.assign(params, {
+					limit: options.limit
+				})
+			}
+			if (options.max_id) {
+				params = Object.assign(params, {
+					untilId: options.max_id
+				})
+			}
+			if (options.min_id) {
+				params = Object.assign(params, {
+					sinceId: options.min_id
+				})
+			}
+		}
+		return this.client.post<MisskeyAPI.Entity.NoteReaction[]>('/api/users/reactions', params);
+	}
 
   // ======================================
   //  accounts/favourites
   // ======================================
   /**
-   * POST /api/i/favorites
+   * POST /api/users/reactions
    */
-  public async getFavourites(options?: { limit?: number; max_id?: string; min_id?: string }): Promise<Response<Array<Entity.Status>>> {
-    let params = {}
-    if (options) {
-      if (options.limit) {
-        params = Object.assign(params, {
-          limit: options.limit
-        })
-      }
-      if (options.max_id) {
-        params = Object.assign(params, {
-          untilId: options.max_id
-        })
-      }
-      if (options.min_id) {
-        params = Object.assign(params, {
-          sinceId: options.min_id
-        })
-      }
-    }
-    return this.client.post<Array<MisskeyAPI.Entity.Favorite>>('/api/i/favorites', params).then(res => {
-      return Object.assign(res, {
-        data: res.data.map(fav => MisskeyAPI.Converter.note(fav.note, this.baseUrl))
-      })
-    })
+  public async getFavourites(options?: { limit?: number; max_id?: string; min_id?: string; userId?: string }): Promise<Response<Array<Entity.Status>>> {
+		const userId = options?.userId ?? (await this.verifyAccountCredentials()).data.id;
+
+		const response = await this.getReactions(userId, options);
+
+		return {
+			...response,
+			data: response.data.map(r => MisskeyAPI.Converter.note(r.note, this.baseUrl)),
+		};
   }
 
   // ======================================
@@ -1468,13 +1500,13 @@ export default class Misskey implements MegalodonInterface {
   /**
    * POST /api/drive/files/create
    */
-  public async uploadMedia(file: any, _options?: { description?: string; focus?: string }): Promise<Response<Entity.Attachment>> {
+  public async uploadMedia(file: { filepath: fs.PathLike, mimetype: string, filename: string }, _options?: { description?: string; focus?: string }): Promise<Response<Entity.Attachment>> {
     const formData = new FormData()
-    formData.append('file', fs.createReadStream(file.path), {
+    formData.append('file', fs.createReadStream(file.filepath), {
 			contentType: file.mimetype,
 		});
 
-		if (file.originalname != null && file.originalname !== "file") formData.append("name", file.originalname);
+		if (file.filename && file.filename !== "file") formData.append("name", file.filename);
 
 		if (_options?.description != null) formData.append("comment", _options.description);
     let headers: { [key: string]: string } = {}
@@ -2352,6 +2384,18 @@ export default class Misskey implements MegalodonInterface {
           }
         }))
       }
+			default: {
+				return {
+					status: 400,
+					statusText: 'bad request',
+					headers: {},
+					data: {
+						accounts: [],
+						statuses: [],
+						hashtags: [],
+					}
+				}
+			}
     }
   }
 
@@ -2504,34 +2548,11 @@ export default class Misskey implements MegalodonInterface {
       }))
   }
 
+	// TODO implement
   public async getEmojiReaction(_id: string, _emoji: string): Promise<Response<Entity.Reaction>> {
     return new Promise((_, reject) => {
       const err = new NoImplementedError('misskey does not support')
       reject(err)
     })
-  }
-
-  public userSocket(): WebSocketInterface {
-    return this.client.socket('user')
-  }
-
-  public publicSocket(): WebSocketInterface {
-    return this.client.socket('globalTimeline')
-  }
-
-  public localSocket(): WebSocketInterface {
-    return this.client.socket('localTimeline')
-  }
-
-  public tagSocket(_tag: string): WebSocketInterface {
-    throw new NoImplementedError('TODO: implement')
-  }
-
-  public listSocket(list_id: string): WebSocketInterface {
-    return this.client.socket('list', list_id)
-  }
-
-  public directSocket(): WebSocketInterface {
-    return this.client.socket('conversation')
   }
 }

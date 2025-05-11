@@ -5,7 +5,8 @@
 
 import { errors, Interpreter, Parser, values } from '@syuilo/aiscript';
 import { describe, expect, test } from 'vitest';
-import { type Ref, ref } from 'vue';
+import { ref } from 'vue';
+import type { Ref } from 'vue';
 import type {
 	AsUiButton,
 	AsUiButtons,
@@ -18,14 +19,14 @@ import type {
 	AsUiText,
 	AsUiTextarea,
 	AsUiTextInput,
-} from '@/scripts/aiscript/ui.js';
-import { registerAsUiLib } from '@/scripts/aiscript/ui.js';
+} from '@/aiscript/ui.js';
+import { registerAsUiLib } from '@/aiscript/ui.js';
 
 type ExeResult = {
 	root: AsUiRoot;
 	get: (id: string) => AsUiComponent;
 	outputs: values.Value[];
-}
+};
 
 async function exe(script: string): Promise<ExeResult> {
 	const rootRef = ref<AsUiRoot>();
@@ -39,8 +40,8 @@ async function exe(script: string): Promise<ExeResult> {
 		{
 			out: (value) => {
 				outputs.push(value);
-			}
-		}
+			},
+		},
 	);
 	const ast = Parser.parse(script);
 	await interpreter.exec(ast);

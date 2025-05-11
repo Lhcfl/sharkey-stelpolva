@@ -80,8 +80,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				query.andWhere('reaction.reaction = :type', { type });
 			}
 
-			if (me) this.queryService.generateMutedUserQuery(query, me);
-			if (me) this.queryService.generateBlockedUserQuery(query, me);
+			if (me) this.queryService.generateMutedUserQueryForNotes(query, me);
+			if (me) this.queryService.generateBlockedUserQueryForNotes(query, me);
 
 			const reactions = await query.limit(ps.limit).getMany();
 

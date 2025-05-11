@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <XColumn :menu="menu" :column="column" :isStacked="isStacked" :refresher="reload">
 	<template #header>
-		<i :class="columnIcon" aria-hidden="true"/><span style="margin-left: 8px;">{{ column.name }}</span>
+		<i :class="columnIcon" aria-hidden="true"/><span style="margin-left: 8px;">{{ (column.name || column.userList) ?? i18n.ts._deck._columns.following }}</span>
 	</template>
 
 	<SkRemoteFollowersWarning :class="$style.followersWarning" :model="model"/>
@@ -18,25 +18,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts">
 import { computed, shallowRef } from 'vue';
-import type { Column } from '@/ui/deck/deck-store.js';
-import type { FollowingFeedState } from '@/scripts/following-feed-utils.js';
+import type { Column } from '@/deck.js';
+import type { FollowingFeedState } from '@/utility/following-feed-utils.js';
 export type FollowingColumn = Column & Partial<FollowingFeedState>;
 </script>
 
 <script setup lang="ts">
-import { getColumn, getReactiveColumn, updateColumn } from '@/ui/deck/deck-store.js';
+import type { FollowingFeedTab } from '@/utility/following-feed-utils.js';
+import type { MenuItem } from '@/types/menu.js';
+import { getColumn, updateColumn } from '@/deck.js';
 import XColumn from '@/ui/deck/column.vue';
 import SkFollowingRecentNotes from '@/components/SkFollowingRecentNotes.vue';
 import SkRemoteFollowersWarning from '@/components/SkRemoteFollowersWarning.vue';
-import { createModel, createOptionsMenu, FollowingFeedTab, followingTab, followingTabName, followingTabIcon, followingFeedTabs } from '@/scripts/following-feed-utils.js';
+import { createModel, createOptionsMenu, followingTab, followingTabName, followingTabIcon, followingFeedTabs } from '@/utility/following-feed-utils.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
-import { MenuItem } from '@/types/menu.js';
-import { useRouter } from '@/router/supplier.js';
+import { useRouter } from '@/router.js';
 
 const props = defineProps<{
-  column: FollowingColumn;
-  isStacked: boolean;
+	column: FollowingColumn;
+	isStacked: boolean;
 }>();
 
 const columnIcon = computed(() => followingTabIcon(props.column.userList));
@@ -53,10 +54,10 @@ async function selectList(): Promise<void> {
 
 	if (canceled) return;
 
-	await updateColumn(props.column.id, {
+	updateColumn(props.column.id, {
 		name: getNewColumnName(newList),
 		userList: newList,
-	});
+	} as Partial<FollowingColumn>);
 }
 
 function getNewColumnName(newList: FollowingFeedTab) {
@@ -78,7 +79,6 @@ if (!props.column.userList) {
 // This allows multiple columns to exist with different settings.
 const columnStorage = computed(() => ({
 	state: getColumn<FollowingColumn>(props.column.id),
-	reactiveState: getReactiveColumn<FollowingColumn>(props.column.id),
 	save(updated: FollowingColumn) {
 		updateColumn(props.column.id, updated);
 	},

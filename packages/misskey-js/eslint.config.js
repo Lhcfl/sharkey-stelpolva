@@ -13,6 +13,11 @@ export default [
 			'test',
 			'test-d',
 			'generator',
+			'**/lib/',
+			'**/temp/',
+			'**/built/',
+			'**/coverage/',
+			'**/node_modules/',
 		],
 	},
 	{
@@ -27,12 +32,9 @@ export default [
 		},
 	},
 	{
-		ignores: [
-			"**/lib/",
-			"**/temp/",
-			"**/built/",
-			"**/coverage/",
-			"**/node_modules/",
-		]
+		files: ['src/autogen/**/*.ts', 'src/autogen/**/*.tsx'],
+		rules: {
+			'@stylistic/indent': 'off',
+		},
 	},
 ];

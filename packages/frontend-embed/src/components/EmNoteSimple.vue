@@ -36,7 +36,6 @@ const props = defineProps<{
 }>();
 
 const showContent = ref(false);
-
 const mergedCW = computed(() => computeMergedCw(props.note));
 </script>
 

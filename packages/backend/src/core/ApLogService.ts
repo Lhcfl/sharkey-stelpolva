@@ -140,6 +140,24 @@ export class ApLogService {
 	}
 
 	/**
+	 * Deletes all logged inbox activities from a user or users
+	 * @param userIds IDs of the users to delete
+	 */
+	public async deleteInboxLogs(userIds: string | string[]): Promise<number> {
+		if (Array.isArray(userIds)) {
+			const logsDeleted = await this.apInboxLogsRepository.delete({
+				authUserId: In(userIds),
+			});
+			return logsDeleted.affected ?? 0;
+		} else {
+			const logsDeleted = await this.apInboxLogsRepository.delete({
+				authUserId: userIds,
+			});
+			return logsDeleted.affected ?? 0;
+		}
+	}
+
+	/**
 	 * Deletes all expired AP logs and garbage-collects the AP context cache.
 	 * Returns the total number of deleted rows.
 	 */

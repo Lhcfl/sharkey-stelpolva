@@ -143,9 +143,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				query.andWhere('"user"."isBot" = false');
 			}
 
+			// Hide blocked users / instances
+			query.andWhere('"user"."isSuspended" = false');
+			query.andWhere('("replyUser" IS NULL OR "replyUser"."isSuspended" = false)');
+			query.andWhere('("renoteUser" IS NULL OR "renoteUser"."isSuspended" = false)');
+			this.queryService.generateBlockedHostQueryForNote(query);
+
 			// Respect blocks and mutes
-			this.queryService.generateBlockedUserQuery(query, me);
-			this.queryService.generateMutedUserQuery(query, me);
+			this.queryService.generateBlockedUserQueryForNotes(query, me);
+			this.queryService.generateMutedUserQueryForNotes(query, me);
 
 			// Support pagination
 			this.queryService

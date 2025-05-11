@@ -34,19 +34,19 @@ import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
 import MkButton from '@/components/MkButton.vue';
-import { defaultStore } from '@/store.js';
 import { i18n } from '@/i18n.js';
+import { prefer } from '@/preferences.js';
 
 const props = defineProps<{
 	note: Misskey.entities.Note & {
-		isSchedule? : boolean,
+		isSchedule?: boolean,
 		scheduledNoteId?: string
 	};
 	expandAllCws?: boolean;
 	hideFiles?: boolean;
 }>();
 
-let showContent = ref(defaultStore.state.uncollapseCW);
+const showContent = ref(prefer.s.uncollapseCW);
 const isDeleted = ref(false);
 
 const mergedCW = computed(() => computeMergedCw(props.note));

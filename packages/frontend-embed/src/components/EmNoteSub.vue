@@ -55,7 +55,6 @@ const props = withDefaults(defineProps<{
 
 const showContent = ref(false);
 const replies = ref<Misskey.entities.Note[]>([]);
-
 const mergedCW = computed(() => computeMergedCw(props.note));
 
 if (props.detail) {

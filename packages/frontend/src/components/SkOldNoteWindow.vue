@@ -29,30 +29,30 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 					</div>
 					<div :class="$style.noteHeaderUsername"><MkAcct :user="appearNote.user"/></div>
-					<MkInstanceTicker v-if="showTicker" :instance="appearNote.user.instance"/>
+					<MkInstanceTicker v-if="showTicker" :instance="appearNote.user.instance" :host="appearNote.user.host"/>
 				</div>
 			</header>
 			<div :class="$style.noteContent">
 				<p v-if="appearNote.cw != null" :class="$style.cw">
-					<Mfm v-if="appearNote.cw != ''" style="margin-right: 8px;" :text="appearNote.cw" :isBlock="true" :author="appearNote.user" :nyaize="'account'"/>
+					<Mfm v-if="appearNote.cw != ''" style="margin-right: 8px;" :text="appearNote.cw" :isBlock="true" :author="appearNote.user" :nyaize="'respect'"/>
 					<MkCwButton v-model="showContent" :text="appearNote.text" :files="appearNote.files" :poll="appearNote.poll"/>
 				</p>
 				<div v-show="appearNote.cw == null || showContent">
 					<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 					<MkA v-if="appearNote.replyId" :class="$style.noteReplyTarget" :to="`/notes/${appearNote.replyId}`"><i class="ph-arrow-bend-left-up ph-bold ph-lg"></i></MkA>
-					<Mfm v-if="appearNote.text" :text="appearNote.text" :isBlock="true" :author="appearNote.user" :nyaize="'account'" :emojiUrls="appearNote.emojis"/>
+					<Mfm v-if="appearNote.text" :text="appearNote.text" :isBlock="true" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis"/>
 					<a v-if="appearNote.renote != null" :class="$style.rn">RN:</a>
 					<div v-if="translating || translation" :class="$style.translation">
 						<MkLoading v-if="translating" mini/>
-						<div v-else>
+						<!-- <div v-else>
 							<b>{{ i18n.t('translatedFrom', { x: translation.sourceLang }) }}: </b>
-							<Mfm :text="translation.text" :isBlock="true" :author="appearNote.user" :nyaize="'account'" :emojiUrls="appearNote.emojis"/>
-						</div>
+							<Mfm :text="translation.text" :isBlock="true" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis"/>
+						</div> -->
 					</div>
-					<div v-if="appearNote.files.length > 0">
+					<div v-if="appearNote.files && appearNote.files.length > 0">
 						<MkMediaList :mediaList="appearNote.files"/>
 					</div>
-					<MkPoll v-if="appearNote.poll" ref="pollViewer" :note="appearNote" :class="$style.poll"/>
+					<MkPoll v-if="appearNote.poll" :noteId="appearNote.id" :poll="appearNote.poll" :local="!appearNote.user.host" :author="appearNote.user" :emojiUrls="appearNote.emojis" :class="$style.poll"/>
 					<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="true" style="margin-top: 6px;"/>
 					<div v-if="appearNote.renote" :class="$style.quote"><MkNoteSimple :note="appearNote.renote" :class="$style.quoteNote"/></div>
 				</div>
@@ -92,12 +92,13 @@ import MkPoll from '@/components/MkPoll.vue';
 import MkUrlPreview from '@/components/MkUrlPreview.vue';
 import MkInstanceTicker from '@/components/MkInstanceTicker.vue';
 import { userPage } from '@/filters/user.js';
-import { defaultStore, noteViewInterruptors } from '@/store.js';
-import { extractUrlFromMfm } from '@/scripts/extract-url-from-mfm.js';
+import { extractUrlFromMfm } from '@/utility/extract-url-from-mfm.js';
 import { i18n } from '@/i18n.js';
-import { deepClone } from '@/scripts/clone.js';
-import { dateTimeFormat } from '@/scripts/intl-const.js';
-import { spacingNote } from '@/scripts/autospacing';
+import { deepClone } from '@/utility/clone.js';
+import { dateTimeFormat } from '@/utility/intl-const.js';
+import { prefer } from '@/preferences';
+import { getPluginHandlers } from '@/plugin.js';
+import { spacingNote } from '@/utility/autospacing';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -114,13 +115,21 @@ const inChannel = inject('inChannel', null);
 let note = ref(deepClone(props.note));
 
 // plugin
+const noteViewInterruptors = getPluginHandlers('note_view_interruptor');
 if (noteViewInterruptors.length > 0) {
 	onMounted(async () => {
-		let result = deepClone(note.value);
+		let result: Misskey.entities.Note | null = deepClone(note.value);
 		for (const interruptor of noteViewInterruptors) {
-			result = await interruptor.handler(result);
+			try {
+				result = await interruptor.handler(result!) as Misskey.entities.Note | null;
+				if (result === null) {
+					return;
+				}
+			} catch (err) {
+				console.error(err);
+			}
 		}
-		note.value = result;
+		note.value = result as Misskey.entities.Note;
 	});
 }
 
@@ -133,7 +142,7 @@ replaceContent();
 const isRenote = (
 	note.value.renote != null &&
 	note.value.text == null &&
-	note.value.fileIds.length === 0 &&
+	!note.value.fileIds?.length &&
 	note.value.poll == null
 );
 
@@ -146,7 +155,7 @@ const showContent = ref(false);
 const translation = ref(null);
 const translating = ref(false);
 const urls = appearNote.value.text ? extractUrlFromMfm(mfm.parse(appearNote.value.text)).filter(u => u !== renoteUrl && u !== renoteUri) : null;
-const showTicker = (defaultStore.state.instanceTicker === 'always') || (defaultStore.state.instanceTicker === 'remote' && appearNote.value.user.instance);
+const showTicker = (prefer.s.instanceTicker === 'always') || (prefer.s.instanceTicker === 'remote' && appearNote.value.user.instance);
 
 </script>
 

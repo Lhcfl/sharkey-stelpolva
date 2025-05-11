@@ -313,7 +313,7 @@ export class ApNoteService {
 					await this.pollService.vote(actor, reply, index);
 
 					// リモートフォロワーにUpdate配信
-					this.pollService.deliverQuestionUpdate(reply.id);
+					this.pollService.deliverQuestionUpdate(reply);
 				}
 				return null;
 			};
@@ -455,7 +455,7 @@ export class ApNoteService {
 		/**
 		 * 禁止ワードチェック
 		 */
-		const hasProhibitedWords = await this.noteCreateService.checkProhibitedWordsContain({ cw, text, pollChoices: poll?.choices });
+		const hasProhibitedWords = this.noteCreateService.checkProhibitedWordsContain({ cw, text, pollChoices: poll?.choices });
 		if (hasProhibitedWords) {
 			throw new IdentifiableError('689ee33f-f97c-479a-ac49-1b9f8140af99', `Note contains prohibited words: ${noteUri}`);
 		}
@@ -496,13 +496,13 @@ export class ApNoteService {
 				.then(x => {
 					if (x == null) {
 						this.logger.warn('Specified inReplyTo, but not found');
-						throw new Error(`could not fetch inReplyTo ${note.inReplyTo}: ${entryUri}`);
+						throw new Error(`could not fetch inReplyTo ${note.inReplyTo} for note ${entryUri}`);
 					}
 
 					return x;
 				})
 				.catch(async err => {
-					this.logger.warn(`error ${err.statusCode ?? err} fetching inReplyTo ${note.inReplyTo}: ${entryUri}`);
+					this.logger.warn(`error ${err.statusCode ?? err} fetching inReplyTo ${note.inReplyTo} for note ${entryUri}`);
 					throw err;
 				})
 			: null;
@@ -523,7 +523,7 @@ export class ApNoteService {
 					await this.pollService.vote(actor, reply, index);
 
 					// リモートフォロワーにUpdate配信
-					this.pollService.deliverQuestionUpdate(reply.id);
+					this.pollService.deliverQuestionUpdate(reply);
 				}
 				return null;
 			};
@@ -580,29 +580,32 @@ export class ApNoteService {
 	 * リモートサーバーからフェッチしてMisskeyに登録しそれを返します。
 	 */
 	@bindThis
-	public async resolveNote(value: string | IObject, options: { sentFrom?: URL, resolver?: Resolver } = {}): Promise<MiNote | null> {
+	public async resolveNote(value: string | IObject, options: { sentFrom?: string, resolver?: Resolver } = {}): Promise<MiNote | null> {
 		const uri = getApId(value);
 
 		if (!this.utilityService.isFederationAllowedUri(uri)) {
+			// TODO convert to identifiable error
 			throw new StatusError(`blocked host: ${uri}`, 451, 'blocked host');
+		}
+
+		//#region このサーバーに既に登録されていたらそれを返す
+		const exist = await this.fetchNote(uri);
+		if (exist) return exist;
+		//#endregion
+
+		// Bail if local URI doesn't exist
+		if (this.utilityService.isUriLocal(uri)) {
+			// TODO convert to identifiable error
+			throw new StatusError(`cannot resolve local note: ${uri}`, 400, 'cannot resolve local note');
 		}
 
 		const unlock = await this.appLockService.getApLock(uri);
 
 		try {
-			//#region このサーバーに既に登録されていたらそれを返す
-			const exist = await this.fetchNote(uri);
-			if (exist) return exist;
-			//#endregion
-
-			if (this.utilityService.isUriLocal(uri)) {
-				throw new StatusError(`cannot resolve local note: ${uri}`, 400, 'cannot resolve local note');
-			}
-
-			// リモートサーバーからフェッチしてきて登録
-			// ここでuriの代わりに添付されてきたNote Objectが指定されていると、サーバーフェッチを経ずにノートが生成されるが
-			// 添付されてきたNote Objectは偽装されている可能性があるため、常にuriを指定してサーバーフェッチを行う。
-			const createFrom = options.sentFrom?.origin === new URL(uri).origin ? value : uri;
+			// Optimization: we can avoid re-fetching the value *if and only if* it matches the host authority that it was sent from.
+			// Instances can create any object within their host authority, but anything outside of that MUST be untrusted.
+			const haveSameAuthority = options.sentFrom && this.apUtilityService.haveSameAuthority(options.sentFrom, uri);
+			const createFrom = haveSameAuthority ? value : uri;
 			return await this.createNote(createFrom, undefined, options.resolver, true);
 		} finally {
 			unlock();

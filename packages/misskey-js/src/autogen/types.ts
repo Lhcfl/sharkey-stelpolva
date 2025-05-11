@@ -576,14 +576,68 @@ export type paths = {
      */
     post: operations['admin___queue___inbox-delayed'];
   };
-  '/admin/queue/promote': {
+  '/admin/queue/jobs': {
     /**
-     * admin/queue/promote
+     * admin/queue/jobs
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:admin:queue*
+     */
+    post: operations['admin___queue___jobs'];
+  };
+  '/admin/queue/promote-jobs': {
+    /**
+     * admin/queue/promote-jobs
      * @description No description provided.
      *
      * **Credential required**: *Yes* / **Permission**: *write:admin:queue*
      */
-    post: operations['admin___queue___promote'];
+    post: operations['admin___queue___promote-jobs'];
+  };
+  '/admin/queue/queue-stats': {
+    /**
+     * admin/queue/queue-stats
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:admin:queue*
+     */
+    post: operations['admin___queue___queue-stats'];
+  };
+  '/admin/queue/queues': {
+    /**
+     * admin/queue/queues
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:admin:queue*
+     */
+    post: operations['admin___queue___queues'];
+  };
+  '/admin/queue/remove-job': {
+    /**
+     * admin/queue/remove-job
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:admin:queue*
+     */
+    post: operations['admin___queue___remove-job'];
+  };
+  '/admin/queue/retry-job': {
+    /**
+     * admin/queue/retry-job
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:admin:queue*
+     */
+    post: operations['admin___queue___retry-job'];
+  };
+  '/admin/queue/show-job': {
+    /**
+     * admin/queue/show-job
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:admin:queue*
+     */
+    post: operations['admin___queue___show-job'];
   };
   '/admin/queue/stats': {
     /**
@@ -915,6 +969,15 @@ export type paths = {
      */
     post: operations['admin___update-meta'];
   };
+  '/admin/update-proxy-account': {
+    /**
+     * admin/update-proxy-account
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:admin:account*
+     */
+    post: operations['admin___update-proxy-account'];
+  };
   '/admin/update-user-note': {
     /**
      * admin/update-user-note
@@ -1022,6 +1085,15 @@ export type paths = {
      * **Credential required**: *No*
      */
     post: operations['app___create'];
+  };
+  '/app/current': {
+    /**
+     * app/current
+     * @description No description provided.
+     *
+     * **Credential required**: *No*
+     */
+    post: operations['app___current'];
   };
   '/app/show': {
     /**
@@ -1429,6 +1501,222 @@ export type paths = {
      * **Credential required**: *No*
      */
     post: operations['charts___users'];
+  };
+  '/chat/history': {
+    /**
+     * chat/history
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:chat*
+     */
+    post: operations['chat___history'];
+  };
+  '/chat/messages/create-to-room': {
+    /**
+     * chat/messages/create-to-room
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___messages___create-to-room'];
+  };
+  '/chat/messages/create-to-user': {
+    /**
+     * chat/messages/create-to-user
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___messages___create-to-user'];
+  };
+  '/chat/messages/delete': {
+    /**
+     * chat/messages/delete
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___messages___delete'];
+  };
+  '/chat/messages/react': {
+    /**
+     * chat/messages/react
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___messages___react'];
+  };
+  '/chat/messages/room-timeline': {
+    /**
+     * chat/messages/room-timeline
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:chat*
+     */
+    post: operations['chat___messages___room-timeline'];
+  };
+  '/chat/messages/search': {
+    /**
+     * chat/messages/search
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:chat*
+     */
+    post: operations['chat___messages___search'];
+  };
+  '/chat/messages/show': {
+    /**
+     * chat/messages/show
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:chat*
+     */
+    post: operations['chat___messages___show'];
+  };
+  '/chat/messages/unreact': {
+    /**
+     * chat/messages/unreact
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___messages___unreact'];
+  };
+  '/chat/messages/user-timeline': {
+    /**
+     * chat/messages/user-timeline
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:chat*
+     */
+    post: operations['chat___messages___user-timeline'];
+  };
+  '/chat/rooms/create': {
+    /**
+     * chat/rooms/create
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___rooms___create'];
+  };
+  '/chat/rooms/delete': {
+    /**
+     * chat/rooms/delete
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___rooms___delete'];
+  };
+  '/chat/rooms/invitations/create': {
+    /**
+     * chat/rooms/invitations/create
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___rooms___invitations___create'];
+  };
+  '/chat/rooms/invitations/ignore': {
+    /**
+     * chat/rooms/invitations/ignore
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___rooms___invitations___ignore'];
+  };
+  '/chat/rooms/invitations/inbox': {
+    /**
+     * chat/rooms/invitations/inbox
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:chat*
+     */
+    post: operations['chat___rooms___invitations___inbox'];
+  };
+  '/chat/rooms/invitations/outbox': {
+    /**
+     * chat/rooms/invitations/outbox
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:chat*
+     */
+    post: operations['chat___rooms___invitations___outbox'];
+  };
+  '/chat/rooms/join': {
+    /**
+     * chat/rooms/join
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___rooms___join'];
+  };
+  '/chat/rooms/joining': {
+    /**
+     * chat/rooms/joining
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:chat*
+     */
+    post: operations['chat___rooms___joining'];
+  };
+  '/chat/rooms/leave': {
+    /**
+     * chat/rooms/leave
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___rooms___leave'];
+  };
+  '/chat/rooms/members': {
+    /**
+     * chat/rooms/members
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___rooms___members'];
+  };
+  '/chat/rooms/mute': {
+    /**
+     * chat/rooms/mute
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___rooms___mute'];
+  };
+  '/chat/rooms/owned': {
+    /**
+     * chat/rooms/owned
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:chat*
+     */
+    post: operations['chat___rooms___owned'];
+  };
+  '/chat/rooms/show': {
+    /**
+     * chat/rooms/show
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *read:chat*
+     */
+    post: operations['chat___rooms___show'];
+  };
+  '/chat/rooms/update': {
+    /**
+     * chat/rooms/update
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:chat*
+     */
+    post: operations['chat___rooms___update'];
   };
   '/clips/add-note': {
     /**
@@ -2570,15 +2858,6 @@ export type paths = {
      * **Credential required**: *Yes* / **Permission**: *write:account*
      */
     post: operations['i___pin'];
-  };
-  '/i/read-all-unread-notes': {
-    /**
-     * i/read-all-unread-notes
-     * @description No description provided.
-     *
-     * **Credential required**: *Yes* / **Permission**: *write:account*
-     */
-    post: operations['i___read-all-unread-notes'];
   };
   '/i/read-announcement': {
     /**
@@ -4100,6 +4379,9 @@ export type components = {
       followingVisibility: 'public' | 'followers' | 'private';
       /** @enum {string} */
       followersVisibility: 'public' | 'followers' | 'private';
+      /** @enum {string} */
+      chatScope: 'everyone' | 'following' | 'followers' | 'mutual' | 'none';
+      canChat: boolean;
       roles: components['schemas']['RoleLite'][];
       followedMessage?: string | null;
       memo: string | null;
@@ -4149,6 +4431,7 @@ export type components = {
       unreadAnnouncements: components['schemas']['Announcement'][];
       hasUnreadAntenna: boolean;
       hasUnreadChannel: boolean;
+      hasUnreadChatMessages: boolean;
       hasUnreadNotification: boolean;
       hasPendingReceivedFollowRequest: boolean;
       hasPendingSentFollowRequest: boolean;
@@ -4256,6 +4539,15 @@ export type components = {
           /** Format: misskey:id */
           userListId: string;
         }]>;
+        chatRoomInvitationReceived?: OneOf<[{
+          /** @enum {string} */
+          type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+        }, {
+          /** @enum {string} */
+          type: 'list';
+          /** Format: misskey:id */
+          userListId: string;
+        }]>;
         achievementEarned?: OneOf<[{
           /** @enum {string} */
           type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
@@ -4312,6 +4604,8 @@ export type components = {
       defaultCW: string | null;
       /** @enum {string} */
       defaultCWPriority: 'default' | 'parent' | 'defaultParent' | 'parentDefault';
+      /** @enum {string} */
+      allowUnsignedFetch: 'never' | 'always' | 'essential' | 'staff';
     };
     UserDetailedNotMe: components['schemas']['UserLite'] & components['schemas']['UserDetailedNotMeOnly'];
     MeDetailed: components['schemas']['UserLite'] & components['schemas']['UserDetailedNotMeOnly'] & components['schemas']['MeDetailedOnly'];
@@ -4411,6 +4705,9 @@ export type components = {
       /** @enum {string} */
       visibility: 'public' | 'home' | 'followers' | 'specified';
       mentions?: string[];
+      mentionHandles?: {
+        [key: string]: string;
+      };
       visibleUserIds?: string[];
       fileIds?: string[];
       files?: components['schemas']['DriveFile'][];
@@ -4601,6 +4898,14 @@ export type components = {
       /** @enum {string} */
       type: 'roleAssigned';
       role: components['schemas']['Role'];
+    } | {
+      /** Format: id */
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** @enum {string} */
+      type: 'chatRoomInvitationReceived';
+      invitation: components['schemas']['ChatRoomInvitation'];
     } | ({
       /** Format: id */
       id: string;
@@ -4628,6 +4933,13 @@ export type components = {
       createdAt: string;
       /** @enum {string} */
       type: 'login';
+    } | {
+      /** Format: id */
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** @enum {string} */
+      type: 'createToken';
     } | ({
       /** Format: id */
       id: string;
@@ -4957,6 +5269,8 @@ export type components = {
       hasUnreadNote: boolean;
       /** @default false */
       notify: boolean;
+      /** @default false */
+      excludeNotesInSensitiveChannel: boolean;
     };
     Clip: {
       /**
@@ -5195,6 +5509,8 @@ export type components = {
       /** @example false */
       asBadge: boolean;
       /** @example false */
+      preserveAssignmentOnMoveAccount: boolean;
+      /** @example false */
       canEditMembersByModerator: boolean;
       policies: {
         [key: string]: {
@@ -5221,6 +5537,7 @@ export type components = {
       canUseTranslator: boolean;
       canHideAds: boolean;
       driveCapacityMb: number;
+      maxFileSizeMb: number;
       alwaysMarkNsfw: boolean;
       canUpdateBioMedia: boolean;
       pinLimit: number;
@@ -5239,6 +5556,8 @@ export type components = {
       canImportMuting: boolean;
       canImportUserLists: boolean;
       scheduleNoteMax: number;
+      /** @enum {string} */
+      chatAvailability: 'available' | 'readonly' | 'unavailable';
     };
     ReversiGameLite: {
       /** Format: id */
@@ -5384,6 +5703,21 @@ export type components = {
       enableEmail: boolean;
       enableServiceWorker: boolean;
       translatorAvailable: boolean;
+      sentryForFrontend: ({
+        options: {
+          dsn: string;
+          [key: string]: unknown;
+        };
+        vueIntegration?: {
+          [key: string]: unknown;
+        } | null;
+        browserTracingIntegration?: {
+          [key: string]: unknown;
+        } | null;
+        replayIntegration?: {
+          [key: string]: unknown;
+        } | null;
+      }) | null;
       mediaProxy: string;
       enableUrlPreview: boolean;
       backgroundImageUrl: string | null;
@@ -5424,6 +5758,8 @@ export type components = {
       requireSetup: boolean;
       cacheRemoteFiles: boolean;
       cacheRemoteSensitiveFiles: boolean;
+      /** @enum {string} */
+      allowUnsignedFetch: 'never' | 'always' | 'essential';
     };
     MetaDetailed: components['schemas']['MetaLite'] & components['schemas']['MetaDetailedOnly'];
     SystemWebhook: {
@@ -5451,6 +5787,97 @@ export type components = {
       user?: components['schemas']['UserLite'];
       systemWebhookId?: string;
       systemWebhook?: components['schemas']['SystemWebhook'];
+    };
+    ChatMessage: {
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      fromUserId: string;
+      fromUser: components['schemas']['UserLite'];
+      toUserId?: string | null;
+      toUser?: components['schemas']['UserLite'] | null;
+      toRoomId?: string | null;
+      toRoom?: components['schemas']['ChatRoom'] | null;
+      text?: string | null;
+      fileId?: string | null;
+      file?: components['schemas']['DriveFile'] | null;
+      isRead?: boolean;
+      reactions: {
+          reaction: string;
+          user: components['schemas']['UserLite'];
+        }[];
+    };
+    ChatMessageLite: {
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      fromUserId: string;
+      fromUser?: components['schemas']['UserLite'];
+      toUserId?: string | null;
+      toRoomId?: string | null;
+      text?: string | null;
+      fileId?: string | null;
+      file?: components['schemas']['DriveFile'] | null;
+      reactions: ({
+          reaction: string;
+          user?: components['schemas']['UserLite'] | null;
+        })[];
+    };
+    ChatMessageLiteFor1on1: {
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      fromUserId: string;
+      toUserId: string;
+      text?: string | null;
+      fileId?: string | null;
+      file?: components['schemas']['DriveFile'] | null;
+      reactions: {
+          reaction: string;
+        }[];
+    };
+    ChatMessageLiteForRoom: {
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      fromUserId: string;
+      fromUser: components['schemas']['UserLite'];
+      toRoomId: string;
+      text?: string | null;
+      fileId?: string | null;
+      file?: components['schemas']['DriveFile'] | null;
+      reactions: {
+          reaction: string;
+          user: components['schemas']['UserLite'];
+        }[];
+    };
+    ChatRoom: {
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      ownerId: string;
+      owner: components['schemas']['UserLite'];
+      name: string;
+      description: string;
+      isMuted?: boolean;
+    };
+    ChatRoomInvitation: {
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      userId: string;
+      user: components['schemas']['UserLite'];
+      roomId: string;
+      room: components['schemas']['ChatRoom'];
+    };
+    ChatRoomMembership: {
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      userId: string;
+      user?: components['schemas']['UserLite'];
+      roomId: string;
+      room?: components['schemas']['ChatRoom'];
     };
   };
   responses: never;
@@ -8816,7 +9243,7 @@ export type operations = {
             enableSensitiveMediaDetectionForVideos: boolean;
             enableBotTrending: boolean;
             /** Format: id */
-            proxyAccountId: string | null;
+            proxyAccountId: string;
             email: string | null;
             smtpSecure: boolean;
             smtpHost: string | null;
@@ -8897,9 +9324,14 @@ export type operations = {
             urlPreviewUserAgent: string | null;
             urlPreviewSummaryProxyUrl: string | null;
             trustedLinkUrlPatterns: string[];
-            federation: string;
+            /** @enum {string} */
+            federation: 'all' | 'specified' | 'none';
             stpvAprilFoolsEnabled?: boolean | null;
             federationHosts: string[];
+            hasLegacyAuthFetchSetting: boolean;
+            /** @enum {string} */
+            allowUnsignedFetch: 'never' | 'always' | 'essential';
+            enableProxyAccount: boolean;
           };
         };
       };
@@ -9047,6 +9479,16 @@ export type operations = {
    * **Credential required**: *Yes* / **Permission**: *write:admin:queue*
    */
   admin___queue___clear: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @enum {string} */
+          queue: 'system' | 'endedPollNotification' | 'deliver' | 'inbox' | 'db' | 'relationship' | 'objectStorage' | 'userWebhookDeliver' | 'systemWebhookDeliver' | 'scheduleNotePost';
+          /** @enum {string} */
+          state: '*' | 'completed' | 'wait' | 'active' | 'paused' | 'prioritized' | 'delayed' | 'failed';
+        };
+      };
+    };
     responses: {
       /** @description OK (without any results) */
       204: {
@@ -9177,17 +9619,326 @@ export type operations = {
     };
   };
   /**
-   * admin/queue/promote
+   * admin/queue/jobs
    * @description No description provided.
    *
-   * **Credential required**: *Yes* / **Permission**: *write:admin:queue*
+   * **Credential required**: *Yes* / **Permission**: *read:admin:queue*
    */
-  admin___queue___promote: {
+  admin___queue___jobs: {
     requestBody: {
       content: {
         'application/json': {
           /** @enum {string} */
-          type: 'deliver' | 'inbox';
+          queue: 'system' | 'endedPollNotification' | 'deliver' | 'inbox' | 'db' | 'relationship' | 'objectStorage' | 'userWebhookDeliver' | 'systemWebhookDeliver' | 'scheduleNotePost';
+          state: ('active' | 'paused' | 'wait' | 'delayed' | 'completed' | 'failed')[];
+          search?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * admin/queue/promote-jobs
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:admin:queue*
+   */
+  'admin___queue___promote-jobs': {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @enum {string} */
+          queue: 'system' | 'endedPollNotification' | 'deliver' | 'inbox' | 'db' | 'relationship' | 'objectStorage' | 'userWebhookDeliver' | 'systemWebhookDeliver' | 'scheduleNotePost';
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * admin/queue/queue-stats
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:admin:queue*
+   */
+  'admin___queue___queue-stats': {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @enum {string} */
+          queue: 'system' | 'endedPollNotification' | 'deliver' | 'inbox' | 'db' | 'relationship' | 'objectStorage' | 'userWebhookDeliver' | 'systemWebhookDeliver' | 'scheduleNotePost';
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * admin/queue/queues
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:admin:queue*
+   */
+  admin___queue___queues: {
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * admin/queue/remove-job
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:admin:queue*
+   */
+  'admin___queue___remove-job': {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @enum {string} */
+          queue: 'system' | 'endedPollNotification' | 'deliver' | 'inbox' | 'db' | 'relationship' | 'objectStorage' | 'userWebhookDeliver' | 'systemWebhookDeliver' | 'scheduleNotePost';
+          jobId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * admin/queue/retry-job
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:admin:queue*
+   */
+  'admin___queue___retry-job': {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @enum {string} */
+          queue: 'system' | 'endedPollNotification' | 'deliver' | 'inbox' | 'db' | 'relationship' | 'objectStorage' | 'userWebhookDeliver' | 'systemWebhookDeliver' | 'scheduleNotePost';
+          jobId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * admin/queue/show-job
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:admin:queue*
+   */
+  'admin___queue___show-job': {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @enum {string} */
+          queue: 'system' | 'endedPollNotification' | 'deliver' | 'inbox' | 'db' | 'relationship' | 'objectStorage' | 'userWebhookDeliver' | 'systemWebhookDeliver' | 'scheduleNotePost';
+          jobId: string;
         };
       };
     };
@@ -9690,6 +10441,7 @@ export type operations = {
           /** @default false */
           isExplorable?: boolean;
           asBadge: boolean;
+          preserveAssignmentOnMoveAccount?: boolean;
           canEditMembersByModerator: boolean;
           displayOrder: number;
           policies: Record<string, never>;
@@ -9965,6 +10717,7 @@ export type operations = {
           isAdministrator?: boolean;
           isExplorable?: boolean;
           asBadge?: boolean;
+          preserveAssignmentOnMoveAccount?: boolean;
           canEditMembersByModerator?: boolean;
           displayOrder?: number;
           policies?: Record<string, never>;
@@ -10447,6 +11200,15 @@ export type operations = {
                 userListId: string;
               }]>;
               roleAssigned?: OneOf<[{
+                /** @enum {string} */
+                type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+              }, {
+                /** @enum {string} */
+                type: 'list';
+                /** Format: misskey:id */
+                userListId: string;
+              }]>;
+              chatRoomInvitationReceived?: OneOf<[{
                 /** @enum {string} */
                 type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
               }, {
@@ -11434,8 +12196,6 @@ export type operations = {
           setSensitiveFlagAutomatically?: boolean;
           enableSensitiveMediaDetectionForVideos?: boolean;
           enableBotTrending?: boolean;
-          /** Format: misskey:id */
-          proxyAccountId?: string | null;
           maintainerName?: string | null;
           maintainerEmail?: string | null;
           langs?: string[];
@@ -11516,6 +12276,9 @@ export type operations = {
           /** @enum {string} */
           federation?: 'all' | 'none' | 'specified';
           federationHosts?: string[];
+          /** @enum {string} */
+          allowUnsignedFetch?: 'never' | 'always' | 'essential';
+          enableProxyAccount?: boolean;
         };
       };
     };
@@ -11523,6 +12286,59 @@ export type operations = {
       /** @description OK (without any results) */
       204: {
         content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * admin/update-proxy-account
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:admin:account*
+   */
+  'admin___update-proxy-account': {
+    requestBody: {
+      content: {
+        'application/json': {
+          description?: string | null;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['UserDetailed'];
+        };
       };
       /** @description Client error */
       400: {
@@ -11758,6 +12574,7 @@ export type operations = {
           excludeBots?: boolean;
           withReplies: boolean;
           withFile: boolean;
+          excludeNotesInSensitiveChannel?: boolean;
         };
       };
     };
@@ -12069,6 +12886,7 @@ export type operations = {
           excludeBots?: boolean;
           withReplies?: boolean;
           withFile?: boolean;
+          excludeNotesInSensitiveChannel?: boolean;
         };
       };
     };
@@ -12260,6 +13078,58 @@ export type operations = {
         };
       };
     };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['App'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Too many requests */
+      429: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * app/current
+   * @description No description provided.
+   *
+   * **Credential required**: *No*
+   */
+  app___current: {
     responses: {
       /** @description OK (with results) */
       200: {
@@ -14674,6 +15544,1366 @@ export type operations = {
     };
   };
   /**
+   * chat/history
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:chat*
+   */
+  chat___history: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @default 10 */
+          limit?: number;
+          /** @default false */
+          room?: boolean;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatMessage'][];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/messages/create-to-room
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  'chat___messages___create-to-room': {
+    requestBody: {
+      content: {
+        'application/json': {
+          text?: string | null;
+          /** Format: misskey:id */
+          fileId?: string;
+          /** Format: misskey:id */
+          toRoomId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatMessageLiteForRoom'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Too many requests */
+      429: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/messages/create-to-user
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  'chat___messages___create-to-user': {
+    requestBody: {
+      content: {
+        'application/json': {
+          text?: string | null;
+          /** Format: misskey:id */
+          fileId?: string;
+          /** Format: misskey:id */
+          toUserId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatMessageLiteFor1on1'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Too many requests */
+      429: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/messages/delete
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___messages___delete: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          messageId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/messages/react
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___messages___react: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          messageId: string;
+          reaction: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/messages/room-timeline
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:chat*
+   */
+  'chat___messages___room-timeline': {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @default 10 */
+          limit?: number;
+          /** Format: misskey:id */
+          sinceId?: string;
+          /** Format: misskey:id */
+          untilId?: string;
+          /** Format: misskey:id */
+          roomId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatMessageLiteForRoom'][];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/messages/search
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:chat*
+   */
+  chat___messages___search: {
+    requestBody: {
+      content: {
+        'application/json': {
+          query: string;
+          /** @default 10 */
+          limit?: number;
+          /** Format: misskey:id */
+          userId?: string | null;
+          /** Format: misskey:id */
+          roomId?: string | null;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatMessage'][];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/messages/show
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:chat*
+   */
+  chat___messages___show: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          messageId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/messages/unreact
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___messages___unreact: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          messageId: string;
+          reaction: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/messages/user-timeline
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:chat*
+   */
+  'chat___messages___user-timeline': {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @default 10 */
+          limit?: number;
+          /** Format: misskey:id */
+          sinceId?: string;
+          /** Format: misskey:id */
+          untilId?: string;
+          /** Format: misskey:id */
+          userId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatMessageLiteFor1on1'][];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/create
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___rooms___create: {
+    requestBody: {
+      content: {
+        'application/json': {
+          name: string;
+          description?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatRoom'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Too many requests */
+      429: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/delete
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___rooms___delete: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          roomId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/invitations/create
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___rooms___invitations___create: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          roomId: string;
+          /** Format: misskey:id */
+          userId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatRoomInvitation'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Too many requests */
+      429: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/invitations/ignore
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___rooms___invitations___ignore: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          roomId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/invitations/inbox
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:chat*
+   */
+  chat___rooms___invitations___inbox: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @default 30 */
+          limit?: number;
+          /** Format: misskey:id */
+          sinceId?: string;
+          /** Format: misskey:id */
+          untilId?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatRoomInvitation'][];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/invitations/outbox
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:chat*
+   */
+  chat___rooms___invitations___outbox: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          roomId: string;
+          /** @default 30 */
+          limit?: number;
+          /** Format: misskey:id */
+          sinceId?: string;
+          /** Format: misskey:id */
+          untilId?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatRoomInvitation'][];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/join
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___rooms___join: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          roomId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/joining
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:chat*
+   */
+  chat___rooms___joining: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @default 30 */
+          limit?: number;
+          /** Format: misskey:id */
+          sinceId?: string;
+          /** Format: misskey:id */
+          untilId?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatRoomMembership'][];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/leave
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___rooms___leave: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          roomId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/members
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___rooms___members: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          roomId: string;
+          /** @default 30 */
+          limit?: number;
+          /** Format: misskey:id */
+          sinceId?: string;
+          /** Format: misskey:id */
+          untilId?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatRoomMembership'][];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/mute
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___rooms___mute: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          roomId: string;
+          mute: boolean;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/owned
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:chat*
+   */
+  chat___rooms___owned: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @default 30 */
+          limit?: number;
+          /** Format: misskey:id */
+          sinceId?: string;
+          /** Format: misskey:id */
+          untilId?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatRoom'][];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/show
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *read:chat*
+   */
+  chat___rooms___show: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          roomId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatRoom'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * chat/rooms/update
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:chat*
+   */
+  chat___rooms___update: {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          roomId: string;
+          name?: string;
+          description?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': components['schemas']['ChatRoom'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
    * clips/add-note
    * @description No description provided.
    *
@@ -15403,6 +17633,8 @@ export type operations = {
           sort?: '+createdAt' | '-createdAt' | '+name' | '-name' | '+size' | '-size' | null;
           /** @default */
           searchQuery?: string;
+          /** @default false */
+          showAll?: boolean;
         };
       };
     };
@@ -21662,8 +23894,8 @@ export type operations = {
           untilId?: string;
           /** @default true */
           markAsRead?: boolean;
-          includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'achievementEarned' | 'exportCompleted' | 'login' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
-          excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'achievementEarned' | 'exportCompleted' | 'login' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+          includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+          excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
         };
       };
     };
@@ -21730,8 +23962,8 @@ export type operations = {
           untilId?: string;
           /** @default true */
           markAsRead?: boolean;
-          includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'achievementEarned' | 'exportCompleted' | 'login' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'reaction:grouped' | 'renote:grouped' | 'pollVote' | 'groupInvited')[];
-          excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'achievementEarned' | 'exportCompleted' | 'login' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'reaction:grouped' | 'renote:grouped' | 'pollVote' | 'groupInvited')[];
+          includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+          excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
         };
       };
     };
@@ -21933,56 +24165,6 @@ export type operations = {
         content: {
           'application/json': components['schemas']['MeDetailed'];
         };
-      };
-      /** @description Client error */
-      400: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description Authentication error */
-      401: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description Forbidden error */
-      403: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description I'm Ai */
-      418: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description Too many requests */
-      429: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-      /** @description Internal server error */
-      500: {
-        content: {
-          'application/json': components['schemas']['Error'];
-        };
-      };
-    };
-  };
-  /**
-   * i/read-all-unread-notes
-   * @description No description provided.
-   *
-   * **Credential required**: *Yes* / **Permission**: *write:account*
-   */
-  'i___read-all-unread-notes': {
-    responses: {
-      /** @description OK (without any results) */
-      204: {
-        content: never;
       };
       /** @description Client error */
       400: {
@@ -22933,6 +25115,8 @@ export type operations = {
           followingVisibility?: 'public' | 'followers' | 'private';
           /** @enum {string} */
           followersVisibility?: 'public' | 'followers' | 'private';
+          /** @enum {string} */
+          chatScope?: 'everyone' | 'followers' | 'following' | 'mutual' | 'none';
           /** Format: misskey:id */
           pinnedPageId?: string | null;
           mutedWords?: (string[] | string)[];
@@ -23038,6 +25222,15 @@ export type operations = {
               /** Format: misskey:id */
               userListId: string;
             }]>;
+            chatRoomInvitationReceived?: OneOf<[{
+              /** @enum {string} */
+              type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+            }, {
+              /** @enum {string} */
+              type: 'list';
+              /** Format: misskey:id */
+              userListId: string;
+            }]>;
             achievementEarned?: OneOf<[{
               /** @enum {string} */
               type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
@@ -23071,6 +25264,8 @@ export type operations = {
           defaultCW?: string | null;
           /** @enum {string} */
           defaultCWPriority?: 'default' | 'parent' | 'defaultParent' | 'parentDefault';
+          /** @enum {string} */
+          allowUnsignedFetch?: 'never' | 'always' | 'essential' | 'staff';
         };
       };
     };
@@ -26943,7 +29138,11 @@ export type operations = {
       /** @description OK (with results) */
       200: {
         content: {
-          'application/json': Record<string, never>;
+          'application/json': ({
+              oldDate: string;
+              updatedAt: string;
+              text: string | null;
+            })[];
         };
       };
       /** @description Client error */
@@ -29023,9 +31222,18 @@ export type operations = {
       };
     };
     responses: {
-      /** @description OK (without any results) */
-      204: {
-        content: never;
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': {
+            sponsor_data: ({
+                name: string;
+                image: string | null;
+                website: string | null;
+                profile: string;
+              })[];
+          };
+        };
       };
       /** @description Client error */
       400: {

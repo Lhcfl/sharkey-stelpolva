@@ -3,56 +3,82 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { parseTimelineArgs, TimelineArgs } from '@/server/api/mastodon/timelineArgs.js';
-import { MiLocalUser } from '@/models/User.js';
-import { MastoConverters } from '@/server/api/mastodon/converters.js';
-import type { MegalodonInterface } from 'megalodon';
-import type { FastifyRequest } from 'fastify';
+import { Injectable } from '@nestjs/common';
+import { MastodonEntity } from 'megalodon';
+import { parseTimelineArgs, TimelineArgs } from '@/server/api/mastodon/argsUtils.js';
+import { MastodonConverters } from '@/server/api/mastodon/MastodonConverters.js';
+import { attachMinMaxPagination } from '@/server/api/mastodon/pagination.js';
+import { MastodonClientService } from '../MastodonClientService.js';
+import type { FastifyInstance } from 'fastify';
 
-export interface ApiNotifyMastodonRoute {
+interface ApiNotifyMastodonRoute {
 	Params: {
 		id?: string,
 	},
 	Querystring: TimelineArgs,
 }
 
-export class ApiNotifyMastodon {
+@Injectable()
+export class ApiNotificationsMastodon {
 	constructor(
-		private readonly request: FastifyRequest<ApiNotifyMastodonRoute>,
-		private readonly client: MegalodonInterface,
-		private readonly me: MiLocalUser | null,
-		private readonly mastoConverters: MastoConverters,
+		private readonly mastoConverters: MastodonConverters,
+		private readonly clientService: MastodonClientService,
 	) {}
 
-	public async getNotifications() {
-		const data = await this.client.getNotifications(parseTimelineArgs(this.request.query));
-		return Promise.all(data.data.map(async n => {
-			const converted = await this.mastoConverters.convertNotification(n, this.me);
-			if (converted.type === 'reaction') {
-				converted.type = 'favourite';
+	public register(fastify: FastifyInstance): void {
+		fastify.get<ApiNotifyMastodonRoute>('/v1/notifications', async (request, reply) => {
+			const { client, me } = await this.clientService.getAuthClient(request);
+			const data = await client.getNotifications(parseTimelineArgs(request.query));
+			const notifications = await Promise.all(data.data.map(n => this.mastoConverters.convertNotification(n, me)));
+			const response: MastodonEntity.Notification[] = [];
+			for (const notification of notifications) {
+				// Notifications for inaccessible notes will be null and should be ignored
+				if (!notification) continue;
+
+				response.push(notification);
+				if (notification.type === 'reaction') {
+					response.push({
+						...notification,
+						type: 'favourite',
+					});
+				}
 			}
-			return converted;
-		}));
-	}
 
-	public async getNotification() {
-		if (!this.request.params.id) throw new Error('Missing required parameter "id"');
-		const data = await this.client.getNotification(this.request.params.id);
-		const converted = await this.mastoConverters.convertNotification(data.data, this.me);
-		if (converted.type === 'reaction') {
-			converted.type = 'favourite';
-		}
-		return converted;
-	}
+			attachMinMaxPagination(request, reply, response);
+			return reply.send(response);
+		});
 
-	public async rmNotification() {
-		if (!this.request.params.id) throw new Error('Missing required parameter "id"');
-		const data = await this.client.dismissNotification(this.request.params.id);
-		return data.data;
-	}
+		fastify.get<ApiNotifyMastodonRoute & { Params: { id?: string } }>('/v1/notification/:id', async (_request, reply) => {
+			if (!_request.params.id) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required parameter "id"' });
 
-	public async rmNotifications() {
-		const data = await this.client.dismissNotifications();
-		return data.data;
+			const { client, me } = await this.clientService.getAuthClient(_request);
+			const data = await client.getNotification(_request.params.id);
+			const response = await this.mastoConverters.convertNotification(data.data, me);
+
+			// Notifications for inaccessible notes will be null and should be ignored
+			if (!response) {
+				return reply.code(404).send({
+					error: 'NOT_FOUND',
+				});
+			}
+
+			return reply.send(response);
+		});
+
+		fastify.post<ApiNotifyMastodonRoute & { Params: { id?: string } }>('/v1/notification/:id/dismiss', async (_request, reply) => {
+			if (!_request.params.id) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required parameter "id"' });
+
+			const client = this.clientService.getClient(_request);
+			const data = await client.dismissNotification(_request.params.id);
+
+			return reply.send(data.data);
+		});
+
+		fastify.post<ApiNotifyMastodonRoute>('/v1/notifications/clear', async (_request, reply) => {
+			const client = this.clientService.getClient(_request);
+			const data = await client.dismissNotifications();
+
+			return reply.send(data.data);
+		});
 	}
 }

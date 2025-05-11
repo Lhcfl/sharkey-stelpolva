@@ -1,15 +1,13 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios'
 import dayjs from 'dayjs'
-import FormData from 'form-data'
 
 import { DEFAULT_UA } from '../default'
-import proxyAgent, { ProxyConfig } from '../proxy_config'
 import Response from '../response'
 import MisskeyEntity from './entity'
 import MegalodonEntity from '../entity'
-import WebSocket from './web_socket'
 import MisskeyNotificationType from './notification'
-import NotificationType, { UnknownNotificationTypeError } from '../notification'
+import * as NotificationType from '../notification'
+import { UnknownNotificationTypeError } from '../notification';
 
 namespace MisskeyAPI {
   export namespace Entity {
@@ -32,6 +30,7 @@ namespace MisskeyAPI {
     export type Notification = MisskeyEntity.Notification
     export type Poll = MisskeyEntity.Poll
     export type Reaction = MisskeyEntity.Reaction
+		export type NoteReaction = MisskeyEntity.NoteReaction
     export type Relation = MisskeyEntity.Relation
     export type User = MisskeyEntity.User
     export type UserDetail = MisskeyEntity.UserDetail
@@ -285,6 +284,7 @@ namespace MisskeyAPI {
         plain_content: n.text ? n.text : null,
         created_at: n.createdAt,
         edited_at: n.updatedAt || null,
+				// TODO this is probably wrong
         emojis: mapEmojis(n.emojis).concat(mapReactionEmojis(n.reactionEmojis)),
         replies_count: n.repliesCount,
         reblogs_count: n.renoteCount,
@@ -303,7 +303,7 @@ namespace MisskeyAPI {
         application: null,
         language: null,
         pinned: null,
-        emoji_reactions: typeof n.reactions === 'object' ? mapReactions(n.reactions, n.myReaction) : [],
+        emoji_reactions: typeof n.reactions === 'object' ? mapReactions(n.reactions, n.reactionEmojis, n.myReaction) : [],
         bookmarked: false,
         quote: n.renote && n.text ? note(n.renote, n.user.host ? n.user.host : host ? host : null) : null
       }
@@ -333,23 +333,37 @@ namespace MisskeyAPI {
 				) : 0;
 		};
 
-    export const mapReactions = (r: { [key: string]: number }, myReaction?: string): Array<MegalodonEntity.Reaction> => {
-      return Object.keys(r).map(key => {
-        if (myReaction && key === myReaction) {
-          return {
-            count: r[key],
-            me: true,
-            name: key
-          }
-        }
-        return {
-          count: r[key],
-          me: false,
-          name: key
-        }
+    export const mapReactions = (r: { [key: string]: number }, e: Record<string, string | undefined>, myReaction?: string): Array<MegalodonEntity.Reaction> => {
+      return Object.entries(r).map(([key, count]) => {
+				const me = myReaction != null && key === myReaction;
+
+				// Name is equal to the key for native emoji reactions, and as a fallback.
+				let name = key;
+
+				// Custom emoji have a leading / trailing ":", which we need to remove.
+				const match = key.match(/^:([^@:]+)(@[^:]+)?:$/);
+				if (match) {
+					const [, prefix, host] = match;
+
+					// Local custom emoji end in "@.", which we need to remove.
+					if (host && host !== '@.') {
+						name = prefix + host;
+					} else {
+						name = prefix;
+					}
+				}
+
+				return {
+					count,
+					me,
+					name,
+					url: e[name],
+					static_url: e[name],
+				}
       })
     }
 
+		// TODO implement other properties
     const mapReactionEmojis = (r: { [key: string]: string }): Array<MegalodonEntity.Emoji> => {
       return Object.keys(r).map(key => ({
         shortcode: key,
@@ -370,7 +384,7 @@ namespace MisskeyAPI {
           result.push({
             count: 1,
             me: false,
-            name: e.type
+            name: e.type,
           })
         }
       })
@@ -538,51 +552,48 @@ namespace MisskeyAPI {
     get<T = any>(path: string, params?: any, headers?: { [key: string]: string }): Promise<Response<T>>
     post<T = any>(path: string, params?: any, headers?: { [key: string]: string }): Promise<Response<T>>
     cancel(): void
-    socket(channel: 'user' | 'localTimeline' | 'hybridTimeline' | 'globalTimeline' | 'conversation' | 'list', listId?: string): WebSocket
   }
 
   /**
    * Misskey API client.
    *
-   * Usign axios for request, you will handle promises.
+   * Using axios for request, you will handle promises.
    */
   export class Client implements Interface {
     private accessToken: string | null
     private baseUrl: string
     private userAgent: string
     private abortController: AbortController
-    private proxyConfig: ProxyConfig | false = false
 
     /**
      * @param baseUrl hostname or base URL
      * @param accessToken access token from OAuth2 authorization
      * @param userAgent UserAgent is specified in header on request.
-     * @param proxyConfig Proxy setting, or set false if don't use proxy.
      */
-    constructor(baseUrl: string, accessToken: string | null, userAgent: string = DEFAULT_UA, proxyConfig: ProxyConfig | false = false) {
+    constructor(baseUrl: string, accessToken: string | null, userAgent: string = DEFAULT_UA) {
       this.accessToken = accessToken
       this.baseUrl = baseUrl
       this.userAgent = userAgent
-      this.proxyConfig = proxyConfig
-      this.abortController = new AbortController()
-      axios.defaults.signal = this.abortController.signal
+      this.abortController = new AbortController();
     }
 
     /**
      * GET request to misskey API.
      **/
     public async get<T>(path: string, params: any = {}, headers: { [key: string]: string } = {}): Promise<Response<T>> {
+			if (!headers['Authorization'] && this.accessToken) {
+				headers['Authorization'] = `Bearer ${this.accessToken}`;
+			}
+			if (!headers['User-Agent']) {
+				headers['User-Agent'] = this.userAgent;
+			}
+
       let options: AxiosRequestConfig = {
         params: params,
-        headers: headers,
+        headers,
         maxContentLength: Infinity,
-        maxBodyLength: Infinity
-      }
-      if (this.proxyConfig) {
-        options = Object.assign(options, {
-          httpAgent: proxyAgent(this.proxyConfig),
-          httpsAgent: proxyAgent(this.proxyConfig)
-        })
+        maxBodyLength: Infinity,
+				signal: this.abortController.signal,
       }
       return axios.get<T>(this.baseUrl + path, options).then((resp: AxiosResponse<T>) => {
         const res: Response<T> = {
@@ -602,28 +613,21 @@ namespace MisskeyAPI {
      * @param headers Request header object
      */
     public async post<T>(path: string, params: any = {}, headers: { [key: string]: string } = {}): Promise<Response<T>> {
+			if (!headers['Authorization'] && this.accessToken) {
+				headers['Authorization'] = `Bearer ${this.accessToken}`;
+			}
+			if (!headers['User-Agent']) {
+				headers['User-Agent'] = this.userAgent;
+			}
+
       let options: AxiosRequestConfig = {
         headers: headers,
         maxContentLength: Infinity,
-        maxBodyLength: Infinity
+        maxBodyLength: Infinity,
+				signal: this.abortController.signal,
       }
-      if (this.proxyConfig) {
-        options = Object.assign(options, {
-          httpAgent: proxyAgent(this.proxyConfig),
-          httpsAgent: proxyAgent(this.proxyConfig)
-        })
-      }
-      let bodyParams = params
-      if (this.accessToken) {
-        if (params instanceof FormData) {
-          bodyParams.append('i', this.accessToken)
-        } else {
-          bodyParams = Object.assign(params, {
-            i: this.accessToken
-          })
-        }
-      }
-      return axios.post<T>(this.baseUrl + path, bodyParams, options).then((resp: AxiosResponse<T>) => {
+
+      return axios.post<T>(this.baseUrl + path, params, options).then((resp: AxiosResponse<T>) => {
         const res: Response<T> = {
           data: resp.data,
           status: resp.status,
@@ -640,27 +644,6 @@ namespace MisskeyAPI {
      */
     public cancel(): void {
       return this.abortController.abort()
-    }
-
-    /**
-     * Get connection and receive websocket connection for Misskey API.
-     *
-     * @param channel Channel name is user, localTimeline, hybridTimeline, globalTimeline, conversation or list.
-     * @param listId This parameter is required only list channel.
-     */
-    public socket(
-      channel: 'user' | 'localTimeline' | 'hybridTimeline' | 'globalTimeline' | 'conversation' | 'list',
-      listId?: string
-    ): WebSocket {
-      if (!this.accessToken) {
-        throw new Error('accessToken is required')
-      }
-      const url = this.baseUrl + '/streaming'
-      const streaming = new WebSocket(url, channel, this.accessToken, listId, this.userAgent, this.proxyConfig)
-      process.nextTick(() => {
-        streaming.start()
-      })
-      return streaming
     }
   }
 }

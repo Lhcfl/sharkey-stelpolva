@@ -184,6 +184,11 @@ export class DeleteAccountProcessorService {
 				await this.apLogService.deleteObjectLogs(user.uri)
 					.catch(err => this.logger.error(err, `Failed to delete AP logs for user '${user.uri}'`));
 			}
+
+			await this.apLogService.deleteInboxLogs(user.id)
+				.catch(err => this.logger.error(err, `Failed to delete AP logs for user '${user.uri}'`));
+
+			this.logger.succ('All AP logs deleted');
 		}
 
 		{ // Send email notification

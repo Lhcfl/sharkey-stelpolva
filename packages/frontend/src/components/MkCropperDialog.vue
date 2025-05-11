@@ -31,17 +31,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { onMounted, shallowRef, ref } from 'vue';
+import { onMounted, useTemplateRef, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import Cropper from 'cropperjs';
 import tinycolor from 'tinycolor2';
+import { apiUrl } from '@@/js/config.js';
 import MkModalWindow from '@/components/MkModalWindow.vue';
 import * as os from '@/os.js';
-import { $i } from '@/account.js';
-import { defaultStore } from '@/store.js';
-import { apiUrl } from '@@/js/config.js';
+import { $i } from '@/i.js';
 import { i18n } from '@/i18n.js';
-import { getProxiedImageUrl } from '@/scripts/media-proxy.js';
+import { getProxiedImageUrl } from '@/utility/media-proxy.js';
+import { prefer } from '@/preferences.js';
 
 const emit = defineEmits<{
 	(ev: 'ok', cropped: Misskey.entities.DriveFile): void;
@@ -56,8 +56,8 @@ const props = defineProps<{
 }>();
 
 const imgUrl = getProxiedImageUrl(props.file.url, undefined, true);
-const dialogEl = shallowRef<InstanceType<typeof MkModalWindow>>();
-const imgEl = shallowRef<HTMLImageElement>();
+const dialogEl = useTemplateRef('dialogEl');
+const imgEl = useTemplateRef('imgEl');
 let cropper: Cropper | null = null;
 const loading = ref(true);
 
@@ -73,21 +73,24 @@ const ok = async () => {
 		const croppedCanvas = await croppedSection?.$toCanvas({ width: widthToRender });
 		croppedCanvas?.toBlob(blob => {
 			if (!blob) return;
+			if (!$i) return;
 			const formData = new FormData();
 			formData.append('file', blob);
 			formData.append('name', `cropped_${props.file.name}`);
 			formData.append('isSensitive', props.file.isSensitive ? 'true' : 'false');
 			if (props.file.comment) { formData.append('comment', props.file.comment);}
-			formData.append('i', $i!.token);
 			if (props.uploadFolder) {
 				formData.append('folderId', props.uploadFolder);
-			} else if (props.uploadFolder !== null && defaultStore.state.uploadFolder) {
-				formData.append('folderId', defaultStore.state.uploadFolder);
+			} else if (props.uploadFolder !== null && prefer.s.uploadFolder) {
+				formData.append('folderId', prefer.s.uploadFolder);
 			}
 
 			window.fetch(apiUrl + '/drive/files/create', {
 				method: 'POST',
 				body: formData,
+				headers: {
+					'Authorization': `Bearer ${$i.token}`,
+				},
 			})
 				.then(response => response.json())
 				.then(f => {
@@ -122,7 +125,7 @@ onMounted(() => {
 	cropper = new Cropper(imgEl.value!, {
 	});
 
-	const computedStyle = getComputedStyle(document.documentElement);
+	const computedStyle = getComputedStyle(window.document.documentElement);
 
 	const selection = cropper.getCropperSelection()!;
 	selection.themeColor = tinycolor(computedStyle.getPropertyValue('--MI_THEME-accent')).toHexString();

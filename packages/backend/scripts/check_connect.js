@@ -9,7 +9,7 @@ import { createPostgresDataSource } from '../built/postgres.js';
 
 const config = loadConfig();
 
-// createPostgresDataSource handels primaries and replicas automatically.
+// createPostgresDataSource handles primaries and replicas automatically.
 // usually, it only opens connections first use, so we force it using
 // .initialize()
 async function connectToPostgres(){

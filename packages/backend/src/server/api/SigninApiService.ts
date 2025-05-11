@@ -35,7 +35,8 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 // Up to 10 attempts, then 1 per minute
 const signinRateLimit: Keyed<RateLimit> = {
 	key: 'signin',
-	max: 10,
+	type: 'bucket',
+	size: 10,
 	dripRate: 1000 * 60,
 };
 
@@ -146,7 +147,7 @@ export class SigninApiService {
 
 		if (isSystemAccount(user)) {
 			return error(403, {
-				id: 's8dhsj9s-a93j-493j-ja9k-kas9sj20aml2',
+				id: 'ba4ba3bc-ef1e-4c74-ad88-1d2b7d69a100',
 			});
 		}
 
@@ -243,7 +244,7 @@ export class SigninApiService {
 				if (profile.password!.startsWith('$2')) {
 					const newHash = await argon2.hash(password);
 					this.userProfilesRepository.update(user.id, {
-						password: newHash
+						password: newHash,
 					});
 				}
 				if (!this.meta.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
@@ -267,7 +268,7 @@ export class SigninApiService {
 				if (profile.password!.startsWith('$2')) {
 					const newHash = await argon2.hash(password);
 					this.userProfilesRepository.update(user.id, {
-						password: newHash
+						password: newHash,
 					});
 				}
 				await this.userAuthService.twoFactorAuthenticate(profile, token);

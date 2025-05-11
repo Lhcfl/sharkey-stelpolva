@@ -23,7 +23,7 @@ let mousePosY = 0;
 
 let frameCount = 0;
 let idleTime = 0;
-let idleAnimation: string|null = null;
+let idleAnimation: string | null = null;
 let idleAnimationFrame = 0;
 let lastFrameTimestamp;
 
@@ -97,7 +97,8 @@ function init() {
 	nekoEl.value.style.left = `${nekoPosX - 16}px`;
 	nekoEl.value.style.top = `${nekoPosY - 16}px`;
 
-	document.addEventListener('mousemove', (event) => {
+	// TODO this causes a memory leak because it never gets unbound
+	window.document.addEventListener('mousemove', (event) => {
 		mousePosX = event.clientX;
 		mousePosY = event.clientY;
 	});
@@ -140,7 +141,6 @@ function idle() {
 	if (
 		idleTime > 10 &&
       Math.floor(Math.random() * 200) === 0 &&
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       idleAnimation == null
 	) {
 		let avalibleIdleAnimations = ['sleeping', 'scratchSelf'];

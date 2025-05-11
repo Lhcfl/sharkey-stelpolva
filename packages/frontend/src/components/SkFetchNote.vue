@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { ref, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import { i18n } from '@/i18n.js';
-import { misskeyApi } from '@/scripts/misskey-api';
+import { misskeyApi } from '@/utility/misskey-api.js';
 import DynamicNote from '@/components/DynamicNote.vue';
 
 const props = withDefaults(defineProps<{

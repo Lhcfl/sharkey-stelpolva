@@ -26,7 +26,7 @@ export interface IObject {
 	attributedTo?: ApObject;
 	attachment?: any[];
 	inReplyTo?: any;
-	replies?: ICollection;
+	replies?: ICollection | IOrderedCollection | string;
 	content?: string | null;
 	startTime?: Date;
 	endTime?: Date;
@@ -37,6 +37,10 @@ export interface IObject {
 	href?: string;
 	tag?: IObject | IObject[];
 	sensitive?: boolean;
+}
+
+export interface IObjectWithId extends IObject {
+	id: string;
 }
 
 /**
@@ -108,7 +112,7 @@ export interface IActivity extends IObject {
 	actor: IObject | string;
 	// ActivityPub spec allows for arrays: https://www.w3.org/TR/activitystreams-vocabulary/#properties
 	// Misskey can only handle one value, so we use a tuple for that case.
-	object: IObject | string | [IObject | string] ;
+	object: IObject | string | [IObject | string];
 	target?: IObject | string;
 	/** LD-Signature */
 	signature?: {
@@ -125,6 +129,8 @@ export interface ICollection extends IObject {
 	type: 'Collection';
 	totalItems: number;
 	first?: IObject | string;
+	last?: IObject | string;
+	current?: IObject | string;
 	items?: ApObject;
 }
 
@@ -132,6 +138,32 @@ export interface IOrderedCollection extends IObject {
 	type: 'OrderedCollection';
 	totalItems: number;
 	first?: IObject | string;
+	last?: IObject | string;
+	current?: IObject | string;
+	orderedItems?: ApObject;
+}
+
+export interface ICollectionPage extends IObject {
+	type: 'CollectionPage';
+	totalItems: number;
+	first?: IObject | string;
+	last?: IObject | string;
+	current?: IObject | string;
+	partOf?: IObject | string;
+	next?: IObject | string;
+	prev?: IObject | string;
+	items?: ApObject;
+}
+
+export interface IOrderedCollectionPage extends IObject {
+	type: 'OrderedCollectionPage';
+	totalItems: number;
+	first?: IObject | string;
+	last?: IObject | string;
+	current?: IObject | string;
+	partOf?: IObject | string;
+	next?: IObject | string;
+	prev?: IObject | string;
 	orderedItems?: ApObject;
 }
 
@@ -231,8 +263,14 @@ export const isCollection = (object: IObject): object is ICollection =>
 export const isOrderedCollection = (object: IObject): object is IOrderedCollection =>
 	getApType(object) === 'OrderedCollection';
 
+export const isCollectionPage = (object: IObject): object is ICollectionPage =>
+	getApType(object) === 'CollectionPage';
+
+export const isOrderedCollectionPage = (object: IObject): object is IOrderedCollectionPage =>
+	getApType(object) === 'OrderedCollectionPage';
+
 export const isCollectionOrOrderedCollection = (object: IObject): object is ICollection | IOrderedCollection =>
-	isCollection(object) || isOrderedCollection(object);
+	isCollection(object) || isOrderedCollection(object) || isCollectionPage(object) || isOrderedCollectionPage(object);
 
 export interface IApPropertyValue extends IObject {
 	type: 'PropertyValue';
@@ -368,6 +406,13 @@ export interface IMove extends IActivity {
 	type: 'Move';
 	target: IObject | string;
 }
+
+export const validActivityTypes = ['Announce', 'Create', 'Update', 'Delete', 'Undo', 'Follow', 'Accept', 'Reject', 'Add', 'Remove', 'Like', 'Dislike', 'EmojiReaction', 'EmojiReact', 'Flag', 'Block', 'Move'];
+
+export const isActivity = (object: IObject): object is IActivity => {
+	const type = getApType(object);
+	return type != null && validActivityTypes.includes(type);
+};
 
 export const isApObject = (object: string | IObject): object is IObject => typeof(object) === 'object';
 export const isCreate = (object: IObject): object is ICreate => getApType(object) === 'Create';

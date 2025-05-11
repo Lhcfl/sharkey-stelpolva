@@ -136,7 +136,7 @@ CREATE EXTENSION pgroonga;
 
 <div>
 
-<a href="https://joinsharkey.org/"><img src="https://cdn.shonk.social/files/b671c81c-58cf-4f13-bc96-af0b0c96c667.webp" align="right" height="520px"/></a>
+<a href="https://joinsharkey.org/"><img src="assets/sharkey.webp" align="right" height="520px"/></a>
 
 ## ✨ Features
 - **ActivityPub support**\

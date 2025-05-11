@@ -44,7 +44,7 @@ const sideN = Math.floor(n / 2);
 /**
  * Generate buffer of an identicon by seed
  */
-export async function genIdenticon(seed: string): Promise<Buffer> {
+export function genIdenticon(seed: string): Buffer {
 	const rand = gen.create(seed);
 	const canvas = createCanvas(size, size);
 	const ctx = canvas.getContext('2d');
@@ -100,5 +100,5 @@ export async function genIdenticon(seed: string): Promise<Buffer> {
 		}
 	}
 
-	return await canvas.toBuffer('image/png');
+	return canvas.toBuffer('image/png');
 }

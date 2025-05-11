@@ -51,8 +51,6 @@ class RoleTimelineChannel extends Channel {
 			const clonedNote = await this.assignMyReaction(note);
 			await this.hideNote(clonedNote);
 
-			this.connection.cacheNote(clonedNote);
-
 			this.send('note', clonedNote);
 		} else {
 			this.send(data.type, data.body);

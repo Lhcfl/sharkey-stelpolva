@@ -5,10 +5,9 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { UsersRepository } from '@/models/_.js';
+import type { MiMeta, UsersRepository } from '@/models/_.js';
 import { SignupService } from '@/core/SignupService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { InstanceActorService } from '@/core/InstanceActorService.js';
 import { localUsernameSchema, passwordSchema } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -90,20 +89,21 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.config)
 		private config: Config,
 
+		@Inject(DI.meta)
+		private serverSettings: MiMeta,
+
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
 		private roleService: RoleService,
 		private userEntityService: UserEntityService,
 		private signupService: SignupService,
-		private instanceActorService: InstanceActorService,
 		private readonly moderationLogService: ModerationLogService,
 	) {
 		super(meta, paramDef, async (ps, _me, token) => {
 			const me = _me ? await this.usersRepository.findOneByOrFail({ id: _me.id }) : null;
-			const realUsers = await this.instanceActorService.realLocalUsersPresent();
 
-			if (!realUsers && me == null && token == null) {
+			if (this.serverSettings.rootUserId == null && me == null && token == null) {
 				// 初回セットアップの場合
 				if (this.config.setupPassword != null) {
 					// 初期パスワードが設定されている場合
@@ -127,7 +127,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}
 
 				// Anonymous access is only allowed for initial instance setup (this check may be redundant)
-				if (!me && realUsers) {
+				if (!me && this.serverSettings.rootUserId != null) {
 					throw new ApiError(meta.errors.noCredential);
 				}
 			}

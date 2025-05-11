@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-//import bcrypt from 'bcryptjs';
 import * as argon2 from 'argon2';
 import * as OTPAuth from 'otpauth';
 import * as QRCode from 'qrcode';

@@ -66,7 +66,8 @@ export const meta = {
 
 	// 24 calls, then 7 per second-ish (1 for each type of server info graph)
 	limit: {
-		max: 24,
+		type: 'bucket',
+		size: 24,
 		dripSize: 7,
 		dripRate: 900,
 	},

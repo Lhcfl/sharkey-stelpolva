@@ -34,7 +34,7 @@ export class DownloadService {
 	}
 
 	@bindThis
-	public async downloadUrl(url: string, path: string, options: { timeout?: number, operationTimeout?: number, maxSize?: number} = {} ): Promise<{
+	public async downloadUrl(url: string, path: string, options: { timeout?: number, operationTimeout?: number, maxSize?: number } = {} ): Promise<{
 		filename: string;
 	}> {
 		this.logger.info(`Downloading ${chalk.cyan(url)} to ${chalk.cyanBright(path)} ...`);
@@ -60,8 +60,8 @@ export class DownloadService {
 				request: operationTimeout,	// whole operation timeout
 			},
 			agent: {
-				http: this.httpRequestService.httpAgent,
-				https: this.httpRequestService.httpsAgent,
+				http: this.httpRequestService.getAgentForHttp(urlObj, true),
+				https: this.httpRequestService.getAgentForHttps(urlObj, true),
 			},
 			http2: false,	// default
 			retry: {

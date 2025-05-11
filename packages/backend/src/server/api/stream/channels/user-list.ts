@@ -114,8 +114,6 @@ class UserListChannel extends Channel {
 		const clonedNote = await this.assignMyReaction(note);
 		await this.hideNote(clonedNote);
 
-		this.connection.cacheNote(clonedNote);
-
 		this.send('note', clonedNote);
 	}
 

@@ -4,9 +4,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkStickyContainer>
-	<template #header><MkPageHeader :actions="headerActions" :displayBackButton="true" :tabs="headerTabs"/></template>
-	<MkSpacer :contentMax="800">
+<PageWithHeader :actions="headerActions" :displayBackButton="true" :tabs="headerTabs">
+	<div class="_spacer" style="--MI_SPACER-w: 800px;">
 		<div ref="rootEl">
 			<div v-if="queue > 0" :class="$style.new"><button class="_buttonPrimary" :class="$style.newButton" @click="top()">{{ i18n.ts.newNoteRecived }}</button></div>
 			<div :class="$style.tl">
@@ -21,23 +20,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 				/>
 			</div>
 		</div>
-	</MkSpacer>
-</MkStickyContainer>
+	</div>
+</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, ref, shallowRef } from 'vue';
+import { computed, watch, ref, useTemplateRef } from 'vue';
 import * as Misskey from 'misskey-js';
+import { scrollInContainer } from '@@/js/scroll.js';
 import MkTimeline from '@/components/MkTimeline.vue';
-import { scroll } from '@@/js/scroll.js';
-import { misskeyApi } from '@/scripts/misskey-api.js';
-import { definePageMetadata } from '@/scripts/page-metadata.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
+import { definePage } from '@/page.js';
 import { i18n } from '@/i18n.js';
-import { useRouter } from '@/router/supplier.js';
-import { defaultStore } from '@/store.js';
-import { deepMerge } from '@/scripts/merge.js';
+import { useRouter } from '@/router.js';
+import { store } from '@/store.js';
+import { deepMerge } from '@/utility/merge.js';
 import * as os from '@/os.js';
-import { $i } from '@/account.js';
+import { $i } from '@/i.js';
 
 const router = useRouter();
 
@@ -47,21 +46,22 @@ const props = defineProps<{
 
 const list = ref<Misskey.entities.UserList | null>(null);
 const queue = ref(0);
-const tlEl = shallowRef<InstanceType<typeof MkTimeline>>();
-const rootEl = shallowRef<HTMLElement>();
+const tlEl = useTemplateRef('tlEl');
+const rootEl = useTemplateRef('rootEl');
+
 const withRenotes = computed<boolean>({
-	get: () => defaultStore.reactiveState.tl.value.filter.withRenotes,
+	get: () => store.r.tl.value.filter.withRenotes,
 	set: (x) => saveTlFilter('withRenotes', x),
 });
+
 const onlyFiles = computed<boolean>({
-	get: () => defaultStore.reactiveState.tl.value.filter.onlyFiles,
+	get: () => store.r.tl.value.filter.onlyFiles,
 	set: (x) => saveTlFilter('onlyFiles', x),
 });
 
-function saveTlFilter(key: keyof typeof defaultStore.state.tl.filter, newValue: boolean) {
+function saveTlFilter(key: keyof typeof store.s.tl.filter, newValue: boolean) {
 	if (key !== 'withReplies' || $i) {
-		const out = deepMerge({ filter: { [key]: newValue } }, defaultStore.state.tl);
-		defaultStore.set('tl', out);
+		store.r.tl.value = deepMerge({ filter: { [key]: newValue } }, store.s.tl);
 	}
 }
 
@@ -76,7 +76,7 @@ function queueUpdated(q) {
 }
 
 function top() {
-	scroll(rootEl.value, { top: 0 });
+	scrollInContainer(rootEl.value, { top: 0 });
 }
 
 function settings() {
@@ -105,7 +105,7 @@ const headerActions = computed(() => list.value ? [{
 
 const headerTabs = computed(() => []);
 
-definePageMetadata(() => ({
+definePage(() => ({
 	title: list.value ? list.value.name : i18n.ts.lists,
 	icon: 'ti ti-list',
 }));

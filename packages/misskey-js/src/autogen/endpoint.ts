@@ -79,9 +79,15 @@ import type {
 	AdminMetaResponse,
 	AdminNsfwUserRequest,
 	AdminPromoCreateRequest,
+	AdminQueueClearRequest,
 	AdminQueueDeliverDelayedResponse,
 	AdminQueueInboxDelayedResponse,
-	AdminQueuePromoteRequest,
+	AdminQueueJobsRequest,
+	AdminQueuePromoteJobsRequest,
+	AdminQueueQueueStatsRequest,
+	AdminQueueRemoveJobRequest,
+	AdminQueueRetryJobRequest,
+	AdminQueueShowJobRequest,
 	AdminQueueStatsResponse,
 	AdminRejectQuotesRequest,
 	AdminRelaysAddRequest,
@@ -130,6 +136,8 @@ import type {
 	AdminUnsuspendUserRequest,
 	AdminUpdateAbuseUserReportRequest,
 	AdminUpdateMetaRequest,
+	AdminUpdateProxyAccountRequest,
+	AdminUpdateProxyAccountResponse,
 	AdminUpdateUserNoteRequest,
 	AnnouncementsRequest,
 	AnnouncementsResponse,
@@ -151,6 +159,7 @@ import type {
 	ApShowResponse,
 	AppCreateRequest,
 	AppCreateResponse,
+	AppCurrentResponse,
 	AppShowRequest,
 	AppShowResponse,
 	AuthAcceptRequest,
@@ -213,6 +222,46 @@ import type {
 	ChartsUserReactionsResponse,
 	ChartsUsersRequest,
 	ChartsUsersResponse,
+	ChatHistoryRequest,
+	ChatHistoryResponse,
+	ChatMessagesCreateToRoomRequest,
+	ChatMessagesCreateToRoomResponse,
+	ChatMessagesCreateToUserRequest,
+	ChatMessagesCreateToUserResponse,
+	ChatMessagesDeleteRequest,
+	ChatMessagesReactRequest,
+	ChatMessagesRoomTimelineRequest,
+	ChatMessagesRoomTimelineResponse,
+	ChatMessagesSearchRequest,
+	ChatMessagesSearchResponse,
+	ChatMessagesShowRequest,
+	ChatMessagesShowResponse,
+	ChatMessagesUnreactRequest,
+	ChatMessagesUserTimelineRequest,
+	ChatMessagesUserTimelineResponse,
+	ChatRoomsCreateRequest,
+	ChatRoomsCreateResponse,
+	ChatRoomsDeleteRequest,
+	ChatRoomsInvitationsCreateRequest,
+	ChatRoomsInvitationsCreateResponse,
+	ChatRoomsInvitationsIgnoreRequest,
+	ChatRoomsInvitationsInboxRequest,
+	ChatRoomsInvitationsInboxResponse,
+	ChatRoomsInvitationsOutboxRequest,
+	ChatRoomsInvitationsOutboxResponse,
+	ChatRoomsJoinRequest,
+	ChatRoomsJoiningRequest,
+	ChatRoomsJoiningResponse,
+	ChatRoomsLeaveRequest,
+	ChatRoomsMembersRequest,
+	ChatRoomsMembersResponse,
+	ChatRoomsMuteRequest,
+	ChatRoomsOwnedRequest,
+	ChatRoomsOwnedResponse,
+	ChatRoomsShowRequest,
+	ChatRoomsShowResponse,
+	ChatRoomsUpdateRequest,
+	ChatRoomsUpdateResponse,
 	ClipsAddNoteRequest,
 	ClipsCreateRequest,
 	ClipsCreateResponse,
@@ -544,6 +593,7 @@ import type {
 	RolesUsersResponse,
 	ServerInfoResponse,
 	SponsorsRequest,
+	SponsorsResponse,
 	StatsResponse,
 	StpvReactionsStatRequest,
 	StpvReactionsStatResponse,
@@ -676,10 +726,16 @@ export type Endpoints = {
 	'admin/meta': { req: EmptyRequest; res: AdminMetaResponse };
 	'admin/nsfw-user': { req: AdminNsfwUserRequest; res: EmptyResponse };
 	'admin/promo/create': { req: AdminPromoCreateRequest; res: EmptyResponse };
-	'admin/queue/clear': { req: EmptyRequest; res: EmptyResponse };
+	'admin/queue/clear': { req: AdminQueueClearRequest; res: EmptyResponse };
 	'admin/queue/deliver-delayed': { req: EmptyRequest; res: AdminQueueDeliverDelayedResponse };
 	'admin/queue/inbox-delayed': { req: EmptyRequest; res: AdminQueueInboxDelayedResponse };
-	'admin/queue/promote': { req: AdminQueuePromoteRequest; res: EmptyResponse };
+	'admin/queue/jobs': { req: AdminQueueJobsRequest; res: EmptyResponse };
+	'admin/queue/promote-jobs': { req: AdminQueuePromoteJobsRequest; res: EmptyResponse };
+	'admin/queue/queue-stats': { req: AdminQueueQueueStatsRequest; res: EmptyResponse };
+	'admin/queue/queues': { req: EmptyRequest; res: EmptyResponse };
+	'admin/queue/remove-job': { req: AdminQueueRemoveJobRequest; res: EmptyResponse };
+	'admin/queue/retry-job': { req: AdminQueueRetryJobRequest; res: EmptyResponse };
+	'admin/queue/show-job': { req: AdminQueueShowJobRequest; res: EmptyResponse };
 	'admin/queue/stats': { req: EmptyRequest; res: AdminQueueStatsResponse };
 	'admin/reject-quotes': { req: AdminRejectQuotesRequest; res: EmptyResponse };
 	'admin/relays/add': { req: AdminRelaysAddRequest; res: AdminRelaysAddResponse };
@@ -716,6 +772,7 @@ export type Endpoints = {
 	'admin/unsuspend-user': { req: AdminUnsuspendUserRequest; res: EmptyResponse };
 	'admin/update-abuse-user-report': { req: AdminUpdateAbuseUserReportRequest; res: EmptyResponse };
 	'admin/update-meta': { req: AdminUpdateMetaRequest; res: EmptyResponse };
+	'admin/update-proxy-account': { req: AdminUpdateProxyAccountRequest; res: AdminUpdateProxyAccountResponse };
 	'admin/update-user-note': { req: AdminUpdateUserNoteRequest; res: EmptyResponse };
 	'announcements': { req: AnnouncementsRequest; res: AnnouncementsResponse };
 	'announcements/show': { req: AnnouncementsShowRequest; res: AnnouncementsShowResponse };
@@ -728,6 +785,7 @@ export type Endpoints = {
 	'ap/get': { req: ApGetRequest; res: ApGetResponse };
 	'ap/show': { req: ApShowRequest; res: ApShowResponse };
 	'app/create': { req: AppCreateRequest; res: AppCreateResponse };
+	'app/current': { req: EmptyRequest; res: AppCurrentResponse };
 	'app/show': { req: AppShowRequest; res: AppShowResponse };
 	'auth/accept': { req: AuthAcceptRequest; res: EmptyResponse };
 	'auth/session/generate': { req: AuthSessionGenerateRequest; res: AuthSessionGenerateResponse };
@@ -763,6 +821,30 @@ export type Endpoints = {
 	'charts/user/pv': { req: ChartsUserPvRequest; res: ChartsUserPvResponse };
 	'charts/user/reactions': { req: ChartsUserReactionsRequest; res: ChartsUserReactionsResponse };
 	'charts/users': { req: ChartsUsersRequest; res: ChartsUsersResponse };
+	'chat/history': { req: ChatHistoryRequest; res: ChatHistoryResponse };
+	'chat/messages/create-to-room': { req: ChatMessagesCreateToRoomRequest; res: ChatMessagesCreateToRoomResponse };
+	'chat/messages/create-to-user': { req: ChatMessagesCreateToUserRequest; res: ChatMessagesCreateToUserResponse };
+	'chat/messages/delete': { req: ChatMessagesDeleteRequest; res: EmptyResponse };
+	'chat/messages/react': { req: ChatMessagesReactRequest; res: EmptyResponse };
+	'chat/messages/room-timeline': { req: ChatMessagesRoomTimelineRequest; res: ChatMessagesRoomTimelineResponse };
+	'chat/messages/search': { req: ChatMessagesSearchRequest; res: ChatMessagesSearchResponse };
+	'chat/messages/show': { req: ChatMessagesShowRequest; res: ChatMessagesShowResponse };
+	'chat/messages/unreact': { req: ChatMessagesUnreactRequest; res: EmptyResponse };
+	'chat/messages/user-timeline': { req: ChatMessagesUserTimelineRequest; res: ChatMessagesUserTimelineResponse };
+	'chat/rooms/create': { req: ChatRoomsCreateRequest; res: ChatRoomsCreateResponse };
+	'chat/rooms/delete': { req: ChatRoomsDeleteRequest; res: EmptyResponse };
+	'chat/rooms/invitations/create': { req: ChatRoomsInvitationsCreateRequest; res: ChatRoomsInvitationsCreateResponse };
+	'chat/rooms/invitations/ignore': { req: ChatRoomsInvitationsIgnoreRequest; res: EmptyResponse };
+	'chat/rooms/invitations/inbox': { req: ChatRoomsInvitationsInboxRequest; res: ChatRoomsInvitationsInboxResponse };
+	'chat/rooms/invitations/outbox': { req: ChatRoomsInvitationsOutboxRequest; res: ChatRoomsInvitationsOutboxResponse };
+	'chat/rooms/join': { req: ChatRoomsJoinRequest; res: EmptyResponse };
+	'chat/rooms/joining': { req: ChatRoomsJoiningRequest; res: ChatRoomsJoiningResponse };
+	'chat/rooms/leave': { req: ChatRoomsLeaveRequest; res: EmptyResponse };
+	'chat/rooms/members': { req: ChatRoomsMembersRequest; res: ChatRoomsMembersResponse };
+	'chat/rooms/mute': { req: ChatRoomsMuteRequest; res: EmptyResponse };
+	'chat/rooms/owned': { req: ChatRoomsOwnedRequest; res: ChatRoomsOwnedResponse };
+	'chat/rooms/show': { req: ChatRoomsShowRequest; res: ChatRoomsShowResponse };
+	'chat/rooms/update': { req: ChatRoomsUpdateRequest; res: ChatRoomsUpdateResponse };
 	'clips/add-note': { req: ClipsAddNoteRequest; res: EmptyResponse };
 	'clips/create': { req: ClipsCreateRequest; res: ClipsCreateResponse };
 	'clips/delete': { req: ClipsDeleteRequest; res: EmptyResponse };
@@ -881,7 +963,6 @@ export type Endpoints = {
 	'i/page-likes': { req: IPageLikesRequest; res: IPageLikesResponse };
 	'i/pages': { req: IPagesRequest; res: IPagesResponse };
 	'i/pin': { req: IPinRequest; res: IPinResponse };
-	'i/read-all-unread-notes': { req: EmptyRequest; res: EmptyResponse };
 	'i/read-announcement': { req: IReadAnnouncementRequest; res: EmptyResponse };
 	'i/regenerate-token': { req: IRegenerateTokenRequest; res: EmptyResponse };
 	'i/registry/get': { req: IRegistryGetRequest; res: IRegistryGetResponse };
@@ -989,7 +1070,7 @@ export type Endpoints = {
 	'roles/show': { req: RolesShowRequest; res: RolesShowResponse };
 	'roles/users': { req: RolesUsersRequest; res: RolesUsersResponse };
 	'server-info': { req: EmptyRequest; res: ServerInfoResponse };
-	'sponsors': { req: SponsorsRequest; res: EmptyResponse };
+	'sponsors': { req: SponsorsRequest; res: SponsorsResponse };
 	'stats': { req: EmptyRequest; res: StatsResponse };
 	'stpv/reactions-stat': { req: StpvReactionsStatRequest; res: StpvReactionsStatResponse };
 	'sw/register': { req: SwRegisterRequest; res: SwRegisterResponse };
@@ -1030,7 +1111,7 @@ export type Endpoints = {
 	'users/show': { req: UsersShowRequest; res: UsersShowResponse };
 	'users/update-memo': { req: UsersUpdateMemoRequest; res: EmptyResponse };
 	'v2/admin/emoji/list': { req: V2AdminEmojiListRequest; res: V2AdminEmojiListResponse };
-}
+};
 
 /**
  * NOTE: The content-type for all endpoints not listed here is application/json.

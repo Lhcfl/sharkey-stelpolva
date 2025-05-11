@@ -10,11 +10,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</template>
 	<div v-if="tab === 'pinned'" class="_gaps">
 		<div v-if="user.pinnedNotes.length < 1" class="_fullinfo">
-			<img :src="infoImageUrl" class="_ghost" aria-hidden="true" :alt="i18n.ts.noNotes"/>
+			<img :src="infoImageUrl" draggable="false" aria-hidden="true" :alt="i18n.ts.noNotes"/>
 			<div>{{ i18n.ts.noNotes }}</div>
 		</div>
 		<div v-else class="_panel">
-			<MkNote v-for="note of user.pinnedNotes" :key="note.id" class="note" :class="$style.pinnedNote" :note="note" :pinned="true"/>
+			<DynamicNote v-for="note of user.pinnedNotes" :key="note.id" class="note" :class="$style.pinnedNote" :note="note" :pinned="true"/>
 		</div>
 	</div>
 	<MkNotes v-else :noGap="true" :pagination="pagination" :class="$style.tl"/>
@@ -22,19 +22,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, defineAsyncComponent } from 'vue';
+import { ref, computed, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkNotes from '@/components/MkNotes.vue';
 import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
 import { infoImageUrl } from '@/instance.js';
-import { defaultStore } from '@/store.js';
-
-const MkNote = defineAsyncComponent(() =>
-	defaultStore.state.noteDesign === 'sharkey'
-		? import('@/components/SkNote.vue')
-		: import('@/components/MkNote.vue'),
-);
+import DynamicNote from '@/components/DynamicNote.vue';
 
 const props = defineProps<{
 	user: Misskey.entities.UserDetailed;

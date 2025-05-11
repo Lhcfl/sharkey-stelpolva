@@ -5,7 +5,7 @@
 
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { IsNull } from 'typeorm';
+import { Brackets, IsNull } from 'typeorm';
 import type { MiLocalUser, MiPartialLocalUser, MiPartialRemoteUser, MiRemoteUser, MiUser } from '@/models/User.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { QueueService } from '@/core/QueueService.js';
@@ -28,9 +28,8 @@ import type { Config } from '@/config.js';
 import { AccountMoveService } from '@/core/AccountMoveService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import type { ThinUser } from '@/queue/types.js';
-import Logger from '../logger.js';
-
-const logger = new Logger('following/create');
+import { LoggerService } from '@/core/LoggerService.js';
+import type Logger from '../logger.js';
 
 type Local = MiLocalUser | {
 	id: MiLocalUser['id'];
@@ -48,6 +47,7 @@ type Both = Local | Remote;
 @Injectable()
 export class UserFollowingService implements OnModuleInit {
 	private userBlockingService: UserBlockingService;
+	private readonly logger: Logger;
 
 	constructor(
 		private moduleRef: ModuleRef,
@@ -86,7 +86,10 @@ export class UserFollowingService implements OnModuleInit {
 		private accountMoveService: AccountMoveService,
 		private perUserFollowingChart: PerUserFollowingChart,
 		private instanceChart: InstanceChart,
+
+		loggerService: LoggerService,
 	) {
+		this.logger = loggerService.getLogger('following/create');
 	}
 
 	onModuleInit() {
@@ -254,7 +257,7 @@ export class UserFollowingService implements OnModuleInit {
 			followeeSharedInbox: this.userEntityService.isRemoteUser(followee) ? followee.sharedInbox : null,
 		}).catch(err => {
 			if (isDuplicateKeyValueError(err) && this.userEntityService.isRemoteUser(follower) && this.userEntityService.isLocalUser(followee)) {
-				logger.info(`Insert duplicated ignore. ${follower.id} => ${followee.id}`);
+				this.logger.info(`Insert duplicated ignore. ${follower.id} => ${followee.id}`);
 				alreadyFollowed = true;
 			} else {
 				throw err;
@@ -372,7 +375,7 @@ export class UserFollowingService implements OnModuleInit {
 		});
 
 		if (following === null || !following.follower || !following.followee) {
-			logger.warn('フォロー解除がリクエストされましたがフォローしていませんでした');
+			this.logger.warn('フォロー解除がリクエストされましたがフォローしていませんでした');
 			return;
 		}
 
@@ -736,5 +739,31 @@ export class UserFollowingService implements OnModuleInit {
 			.addSelect('following.withReplies')
 			.where('following.followerId = :followerId', { followerId: userId })
 			.getMany();
+	}
+
+	@bindThis
+	public isFollowing(followerId: MiUser['id'], followeeId: MiUser['id']) {
+		return this.followingsRepository.exists({
+			where: {
+				followerId,
+				followeeId,
+			},
+		});
+	}
+
+	@bindThis
+	public async isMutual(aUserId: MiUser['id'], bUserId: MiUser['id']) {
+		const count = await this.followingsRepository.createQueryBuilder('following')
+			.where(new Brackets(qb => {
+				qb.where('following.followerId = :aUserId', { aUserId })
+					.andWhere('following.followeeId = :bUserId', { bUserId });
+			}))
+			.orWhere(new Brackets(qb => {
+				qb.where('following.followerId = :bUserId', { bUserId })
+					.andWhere('following.followeeId = :aUserId', { aUserId });
+			}))
+			.getCount();
+
+		return count === 2;
 	}
 }

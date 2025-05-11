@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkSpacer :contentMax="narrow ? 800 : 1100" :style="background" style="transform: none !important;">
+<div class="_spacer" :style="{ '--MI_SPACER-w': narrow ? '800px' : '1100px', ...background }">
 	<div ref="rootEl" class="ftskorzw" :class="{ wide: !narrow }" style="container-type: inline-size;">
 		<div class="main _gaps">
 			<MkInfo v-if="user.isSuspended" :warn="true">{{ i18n.ts.userSuspended }}</MkInfo>
@@ -12,7 +12,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<div class="profile _gaps">
 				<MkAccountMoved v-if="user.movedTo" :movedTo="user.movedTo"/>
-				<MkRemoteCaution v-if="user.host != null" :href="user.url ?? user.uri!" class="warn"/>
+				<MkRemoteCaution v-if="user.host != null" :href="user.url ?? user.uri!"/>
+				<MkInfo v-if="user.host == null && user.username.includes('.')">{{ i18n.ts.isSystemAccount }}</MkInfo>
 
 				<div :key="user.id" class="main _panel">
 					<div class="banner-container" :class="{ [$style.bannerContainerTall]: useTallBanner }">
@@ -58,9 +59,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 					</div>
 					<div v-if="user.followedMessage != null" class="followedMessage">
-						<MkFukidashi class="fukidashi" :tail="narrow ? 'none' : 'left'" negativeMargin shadow>
+						<MkFukidashi class="fukidashi" :tail="narrow ? 'none' : 'left'" negativeMargin>
 							<div class="messageHeader">{{ i18n.ts.messageToFollower }}</div>
-							<div><MkSparkle><Mfm :plain="true" :text="user.followedMessage" :author="user"/></MkSparkle></div>
+							<div><MkSparkle><Mfm :plain="true" :text="user.followedMessage" :author="user" class="_selectable"/></MkSparkle></div>
 						</MkFukidashi>
 					</div>
 					<div v-if="user.roles.length > 0" class="roles">
@@ -92,8 +93,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 						/>
 					</div>
 					<div class="description">
-						<Mfm v-if="user.description" :text="user.description" :isBlock="true" :isNote="false" :author="user"/>
-						<p v-else class="empty">{{ i18n.ts.noAccountDescription }}</p>
+						<MkOmit>
+							<Mfm v-if="user.description" :text="user.description" :isBlock="true" :isNote="false" :author="user" class="_selectable"/>
+							<p v-else class="empty">{{ i18n.ts.noAccountDescription }}</p>
+						</MkOmit>
 					</div>
 					<div class="fields system">
 						<dl v-if="user.location" class="field">
@@ -112,10 +115,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div v-if="user.fields.length > 0" class="fields">
 						<dl v-for="(field, i) in user.fields" :key="i" class="field">
 							<dt class="name">
-								<Mfm :text="field.name" :author="user" :plain="true" :colored="false"/>
+								<Mfm :text="field.name" :author="user" :plain="true" :colored="false" class="_selectable"/>
 							</dt>
 							<dd class="value">
-								<Mfm :text="field.value" :author="user" :colored="false"/>
+								<Mfm :text="field.value" :author="user" :colored="false" class="_selectable"/>
 								<i v-if="user.verifiedLinks.includes(field.value)" v-tooltip:dialog="i18n.ts.verifiedLink" class="ti ti-circle-check" :class="$style.verifiedLink"></i>
 							</dd>
 						</dl>
@@ -170,11 +173,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkLazy>
 						<div v-if="noteview === 'pinned'" class="_gaps">
 							<div v-if="user.pinnedNotes.length < 1" class="_fullinfo">
-								<img :src="infoImageUrl" class="_ghost" aria-hidden="true" :alt="i18n.ts.noNotes"/>
+								<img :src="infoImageUrl" draggable="false" aria-hidden="true" :alt="i18n.ts.noNotes"/>
 								<div>{{ i18n.ts.noNotes }}</div>
 							</div>
 							<div v-else class="_panel">
-								<MkNote v-for="note of user.pinnedNotes" :key="note.id" class="note" :class="$style.pinnedNote" :note="note" :pinned="true"/>
+								<DynamicNote v-for="note of user.pinnedNotes" :key="note.id" class="note" :class="$style.pinnedNote" :note="note" :pinned="true"/>
 							</div>
 						</div>
 						<MkNotes v-else :class="$style.tl" :noGap="true" :pagination="AllPagination"/>
@@ -189,7 +192,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</div>
 	<div class="background"></div>
-</MkSpacer>
+</div>
 </template>
 
 <script lang="ts" setup>
@@ -205,27 +208,22 @@ import MkRemoteCaution from '@/components/MkRemoteCaution.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkButton from '@/components/MkButton.vue';
-import { getUserMenu } from '@/scripts/get-user-menu.js';
+import { getUserMenu } from '@/utility/get-user-menu.js';
 import number from '@/filters/number.js';
 import { userPage } from '@/filters/user.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
-import { defaultStore } from '@/store.js';
-import { $i, iAmModerator } from '@/account.js';
+import { $i, iAmModerator } from '@/i.js';
 import { dateString } from '@/filters/date.js';
-import { confetti } from '@/scripts/confetti.js';
-import { misskeyApi } from '@/scripts/misskey-api.js';
-import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/scripts/isFfVisibleForMe.js';
-import { useRouter } from '@/router/supplier.js';
-import { getStaticImageUrl } from '@/scripts/media-proxy.js';
+import { confetti } from '@/utility/confetti.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
+import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/utility/isFfVisibleForMe.js';
+import { useRouter } from '@/router.js';
+import { getStaticImageUrl } from '@/utility/media-proxy.js';
 import { infoImageUrl } from '@/instance.js';
 import MkSparkle from '@/components/MkSparkle.vue';
-
-const MkNote = defineAsyncComponent(() =>
-	defaultStore.state.noteDesign === 'sharkey'
-		? import('@/components/SkNote.vue')
-		: import('@/components/MkNote.vue'),
-);
+import { prefer } from '@/preferences.js';
+import DynamicNote from '@/components/DynamicNote.vue';
 
 function calcAge(birthdate: string): number {
 	const date = new Date(birthdate);
@@ -249,7 +247,7 @@ const XListenBrainz = defineAsyncComponent(() => import('./index.listenbrainz.vu
 const props = withDefaults(defineProps<{
 	user: Misskey.entities.UserDetailed;
 	/** Test only; MkNotes currently causes problems in vitest */
-	disableNotes: boolean;
+	disableNotes?: boolean;
 }>(), {
 	disableNotes: false,
 });
@@ -276,7 +274,7 @@ const listenbrainzdata = ref(false);
 if (props.user.listenbrainz) {
 	(async function() {
 		try {
-			const response = await fetch(`https://api.listenbrainz.org/1/user/${props.user.listenbrainz}/playing-now`, {
+			const response = await window.fetch(`https://api.listenbrainz.org/1/user/${props.user.listenbrainz}/playing-now`, {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
@@ -294,7 +292,7 @@ if (props.user.listenbrainz) {
 
 const background = computed(() => {
 	if (props.user.backgroundUrl == null) return {};
-	if (defaultStore.state.disableShowingAnimatedImages) {
+	if (prefer.s.disableShowingAnimatedImages) {
 		return {
 			'--backgroundImageStatic': `url('${getStaticImageUrl(props.user.backgroundUrl)}')`,
 		};
@@ -331,7 +329,7 @@ const AllPagination = {
 
 const style = computed(() => {
 	if (props.user.bannerUrl == null) return {};
-	if (defaultStore.state.disableShowingAnimatedImages) {
+	if (prefer.s.disableShowingAnimatedImages) {
 		return {
 			backgroundImage: `url(${ getStaticImageUrl(props.user.bannerUrl) })`,
 		};
@@ -657,7 +655,7 @@ onUnmounted(() => {
 
 					> .heading {
 						text-align: left;
-						color: var(--MI_THEME-fgTransparent);
+						color: color(from var(--MI_THEME-fg) srgb r g b / 0.5);
 						line-height: 1.5;
 						font-size: 85%;
 					}
@@ -859,8 +857,8 @@ onUnmounted(() => {
 }
 
 .tab {
-	margin-bottom: calc(var(--margin) / 2);
-	padding: calc(var(--margin) / 2) 0;
+	margin-bottom: calc(5px / 2);
+	padding: calc(5px / 2) 0;
 	background: color-mix(in srgb, var(--MI_THEME-bg) 65%, transparent);
 	backdrop-filter: var(--MI-blur, blur(15px));
 	border-radius: var(--MI-radius-sm);

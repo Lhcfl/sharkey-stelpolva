@@ -10,8 +10,7 @@ import type { Packed } from '@/misc/json-schema.js';
 import type { MiMeta } from '@/models/Meta.js';
 import type { AdsRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { InstanceActorService } from '@/core/InstanceActorService.js';
+import { SystemAccountService } from '@/core/SystemAccountService.js';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
@@ -28,8 +27,7 @@ export class MetaEntityService {
 		@Inject(DI.adsRepository)
 		private adsRepository: AdsRepository,
 
-		private userEntityService: UserEntityService,
-		private instanceActorService: InstanceActorService,
+		private systemAccountService: SystemAccountService,
 	) { }
 
 	@bindThis
@@ -143,6 +141,7 @@ export class MetaEntityService {
 
 			policies: { ...DEFAULT_POLICIES, ...instance.policies },
 
+			sentryForFrontend: this.config.sentryForFrontend ?? null,
 			mediaProxy: this.config.mediaProxy,
 			enableUrlPreview: instance.urlPreviewEnabled,
 			noteSearchableScope: (this.config.meilisearch == null || this.config.meilisearch.scope !== 'local') ? 'global' : 'local',
@@ -163,14 +162,14 @@ export class MetaEntityService {
 
 		const packed = await this.pack(instance);
 
-		const proxyAccount = instance.proxyAccountId ? await this.userEntityService.pack(instance.proxyAccountId).catch(() => null) : null;
+		const proxyAccount = await this.systemAccountService.fetch('proxy');
 
 		const packDetailed: Packed<'MetaDetailed'> = {
 			...packed,
 			cacheRemoteFiles: instance.cacheRemoteFiles,
 			cacheRemoteSensitiveFiles: instance.cacheRemoteSensitiveFiles,
-			requireSetup: !await this.instanceActorService.realLocalUsersPresent(),
-			proxyAccountName: proxyAccount ? proxyAccount.username : null,
+			requireSetup: this.meta.rootUserId == null,
+			proxyAccountName: proxyAccount.username,
 			features: {
 				localTimeline: instance.policies.ltlAvailable,
 				globalTimeline: instance.policies.gtlAvailable,
@@ -183,6 +182,7 @@ export class MetaEntityService {
 				serviceWorker: instance.enableServiceWorker,
 				miauth: true,
 			},
+			allowUnsignedFetch: instance.allowUnsignedFetch,
 		};
 
 		return packDetailed;

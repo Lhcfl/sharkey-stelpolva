@@ -27,15 +27,12 @@ export class AccountUpdateService {
 	}
 
 	@bindThis
-	public async publishToFollowers(userId: MiUser['id']) {
-		const user = await this.usersRepository.findOneBy({ id: userId });
-		if (user == null) throw new Error('user not found');
-
+	public async publishToFollowers(user: MiUser) {
 		// フォロワーがリモートユーザーかつ投稿者がローカルユーザーならUpdateを配信
 		if (this.userEntityService.isLocalUser(user)) {
 			const content = this.apRendererService.addContext(this.apRendererService.renderUpdate(await this.apRendererService.renderPerson(user), user));
-			this.apDeliverManagerService.deliverToFollowers(user, content);
-			this.relayService.deliverToRelays(user, content);
+			await this.apDeliverManagerService.deliverToFollowers(user, content);
+			await this.relayService.deliverToRelays(user, content);
 		}
 	}
 }

@@ -56,7 +56,7 @@ export class MastodonDataService {
 		// Restrict visibility
 		this.queryService.generateVisibilityQuery(query, me);
 		if (me) {
-			this.queryService.generateBlockedUserQuery(query, me);
+			this.queryService.generateBlockedUserQueryForNotes(query, me);
 		}
 
 		return await query.getOne();

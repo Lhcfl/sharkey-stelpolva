@@ -16,7 +16,8 @@ export const meta = {
 	// Up to 10 calls, then 4 / second.
 	// This allows for reliable automation.
 	limit: {
-		max: 10,
+		type: 'bucket',
+		size: 10,
 		dripRate: 250,
 	},
 } as const;

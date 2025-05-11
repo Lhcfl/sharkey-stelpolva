@@ -4,9 +4,10 @@
  */
 
 import { describe, test, assert, afterEach } from 'vitest';
-import { render, cleanup, type RenderResult } from '@testing-library/vue';
-import { defaultStoreState } from './init.js';
+import { render, cleanup } from '@testing-library/vue';
 import { getEmojiName } from '@@/js/emojilist.js';
+import { preferState } from './init.js';
+import type { RenderResult } from '@testing-library/vue';
 import { components } from '@/components/index.js';
 import { directives } from '@/directives/index.js';
 import MkEmoji from '@/components/global/MkEmoji.vue';
@@ -21,12 +22,12 @@ describe('Emoji', () => {
 
 	afterEach(() => {
 		cleanup();
-		defaultStoreState.emojiStyle = '';
+		preferState.emojiStyle = '';
 	});
 
 	describe('MkEmoji', () => {
 		test('Should render selector-less heart with color in native mode', async () => {
-			defaultStoreState.emojiStyle = 'native';
+			preferState.emojiStyle = 'native';
 			const mkEmoji = await renderEmoji('\u2764'); // monochrome heart
 			assert.ok(mkEmoji.queryByText('\u2764\uFE0F')); // colored heart
 			assert.ok(!mkEmoji.queryByText('\u2764'));

@@ -63,6 +63,9 @@ db:
   # Extra Connection options
   #extra:
   #  ssl: true
+  #  # Set a higher value if you have timeout issues during migration
+  #  statement_timeout: 10000
+
 
 dbReplications: false
 
@@ -197,6 +200,11 @@ id: 'aidx'
 #    dsn: 'https://examplePublicKey@o0.ingest.sentry.io/0'
 
 #sentryForFrontend:
+#  vueIntegration:
+#    tracingOptions:
+#      trackComponents: true
+#  browserTracingIntegration:
+#  replayIntegration:
 #  options:
 #    dsn: 'https://examplePublicKey@o0.ingest.sentry.io/0'
 
@@ -265,6 +273,11 @@ allowedPrivateNetworks: [
   '127.0.0.1/32'
 ]
 
+# Disable automatic redirect for ActivityPub object lookup. (default: false)
+# This is a strong defense against potential impersonation attacks if the viewer instance has inadequate validation.
+# However it will make it impossible for other instances to lookup third-party user and notes through your URL.
+#disallowExternalApRedirect: true
+
 # Upload or download file size limits (bytes)
 #maxFileSize: 262144000
 
@@ -282,6 +295,9 @@ allowedPrivateNetworks: [
 #     # Disable query truncation. If set to true, the full text of the query will be output to the log.
 #     # default: false
 #     disableQueryTruncation: false
+#   # Shows debug log messages after instance startup. To capture earlier debug logs, set the MK_VERBOSE environment variable.
+#   # default: false in production, true otherwise.
+#   #verbose: false
 
 # Settings for the activity logger, which records inbound activities to the database.
 # Disabled by default due to the large volume of data it saves.

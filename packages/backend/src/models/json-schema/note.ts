@@ -89,6 +89,16 @@ export const packedNoteSchema = {
 				format: 'id',
 			},
 		},
+		mentionHandles: {
+			type: 'object',
+			optional: true, nullable: false,
+			additionalProperties: {
+				anyOf: [{
+					type: 'string',
+				}],
+				optional: true, nullable: false,
+			},
+		},
 		visibleUserIds: {
 			type: 'array',
 			optional: true, nullable: false,

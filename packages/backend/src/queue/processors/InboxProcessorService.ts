@@ -25,13 +25,12 @@ import { JsonLdService } from '@/core/activitypub/JsonLdService.js';
 import { ApInboxService } from '@/core/activitypub/ApInboxService.js';
 import { bindThis } from '@/decorators.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { CollapsedQueue } from '@/misc/collapsed-queue.js';
-import { MiNote } from '@/models/Note.js';
 import { MiMeta } from '@/models/Meta.js';
 import { DI } from '@/di-symbols.js';
 import { SkApInboxLog } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import { ApLogService, calculateDurationSince } from '@/core/ApLogService.js';
+import { UpdateInstanceQueue } from '@/core/UpdateInstanceQueue.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type { InboxJobData } from '../types.js';
 
@@ -43,7 +42,7 @@ type UpdateInstanceJob = {
 @Injectable()
 export class InboxProcessorService implements OnApplicationShutdown {
 	private logger: Logger;
-	private updateInstanceQueue: CollapsedQueue<MiNote['id'], UpdateInstanceJob>;
+	//private updateInstanceQueue: CollapsedQueue<MiNote['id'], UpdateInstanceJob>;
 
 	constructor(
 		@Inject(DI.meta)
@@ -64,9 +63,9 @@ export class InboxProcessorService implements OnApplicationShutdown {
 		private federationChart: FederationChart,
 		private queueLoggerService: QueueLoggerService,
 		private readonly apLogService: ApLogService,
+		private readonly updateInstanceQueue: UpdateInstanceQueue,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('inbox');
-		this.updateInstanceQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseUpdateInstanceJobs, this.performUpdateInstance);
 	}
 
 	@bindThis
@@ -149,12 +148,12 @@ export class InboxProcessorService implements OnApplicationShutdown {
 
 		// それでもわからなければ終了
 		if (authUser == null) {
-			throw new Bull.UnrecoverableError('skip: failed to resolve user');
+			throw new Bull.UnrecoverableError(`skip: failed to resolve user ${getApId(activity.actor)}`);
 		}
 
 		// publicKey がなくても終了
 		if (authUser.key == null) {
-			throw new Bull.UnrecoverableError('skip: failed to resolve user publicKey');
+			throw new Bull.UnrecoverableError(`skip: failed to resolve user publicKey ${getApId(activity.actor)}`);
 		}
 
 		// HTTP-Signatureの検証
@@ -232,7 +231,7 @@ export class InboxProcessorService implements OnApplicationShutdown {
 			const signerHost = this.utilityService.extractDbHost(authUser.user.uri!);
 			const activityIdHost = this.utilityService.extractDbHost(activity.id);
 			if (signerHost !== activityIdHost) {
-				throw new Bull.UnrecoverableError(`skip: signerHost(${signerHost}) !== activity.id host(${activityIdHost}`);
+				throw new Bull.UnrecoverableError(`skip: signerHost(${signerHost}) !== activity.id host(${activityIdHost})`);
 			}
 		} else {
 			// Activity ID should only be string or undefined.
@@ -336,9 +335,7 @@ export class InboxProcessorService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async dispose(): Promise<void> {
-		await this.updateInstanceQueue.performAllNow();
-	}
+	public async dispose(): Promise<void> {}
 
 	@bindThis
 	async onApplicationShutdown(signal?: string) {

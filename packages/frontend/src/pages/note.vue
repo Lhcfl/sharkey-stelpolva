@@ -4,11 +4,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkStickyContainer>
-	<template #header><MkPageHeader :actions="headerActions" :displayBackButton="true" :tabs="headerTabs"/></template>
-	<MkSpacer :contentMax="800">
+<PageWithHeader :actions="headerActions" :displayBackButton="true" :tabs="headerTabs">
+	<div class="_spacer" style="--MI_SPACER-w: 800px;">
 		<div>
-			<Transition :name="defaultStore.state.animation ? 'fade' : ''" mode="out-in">
+			<Transition :name="prefer.s.animation ? 'fade' : ''" mode="out-in">
 				<div v-if="note">
 					<div v-if="showNext" class="_margin">
 						<MkNotes class="" :pagination="showNext === 'channel' ? nextChannelPagination : nextUserPagination" :noGap="true" :disableAutoLoad="true"/>
@@ -22,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div class="_margin _gaps_s">
 							<MkRemoteCaution v-if="note.user.host != null" :href="note.url ?? note.uri"/>
 							<SkErrorList :errors="note.processErrors"/>
-							<MkNoteDetailed :key="note.id" v-model:note="note" :initialTab="initialTab" :class="$style.note" :expandAllCws="expandAllCws"/>
+							<DynamicNoteDetailed :key="note.id" v-model:note="note" :initialTab="initialTab" :class="$style.note" :expandAllCws="expandAllCws"/>
 						</div>
 						<div v-if="clips && clips.length > 0" class="_margin">
 							<div style="font-weight: bold; padding: 12px;">{{ i18n.ts.clip }}</div>
@@ -44,37 +43,33 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkLoading v-else/>
 			</Transition>
 		</div>
-	</MkSpacer>
-</MkStickyContainer>
+	</div>
+</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, computed, watch, ref } from 'vue';
+import { computed, watch, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { host } from '@@/js/config.js';
 import type { Paging } from '@/components/MkPagination.vue';
+import DynamicNoteDetailed from '@/components/DynamicNoteDetailed.vue';
 import MkNotes from '@/components/MkNotes.vue';
 import MkRemoteCaution from '@/components/MkRemoteCaution.vue';
 import MkButton from '@/components/MkButton.vue';
-import { misskeyApi } from '@/scripts/misskey-api.js';
-import { definePageMetadata } from '@/scripts/page-metadata.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
+import { definePage } from '@/page.js';
 import { i18n } from '@/i18n.js';
 import { dateString } from '@/filters/date.js';
 import MkClipPreview from '@/components/MkClipPreview.vue';
 import SkErrorList from '@/components/SkErrorList.vue';
-import { defaultStore } from '@/store.js';
-import { pleaseLogin } from '@/scripts/please-login.js';
+import { prefer } from '@/preferences.js';
+import { pleaseLogin } from '@/utility/please-login.js';
+import { getAppearNote } from '@/utility/get-appear-note.js';
 import { serverContext, assertServerContext } from '@/server-context.js';
-import { $i } from '@/account.js';
+import { $i } from '@/i.js';
 
 // contextは非ログイン状態の情報しかないためログイン時は利用できない
 const CTX_NOTE = !$i && assertServerContext(serverContext, 'note') ? serverContext.note : null;
-
-const MkNoteDetailed = defineAsyncComponent(() =>
-	(defaultStore.state.noteDesign === 'misskey')
-		? import('@/components/MkNoteDetailed.vue')
-		: import('@/components/SkNoteDetailed.vue'),
-);
 
 const props = defineProps<{
 	noteId: string;
@@ -140,10 +135,11 @@ function fetchNote() {
 		noteId: props.noteId,
 	}).then(res => {
 		note.value = res;
+		const appearNote = getAppearNote(res);
 		// 古いノートは被クリップ数をカウントしていないので、2023-10-01以前のものは強制的にnotes/clipsを叩く
-		if (note.value.clippedCount > 0 || new Date(note.value.createdAt).getTime() < new Date('2023-10-01').getTime()) {
+		if ((appearNote.clippedCount ?? 0) > 0 || new Date(appearNote.createdAt).getTime() < new Date('2023-10-01').getTime()) {
 			misskeyApi('notes/clips', {
-				noteId: note.value.id,
+				noteId: appearNote.id,
 			}).then((_clips) => {
 				clips.value = _clips;
 			});
@@ -177,14 +173,14 @@ const headerActions = computed(() => note.value ? [
 
 const headerTabs = computed(() => []);
 
-definePageMetadata(() => ({
+definePage(() => ({
 	title: i18n.ts.note,
 	...note.value ? {
 		subtitle: dateString(note.value.createdAt),
 		avatar: note.value.user,
 		path: `/notes/${note.value.id}`,
 		share: {
-			title: i18n.tsx.noteOf({ user: note.value.user.name }),
+			title: i18n.tsx.noteOf({ user: note.value.user.name ?? note.value.user.username }),
 			text: note.value.text,
 		},
 	} : {},

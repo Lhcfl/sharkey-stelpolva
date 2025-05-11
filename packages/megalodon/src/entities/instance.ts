@@ -10,7 +10,7 @@ namespace Entity {
     email: string
     version: string
     thumbnail: string | null
-    urls: URLs | null
+    urls: URLs
     stats: Stats
     languages: Array<string>
     registrations: boolean

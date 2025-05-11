@@ -141,7 +141,7 @@ const $meta: Provider = {
 						for (const key in body.after) {
 							(meta as any)[key] = (body.after as any)[key];
 						}
-						meta.proxyAccount = null; // joinなカラムは通常取ってこないので
+						meta.rootUser = null; // joinなカラムは通常取ってこないので
 						break;
 					}
 					default:
@@ -178,15 +178,13 @@ export class GlobalModule implements OnApplicationShutdown {
 		// Wait for all potential DB queries
 		await allSettled();
 		// And then disconnect from DB
-		await Promise.all([
-			this.db.destroy(),
-			this.redisClient.disconnect(),
-			this.redisForPub.disconnect(),
-			this.redisForSub.disconnect(),
-			this.redisForTimelines.disconnect(),
-			this.redisForReactions.disconnect(),
-			this.redisForRateLimit.disconnect(),
-		]);
+		await this.db.destroy();
+		this.redisClient.disconnect();
+		this.redisForPub.disconnect();
+		this.redisForSub.disconnect();
+		this.redisForTimelines.disconnect();
+		this.redisForReactions.disconnect();
+		this.redisForRateLimit.disconnect();
 	}
 
 	async onApplicationShutdown(signal: string): Promise<void> {

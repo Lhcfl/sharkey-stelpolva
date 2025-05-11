@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { pipeline } from 'node:stream/promises';
+import fs from 'node:fs';
 import * as tmp from 'tmp';
 
 export function createTemp(): Promise<[string, () => void]> {
@@ -26,4 +28,22 @@ export function createTempDir(): Promise<[string, () => void]> {
 			},
 		);
 	});
+}
+
+export async function saveToTempFile(stream: NodeJS.ReadableStream & { truncated?: boolean }): Promise<[string, () => void]> {
+	const [filepath, cleanup] = await createTemp();
+
+	try {
+		await pipeline(stream, fs.createWriteStream(filepath));
+	} catch (e) {
+		cleanup();
+		throw e;
+	}
+
+	if (stream.truncated) {
+		cleanup();
+		throw new Error('Read failed: input stream truncated');
+	}
+
+	return [filepath, cleanup];
 }

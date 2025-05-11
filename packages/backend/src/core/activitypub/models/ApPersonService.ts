@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import promiseLimit from 'promise-limit';
 import { DataSource } from 'typeorm';
 import { ModuleRef } from '@nestjs/core';
@@ -40,6 +40,10 @@ import { RoleService } from '@/core/RoleService.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import type { AccountMoveService } from '@/core/AccountMoveService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
+import { AppLockService } from '@/core/AppLockService.js';
+import { MemoryKVCache } from '@/misc/cache.js';
+import { HttpRequestService } from '@/core/HttpRequestService.js';
+import { verifyFieldLinks } from '@/misc/verify-field-link.js';
 import { getApId, getApType, isActor, isCollection, isCollectionOrOrderedCollection, isPropertyValue } from '../type.js';
 import { extractApHashtags } from './tag.js';
 import type { OnModuleInit } from '@nestjs/common';
@@ -57,7 +61,11 @@ const summaryLength = 2048;
 type Field = Record<'name' | 'value', string>;
 
 @Injectable()
-export class ApPersonService implements OnModuleInit {
+export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
+	// Moved from ApDbResolverService
+	private readonly publicKeyByKeyIdCache = new MemoryKVCache<MiUserPublickey | null>(1000 * 60 * 60 * 12); // 12h
+	private readonly publicKeyByUserIdCache = new MemoryKVCache<MiUserPublickey | null>(1000 * 60 * 60 * 12); // 12h
+
 	private utilityService: UtilityService;
 	private userEntityService: UserEntityService;
 	private driveFileEntityService: DriveFileEntityService;
@@ -107,6 +115,8 @@ export class ApPersonService implements OnModuleInit {
 
 		private roleService: RoleService,
 		private readonly apUtilityService: ApUtilityService,
+		private readonly httpRequestService: HttpRequestService,
+		private readonly appLockService: AppLockService,
 	) {
 	}
 
@@ -130,6 +140,10 @@ export class ApPersonService implements OnModuleInit {
 		this.apLoggerService = this.moduleRef.get('ApLoggerService');
 		this.accountMoveService = this.moduleRef.get('AccountMoveService');
 		this.logger = this.apLoggerService.logger;
+	}
+
+	onApplicationShutdown(): void {
+		this.dispose();
 	}
 
 	/**
@@ -311,15 +325,21 @@ export class ApPersonService implements OnModuleInit {
 
 		const host = this.utilityService.punyHost(uri);
 		if (host === this.utilityService.toPuny(this.config.host)) {
+			// TODO convert to unrecoverable error
 			throw new StatusError(`cannot resolve local user: ${uri}`, 400, 'cannot resolve local user');
 		}
+
+		return await this._createPerson(uri, resolver);
+	}
+
+	private async _createPerson(value: string | IObject, resolver?: Resolver): Promise<MiRemoteUser> {
+		const uri = getApId(value);
+		const host = this.utilityService.punyHost(uri);
 
 		// eslint-disable-next-line no-param-reassign
 		if (resolver == null) resolver = this.apResolverService.createResolver();
 
-		const object = await resolver.resolve(uri);
-		if (object.id == null) throw new UnrecoverableError(`null object.id in ${uri}`);
-
+		const object = await resolver.resolve(value);
 		const person = this.validateActor(object, uri);
 
 		this.logger.info(`Creating the Person: ${person.id}`);
@@ -353,8 +373,11 @@ export class ApPersonService implements OnModuleInit {
 
 		const url = this.apUtilityService.findBestObjectUrl(person);
 
+		const verifiedLinks = url ? await verifyFieldLinks(fields, url, this.httpRequestService) : [];
+
 		// Create user
 		let user: MiRemoteUser | null = null;
+		let publicKey: MiUserPublickey | null = null;
 
 		//#region カスタム絵文字取得
 		const emojis = await this.apNoteService.extractEmojis(person.tag ?? [], host)
@@ -426,6 +449,7 @@ export class ApPersonService implements OnModuleInit {
 					followedMessage: person._misskey_followedMessage != null ? truncate(person._misskey_followedMessage, 256) : null,
 					url,
 					fields,
+					verifiedLinks,
 					followingVisibility,
 					followersVisibility,
 					birthday: bday?.[0] ?? null,
@@ -435,7 +459,7 @@ export class ApPersonService implements OnModuleInit {
 				}));
 
 				if (person.publicKey) {
-					await transactionalEntityManager.save(new MiUserPublickey({
+					publicKey = await transactionalEntityManager.save(new MiUserPublickey({
 						userId: user.id,
 						keyId: person.publicKey.id,
 						keyPem: person.publicKey.publicKeyPem.trim(),
@@ -450,6 +474,7 @@ export class ApPersonService implements OnModuleInit {
 				if (u == null) throw new UnrecoverableError(`already registered a user with conflicting data: ${uri}`);
 
 				user = u as MiRemoteUser;
+				publicKey = await this.userPublickeysRepository.findOneBy({ userId: user.id });
 			} else {
 				this.logger.error(e instanceof Error ? e : new Error(e as string));
 				throw e;
@@ -460,6 +485,11 @@ export class ApPersonService implements OnModuleInit {
 
 		// Register to the cache
 		this.cacheService.uriPersonCache.set(user.uri, user);
+
+		// Register public key to the cache.
+		// Value may be null, which indicates that the user has no defined key. (optimization)
+		this.publicKeyByUserIdCache.set(user.id, publicKey);
+		if (publicKey) this.publicKeyByKeyIdCache.set(publicKey.keyId, publicKey);
 
 		// Register host
 		if (this.meta.enableStatsForFederatedInstances) {
@@ -547,7 +577,7 @@ export class ApPersonService implements OnModuleInit {
 				.catch(err => {
 					if (!(err instanceof StatusError) || err.isRetryable) {
 						this.logger.error('error occurred while fetching following/followers collection', { stack: err });
-						// Do not update the visibiility on transient errors.
+						// Do not update the visibility on transient errors.
 						return undefined;
 					}
 					return 'private';
@@ -563,12 +593,14 @@ export class ApPersonService implements OnModuleInit {
 
 		const url = this.apUtilityService.findBestObjectUrl(person);
 
+		const verifiedLinks = url ? await verifyFieldLinks(fields, url, this.httpRequestService) : [];
+
 		const updates = {
 			lastFetchedAt: new Date(),
 			inbox: person.inbox,
 			sharedInbox: person.sharedInbox ?? person.endpoints?.sharedInbox ?? null,
 			followersUri: person.followers ? getApId(person.followers) : undefined,
-			featured: person.featured,
+			featured: person.featured ? getApId(person.featured) : undefined,
 			emojis: emojiNames,
 			name: truncate(person.name, nameLength),
 			tags,
@@ -608,13 +640,32 @@ export class ApPersonService implements OnModuleInit {
 		if (moving) updates.movedAt = new Date();
 
 		// Update user
-		await this.usersRepository.update(exist.id, updates);
+		if (!(await this.usersRepository.update({ id: exist.id, isDeleted: false }, updates)).affected) {
+			return `skip: user ${exist.id} is deleted`;
+		}
 
 		if (person.publicKey) {
-			await this.userPublickeysRepository.update({ userId: exist.id }, {
+			const publicKey = new MiUserPublickey({
+				userId: exist.id,
 				keyId: person.publicKey.id,
 				keyPem: person.publicKey.publicKeyPem,
 			});
+
+			// Create or update key
+			await this.userPublickeysRepository.save(publicKey);
+
+			this.publicKeyByKeyIdCache.set(person.publicKey.id, publicKey);
+			this.publicKeyByUserIdCache.set(exist.id, publicKey);
+		} else {
+			const existingPublicKey = await this.userPublickeysRepository.findOneBy({ userId: exist.id });
+			if (existingPublicKey) {
+				// Delete key
+				await this.userPublickeysRepository.delete({ userId: exist.id });
+				this.publicKeyByKeyIdCache.delete(existingPublicKey.keyId);
+			}
+
+			// Null indicates that the user has no key. (optimization)
+			this.publicKeyByUserIdCache.set(exist.id, null);
 		}
 
 		let _description: string | null = null;
@@ -628,6 +679,7 @@ export class ApPersonService implements OnModuleInit {
 		await this.userProfilesRepository.update({ userId: exist.id }, {
 			url,
 			fields,
+			verifiedLinks,
 			description: _description,
 			followedMessage: person._misskey_followedMessage != null ? truncate(person._misskey_followedMessage, 256) : null,
 			followingVisibility,
@@ -683,16 +735,36 @@ export class ApPersonService implements OnModuleInit {
 	 * リモートサーバーからフェッチしてMisskeyに登録しそれを返します。
 	 */
 	@bindThis
-	public async resolvePerson(uri: string, resolver?: Resolver): Promise<MiLocalUser | MiRemoteUser> {
+	public async resolvePerson(value: string | IObject, resolver?: Resolver, sentFrom?: string): Promise<MiLocalUser | MiRemoteUser> {
+		const uri = getApId(value);
+
+		if (!this.utilityService.isFederationAllowedUri(uri)) {
+			// TODO convert to identifiable error
+			throw new StatusError(`blocked host: ${uri}`, 451, 'blocked host');
+		}
+
 		//#region このサーバーに既に登録されていたらそれを返す
 		const exist = await this.fetchPerson(uri);
 		if (exist) return exist;
 		//#endregion
 
-		// リモートサーバーからフェッチしてきて登録
-		// eslint-disable-next-line no-param-reassign
-		if (resolver == null) resolver = this.apResolverService.createResolver();
-		return await this.createPerson(uri, resolver);
+		// Bail if local URI doesn't exist
+		if (this.utilityService.isUriLocal(uri)) {
+			// TODO convert to identifiable error
+			throw new StatusError(`cannot resolve local person: ${uri}`, 400, 'cannot resolve local person');
+		}
+
+		const unlock = await this.appLockService.getApLock(uri);
+
+		try {
+			// Optimization: we can avoid re-fetching the value *if and only if* it matches the host authority that it was sent from.
+			// Instances can create any object within their host authority, but anything outside of that MUST be untrusted.
+			const haveSameAuthority = sentFrom && this.apUtilityService.haveSameAuthority(sentFrom, uri);
+			const createFrom = haveSameAuthority ? value : uri;
+			return await this._createPerson(createFrom, resolver);
+		} finally {
+			unlock();
+		}
 	}
 
 	@bindThis
@@ -714,7 +786,7 @@ export class ApPersonService implements OnModuleInit {
 
 	@bindThis
 	public async updateFeatured(userId: MiUser['id'], resolver?: Resolver): Promise<void> {
-		const user = await this.usersRepository.findOneByOrFail({ id: userId });
+		const user = await this.usersRepository.findOneByOrFail({ id: userId, isDeleted: false });
 		if (!this.userEntityService.isRemoteUser(user)) return;
 		if (!user.featured) return;
 
@@ -746,7 +818,7 @@ export class ApPersonService implements OnModuleInit {
 			.slice(0, maxPinned)
 			.map(item => limit(() => this.apNoteService.resolveNote(item, {
 				resolver: _resolver,
-				sentFrom: new URL(user.uri),
+				sentFrom: user.uri,
 			}))));
 
 		await this.db.transaction(async transactionalEntityManager => {
@@ -824,5 +896,39 @@ export class ApPersonService implements OnModuleInit {
 		}
 
 		return false;
+	}
+
+	@bindThis
+	public async findPublicKeyByUserId(userId: string): Promise<MiUserPublickey | null> {
+		const publicKey = this.publicKeyByUserIdCache.get(userId) ?? await this.userPublickeysRepository.findOneBy({ userId });
+
+		// This can technically keep a key cached "forever" if it's used enough, but that's ok.
+		// We can never have stale data because the publicKey caches are coherent. (cache updates whenever data changes)
+		if (publicKey) {
+			this.publicKeyByUserIdCache.set(publicKey.userId, publicKey);
+			this.publicKeyByKeyIdCache.set(publicKey.keyId, publicKey);
+		}
+
+		return publicKey;
+	}
+
+	@bindThis
+	public async findPublicKeyByKeyId(keyId: string): Promise<MiUserPublickey | null> {
+		const publicKey = this.publicKeyByKeyIdCache.get(keyId) ?? await this.userPublickeysRepository.findOneBy({ keyId });
+
+		// This can technically keep a key cached "forever" if it's used enough, but that's ok.
+		// We can never have stale data because the publicKey caches are coherent. (cache updates whenever data changes)
+		if (publicKey) {
+			this.publicKeyByUserIdCache.set(publicKey.userId, publicKey);
+			this.publicKeyByKeyIdCache.set(publicKey.keyId, publicKey);
+		}
+
+		return publicKey;
+	}
+
+	@bindThis
+	public dispose(): void {
+		this.publicKeyByUserIdCache.dispose();
+		this.publicKeyByKeyIdCache.dispose();
 	}
 }

@@ -1,6 +1,6 @@
 {
 	"name": "sharkey",
-	"version": "2025.3.0-dev-stelpolva",
+	"version": "2025.4.2-rc-stelpolva",
 	"codename": "shonk",
 	"repository": {
 		"type": "git",
@@ -27,9 +27,9 @@
 		"start": "pnpm check:connect && cd packages/backend && MK_WARNED_ABOUT_CONFIG=true node ./built/boot/entry.js",
 		"start:test": "cd packages/backend && cross-env NODE_ENV=test node ./built/boot/entry.js",
 		"init": "pnpm migrate",
-		"migrate": "cd packages/backend && pnpm migrate",
-		"revert": "cd packages/backend && pnpm revert",
-		"check:connect": "cd packages/backend && pnpm check:connect",
+		"migrate": "pnpm --filter backend migrate",
+		"revert": "pnpm --filter backend revert",
+		"check:connect": "pnpm --filter backend check:connect",
 		"migrateandstart": "pnpm migrate && pnpm start",
 		"watch": "pnpm dev",
 		"dev": "node scripts/dev.mjs",
@@ -40,7 +40,7 @@
 		"cy:open": "pnpm cypress open --browser --e2e --config-file=cypress.config.ts",
 		"cy:run": "pnpm cypress run",
 		"e2e": "pnpm start-server-and-test start:test http://localhost:61812 cy:run",
-		"e2e-dev-container": "cp ./.config/cypress-devcontainer.yml ./.config/test.yml && pnpm start-server-and-test start:test http://localhost:61812 cy:run",
+		"e2e-dev-container": "ncp ./.config/cypress-devcontainer.yml ./.config/test.yml && pnpm start-server-and-test start:test http://localhost:61812 cy:run",
 		"jest": "cd packages/backend && pnpm jest",
 		"jest-and-coverage": "cd packages/backend && pnpm jest-and-coverage",
 		"test": "pnpm -r test",
@@ -50,34 +50,35 @@
 		"cleanall": "pnpm clean-all"
 	},
 	"resolutions": {
-		"chokidar": "3.5.3",
+		"chokidar": "4.0.3",
 		"lodash": "4.17.21"
 	},
 	"dependencies": {
-		"cssnano": "6.1.2",
-		"execa": "8.0.1",
-		"fast-glob": "3.3.2",
-		"ignore-walk": "6.0.5",
+		"cssnano": "7.0.6",
+		"esbuild": "0.25.3",
+		"execa": "9.5.2",
+		"fast-glob": "3.3.3",
+		"glob": "11.0.2",
+		"ignore-walk": "7.0.0",
 		"js-yaml": "4.1.0",
-		"postcss": "8.4.49",
-		"tar": "6.2.1",
-		"terser": "5.36.0",
-		"typescript": "5.6.3",
-		"esbuild": "0.24.0",
-		"glob": "11.0.0"
+		"postcss": "8.5.3",
+		"tar": "7.4.3",
+		"terser": "5.39.0",
+		"typescript": "5.8.3"
 	},
 	"optionalDependencies": {
-		"cypress": "13.15.2"
+		"cypress": "14.3.2"
 	},
 	"devDependencies": {
-		"@misskey-dev/eslint-plugin": "2.0.3",
-		"@types/node": "22.9.0",
-		"@typescript-eslint/eslint-plugin": "7.17.0",
-		"@typescript-eslint/parser": "7.17.0",
+		"@misskey-dev/eslint-plugin": "2.1.0",
+		"@types/node": "22.15.2",
+		"@typescript-eslint/eslint-plugin": "8.31.0",
+		"@typescript-eslint/parser": "8.31.0",
 		"cross-env": "7.0.3",
-		"eslint": "9.14.0",
-		"globals": "15.12.0",
+		"eslint": "9.25.1",
+		"globals": "16.0.0",
 		"ncp": "2.0.0",
-		"start-server-and-test": "2.0.8"
+		"pnpm": "10.10.0",
+		"start-server-and-test": "2.0.11"
 	}
 }

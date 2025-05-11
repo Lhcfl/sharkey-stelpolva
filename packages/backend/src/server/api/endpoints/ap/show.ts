@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiLocalUser, MiUser } from '@/models/User.js';
-import { isActor, isPost, getApId, getNullableApId } from '@/core/activitypub/type.js';
+import { isActor, isPost, getApId } from '@/core/activitypub/type.js';
 import type { SchemaType } from '@/misc/json-schema.js';
 import { ApResolverService } from '@/core/activitypub/ApResolverService.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
@@ -18,7 +18,7 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 import { ApRequestService } from '@/core/activitypub/ApRequestService.js';
-import { InstanceActorService } from '@/core/InstanceActorService.js';
+import { SystemAccountService } from '@/core/SystemAccountService.js';
 import { ApiError } from '../../error.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 
@@ -30,7 +30,8 @@ export const meta = {
 
 	// Up to 30 calls, then 1 per 1/2 second
 	limit: {
-		max: 30,
+		type: 'bucket',
+		size: 30,
 		dripRate: 500,
 	},
 
@@ -54,11 +55,6 @@ export const meta = {
 			message: 'Response from remote server is invalid.',
 			code: 'RESPONSE_INVALID',
 			id: '70193c39-54f3-4813-82f0-70a680f7495b',
-		},
-		responseInvalidIdHostNotMatch: {
-			message: 'Requested URI and response URI host does not match.',
-			code: 'RESPONSE_INVALID_ID_HOST_NOT_MATCH',
-			id: 'a2c9c61a-cb72-43ab-a964-3ca5fddb410a',
 		},
 		noSuchObject: {
 			message: 'No such object.',
@@ -123,7 +119,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private apPersonService: ApPersonService,
 		private apNoteService: ApNoteService,
 		private readonly apRequestService: ApRequestService,
-		private readonly instanceActorService: InstanceActorService,
+		private readonly systemAccountService: SystemAccountService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const object = await this.fetchAny(ps.uri, me);
@@ -144,7 +140,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			throw new ApiError(meta.errors.federationNotAllowed);
 		}
 
-		let local = await this.mergePack(me, ...await Promise.all([
+		const local = await this.mergePack(me, ...await Promise.all([
 			this.apDbResolverService.getUserFromApId(uri),
 			this.apDbResolverService.getNoteFromApId(uri),
 		]));
@@ -153,7 +149,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		// No local object found with that uri.
 		// Before we fetch, resolve the URI in case it has a cross-origin redirect or anything like that.
 		// Resolver.resolve() uses strict verification, which is overly paranoid for a user-provided lookup.
-		uri = await this.resolveCanonicalUri(uri); // eslint-disable-line no-param-reassign
+		uri = await this.resolveCanonicalUri(uri);
 		if (!this.utilityService.isFederationAllowedUri(uri)) {
 			throw new ApiError(meta.errors.federationNotAllowed);
 		}
@@ -177,10 +173,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					case '09d79f9e-64f1-4316-9cfa-e75c4d091574':
 						throw new ApiError(meta.errors.federationNotAllowed);
 					case '72180409-793c-4973-868e-5a118eb5519b':
-					case 'ad2dc287-75c1-44c4-839d-3d2e64576675':
 						throw new ApiError(meta.errors.responseInvalid);
-					case 'fd93c2fa-69a8-440f-880b-bf178e0ec877':
-						throw new ApiError(meta.errors.responseInvalidIdHostNotMatch);
 
 					// resolveLocal
 					case '02b40cd0-fa92-4b0c-acc9-fb2ada952ab8':
@@ -196,25 +189,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			throw new ApiError(meta.errors.requestFailed);
 		});
 
-		if (object.id == null) {
-			throw new ApiError(meta.errors.responseInvalid);
-		}
-
-		// /@user のような正規id以外で取得できるURIが指定されていた場合、ここで初めて正規URIが確定する
-		// これはDBに存在する可能性があるため再度DB検索
-		if (uri !== object.id) {
-			local = await this.mergePack(me, ...await Promise.all([
-				this.apDbResolverService.getUserFromApId(object.id),
-				this.apDbResolverService.getNoteFromApId(object.id),
-			]));
-			if (local != null) return local;
-		}
-
-		// 同一ユーザーの情報を再度処理するので、使用済みのresolverを再利用してはいけない
+		// Object is already validated to have a valid id (URI).
+		// We can pass it through with the same resolver and sentFrom to avoid a duplicate fetch.
+		// The resolve* methods automatically check for locally cached copies.
 		return await this.mergePack(
 			me,
-			isActor(object) ? await this.apPersonService.createPerson(getApId(object)) : null,
-			isPost(object) ? await this.apNoteService.createNote(getApId(object), undefined, undefined, true) : null,
+			isActor(object) ? await this.apPersonService.resolvePerson(object, resolver, uri) : null,
+			isPost(object) ? await this.apNoteService.resolveNote(object, { resolver, sentFrom: uri }) : null,
 		);
 	}
 
@@ -245,8 +226,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	 * Resolves an arbitrary URI to its canonical, post-redirect form.
 	 */
 	private async resolveCanonicalUri(uri: string): Promise<string> {
-		const user = await this.instanceActorService.getInstanceActor();
+		const user = await this.systemAccountService.getInstanceActor();
 		const res = await this.apRequestService.signedGet(uri, user, true);
-		return getNullableApId(res) ?? uri;
+		return getApId(res);
 	}
 }

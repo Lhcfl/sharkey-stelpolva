@@ -17,8 +17,25 @@ export const meta = {
 	requireCredential: false,
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
+		type: 'array',
+		items: {
+			type: 'object',
+			optional: false, nullable: false,
+			properties: {
+				oldDate: {
+					type: 'string',
+					optional: false, nullable: false,
+				},
+				updatedAt: {
+					type: 'string',
+					optional: false, nullable: false,
+				},
+				text: {
+					type: 'string',
+					optional: false, nullable: true,
+				},
+			},
+		},
 	},
 
 	errors: {
@@ -60,13 +77,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = await this.notesRepository.createQueryBuilder('note')
+			const query = this.notesRepository.createQueryBuilder('note')
 				.where('note.id = :noteId', { noteId: ps.noteId })
 				.innerJoinAndSelect('note.user', 'user');
 
 			this.queryService.generateVisibilityQuery(query, me);
 			if (me) {
-				this.queryService.generateBlockedUserQuery(query, me);
+				this.queryService.generateBlockedUserQueryForNotes(query, me);
 			}
 
 			const note = await query.getOne();
@@ -75,6 +92,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchNote);
 			}
 
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			if (note.user!.requireSigninToViewContents && me == null) {
 				throw new ApiError(meta.errors.signinRequired);
 			}
@@ -84,17 +102,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw err;
 			});
 
-			let editArray = [];
+			let editArray: { oldDate: string, updatedAt: string, text: string | null }[] = [];
 
 			for (const edit of edits) {
 				editArray.push({
-					oldDate: edit.oldDate as Date | null ?? null,
-					updatedAt: edit.updatedAt,
+					oldDate: (edit.oldDate ?? edit.updatedAt).toISOString(),
+					updatedAt: edit.updatedAt.toISOString(),
 					text: edit.oldText ?? edit.newText ?? null,
 				});
 			}
 
-			editArray = editArray.sort((a, b) => { return new Date(b.oldDate ?? b.updatedAt).getTime() - new Date(a.oldDate ?? a.updatedAt).getTime(); });
+			editArray = editArray.sort((a, b) => { return new Date(b.oldDate).getTime() - new Date(a.oldDate).getTime(); });
 
 			return editArray;
 		});

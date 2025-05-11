@@ -5,6 +5,8 @@
 
 import type { Response } from 'node-fetch';
 
+// TODO throw identifiable or unrecoverable errors
+
 export function validateContentTypeSetAsActivityPub(response: Response): void {
 	const contentType = (response.headers.get('content-type') ?? '').toLowerCase();
 

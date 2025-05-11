@@ -2,15 +2,15 @@
  * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-
-import { IdService } from '@/core/IdService.js';
-
 process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
+import { generateKeyPair } from 'crypto';
 import { Test } from '@nestjs/testing';
 import { jest } from '@jest/globals';
 
+import type { Config } from '@/config.js';
+import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import { ApImageService } from '@/core/activitypub/models/ApImageService.js';
 import { ApNoteService } from '@/core/activitypub/models/ApNoteService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
@@ -22,13 +22,15 @@ import { CoreModule } from '@/core/CoreModule.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type { IActor, IApDocument, ICollection, IObject, IPost } from '@/core/activitypub/type.js';
-import { MiMeta, MiNote, MiUser, UserProfilesRepository, UserPublickeysRepository } from '@/models/_.js';
+import { MiMeta, MiNote, MiUser, MiUserKeypair, UserProfilesRepository, UserPublickeysRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { DownloadService } from '@/core/DownloadService.js';
-import type { MiRemoteUser } from '@/models/User.js';
 import { genAidx } from '@/misc/id/aidx.js';
+import { IdService } from '@/core/IdService.js';
 import { MockResolver } from '../misc/mock-resolver.js';
+import { UserKeypairService } from '@/core/UserKeypairService.js';
+import { MemoryKVCache, RedisKVCache } from '@/misc/cache.js';
 
 const host = 'https://host1.test';
 
@@ -97,6 +99,8 @@ describe('ActivityPub', () => {
 	let resolver: MockResolver;
 	let idService: IdService;
 	let userPublickeysRepository: UserPublickeysRepository;
+	let userKeypairService: UserKeypairService;
+	let config: Config;
 
 	const metaInitial = {
 		cacheRemoteFiles: true,
@@ -146,6 +150,8 @@ describe('ActivityPub', () => {
 		resolver = new MockResolver(await app.resolve<LoggerService>(LoggerService));
 		idService = app.get<IdService>(IdService);
 		userPublickeysRepository = app.get<UserPublickeysRepository>(DI.userPublickeysRepository);
+		userKeypairService = app.get<UserKeypairService>(UserKeypairService);
+		config = app.get<Config>(DI.config);
 
 		// Prevent ApPersonService from fetching instance, as it causes Jest import-after-test error
 		const federatedInstanceService = app.get<FederatedInstanceService>(FederatedInstanceService);
@@ -486,15 +492,57 @@ describe('ActivityPub', () => {
 
 	describe(ApRendererService, () => {
 		let note: MiNote;
-		let author: MiUser;
+		let author: MiLocalUser;
+		let keypair: MiUserKeypair;
 
-		beforeEach(() => {
+		beforeEach(async () => {
 			author = new MiUser({
 				id: idService.gen(),
+				host: null,
+				uri: null,
+				username: 'testAuthor',
+				usernameLower: 'testauthor',
+				name: 'Test Author',
+				isCat: true,
+				requireSigninToViewContents: true,
+				makeNotesFollowersOnlyBefore: new Date(2025, 2, 20).valueOf(),
+				makeNotesHiddenBefore: new Date(2025, 2, 21).valueOf(),
+				isLocked: true,
+				isExplorable: true,
+				hideOnlineStatus: true,
+				noindex: true,
+				enableRss: true,
+
+			}) as MiLocalUser;
+
+			const [publicKey, privateKey] = await new Promise<[string, string]>((res, rej) =>
+				generateKeyPair('rsa', {
+					modulusLength: 2048,
+					publicKeyEncoding: {
+						type: 'spki',
+						format: 'pem',
+					},
+					privateKeyEncoding: {
+						type: 'pkcs8',
+						format: 'pem',
+						cipher: undefined,
+						passphrase: undefined,
+					},
+				}, (err, publicKey, privateKey) =>
+					err ? rej(err) : res([publicKey, privateKey]),
+				));
+			keypair = new MiUserKeypair({
+				userId: author.id,
+				user: author,
+				publicKey,
+				privateKey,
 			});
+			((userKeypairService as unknown as { cache: RedisKVCache<MiUserKeypair> }).cache as unknown as { memoryCache: MemoryKVCache<MiUserKeypair> }).memoryCache.set(author.id, keypair);
+
 			note = new MiNote({
 				id: idService.gen(),
 				userId: author.id,
+				user: author,
 				visibility: 'public',
 				localOnly: false,
 				text: 'Note text',
@@ -567,6 +615,40 @@ describe('ActivityPub', () => {
 					expect(result.summary).toBe('original and mandatory');
 				});
 			});
+
+			describe('replies', () => {
+				it('should be included when visibility=public', async () => {
+					note.visibility = 'public';
+
+					const rendered = await rendererService.renderNote(note, author, false);
+
+					expect(rendered.replies).toBeDefined();
+				});
+
+				it('should be included when visibility=home', async () => {
+					note.visibility = 'home';
+
+					const rendered = await rendererService.renderNote(note, author, false);
+
+					expect(rendered.replies).toBeDefined();
+				});
+
+				it('should be excluded when visibility=followers', async () => {
+					note.visibility = 'followers';
+
+					const rendered = await rendererService.renderNote(note, author, false);
+
+					expect(rendered.replies).not.toBeDefined();
+				});
+
+				it('should be excluded when visibility=specified', async () => {
+					note.visibility = 'specified';
+
+					const rendered = await rendererService.renderNote(note, author, false);
+
+					expect(rendered.replies).not.toBeDefined();
+				});
+			});
 		});
 
 		describe('renderUpnote', () => {
@@ -618,6 +700,139 @@ describe('ActivityPub', () => {
 					const result = await rendererService.renderUpNote(note, author, false);
 
 					expect(result.summary).toBe('original and mandatory');
+				});
+			});
+		});
+
+		describe('renderPersonRedacted', () => {
+			it('should include minimal properties', async () => {
+				const result = await rendererService.renderPersonRedacted(author);
+
+				expect(result.type).toBe('Person');
+				expect(result.id).toBeTruthy();
+				expect(result.inbox).toBeTruthy();
+				expect(result.sharedInbox).toBeTruthy();
+				expect(result.endpoints.sharedInbox).toBeTruthy();
+				expect(result.url).toBeTruthy();
+				expect(result.preferredUsername).toBe(author.username);
+				expect(result.publicKey.owner).toBe(result.id);
+				expect(result._misskey_requireSigninToViewContents).toBe(author.requireSigninToViewContents);
+				expect(result._misskey_makeNotesFollowersOnlyBefore).toBe(author.makeNotesFollowersOnlyBefore);
+				expect(result._misskey_makeNotesHiddenBefore).toBe(author.makeNotesHiddenBefore);
+				expect(result.discoverable).toBe(author.isExplorable);
+				expect(result.hideOnlineStatus).toBe(author.hideOnlineStatus);
+				expect(result.noindex).toBe(author.noindex);
+				expect(result.indexable).toBe(!author.noindex);
+				expect(result.enableRss).toBe(author.enableRss);
+			});
+
+			it('should not include sensitive properties', async () => {
+				const result = await rendererService.renderPersonRedacted(author) as IActor;
+
+				expect(result.name).toBeUndefined();
+			});
+		});
+
+		describe('renderRepliesCollection', () => {
+			it('should include type', async () => {
+				const collection = await rendererService.renderRepliesCollection(note.id);
+
+				expect(collection.type).toBe('OrderedCollection');
+			});
+
+			it('should include id', async () => {
+				const collection = await rendererService.renderRepliesCollection(note.id);
+
+				expect(collection.id).toBe(`${config.url}/notes/${note.id}/replies`);
+			});
+
+			it('should include first', async () => {
+				const collection = await rendererService.renderRepliesCollection(note.id);
+
+				expect(collection.first).toBe(`${config.url}/notes/${note.id}/replies?page=true`);
+			});
+
+			it('should include totalItems', async () => {
+				const collection = await rendererService.renderRepliesCollection(note.id);
+
+				expect(collection.totalItems).toBe(0);
+			});
+		});
+
+		describe('renderRepliesCollectionPage', () => {
+			describe('with untilId', () => {
+				it('should include type', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, 'abc123');
+
+					expect(collection.type).toBe('OrderedCollectionPage');
+				});
+
+				it('should include id', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, 'abc123');
+
+					expect(collection.id).toBe(`${config.url}/notes/${note.id}/replies?page=true&until_id=abc123`);
+				});
+
+				it('should include partOf', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, 'abc123');
+
+					expect(collection.partOf).toBe(`${config.url}/notes/${note.id}/replies`);
+				});
+
+				it('should include first', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, 'abc123');
+
+					expect(collection.first).toBe(`${config.url}/notes/${note.id}/replies?page=true`);
+				});
+
+				it('should include totalItems', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, 'abc123');
+
+					expect(collection.totalItems).toBe(0);
+				});
+
+				it('should include orderedItems', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, 'abc123');
+
+					expect(collection.orderedItems).toBeDefined();
+				});
+			});
+
+			describe('without untilId', () => {
+				it('should include type', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, undefined);
+
+					expect(collection.type).toBe('OrderedCollectionPage');
+				});
+
+				it('should include id', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, undefined);
+
+					expect(collection.id).toBe(`${config.url}/notes/${note.id}/replies?page=true`);
+				});
+
+				it('should include partOf', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, undefined);
+
+					expect(collection.partOf).toBe(`${config.url}/notes/${note.id}/replies`);
+				});
+
+				it('should include first', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, undefined);
+
+					expect(collection.first).toBe(`${config.url}/notes/${note.id}/replies?page=true`);
+				});
+
+				it('should include totalItems', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, undefined);
+
+					expect(collection.totalItems).toBe(0);
+				});
+
+				it('should include orderedItems', async () => {
+					const collection = await rendererService.renderRepliesCollectionPage(note.id, undefined);
+
+					expect(collection.orderedItems).toBeDefined();
 				});
 			});
 		});

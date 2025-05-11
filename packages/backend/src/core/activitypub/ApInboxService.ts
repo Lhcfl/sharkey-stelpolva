@@ -32,7 +32,11 @@ import { AbuseReportService } from '@/core/AbuseReportService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { fromTuple } from '@/misc/from-tuple.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { getApHrefNullable, getApId, getApIds, getApType, getNullableApId, isAccept, isActor, isAdd, isAnnounce, isApObject, isBlock, isCollection, isCollectionOrOrderedCollection, isCreate, isDelete, isFlag, isFollow, isLike, isDislike, isMove, isPost, isReject, isRemove, isTombstone, isUndo, isUpdate, validActor, validPost } from './type.js';
+import InstanceChart from '@/core/chart/charts/instance.js';
+import FederationChart from '@/core/chart/charts/federation.js';
+import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
+import { UpdateInstanceQueue } from '@/core/UpdateInstanceQueue.js';
+import { getApHrefNullable, getApId, getApIds, getApType, getNullableApId, isAccept, isActor, isAdd, isAnnounce, isApObject, isBlock, isCollection, isCollectionOrOrderedCollection, isCreate, isDelete, isFlag, isFollow, isLike, isDislike, isMove, isPost, isReject, isRemove, isTombstone, isUndo, isUpdate, validActor, validPost, isActivity, IObjectWithId } from './type.js';
 import { ApNoteService } from './models/ApNoteService.js';
 import { ApLoggerService } from './ApLoggerService.js';
 import { ApDbResolverService } from './ApDbResolverService.js';
@@ -41,7 +45,7 @@ import { ApAudienceService } from './ApAudienceService.js';
 import { ApPersonService } from './models/ApPersonService.js';
 import { ApQuestionService } from './models/ApQuestionService.js';
 import type { Resolver } from './ApResolverService.js';
-import type { IAccept, IAdd, IAnnounce, IBlock, ICreate, IDelete, IFlag, IFollow, ILike, IDislike, IObject, IReject, IRemove, IUndo, IUpdate, IMove, IPost } from './type.js';
+import type { IAccept, IAdd, IAnnounce, IBlock, ICreate, IDelete, IFlag, IFollow, ILike, IDislike, IObject, IReject, IRemove, IUndo, IUpdate, IMove, IPost, IActivity } from './type.js';
 
 @Injectable()
 export class ApInboxService {
@@ -88,7 +92,11 @@ export class ApInboxService {
 		private apQuestionService: ApQuestionService,
 		private queueService: QueueService,
 		private globalEventService: GlobalEventService,
-		private federatedInstanceService: FederatedInstanceService,
+		private readonly federatedInstanceService: FederatedInstanceService,
+		private readonly fetchInstanceMetadataService: FetchInstanceMetadataService,
+		private readonly instanceChart: InstanceChart,
+		private readonly federationChart: FederationChart,
+		private readonly updateInstanceQueue: UpdateInstanceQueue,
 	) {
 		this.logger = this.apLoggerService.logger;
 	}
@@ -310,18 +318,19 @@ export class ApInboxService {
 		const targetUri = getApId(activityObject);
 		if (targetUri.startsWith('bear:')) return 'skip: bearcaps url not supported.';
 
-		const target = await resolver.resolve(activityObject).catch(e => {
+		const target = await resolver.secureResolve(activityObject, uri).catch(e => {
 			this.logger.error(`Resolution failed: ${e}`);
 			throw e;
 		});
 
 		if (isPost(target)) return await this.announceNote(actor, activity, target);
+		if (isActivity(target)) return await this.announceActivity(activity, target, resolver);
 
 		return `skip: unknown object type ${getApType(target)}`;
 	}
 
 	@bindThis
-	private async announceNote(actor: MiRemoteUser, activity: IAnnounce, target: IPost, resolver?: Resolver): Promise<string | void> {
+	private async announceNote(actor: MiRemoteUser, activity: IAnnounce, target: IPost & IObjectWithId, resolver?: Resolver): Promise<string | void> {
 		const uri = getApId(activity);
 
 		if (actor.isSuspended) {
@@ -343,7 +352,9 @@ export class ApInboxService {
 			// Announce対象をresolve
 			let renote;
 			try {
-				renote = await this.apNoteService.resolveNote(target, { resolver });
+				// The target ID is verified by secureResolve, so we know it shares host authority with the actor who sent it.
+				// This means we can pass that ID to resolveNote and avoid an extra fetch, which will fail if the note is private.
+				renote = await this.apNoteService.resolveNote(target, { resolver, sentFrom: getApId(target) });
 				if (renote == null) return 'announce target is null';
 			} catch (err) {
 				// 対象が4xxならスキップ
@@ -383,6 +394,63 @@ export class ApInboxService {
 		}
 	}
 
+	private async announceActivity(announce: IAnnounce, activity: IActivity & IObjectWithId, resolver: Resolver): Promise<string | void> {
+		// Since this is a new activity, we need to get a new actor.
+		const actorId = getApId(activity.actor);
+		const actor = await this.apPersonService.resolvePerson(actorId, resolver);
+
+		// Ignore announce of our own activities
+		// 1. No URI/host on an MiUser == local user
+		// 2. Local URI on activity == local activity
+		if (!actor.uri || !actor.host || this.utilityService.isUriLocal(activity.id)) {
+			throw new Bull.UnrecoverableError(`Cannot announce a local activity: ${activity.id} (from ${announce.id})`);
+		}
+
+		// Make sure that actor matches activity host.
+		// Activity host is already verified by resolver when fetching the activity, so that is the source of truth.
+		const actorHost = this.utilityService.punyHostPSLDomain(actor.uri);
+		const activityHost = this.utilityService.punyHostPSLDomain(activity.id);
+		if (actorHost !== activityHost) {
+			throw new Bull.UnrecoverableError(`Actor host ${actorHost} does not activity host ${activityHost} in activity ${activity.id} (from ${announce.id})`);
+		}
+
+		// Update stats (adapted from InboxProcessorService)
+		this.federationChart.inbox(actor.host).then();
+		process.nextTick(async () => {
+			const i = await (this.meta.enableStatsForFederatedInstances
+				? this.federatedInstanceService.fetchOrRegister(actor.host)
+				: this.federatedInstanceService.fetch(actor.host));
+
+			if (i == null) return;
+
+			this.updateInstanceQueue.enqueue(i.id, {
+				latestRequestReceivedAt: new Date(),
+				shouldUnsuspend: i.suspensionState === 'autoSuspendedForNotResponding',
+			});
+
+			if (this.meta.enableChartsForFederatedInstances) {
+				this.instanceChart.requestReceived(i.host).then();
+			}
+
+			this.fetchInstanceMetadataService.fetchInstanceMetadata(i).then();
+		});
+
+		// Process it!
+		return await this.performOneActivity(actor, activity, resolver)
+			.finally(() => {
+				// Update user (adapted from performActivity)
+				if (actor.lastFetchedAt == null || Date.now() - actor.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24) {
+					setImmediate(() => {
+						// Don't re-use the resolver, or it may throw recursion errors.
+						// Instead, create a new resolver with an appropriately-reduced recursion limit.
+						this.apPersonService.updatePerson(actor.uri, this.apResolverService.createResolver({
+							recursionLimit: resolver.getRecursionLimit() - resolver.getHistory().length,
+						}));
+					});
+				}
+			});
+	}
+
 	@bindThis
 	private async block(actor: MiRemoteUser, activity: IBlock): Promise<string> {
 		// ※ activity.objectにブロック対象があり、それは存在するローカルユーザーのはず
@@ -402,7 +470,7 @@ export class ApInboxService {
 	}
 
 	@bindThis
-	private async create(actor: MiRemoteUser, activity: ICreate | IUpdate, resolver?: Resolver): Promise<string | void> {
+	private async create(actor: MiRemoteUser, activity: ICreate | IUpdate, resolver?: Resolver, silent = false): Promise<string | void> {
 		const uri = getApId(activity);
 
 		this.logger.info(`Create: ${uri}`);
@@ -437,7 +505,7 @@ export class ApInboxService {
 		});
 
 		if (isPost(object)) {
-			await this.createNote(resolver, actor, object, false);
+			await this.createNote(resolver, actor, object, silent);
 		} else {
 			return `skip: Unsupported type for Create: ${getApType(object)} ${getNullableApId(object)}`;
 		}
@@ -530,18 +598,11 @@ export class ApInboxService {
 			return `skip: delete actor ${actor.uri} !== ${uri}`;
 		}
 
-		const user = await this.usersRepository.findOneBy({ id: actor.id });
-		if (user == null) {
-			return 'skip: actor not found';
-		} else if (user.isDeleted) {
-			return 'skip: already deleted';
+		if (!(await this.usersRepository.update({ id: actor.id, isDeleted: false }, { isDeleted: true })).affected) {
+			return 'skip: already deleted or actor not found';
 		}
 
 		const job = await this.queueService.createDeleteAccountJob(actor);
-
-		await this.usersRepository.update(actor.id, {
-			isDeleted: true,
-		});
 
 		this.globalEventService.publishInternalEvent('remoteUserUpdated', { id: actor.id });
 
@@ -828,7 +889,7 @@ export class ApInboxService {
 		} else if (getApType(object) === 'Question') {
 			// If we get an Update(Question) for a note that doesn't exist, then create it instead
 			if (!await this.apNoteService.hasNote(object)) {
-				return await this.create(actor, activity, resolver);
+				return await this.create(actor, activity, resolver, true);
 			}
 
 			await this.apQuestionService.updateQuestion(object, actor, resolver);
@@ -836,7 +897,7 @@ export class ApInboxService {
 		} else if (isPost(object)) {
 			// If we get an Update(Note) for a note that doesn't exist, then create it instead
 			if (!await this.apNoteService.hasNote(object)) {
-				return await this.create(actor, activity, resolver);
+				return await this.create(actor, activity, resolver, true);
 			}
 
 			await this.apNoteService.updateNote(object, actor, resolver);

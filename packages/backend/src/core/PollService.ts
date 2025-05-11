@@ -90,10 +90,7 @@ export class PollService {
 	}
 
 	@bindThis
-	public async deliverQuestionUpdate(noteId: MiNote['id']) {
-		const note = await this.notesRepository.findOneBy({ id: noteId });
-		if (note == null) throw new Error('note not found');
-
+	public async deliverQuestionUpdate(note: MiNote) {
 		if (note.localOnly) return;
 
 		const user = await this.usersRepository.findOneBy({ id: note.userId });
@@ -101,8 +98,8 @@ export class PollService {
 
 		if (this.userEntityService.isLocalUser(user)) {
 			const content = this.apRendererService.addContext(this.apRendererService.renderUpdate(await this.apRendererService.renderNote(note, user, false), user));
-			this.apDeliverManagerService.deliverToFollowers(user, content);
-			this.relayService.deliverToRelays(user, content);
+			await this.apDeliverManagerService.deliverToFollowers(user, content);
+			await this.relayService.deliverToRelays(user, content);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 /// <reference path="user.ts" />
+/// <reference path="note.ts" />
 
 namespace MisskeyEntity {
   export type Reaction = {
@@ -7,4 +8,8 @@ namespace MisskeyEntity {
     user: User
     type: string
   }
+
+	export type NoteReaction = Reaction & {
+		note: Note
+	}
 }

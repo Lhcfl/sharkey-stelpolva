@@ -41,9 +41,9 @@ import * as Misskey from 'misskey-js';
 import { i18n } from '@/i18n.js';
 import { notePage } from '@/filters/note.js';
 import { userPage } from '@/filters/user.js';
-import { getNoteVersionsMenu } from '@/scripts/get-note-versions-menu.js';
+import { getNoteVersionsMenu } from '@/utility/get-note-versions-menu.js';
 import { popupMenu } from '@/os.js';
-import { defaultStore } from '@/store.js';
+import { DI } from '@/di.js';
 
 const props = defineProps<{
 	note: Misskey.entities.Note & {
@@ -54,14 +54,12 @@ const props = defineProps<{
 
 const menuVersionsButton = shallowRef<HTMLElement>();
 
-async function menuVersions(viaKeyboard = false): Promise<void> {
-	const { menu, cleanup } = await getNoteVersionsMenu({ note: props.note, menuVersionsButton });
-	popupMenu(menu, menuVersionsButton.value, {
-		viaKeyboard,
-	}).then(focus).finally(cleanup);
+async function menuVersions(): Promise<void> {
+	const { menu, cleanup } = await getNoteVersionsMenu({ note: props.note });
+	popupMenu(menu, menuVersionsButton.value).then(focus).finally(cleanup);
 }
 
-const mock = inject<boolean>('mock', false);
+const mock = inject(DI.mock, false);
 </script>
 
 <style lang="scss" module>

@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<img :class="$style.icon" :src="avatarUrl" alt="">
 	<span>
 		<span>@{{ username }}</span>
-		<span v-if="(host != localHost) || defaultStore.state.showFullAcct" :class="$style.host">@{{ toUnicode(host) }}</span>
+		<span v-if="(host != localHost)" :class="$style.host">@{{ toUnicode(host) }}</span>
 	</span>
 </component>
 </template>
@@ -17,10 +17,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { toUnicode } from 'punycode.js';
 import { computed } from 'vue';
 import { host as localHost } from '@@/js/config.js';
-import { $i } from '@/account.js';
-import { defaultStore } from '@/store.js';
-import { getStaticImageUrl } from '@/scripts/media-proxy.js';
-import MkA, { MkABehavior } from '@/components/global/MkA.vue';
+import type { MkABehavior } from '@/components/global/MkA.vue';
+import { $i } from '@/i.js';
+import { getStaticImageUrl } from '@/utility/media-proxy.js';
+import { prefer } from '@/preferences.js';
+import MkA from '@/components/global/MkA.vue';
 
 const props = defineProps<{
 	username: string;
@@ -37,7 +38,7 @@ const isMe = $i && (
 	`@${props.username}@${toUnicode(props.host)}` === `@${$i.username}@${toUnicode(localHost)}`.toLowerCase()
 );
 
-const avatarUrl = computed(() => defaultStore.state.disableShowingAnimatedImages || defaultStore.state.dataSaver.avatar
+const avatarUrl = computed(() => prefer.s.disableShowingAnimatedImages || prefer.s.dataSaver.avatar
 	? getStaticImageUrl(`/avatar/@${props.username}@${props.host}`)
 	: `/avatar/@${props.username}@${props.host}`,
 );

@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: marie and other Sharkey contributors
+SPDX-FileCopyrightText: puniko and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
 -->
 
@@ -44,9 +44,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { ref, nextTick, watch, onDeactivated, onMounted } from 'vue';
 import * as Misskey from 'misskey-js';
 import { i18n } from '@/i18n.js';
-import { defaultStore } from '@/store.js';
-import { ChiptuneJsPlayer, ChiptuneJsConfig } from '@/scripts/chiptune2.js';
-import { isTouchUsing } from '@/scripts/touch.js';
+import { ChiptuneJsPlayer, ChiptuneJsConfig } from '@/utility/chiptune2.js';
+import { isTouchUsing } from '@/utility/touch.js';
+import { prefer } from '@/preferences.js';
 
 const colours = {
 	background: '#000000',
@@ -72,7 +72,7 @@ const props = defineProps<{
 
 const isSensitive = props.module.isSensitive;
 const url = props.module.url;
-let hide = ref((defaultStore.state.nsfw === 'force') ? true : isSensitive && (defaultStore.state.nsfw !== 'ignore'));
+let hide = ref((prefer.s.nsfw === 'force') ? true : isSensitive && (prefer.s.nsfw !== 'ignore'));
 let patternHide = ref(false);
 let playing = ref(false);
 let displayCanvas = ref<HTMLCanvasElement>();

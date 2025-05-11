@@ -4,9 +4,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkStickyContainer>
-	<template #header><MkPageHeader :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :contentMax="500">
+<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+	<div class="_spacer" style="--MI_SPACER-w: 500px;">
 		<div v-if="state == 'fetch-session-error'">
 			<p>{{ i18n.ts.somethingHappened }}</p>
 		</div>
@@ -37,8 +36,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<p :class="$style.loginMessage">{{ i18n.ts._auth.pleaseLogin }}</p>
 			<MkSignin @login="onLogin"/>
 		</div>
-	</MkSpacer>
-</MkStickyContainer>
+	</div>
+</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
@@ -46,10 +45,11 @@ import { onMounted, ref, computed } from 'vue';
 import * as Misskey from 'misskey-js';
 import XForm from './auth.form.vue';
 import MkSignin from '@/components/MkSignin.vue';
-import { misskeyApi } from '@/scripts/misskey-api.js';
-import { $i, login } from '@/account.js';
-import { definePageMetadata } from '@/scripts/page-metadata.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
+import { $i } from '@/i.js';
+import { definePage } from '@/page.js';
 import { i18n } from '@/i18n.js';
+import { login } from '@/accounts.js';
 
 const props = defineProps<{
 	token: string;
@@ -63,28 +63,34 @@ const getUrlParams = () =>
 			const [k, v] = query.split('=');
 			result[k] = decodeURI(v);
 			return result;
-		}, {});
+		}, {} as Record<string, string>);
 
 const state = ref<'waiting' | 'accepted' | 'fetch-session-error' | 'denied' | null>(null);
 const session = ref<Misskey.entities.AuthSessionShowResponse | null>(null);
 
 function accepted() {
 	state.value = 'accepted';
-	const isMastodon = !!getUrlParams().mastodon;
+	const params = getUrlParams();
+	const isMastodon = !!params.mastodon;
 	if (session.value && session.value.app.callbackUrl && isMastodon) {
-		const redirectUri = decodeURIComponent(getUrlParams().redirect_uri);
+		if (!params.redirect_uri) {
+			throw new Error('Missing redirect_uri');
+		}
+		const redirectUri = decodeURIComponent(params.redirect_uri);
 		if (!session.value.app.callbackUrl.includes('elk.zone') && !session.value.app.callbackUrl.split('\n').includes(redirectUri)) {
 			state.value = 'fetch-session-error';
 			throw new Error('Callback URI doesn\'t match registered app');
 		}
 		const callbackUrl = session.value.app.callbackUrl.includes('elk.zone') ? new URL(session.value.app.callbackUrl) : new URL(redirectUri);
 		callbackUrl.searchParams.append('code', session.value.token);
-		if (getUrlParams().state) callbackUrl.searchParams.append('state', getUrlParams().state);
-		location.href = callbackUrl.toString();
+		if (params.state) {
+			callbackUrl.searchParams.append('state', params.state);
+		}
+		window.location.href = callbackUrl.toString();
 	} else if (session.value && session.value.app.callbackUrl) {
 		const url = new URL(session.value.app.callbackUrl);
 		if (['javascript:', 'file:', 'data:', 'mailto:', 'tel:', 'vbscript:'].includes(url.protocol)) throw new Error('invalid url');
-		location.href = `${session.value.app.callbackUrl}?token=${session.value.token}`;
+		window.location.href = `${session.value.app.callbackUrl}?token=${session.value.token}`;
 	}
 }
 
@@ -96,14 +102,15 @@ onMounted(async () => {
 	if (!$i) return;
 
 	try {
-		session.value = await misskeyApi('auth/session/show', {
+		const sess = await misskeyApi('auth/session/show', {
 			token: props.token,
 		});
+		session.value = sess;
 
 		// 既に連携していた場合
-		if (session.value.app.isAuthorized) {
+		if (sess.app.isAuthorized) {
 			await misskeyApi('auth/accept', {
-				token: session.value.token,
+				token: sess.token,
 			});
 			accepted();
 		} else {
@@ -118,7 +125,7 @@ const headerActions = computed(() => []);
 
 const headerTabs = computed(() => []);
 
-definePageMetadata(() => ({
+definePage(() => ({
 	title: i18n.ts._auth.shareAccessTitle,
 	icon: 'ti ti-apps',
 }));

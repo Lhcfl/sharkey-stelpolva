@@ -77,7 +77,7 @@ type PackedPureRenote = PackedRenote & {
 	replyId: NonNullable<Packed<'Note'>['replyId']>;
 	poll: NonNullable<Packed<'Note'>['poll']>;
 	fileIds: NonNullable<Packed<'Note'>['fileIds']>;
-}
+};
 
 export function isRenotePacked(note: Packed<'Note'>): note is PackedRenote {
 	return note.renoteId != null;

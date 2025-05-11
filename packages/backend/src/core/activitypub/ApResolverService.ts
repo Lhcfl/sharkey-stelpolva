@@ -6,7 +6,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { IsNull, Not } from 'typeorm';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
-import { InstanceActorService } from '@/core/InstanceActorService.js';
 import type { NotesRepository, PollsRepository, NoteReactionsRepository, UsersRepository, FollowRequestsRepository, MiMeta, SkApFetchLog } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
@@ -16,14 +15,15 @@ import { bindThis } from '@/decorators.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 import { fromTuple } from '@/misc/from-tuple.js';
-import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { ApLogService, calculateDurationSince, extractObjectContext } from '@/core/ApLogService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
-import { getApId, getNullableApId, isCollectionOrOrderedCollection } from './type.js';
+import { SystemAccountService } from '@/core/SystemAccountService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { getApId, getNullableApId, IObjectWithId, isCollectionOrOrderedCollection } from './type.js';
 import { ApDbResolverService } from './ApDbResolverService.js';
 import { ApRendererService } from './ApRendererService.js';
 import { ApRequestService } from './ApRequestService.js';
-import type { IObject, ICollection, IOrderedCollection } from './type.js';
+import type { IObject, ICollection, IOrderedCollection, ApObject } from './type.js';
 
 export class Resolver {
 	private history: Set<string>;
@@ -39,7 +39,7 @@ export class Resolver {
 		private noteReactionsRepository: NoteReactionsRepository,
 		private followRequestsRepository: FollowRequestsRepository,
 		private utilityService: UtilityService,
-		private instanceActorService: InstanceActorService,
+		private systemAccountService: SystemAccountService,
 		private apRequestService: ApRequestService,
 		private httpRequestService: HttpRequestService,
 		private apRendererService: ApRendererService,
@@ -76,9 +76,37 @@ export class Resolver {
 		}
 	}
 
+	/**
+	 * Securely resolves an AP object or URL that has been sent from another instance.
+	 * An input object is trusted if and only if its ID matches the authority of sentFromUri.
+	 * In all other cases, the object is re-fetched from remote by input string or object ID.
+	 */
+	@bindThis
+	public async secureResolve(input: ApObject, sentFromUri: string): Promise<IObjectWithId> {
+		// Unpack arrays to get the value element.
+		const value = fromTuple(input);
+		if (value == null) {
+			throw new IdentifiableError('20058164-9de1-4573-8715-425753a21c1d', 'Cannot resolve null input');
+		}
+
+		// This will throw if the input has no ID, which is good because we can't verify an anonymous object anyway.
+		const id = getApId(value);
+
+		// Check if we can use the provided object as-is.
+		// Our security requires that the object ID matches the host authority that sent it, otherwise it can't be trusted.
+		// A mismatch isn't necessarily malicious, it just means we can't use the object we were given.
+		if (typeof(value) === 'object' && this.apUtilityService.haveSameAuthority(id, sentFromUri)) {
+			return value as IObjectWithId;
+		}
+
+		// If the checks didn't pass, then we must fetch the object and use that.
+		return await this.resolve(id);
+	}
+
+	public async resolve(value: string | [string]): Promise<IObjectWithId>;
+	public async resolve(value: string | IObject | [string | IObject]): Promise<IObject>;
 	@bindThis
 	public async resolve(value: string | IObject | [string | IObject]): Promise<IObject> {
-		// eslint-disable-next-line no-param-reassign
 		value = fromTuple(value);
 
 		if (typeof value !== 'string') {
@@ -93,7 +121,7 @@ export class Resolver {
 		}
 	}
 
-	private async _resolveLogged(requestUri: string, host: string): Promise<IObject> {
+	private async _resolveLogged(requestUri: string, host: string): Promise<IObjectWithId> {
 		const startTime = process.hrtime.bigint();
 
 		const log = await this.apLogService.createFetchLog({
@@ -122,7 +150,7 @@ export class Resolver {
 		}
 	}
 
-	private async _resolve(value: string, host: string, log?: SkApFetchLog): Promise<IObject> {
+	private async _resolve(value: string, host: string, log?: SkApFetchLog): Promise<IObjectWithId> {
 		if (value.includes('#')) {
 			// URLs with fragment parts cannot be resolved correctly because
 			// the fragment part does not get transmitted over HTTP(S).
@@ -141,7 +169,7 @@ export class Resolver {
 		this.history.add(value);
 
 		if (this.utilityService.isSelfHost(host)) {
-			return await this.resolveLocal(value);
+			return await this.resolveLocal(value) as IObjectWithId;
 		}
 
 		if (!this.utilityService.isFederationAllowedHost(host)) {
@@ -149,12 +177,12 @@ export class Resolver {
 		}
 
 		if (this.config.signToActivityPubGet && !this.user) {
-			this.user = await this.instanceActorService.getInstanceActor();
+			this.user = await this.systemAccountService.fetch('actor');
 		}
 
 		const object = (this.user
-			? await this.apRequestService.signedGet(value, this.user) as IObject
-			: await this.httpRequestService.getActivityJson(value)) as IObject;
+			? await this.apRequestService.signedGet(value, this.user)
+			: await this.httpRequestService.getActivityJson(value));
 
 		if (log) {
 			const { object: objectOnly, context, contextHash } = extractObjectContext(object);
@@ -199,7 +227,7 @@ export class Resolver {
 	}
 
 	@bindThis
-	private resolveLocal(url: string): Promise<IObject> {
+	private resolveLocal(url: string): Promise<IObjectWithId> {
 		const parsed = this.apDbResolverService.parseUri(url);
 		if (!parsed.local) throw new IdentifiableError('02b40cd0-fa92-4b0c-acc9-fb2ada952ab8', `resolveLocal - not a local URL: ${url}`);
 
@@ -214,7 +242,7 @@ export class Resolver {
 						} else {
 							return this.apRendererService.renderNote(note, author);
 						}
-					});
+					}) as Promise<IObjectWithId>;
 			case 'users':
 				return this.usersRepository.findOneByOrFail({ id: parsed.id })
 					.then(user => this.apRendererService.renderPerson(user as MiLocalUser));
@@ -224,7 +252,7 @@ export class Resolver {
 					this.notesRepository.findOneByOrFail({ id: parsed.id }),
 					this.pollsRepository.findOneByOrFail({ noteId: parsed.id }),
 				])
-					.then(([note, poll]) => this.apRendererService.renderQuestion({ id: note.userId }, note, poll));
+					.then(([note, poll]) => this.apRendererService.renderQuestion({ id: note.userId }, note, poll)) as Promise<IObjectWithId>;
 			case 'likes':
 				return this.noteReactionsRepository.findOneByOrFail({ id: parsed.id }).then(async reaction =>
 					this.apRendererService.addContext(await this.apRendererService.renderLike(reaction, { uri: null })));
@@ -278,7 +306,7 @@ export class ApResolverService {
 		private followRequestsRepository: FollowRequestsRepository,
 
 		private utilityService: UtilityService,
-		private instanceActorService: InstanceActorService,
+		private systemAccountService: SystemAccountService,
 		private apRequestService: ApRequestService,
 		private httpRequestService: HttpRequestService,
 		private apRendererService: ApRendererService,
@@ -290,7 +318,10 @@ export class ApResolverService {
 	}
 
 	@bindThis
-	public createResolver(): Resolver {
+	public createResolver(opts?: {
+		// Override the recursion limit
+		recursionLimit?: number,
+	}): Resolver {
 		return new Resolver(
 			this.config,
 			this.meta,
@@ -300,7 +331,7 @@ export class ApResolverService {
 			this.noteReactionsRepository,
 			this.followRequestsRepository,
 			this.utilityService,
-			this.instanceActorService,
+			this.systemAccountService,
 			this.apRequestService,
 			this.httpRequestService,
 			this.apRendererService,
@@ -308,6 +339,7 @@ export class ApResolverService {
 			this.loggerService,
 			this.apLogService,
 			this.apUtilityService,
+			opts?.recursionLimit,
 		);
 	}
 }

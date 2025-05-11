@@ -113,11 +113,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (typeof ps.blocked === 'boolean') {
-				const meta = await this.metaService.fetch(true);
 				if (ps.blocked) {
-					query.andWhere(meta.blockedHosts.length === 0 ? '1=0' : 'instance.host IN (:...blocks)', { blocks: meta.blockedHosts });
+					query.andWhere('instance.host IN (select unnest("blockedHosts") as x from "meta")');
 				} else {
-					query.andWhere(meta.blockedHosts.length === 0 ? '1=1' : 'instance.host NOT IN (:...blocks)', { blocks: meta.blockedHosts });
+					query.andWhere('instance.host NOT IN (select unnest("blockedHosts") as x from "meta")');
 				}
 			}
 
@@ -146,36 +145,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (typeof ps.silenced === 'boolean') {
-				const meta = await this.metaService.fetch(true);
-
 				if (ps.silenced) {
-					if (meta.silencedHosts.length === 0) {
-						return [];
-					}
-					query.andWhere('instance.host IN (:...silences)', {
-						silences: meta.silencedHosts,
-					});
-				} else if (meta.silencedHosts.length > 0) {
-					query.andWhere('instance.host NOT IN (:...silences)', {
-						silences: meta.silencedHosts,
-					});
+					query.andWhere('instance.host IN (select unnest("silencedHosts") as x from "meta")');
+				} else {
+					query.andWhere('instance.host NOT IN (select unnest("silencedHosts") as x from "meta")');
 				}
 			}
 
 			if (typeof ps.bubble === 'boolean') {
-				const meta = await this.metaService.fetch(true);
-
 				if (ps.bubble) {
-					if (meta.bubbleInstances.length === 0) {
-						return [];
-					}
-					query.andWhere('instance.host IN (:...bubble)', {
-						bubble: meta.bubbleInstances,
-					});
-				} else if (meta.bubbleInstances.length > 0) {
-					query.andWhere('instance.host NOT IN (:...bubble)', {
-						bubble: meta.bubbleInstances,
-					});
+					query.andWhere('instance.host IN (select unnest("bubbleInstances") as x from "meta")');
+				} else {
+					query.andWhere('instance.host NOT IN (select unnest("bubbleInstances") as x from "meta")');
 				}
 			}
 

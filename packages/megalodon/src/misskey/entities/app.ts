@@ -4,6 +4,6 @@ namespace MisskeyEntity {
     name: string
     callbackUrl: string
     permission: Array<string>
-    secret: string
+    secret?: string
   }
 }

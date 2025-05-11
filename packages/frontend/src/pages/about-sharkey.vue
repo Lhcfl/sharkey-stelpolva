@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <MkStickyContainer>
 	<template #header><MkPageHeader :actions="headerActions" :tabs="headerTabs"/></template>
 	<div style="overflow: clip;">
-		<MkSpacer :contentMax="600" :marginMin="20">
+		<div class="_spacer" style="--MI_SPACER-w: 600px; --MI_SPACER-min: 20px;">
 			<div class="_gaps_m znqjceqz">
 				<div v-panel class="about">
 					<div ref="containerEl" class="container" :class="{ playing: easterEggEngine != null }">
@@ -30,7 +30,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<FormSection v-if="instance.repositoryUrl !== 'https://activitypub.software/TransFem-org/Sharkey/'">
 					<div class="_gaps_s">
 						<MkInfo>
-							{{ i18n.tsx._aboutMisskey.thisIsModifiedVersion({ name: instance.name }) }}
+							{{ i18n.tsx._aboutMisskey.thisIsModifiedVersion({ name: instance.name ?? '' }) }}
 						</MkInfo>
 						<FormLink v-if="instance.repositoryUrl" :to="instance.repositoryUrl" external>
 							<template #icon><i class="ti ti-code"></i></template>
@@ -85,28 +85,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template v-if="section.link" #description><MkLink :url="section.link.url">{{ section.link.label }}</MkLink></template>
 				</FormSection>
 			</div>
-		</MkSpacer>
+		</div>
 	</div>
 </MkStickyContainer>
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onBeforeUnmount, ref, shallowRef, computed } from 'vue';
+import { nextTick, onBeforeUnmount, ref, computed, useTemplateRef } from 'vue';
 import { version } from '@@/js/config.js';
 import FormLink from '@/components/form/link.vue';
 import FormSection from '@/components/form/section.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkLink from '@/components/MkLink.vue';
 import MkInfo from '@/components/MkInfo.vue';
-import { physics } from '@/scripts/physics.js';
+import { physics } from '@/utility/physics.js';
 import { i18n } from '@/i18n.js';
 import { instance } from '@/instance.js';
-import { defaultStore } from '@/store.js';
 import * as os from '@/os.js';
-import { misskeyApi } from '@/scripts/misskey-api.js';
-import { definePageMetadata } from '@/scripts/page-metadata.js';
-import { claimAchievement, claimedAchievements } from '@/scripts/achievements.js';
-import { $i } from '@/account.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
+import { claimAchievement, claimedAchievements } from '@/utility/achievements.js';
+import { $i } from '@/i';
+import { definePage } from '@/page';
+import { store } from '@/store.js';
 
 type Section = {
 	heading: string,
@@ -124,8 +124,13 @@ type Section = {
 const thereIsTreasure = ref($i && !claimedAchievements.includes('foundTreasure'));
 
 let easterEggReady = false;
-const easterEggEmojis = ref([]);
-const easterEggEngine = ref(null);
+const easterEggEmojis = ref<{
+	id: string,
+	top: number,
+	left: number,
+	emoji: string
+}[]>([]);
+const easterEggEngine = ref<{ stop: () => void } | null>(null);
 const everyone = ref<Section[]>([
 	{
 		heading: i18n.ts._aboutMisskey.projectMembers,
@@ -262,7 +267,7 @@ const everyone = ref<Section[]>([
 		],
 	},
 ]);
-const containerEl = shallowRef<HTMLElement>();
+const containerEl = useTemplateRef('containerEl');
 
 await misskeyApi('sponsors', { forceUpdate: false }).then((res) => {
 	const section: Section = {
@@ -293,7 +298,7 @@ function fisher_yates<T>(array: T[]): T[] {
 }
 
 function iconLoaded() {
-	const emojis = defaultStore.state.reactions;
+	const emojis = store.s.reactions;
 	const containerWidth = containerEl.value.offsetWidth;
 	for (let i = 0; i < 32; i++) {
 		easterEggEmojis.value.push({
@@ -337,7 +342,7 @@ const headerActions = computed(() => []);
 
 const headerTabs = computed(() => []);
 
-definePageMetadata(() => ({
+definePage(() => ({
 	title: i18n.ts.aboutMisskey,
 	icon: null,
 }));

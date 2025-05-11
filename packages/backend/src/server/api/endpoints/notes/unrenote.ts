@@ -66,6 +66,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				renoteId: note.id,
 			});
 
+			// TODO inline this into the above query
 			for (const note of renotes) {
 				if (ps.quote) {
 					if (note.text) this.noteDeleteService.delete(await this.usersRepository.findOneByOrFail({ id: me.id }), note, false);

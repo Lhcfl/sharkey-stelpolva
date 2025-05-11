@@ -103,14 +103,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (!this.serverSettings.enableBotTrending) query.andWhere('user.isBot = FALSE');
 
 			this.queryService.generateVisibilityQuery(query, me);
-			if (me) this.queryService.generateMutedUserQuery(query, me);
-			if (me) this.queryService.generateBlockedUserQuery(query, me);
+			this.queryService.generateBlockedHostQueryForNote(query);
+			if (me) this.queryService.generateMutedUserQueryForNotes(query, me);
+			if (me) this.queryService.generateBlockedUserQueryForNotes(query, me);
 
-			const [
-				followings,
-			] = me ? await Promise.all([
-				this.cacheService.userFollowingsCache.fetch(me.id),
-			]) : [undefined];
+			const followings = me ? await this.cacheService.userFollowingsCache.fetch(me.id) : {};
 
 			try {
 				if (ps.tag) {

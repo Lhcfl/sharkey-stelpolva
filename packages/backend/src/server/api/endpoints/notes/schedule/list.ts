@@ -100,7 +100,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				id: string;
 				note: {
 					text?: string;
-					cw?: string|null;
+					cw?: string | null;
 					fileIds: string[];
 					visibility: typeof noteVisibilities[number];
 					visibleUsers: Packed<'UserLite'>[];
@@ -133,6 +133,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						renote, reply,
 						renoteId: item.note.renote,
 						replyId: item.note.reply,
+						poll: item.note.poll ? await this.fillPoll(item.note.poll) : undefined,
 					},
 				};
 			}));
@@ -154,5 +155,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 		}
 		return null;
+	}
+
+	// Pulled from NoteEntityService and modified to work with MiNoteSchedule
+	// originally planned to use directly from NoteEntityService but since the poll doesn't actually exist yet that doesn't work
+	@bindThis
+	private async fillPoll(poll: { multiple: boolean; choices: string[]; expiresAt: string | null }) {
+		const choices = poll.choices.map(c => ({
+			text: c,
+			votes: 0, // Default to 0 as there will never be any registered votes while scheduled
+			isVoted: false, // Default to false as the author can't vote anyways since the poll does not exist in the repo yet
+		}));
+
+		return {
+			multiple: poll.multiple,
+			expiresAt: poll.expiresAt ? new Date(poll.expiresAt).toISOString() : null,
+			choices,
+		};
 	}
 }

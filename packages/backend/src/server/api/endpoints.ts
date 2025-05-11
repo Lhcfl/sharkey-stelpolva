@@ -40,7 +40,7 @@ interface IEndpointMetaBase {
 	 */
 	readonly requireAdmin?: boolean;
 
-	readonly requireRolePolicy?: KeyOf<'RolePolicies'>;
+	readonly requiredRolePolicy?: KeyOf<'RolePolicies'>;
 
 	/**
 	 * 引っ越し済みのユーザーによるリクエストを禁止するか
@@ -100,7 +100,7 @@ export type IEndpointMeta = (Omit<IEndpointMetaBase, 'requireCrential' | 'requir
 }) | (Omit<IEndpointMetaBase, 'requireAdmin' | 'kind'> & {
 	requireAdmin: true,
 	kind: (typeof permissions)[number],
-})
+});
 
 export interface IEndpoint {
 	name: string;

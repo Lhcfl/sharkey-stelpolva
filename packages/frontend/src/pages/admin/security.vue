@@ -4,10 +4,25 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkStickyContainer>
-	<template #header><XHeader :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :contentMax="700" :marginMin="16" :marginMax="32">
+<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+	<div class="_spacer" style="--MI_SPACER-w: 700px; --MI_SPACER-min: 16px; --MI_SPACER-max: 32px;">
 		<div class="_gaps_m">
+			<MkFolder v-if="meta.federation !== 'none'">
+				<template #label>{{ i18n.ts.authorizedFetchSection }}</template>
+				<template #suffix>{{ meta.allowUnsignedFetch !== 'always' ? i18n.ts.enabled : i18n.ts.disabled }}</template>
+				<template v-if="authFetchForm.modified.value" #footer>
+					<MkFormFooter :form="authFetchForm"/>
+				</template>
+
+				<MkRadios v-model="authFetchForm.state.allowUnsignedFetch">
+					<template #label>{{ i18n.ts.authorizedFetchLabel }}</template>
+					<template #caption>{{ i18n.ts.authorizedFetchDescription }}</template>
+					<option value="never">{{ i18n.ts._authorizedFetchValue.never }} - {{ i18n.ts._authorizedFetchValueDescription.never }}</option>
+					<option value="always">{{ i18n.ts._authorizedFetchValue.always }} - {{ i18n.ts._authorizedFetchValueDescription.always }}</option>
+					<option value="essential">{{ i18n.ts._authorizedFetchValue.essential }} - {{ i18n.ts._authorizedFetchValueDescription.essential }}</option>
+				</MkRadios>
+			</MkFolder>
+
 			<XBotProtection/>
 
 			<MkFolder>
@@ -72,14 +87,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</MkFolder>
 		</div>
-	</MkSpacer>
-</MkStickyContainer>
+	</div>
+</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
 import XBotProtection from './bot-protection.vue';
-import XHeader from './_header_.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkRadios from '@/components/MkRadios.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
@@ -87,14 +101,23 @@ import MkRange from '@/components/MkRange.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import * as os from '@/os.js';
-import { misskeyApi } from '@/scripts/misskey-api.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
 import { fetchInstance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
-import { definePageMetadata } from '@/scripts/page-metadata.js';
-import { useForm } from '@/scripts/use-form.js';
+import { definePage } from '@/page.js';
+import { useForm } from '@/use/use-form.js';
 import MkFormFooter from '@/components/MkFormFooter.vue';
 
 const meta = await misskeyApi('admin/meta');
+
+const authFetchForm = useForm({
+	allowUnsignedFetch: meta.allowUnsignedFetch,
+}, async state => {
+	await os.apiWithDialog('admin/update-meta', {
+		allowUnsignedFetch: state.allowUnsignedFetch,
+	});
+	fetchInstance(true);
+});
 
 const ipLoggingForm = useForm({
 	enableIpLogging: meta.enableIpLogging,
@@ -137,7 +160,7 @@ const headerActions = computed(() => []);
 
 const headerTabs = computed(() => []);
 
-definePageMetadata(() => ({
+definePage(() => ({
 	title: i18n.ts.security,
 	icon: 'ti ti-lock',
 }));

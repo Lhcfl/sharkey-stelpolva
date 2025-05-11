@@ -26,7 +26,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const keys = await generateVAPIDKeys();
-			
+
+			// TODO add moderation log
+
 			return { public: keys.publicKey, private: keys.privateKey };
 		});
 	}

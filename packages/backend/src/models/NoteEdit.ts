@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Entity, JoinColumn, Column, ManyToOne, PrimaryColumn, Index } from "typeorm";
+import { Entity, JoinColumn, Column, ManyToOne, PrimaryColumn, Index } from 'typeorm';
 import { id } from './util/id.js';
 import { MiNote } from './Note.js';
 import type { MiDriveFile } from './DriveFile.js';
@@ -16,27 +16,22 @@ export class NoteEdit {
 	@Index()
 	@Column({
 		...id(),
-		comment: "The ID of note.",
+		comment: 'The ID of note.',
 	})
-	public noteId: MiNote["id"];
+	public noteId: MiNote['id'];
 
-	@ManyToOne((type) => MiNote, {
-		onDelete: "CASCADE",
+	@ManyToOne(() => MiNote, {
+		onDelete: 'CASCADE',
 	})
 	@JoinColumn()
 	public note: MiNote | null;
 
-	@Column("text", {
-		nullable: true,
-	})
-	public oldText: string | null;
-
-	@Column("text", {
+	@Column('text', {
 		nullable: true,
 	})
 	public newText: string | null;
 
-	@Column("varchar", {
+	@Column('varchar', {
 		length: 512,
 		nullable: true,
 	})
@@ -45,17 +40,23 @@ export class NoteEdit {
 	@Column({
 		...id(),
 		array: true,
-		default: "{}",
+		default: '{}',
 	})
-	public fileIds: MiDriveFile["id"][];
+	public fileIds: MiDriveFile['id'][];
 
-	@Column("timestamp with time zone", {
-		comment: "The updated date of the Note.",
+	@Column('timestamp with time zone', {
+		comment: 'The updated date of the Note.',
 	})
 	public updatedAt: Date;
 
-	@Column("timestamp with time zone", {
-		comment: "The old date from before the edit",
+	@Column('text', {
+		nullable: true,
 	})
-	public oldDate: Date;
+	public oldText: string | null;
+
+	@Column('timestamp with time zone', {
+		comment: 'The old date from before the edit',
+		nullable: true,
+	})
+	public oldDate: Date | null;
 }

@@ -14,6 +14,39 @@ export const meta = {
 	requireCredential: false,
 	requireCredentialPrivateMode: false,
 
+	res: {
+		type: 'object',
+		nullable: false, optional: false,
+		properties: {
+			sponsor_data: {
+				type: 'array',
+				nullable: false, optional: false,
+				items: {
+					type: 'object',
+					nullable: false, optional: false,
+					properties: {
+						name: {
+							type: 'string',
+							nullable: false, optional: false,
+						},
+						image: {
+							type: 'string',
+							nullable: true, optional: false,
+						},
+						website: {
+							type: 'string',
+							nullable: true, optional: false,
+						},
+						profile: {
+							type: 'string',
+							nullable: false, optional: false,
+						},
+					},
+				},
+			},
+		},
+	},
+
 	// 2 calls per second
 	limit: {
 		duration: 1000,
@@ -24,6 +57,7 @@ export const meta = {
 export const paramDef = {
 	type: 'object',
 	properties: {
+		// TODO remove this or make staff-only to prevent DoS
 		forceUpdate: { type: 'boolean', default: false },
 		instance: { type: 'boolean', default: false },
 	},
@@ -35,12 +69,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		private sponsorsService: SponsorsService,
 	) {
-		super(meta, paramDef, async (ps, me) => {
-			if (ps.instance) {
-				return { sponsor_data: await this.sponsorsService.instanceSponsors(ps.forceUpdate) };
-			} else {
-				return { sponsor_data: await this.sponsorsService.sharkeySponsors(ps.forceUpdate) };
-			}
+		super(meta, paramDef, async (ps) => {
+			const sponsors = ps.instance
+				? await this.sponsorsService.instanceSponsors(ps.forceUpdate)
+				: await this.sponsorsService.sharkeySponsors(ps.forceUpdate);
+
+			return {
+				sponsor_data: sponsors.map(s => ({
+					name: s.name,
+					image: s.image,
+					website: s.website,
+					profile: s.profile,
+				})),
+			};
 		});
 	}
 }

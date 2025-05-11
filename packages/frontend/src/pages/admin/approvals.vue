@@ -5,9 +5,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div>
-	<MkStickyContainer>
-		<template #header><XHeader :actions="headerActions" :tabs="headerTabs"/></template>
-		<MkSpacer :contentMax="900">
+	<PageWithHeader :tabs="headerTabs">
+		<div class="_spacer" style="--MI_SPACER-w: 900px;">
 			<div class="_gaps_m">
 				<MkPagination ref="paginationComponent" :pagination="pagination" :displayLimit="50">
 					<template #default="{ items }">
@@ -17,20 +16,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</template>
 				</MkPagination>
 			</div>
-		</MkSpacer>
-	</MkStickyContainer>
+		</div>
+	</PageWithHeader>
 </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, shallowRef } from 'vue';
-import XHeader from './_header_.vue';
+import { computed, useTemplateRef } from 'vue';
 import MkPagination from '@/components/MkPagination.vue';
 import SkApprovalUser from '@/components/SkApprovalUser.vue';
 import { i18n } from '@/i18n.js';
-import { definePageMetadata } from '@/scripts/page-metadata.js';
+import { definePage } from '@/page';
 
-let paginationComponent = shallowRef<InstanceType<typeof MkPagination>>();
+let paginationComponent = useTemplateRef<InstanceType<typeof MkPagination>>('paginationComponent');
 
 const pagination = {
 	endpoint: 'admin/show-users' as const,
@@ -53,7 +51,7 @@ const headerActions = computed(() => []);
 
 const headerTabs = computed(() => []);
 
-definePageMetadata(() => ({
+definePage(() => ({
 	title: i18n.ts.approvals,
 	icon: 'ph-chalkboard-teacher ph-bold ph-lg',
 }));

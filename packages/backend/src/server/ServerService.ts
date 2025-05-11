@@ -7,7 +7,7 @@ import cluster from 'node:cluster';
 import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import Fastify, { FastifyInstance } from 'fastify';
+import Fastify, { type FastifyInstance } from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyRawBody from 'fastify-raw-body';
 import { IsNull } from 'typeorm';
@@ -105,6 +105,43 @@ export class ServerService implements OnApplicationShutdown {
 			serve: false,
 		});
 
+		// if the requester looks like to be performing an ActivityPub object lookup, reject all external redirects
+		//
+		// this will break lookup that involve copying a URL from a third-party server, like trying to lookup http://charlie.example.com/@alice@alice.com
+		//
+		// this is not required by standard but protect us from peers that did not validate final URL.
+		if (this.config.disallowExternalApRedirect) {
+			const maybeApLookupRegex = /application\/activity\+json|application\/ld\+json.+activitystreams/i;
+			fastify.addHook('onSend', (request, reply, _, done) => {
+				const location = reply.getHeader('location');
+				if (reply.statusCode < 300 || reply.statusCode >= 400 || typeof location !== 'string') {
+					done();
+					return;
+				}
+
+				if (!maybeApLookupRegex.test(request.headers.accept ?? '')) {
+					done();
+					return;
+				}
+
+				const effectiveLocation = process.env.NODE_ENV === 'production' ? location : location.replace(/^http:\/\//, 'https://');
+				if (effectiveLocation.startsWith(`https://${this.config.host}/`)) {
+					done();
+					return;
+				}
+
+				reply.status(406);
+				reply.removeHeader('location');
+				reply.header('content-type', 'text/plain; charset=utf-8');
+				reply.header('link', `<${encodeURI(location)}>; rel="canonical"`);
+				done(null, [
+					"Refusing to relay remote ActivityPub object lookup.",
+					"",
+					`Please remove 'application/activity+json' and 'application/ld+json' from the Accept header or fetch using the authoritative URL at ${location}.`,
+				].join('\n'));
+			});
+		}
+
 		fastify.register(this.apiServerService.createServer, { prefix: '/api' });
 		fastify.register(this.openApiServerService.createServer);
 		fastify.register(this.mastodonApiServerService.createServer, { prefix: '/api' });
@@ -186,18 +223,18 @@ export class ServerService implements OnApplicationShutdown {
 			reply.header('Cache-Control', 'public, max-age=86400');
 
 			if (user) {
-				reply.redirect(user.avatarUrl ?? this.userEntityService.getIdenticonUrl(user));
+				reply.redirect((user.avatarId == null ? null : user.avatarUrl) ?? this.userEntityService.getIdenticonUrl(user));
 			} else {
 				reply.redirect('/static-assets/user-unknown.png');
 			}
 		});
 
-		fastify.get<{ Params: { x: string } }>('/identicon/:x', async (request, reply) => {
-			reply.header('Content-Type', 'image/png');
+		fastify.get<{ Params: { x: string } }>('/identicon/:x', (request, reply) => {
+ 			reply.header('Content-Type', 'image/png');
 			reply.header('Cache-Control', 'public, max-age=86400');
 
 			if (this.meta.enableIdenticonGeneration) {
-				return await genIdenticon(request.params.x);
+				return genIdenticon(request.params.x);
 			} else {
 				return reply.redirect('/static-assets/avatar.png');
 			}
@@ -256,13 +293,14 @@ export class ServerService implements OnApplicationShutdown {
 			if (fs.existsSync(this.config.socket)) {
 				fs.unlinkSync(this.config.socket);
 			}
-			fastify.listen({ path: this.config.socket }, (err, address) => {
-				if (this.config.chmodSocket) {
-					fs.chmodSync(this.config.socket!, this.config.chmodSocket);
-				}
-			});
+
+			await fastify.listen({ path: this.config.socket });
+
+			if (this.config.chmodSocket) {
+				fs.chmodSync(this.config.socket!, this.config.chmodSocket);
+			}
 		} else {
-			fastify.listen({ port: this.config.port, host: this.config.address });
+			await fastify.listen({ port: this.config.port, host: this.config.address });
 		}
 
 		await fastify.ready();
@@ -272,6 +310,13 @@ export class ServerService implements OnApplicationShutdown {
 	public async dispose(): Promise<void> {
 		await this.streamingApiServerService.detach();
 		await this.#fastify.close();
+	}
+
+	/**
+	 * Get the Fastify instance for testing.
+	 */
+	public get fastify(): FastifyInstance {
+		return this.#fastify;
 	}
 
 	@bindThis

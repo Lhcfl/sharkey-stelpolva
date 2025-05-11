@@ -13,10 +13,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, computed } from 'vue';
 import * as mfm from '@transfem-org/sfm-js';
 import * as Misskey from 'misskey-js';
-import { extractUrlFromMfm } from '@/scripts/extract-url-from-mfm.js';
+import { extractUrlFromMfm } from '@/utility/extract-url-from-mfm.js';
 import { isEnabledUrlPreview } from '@/instance.js';
 
 const MkUrlPreview = defineAsyncComponent(() => import('@/components/MkUrlPreview.vue'));
@@ -26,7 +26,10 @@ const props = defineProps<{
 	page: Misskey.entities.Page,
 }>();
 
-const urls = props.block.text ? extractUrlFromMfm(mfm.parse(props.block.text)) : [];
+const urls = computed(() => {
+	if (!props.block.text) return [];
+	return extractUrlFromMfm(mfm.parse(props.block.text));
+});
 </script>
 
 <style lang="scss" module>

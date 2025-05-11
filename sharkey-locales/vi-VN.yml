@@ -7,3 +7,32 @@ _achievements:
   _types:
     _notes1:
       title: "just setting up my shonk"
+introMisskey: "Xin chào! Sharkey là một nền tảng tiểu blog phi tập trung mã nguồn mở.\nViết \"tút\" để chia sẻ những suy nghĩ của bạn 📡\nBằng \"biểu cảm\", bạn có thể bày tỏ nhanh chóng cảm xúc của bạn với các tút 👍\nHãy khám phá một thế giới mới! 🚀"
+poweredByMisskeyDescription: "{name} là một trong những chủ máy của <b>Sharkey</b> là nền tảng mã nguồn mở"
+initialPasswordForSetupDescription: "Nếu bạn tự cài đặt Sharkey, hãy sử dụng mật khẩu ban đầu của bạn đã nhập trong tệp cấu hình.\nNếu bạn đang sử dụng dịch vụ nào đó giống như dịch vụ lưu trữ của Sharkey, hãy sử dụng mật khẩu ban đầu được cung cấp.\nNếu bạn chưa đặt mật khẩu ban đầu, vui lòng để trống và tiếp tục."
+deleteAndEdit: "Xóa và soạn thảo lại"
+intro: "Đã cài đặt Sharkey! Xin hãy tạo tài khoản admin."
+aboutMisskey: "Về Sharkey"
+thisPostIsMissingAltTextCancel: "Huỷ"
+thisPostIsMissingAltTextIgnore: "Đăng bài viết vẫn được"
+thisPostIsMissingAltText: "Một trong các tệp đính kèm vào bài viết này bị thiếu văn bản thay thế. Vui lòng đảm bảo tất cả các tệp đính kèm đều có văn bản thay thế."
+_timelineDescription:
+    bubble: "Trong dòng thời gian Điều hảo huyền, bạn có thể xem các bài viết từ các máy chủ được kết nối do quản trị viên của bạn chọn."
+
+scheduleNoteFailed: "Đăng bài viết theo lịch trình không thành công"
+scheduleNotePosted: "Bài viết theo lịch trình đã được đăng"
+
+schedulePost: "Lên lịch bài viết"
+schedulePostList: "Danh sách bài viết đã lên lịch"
+postOn: "Đăng vào"
+scheduledNotes: "Bài viết đã lên lịch"
+
+_timelines:
+    bubble: "Điều hảo huyền"
+
+_externalNavigationWarning:
+    title: "Điều hướng đến một trang web bên ngoài"
+    description: "Rời khỏi {host} và đi đến một trang web bên ngoài"
+    trustThisDomain: "Tin tưởng tên miền này trên thiết bị này trong tương lai"
+misskeyUpdated: "Sharkey vừa được cập nhật!"
+mutuals: "Theo dõi nhau"

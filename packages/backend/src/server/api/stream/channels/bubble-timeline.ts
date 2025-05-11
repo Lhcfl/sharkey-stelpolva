@@ -55,31 +55,21 @@ class BubbleTimelineChannel extends Channel {
 		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
 		if (!this.withBots && note.user.isBot) return;
 
-		if (!(this.instance.bubbleInstances.map((i) => i === '#local' ? null : i).includes(note.user.host) && note.visibility === 'public' )) return;
-
-		// 関係ない返信は除外
-		if (note.reply && !this.withReplies) {
-			if (!this.user) {
-				return;
-			} else if (!this.following[note.userId]?.withReplies) {
-				const reply = note.reply;
-				// 「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
-				if (reply.userId !== this.user.id && note.userId !== this.user.id && reply.userId !== note.userId) return;
-			}
-		}
-
-		// if (note.channelId != null) return;
+		if (note.visibility !== 'public') return;
+		if (note.channelId != null) return;
+		// if (note.user.host == null) return;
+		// if (!this.instance.bubbleInstances.includes(note.user.host)) return;
+		if (!(this.instance.bubbleInstances.map((i) => i === '#local' ? null : i).includes(note.user.host))) return;
+		if (note.user.requireSigninToViewContents && this.user == null) return;
 
 		if (isRenotePacked(note) && !isQuotePacked(note) && !this.withRenotes) return;
 
-		if (note.user.isSilenced && !this.following[note.userId] && note.userId !== this.user!.id) return;
+		if (note.user.isSilenced && !this.following[note.userId] && note.userId !== this.user?.id) return;
 
 		if (this.isNoteMutedOrBlocked(note)) return;
 
 		const clonedNote = await this.assignMyReaction(note);
 		await this.hideNote(clonedNote);
-
-		this.connection.cacheNote(clonedNote);
 
 		this.send('note', clonedNote);
 	}

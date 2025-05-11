@@ -31,13 +31,11 @@ export const meta = {
 
 	res: {
 		type: 'object',
-		optional: false,
-		nullable: false,
+		optional: false, nullable: false,
 		properties: {
 			createdNote: {
 				type: 'object',
-				optional: false,
-				nullable: false,
+				optional: false, nullable: false,
 				ref: 'Note',
 			},
 		},

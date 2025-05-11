@@ -1,6 +1,77 @@
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Misskey configuration
+# Sharkey configuration
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+#   ┌──────────────────────────────┐
+#───┘ a boring but important thing └────────────────────────────
+
+#
+# First of all, let me tell you a story that may possibly be
+# boring to you and possibly important to you.
+#
+# Sharkey is licensed under the AGPLv3 license. This license is
+# known to be often misunderstood.  Please read the following
+# instructions carefully and select the appropriate option so
+# that you do not negligently cause a license violation.
+#
+
+# --------
+# Option 1: If you host Sharkey AS-IS (without any changes to
+#           the source code. forks are not included).
+#
+# Step 1: Congratulations! You don't need to do anything.
+
+# --------
+# Option 2: If you have made changes to the source code (forks
+#           are included) and publish a Git repository of source
+#           code.  There should be no access restrictions on
+#           this repository.  Strictly speaking, it doesn't have
+#           to be a Git repository, but you'll probably use Git!
+#
+# Step 1: Build and run the Sharkey server first.
+# Step 2: Open <https://your.sharkey.example/admin/settings> in
+#         your browser with the administrator account.
+# Step 3: Enter the URL of your Git repository in the
+#         "Repository URL" field.
+
+# --------
+# Option 3: If neither of the above applies to you.
+#           (In this case, the source code should be published
+#           on the Sharkey interface.  IT IS NOT ENOUGH TO
+#           DISCLOSE THE SOURCE CODE WHEN A USER REQUESTS IT BY
+#           E-MAIL OR OTHER MEANS.  If you are not satisfied
+#           with this, it is recommended that you read the
+#           license again carefully.  Anyway, enabling this
+#           option will automatically generate and publish a
+#           tarball at build time, protecting you from
+#           inadvertent license violations. (There is no legal
+#           guarantee, of course.)  The tarball will generated
+#           from the root directory of your codebase.  So it is
+#           also recommended to check <built/tarball> directory
+#           once after building and before activating the server
+#           to avoid ACCIDENTAL LEAKING OF SENSITIVE INFORMATION.
+#           To prevent certain files from being included in the
+#           tarball, add a glob pattern after line 15 in
+#           <scripts/tarball.mjs>.  DO NOT FORGET TO BUILD AFTER
+#           ENABLING THIS OPTION!)
+#
+# Step 1: Uncomment the following line.
+#
+# publishTarballInsteadOfProvideRepositoryUrl: true
+
+#   ┌────────────────────────┐
+#───┘ Initial Setup Password └─────────────────────────────────────────────────────
+
+# Password to initiate setting up admin account.
+# It will not be used after the initial setup is complete.
+#
+# Be sure to change this when you set up Sharkey via the Internet.
+#
+# The provider of the service who sets up Sharkey on behalf of the customer should
+# set this value to something unique when generating the Sharkey config file,
+# and provide it to the customer.
+#
+# setupPassword: example_password_please_change_this_or_you_will_get_hacked
 
 #   ┌─────┐
 #───┘ URL └─────────────────────────────────────────────────────
@@ -15,14 +86,14 @@
 #───┘ Port and TLS settings └───────────────────────────────────
 
 #
-# Misskey supports two deployment options for public.
+# Sharkey supports two deployment options for public.
 #
 
 # Option 1: With Reverse Proxy
 #
 #                 +----- https://example.tld/ ------------+
 #   +------+      |+-------------+      +----------------+|
-#   | User | ---> || Proxy (443) | ---> | Misskey (3000) ||
+#   | User | ---> || Proxy (443) | ---> | Sharkey (3000) ||
 #   +------+      |+-------------+      +----------------+|
 #                 +---------------------------------------+
 #
@@ -33,15 +104,15 @@
 #
 #                 +- https://example.tld/ -+
 #   +------+      |   +---------------+    |
-#   | User | ---> |   | Misskey (443) |    |
+#   | User | ---> |   | Sharkey (443) |    |
 #   +------+      |   +---------------+    |
 #                 +------------------------+
 #
-#   You need to run Misskey as root.
+#   You need to run Sharkey as root.
 #   You need to set Certificate in 'https' section.
 
 # To use option 1, uncomment below line.
-port: 3000 # A port that your Misskey server should listen.
+port: 3000 # A port that your Sharkey server should listen.
 
 # To use option 2, uncomment below lines.
 #port: 443
@@ -173,6 +244,11 @@ id: "aidx"
 #    dsn: 'https://examplePublicKey@o0.ingest.sentry.io/0'
 
 #sentryForFrontend:
+#  vueIntegration:
+#    tracingOptions:
+#      trackComponents: true
+#  browserTracingIntegration:
+#  replayIntegration:
 #  options:
 #    dsn: 'https://examplePublicKey@o0.ingest.sentry.io/0'
 
@@ -244,6 +320,11 @@ checkActivityPubGetSignature: false
 #]
 
 #customMOTD: ['Hello World', 'The sharks rule all', 'Shonks']
+
+# Disable automatic redirect for ActivityPub object lookup. (default: false)
+# This is a strong defense against potential impersonation attacks if the viewer instance has inadequate validation.
+# However it will make it impossible for other instances to lookup third-party user and notes through your URL.
+#disallowExternalApRedirect: true
 
 # Upload or download file size limits (bytes)
 #maxFileSize: 262144000
