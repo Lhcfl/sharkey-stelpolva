@@ -5,16 +5,10 @@
 
 import { onUnmounted } from 'vue';
 import * as Misskey from 'misskey-js';
-<<<<<<< HEAD:packages/frontend/src/scripts/use-note-capture.ts
-import { misskeyApi } from './misskey-api.js';
-import { useStream } from '@/stream.js';
-import { $i } from '@/account.js';
-=======
 import type { Ref } from 'vue';
 import { useStream } from '@/stream.js';
 import { $i } from '@/i.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
->>>>>>> develop:packages/frontend/src/use/use-note-capture.ts
 
 export function useNoteCapture(props: {
 	rootEl: Readonly<Ref<HTMLElement | null | undefined>>;
