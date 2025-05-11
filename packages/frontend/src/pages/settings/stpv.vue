@@ -14,56 +14,62 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<div class="_gaps_m">
 			<div class="_gaps_s">
-				<MkSelect v-model="defaultFont.fontFace">
-					<template #label>{{ i18n.ts._stpvPlus.defaultFont.label }}</template>
-					<template #caption>
-						{{ i18n.ts._stpvPlus.defaultFont.caption }}
-					</template>
-					<option
-						v-for="item in defaultFont.fontList"
-						:key="item.id"
-						:value="item.id"
-					>
-						{{ item.name }}
-					</option>
-				</MkSelect>
-				<template v-if="defaultFont.fontFace === 'custom'">
-					<template v-if="!canQueryLocalFonts()">
-						<MkInfo warn>
-							{{ i18n.ts.stpvWarnNoQueryLocalFonts }}
-						</MkInfo>
-						<MkInput v-model="customFontface">
-							<template #label>{{ i18n.ts._stpvPlus.customFont.label }}</template>
-							<template #caption>
-								{{ i18n.ts._stpvPlus.customFont.caption }}
-							</template>
-						</MkInput>
-					</template>
-					<MkLoading v-else-if="isAskingLocalFonts()"/>
-					<select v-else v-model="customFontface" :class="$style.customFontSelect">
+				<SearchMarker :keywords="['appear']">
+					<MkSelect v-model="defaultFont.fontFace">
+						<template #label>
+							<SearchLabel>
+								{{ i18n.ts._stpvPlus.defaultFont.label }}
+							</SearchLabel>
+						</template>
+						<template #caption>
+							{{ i18n.ts._stpvPlus.defaultFont.caption }}
+						</template>
 						<option
-							v-for="item in localFontsList"
-							:key="item.family"
-							:style="{ 'font-family': item.family }"
-							:value="item.family"
+							v-for="item in defaultFont.fontList"
+							:key="item.id"
+							:value="item.id"
 						>
-							{{ item.fullName }}
+							{{ item.name }}
 						</option>
-					</select>
-				</template>
-				<MkRadios v-if="defaultFont.availableTypes.length > 0" v-model="defaultFont.fontFaceType">
-					<template #label>{{ i18n.ts._stpvPlus.fontType.label }}</template>
-					<template #caption>
-						{{ i18n.ts._stpvPlus.fontType.caption }}
+					</MkSelect>
+					<template v-if="defaultFont.fontFace === 'custom'">
+						<template v-if="!canQueryLocalFonts()">
+							<MkInfo warn>
+								{{ i18n.ts.stpvWarnNoQueryLocalFonts }}
+							</MkInfo>
+							<MkInput v-model="customFontface">
+								<template #label>{{ i18n.ts._stpvPlus.customFont.label }}</template>
+								<template #caption>
+									{{ i18n.ts._stpvPlus.customFont.caption }}
+								</template>
+							</MkInput>
+						</template>
+						<MkLoading v-else-if="isAskingLocalFonts()"/>
+						<select v-else v-model="customFontface" :class="$style.customFontSelect">
+							<option
+								v-for="item in localFontsList"
+								:key="item.family"
+								:style="{ 'font-family': item.family }"
+								:value="item.family"
+							>
+								{{ item.fullName }}
+							</option>
+						</select>
 					</template>
-					<option
-						v-for="item in defaultFont.availableTypes"
-						:key="item.id"
-						:value="item.id"
-					>
-						{{ item.name }}
-					</option>
-				</MkRadios>
+					<MkRadios v-if="defaultFont.availableTypes.length > 0" v-model="defaultFont.fontFaceType">
+						<template #label>{{ i18n.ts._stpvPlus.fontType.label }}</template>
+						<template #caption>
+							{{ i18n.ts._stpvPlus.fontType.caption }}
+						</template>
+						<option
+							v-for="item in defaultFont.availableTypes"
+							:key="item.id"
+							:value="item.id"
+						>
+							{{ item.name }}
+						</option>
+					</MkRadios>
+				</SearchMarker>
 			</div>
 			<div class="_gaps_s">
 				<MkSwitch v-model="stpvDisableAllReactions">

@@ -1,7 +1,7 @@
 
 import { isPureRenote } from 'misskey-js/note.js';
 import type * as Misskey from 'misskey-js';
-import { $i } from '@/account.js';
+import { $i } from '@/i';
 
 export function stpvNoteClassBindings(notep: Misskey.entities.Note) {
 	let note = notep;

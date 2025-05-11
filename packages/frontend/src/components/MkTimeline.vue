@@ -40,7 +40,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, onUnmounted, provide, useTemplateRef, TransitionGroup } from 'vue';
+import { computed, watch, onUnmounted, provide, useTemplateRef, TransitionGroup, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import type { BasicTimelineType } from '@/timelines.js';
 import type { Paging } from '@/components/MkPagination.vue';
@@ -121,7 +121,7 @@ function prepend(note: Misskey.entities.Note) {
 
 let connection: Misskey.ChannelConnection | null = null;
 let connection2: Misskey.ChannelConnection | null = null;
-let paginationQuery: Paging | null = null;
+const paginationQuery = ref<Paging | null>(null);
 const noGap = !prefer.s.showGapBetweenNotesInTimeline;
 
 const stream = useStream();
