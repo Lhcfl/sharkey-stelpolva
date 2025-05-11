@@ -7,20 +7,6 @@ import { toUnicode } from 'punycode.js';
 import { defineAsyncComponent, ref, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import { host, url } from '@@/js/config.js';
-<<<<<<< HEAD:packages/frontend/src/scripts/get-user-menu.ts
-import type { MenuItem } from '@/types/menu.js';
-import { i18n } from '@/i18n.js';
-import { copyToClipboard } from '@/scripts/copy-to-clipboard.js';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/scripts/misskey-api.js';
-import { defaultStore, userActions } from '@/store.js';
-import { $i, iAmModerator } from '@/account.js';
-import { notesSearchAvailable, canSearchNonLocalNotes } from '@/scripts/check-permissions.js';
-import { IRouter } from '@/nirax.js';
-import { antennasCache, rolesCache, userListsCache } from '@/cache.js';
-import { mainRouter } from '@/router/main.js';
-import { genEmbedCode } from '@/scripts/get-embed-code.js';
-=======
 import type { Router } from '@/router.js';
 import type { MenuItem } from '@/types/menu.js';
 import { i18n } from '@/i18n.js';
@@ -34,7 +20,7 @@ import { mainRouter } from '@/router.js';
 import { genEmbedCode } from '@/utility/get-embed-code.js';
 import { prefer } from '@/preferences.js';
 import { getPluginHandlers } from '@/plugin.js';
->>>>>>> develop:packages/frontend/src/utility/get-user-menu.ts
+import { store } from '@/store';
 
 export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router = mainRouter) {
 	const meId = $i ? $i.id : null;
@@ -369,12 +355,12 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 		});
 		//}
 
-		menuItems.push(defaultStore.state.stpvClientMutedUsers.includes(user.id)
+		menuItems.push(store.s.stpvClientMutedUsers.includes(user.id)
 			? {
 				icon: 'ph-eye-closed ph-bold ph-lg',
 				text: i18n.ts.stpvUnmuteUser,
 				action: () => {
-					defaultStore.set('stpvClientMutedUsers', defaultStore.state.stpvClientMutedUsers.filter((x) => x !== user.id).filter(x => x));
+					store.set('stpvClientMutedUsers', store.s.stpvClientMutedUsers.filter((x) => x !== user.id).filter(x => x));
 				},
 			}
 			: {
@@ -382,7 +368,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 				text: i18n.ts.stpvMuteUser,
 				action: () => {
 					// Limit max 100 users
-					defaultStore.set('stpvClientMutedUsers', [user.id, ...defaultStore.state.stpvClientMutedUsers.filter(x => x).slice(0, 100)]);
+					store.set('stpvClientMutedUsers', [user.id, ...store.s.stpvClientMutedUsers.filter(x => x).slice(0, 100)]);
 				},
 			},
 		);

@@ -1,5 +1,5 @@
+import { store } from '@/store';
 import * as misskey from 'misskey-js';
-import { defaultStore } from '@/store.js';
 
 const NO_SPACEING_LIST = [
 	'X光',
@@ -28,9 +28,9 @@ const LIST_WINDOW =
 const CJK_REGEXP = '[\\u4e00-\\u9fa5\\u0800-\\u4e00\\uac00-\\ud7ff]';
 
 export function autoSpacing(plainText: string) {
-	if (defaultStore.reactiveState.chineseAutospacing.value == null) return plainText;
+	if (store.r.chineseAutospacing.value == null) return plainText;
 	const rep = (matched: string, c1: string, c2: string, position: number) => {
-		if (defaultStore.reactiveState.chineseAutospacing.value === 'all') return `${c1} ${c2}`;
+		if (store.r.chineseAutospacing.value === 'all') return `${c1} ${c2}`;
 		const context = plainText
 			.slice(Math.max(0, position - LIST_WINDOW), position + LIST_WINDOW)
 			.toUpperCase();

@@ -309,6 +309,7 @@ import { getAppearNote } from '@/utility/get-appear-note.js';
 import { prefer } from '@/preferences.js';
 import { getPluginHandlers } from '@/plugin.js';
 import { DI } from '@/di.js';
+import { store } from '@/store';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note;
@@ -342,7 +343,7 @@ if (noteViewInterruptors.length > 0) {
 	});
 }
 
-const stpvDisableReactions = defaultStore.reactiveState.stpvDisableAllReactions;
+const stpvDisableReactions = store.r.stpvDisableAllReactions;
 
 const isRenote = Misskey.note.isPureRenote(note.value);
 
@@ -432,7 +433,7 @@ const repliesPagination = computed(() => ({
 	limit: 10,
 	params: {
 		noteId: appearNote.value.id,
-		showQuotes: defaultStore.reactiveState.stpvCombineRepliesQuotes.value,
+		showQuotes: store.r.stpvCombineRepliesQuotes.value,
 	},
 }));
 const repliesPagingComponent = useTemplateRef('repliesPagingComponent');

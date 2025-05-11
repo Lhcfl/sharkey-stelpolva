@@ -184,23 +184,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue';
 import MkSwitch from '@/components/MkSwitch.vue';
-import FormLink from '@/components/form/link.vue';
 import MkFolder from '@/components/MkFolder.vue';
-import FormInfo from '@/components/MkInfo.vue';
-import MkKeyValue from '@/components/MkKeyValue.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkRadios from '@/components/MkRadios.vue';
 import MkSelect from '@/components/MkSelect.vue';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/scripts/misskey-api.js';
-import { defaultStore } from '@/store.js';
-import { signout, signinRequired } from '@/account.js';
 import { i18n } from '@/i18n.js';
-import { definePageMetadata } from '@/scripts/page-metadata.js';
-import { unisonReload } from '@/scripts/unison-reload.js';
 import FormSection from '@/components/form/section.vue';
 import MkInfo from '@/components/MkInfo.vue';
-import { getDefaultFontSettings } from '@/scripts/font-settings';
+import { getDefaultFontSettings } from '@/utility/font-settings';
 import MkTextarea from '@/components/MkTextarea.vue';
 import { TimelineSwipeKeys } from '@/stpv-store-ext';
 import { isBasicTimeline } from '@/timelines';
@@ -209,14 +200,13 @@ import MkInput from '@/components/MkInput.vue';
 import MkEmojiPicker from '@/components/MkEmojiPicker.vue';
 import MkRange from '@/components/MkRange.vue';
 import { instance } from '@/instance';
-
-const $i = signinRequired();
-const meId = $i.id;
+import { store } from '@/store';
+import { definePage } from '@/page';
 
 const defaultFont = getDefaultFontSettings();
 console.log(defaultFont);
 
-const collapsedInReplyTo = defaultStore.reactiveState.collapseNotesRepliedTo;
+const collapsedInReplyTo = store.r.collapseNotesRepliedTo;
 
 const today = ref(new Date());
 const isAprilFoolsDay = computed(() =>
@@ -227,42 +217,42 @@ const isAprilFoolsDay = computed(() =>
 	today.value.getDate() === 1,
 );
 
-const autoSpacingBehaviour = computed(defaultStore.makeGetterSetter('chineseAutospacing'));
-const stpvDisableAllReactions = computed(defaultStore.makeGetterSetter('stpvDisableAllReactions'));
-const stpvHideReplyAcct = computed(defaultStore.makeGetterSetter('stpvHideReplyAcct'));
-const stpvAdvancedPostForm = computed(defaultStore.makeGetterSetter('stpvAdvancedPostForm'));
-const stpvCombineRepliesQuotes = computed(defaultStore.makeGetterSetter('stpvCombineRepliesQuotes'));
-const stpvEmojiPickerItemSize = computed(defaultStore.makeGetterSetter('stpvEmojiPickerItemSize'));
-const stpvAprilFools = computed(defaultStore.makeGetterSetter('stpvAprilFools'));
+const autoSpacingBehaviour = computed(store.makeGetterSetter('chineseAutospacing'));
+const stpvDisableAllReactions = computed(store.makeGetterSetter('stpvDisableAllReactions'));
+const stpvHideReplyAcct = computed(store.makeGetterSetter('stpvHideReplyAcct'));
+const stpvAdvancedPostForm = computed(store.makeGetterSetter('stpvAdvancedPostForm'));
+const stpvCombineRepliesQuotes = computed(store.makeGetterSetter('stpvCombineRepliesQuotes'));
+const stpvEmojiPickerItemSize = computed(store.makeGetterSetter('stpvEmojiPickerItemSize'));
+const stpvAprilFools = computed(store.makeGetterSetter('stpvAprilFools'));
 
 const stpvMutedUsersList = computed({
-	get: () => defaultStore.reactiveState.stpvClientMutedUsers.value.filter(x => x).join('\n'),
+	get: () => store.r.stpvClientMutedUsers.value.filter(x => x).join('\n'),
 	set: (v) => {
-		defaultStore.set('stpvClientMutedUsers', v.split('\n').filter(x => x.trim()).slice(0, 100));
+		store.set('stpvClientMutedUsers', v.split('\n').filter(x => x.trim()).slice(0, 100));
 	},
 });
 const stpvMutedNotesList = computed({
-	get: () => defaultStore.reactiveState.stpvClientMutedNotes.value.filter(x => x).join('\n'),
+	get: () => store.r.stpvClientMutedNotes.value.filter(x => x).join('\n'),
 	set: (v) => {
-		defaultStore.set('stpvClientMutedNotes', v.split('\n').filter(x => x.trim()).slice(0, 100));
+		store.set('stpvClientMutedNotes', v.split('\n').filter(x => x.trim()).slice(0, 100));
 	},
 });
 const stpvMutedDomainsList = computed({
-	get: () => defaultStore.reactiveState.stpvClientMutedDomains.value.filter(x => x).join('\n'),
+	get: () => store.r.stpvClientMutedDomains.value.filter(x => x).join('\n'),
 	set: (v) => {
-		defaultStore.set('stpvClientMutedNotes', v.split('\n').filter(x => x.trim()).slice(0, 100));
+		store.set('stpvClientMutedNotes', v.split('\n').filter(x => x.trim()).slice(0, 100));
 	},
 });
 const timelineSwipeDisabled = ref(Object.fromEntries(TimelineSwipeKeys.map(name => [
 	name,
 	computed({
-		get: () => defaultStore.reactiveState.stpvDisabledTimelineSwipes.value.includes(name),
+		get: () => store.r.stpvDisabledTimelineSwipes.value.includes(name),
 		set: (v) => {
-			const val = defaultStore.state.stpvDisabledTimelineSwipes;
+			const val = store.s.stpvDisabledTimelineSwipes;
 			if (v) {
-				defaultStore.set('stpvDisabledTimelineSwipes', val.concat([name]));
+				store.set('stpvDisabledTimelineSwipes', val.concat([name]));
 			} else {
-				defaultStore.set('stpvDisabledTimelineSwipes', val.filter(n => n !== name));
+				store.set('stpvDisabledTimelineSwipes', val.filter(n => n !== name));
 			}
 		},
 	}),
@@ -317,7 +307,7 @@ async function getLocalFontList() {
 
 // const headerTabs = computed(() => []);
 
-definePageMetadata(() => ({
+definePage(() => ({
 	title: i18n.ts._stpvPlus.title,
 	icon: 'ti ti-dots',
 }));

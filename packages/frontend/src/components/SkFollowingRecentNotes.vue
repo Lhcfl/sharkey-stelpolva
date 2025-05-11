@@ -35,7 +35,7 @@ import SkFollowingFeedEntry from '@/components/SkFollowingFeedEntry.vue';
 import { $i } from '@/i.js';
 import { checkWordMute } from '@/utility/check-word-mute.js';
 import MkPullToRefresh from '@/components/MkPullToRefresh.vue';
-import { defaultStore } from '@/store';
+import { store } from '@/store';
 
 const props = defineProps<{
 	userList: FollowingFeedTab;
@@ -87,9 +87,9 @@ const latestNotesPagination: Paging<'notes/following'> = {
 const latestNotesPaging = shallowRef<InstanceType<typeof MkPagination>>();
 
 function isSoftMuted(note: Misskey.entities.Note): boolean {
-	if (defaultStore.state.stpvClientMutedNotes.includes(note.id)) { return true; }
-	if (note.replyId && defaultStore.state.stpvClientMutedNotes.includes(note.replyId)) { return true; }
-	if (note.renoteId && defaultStore.state.stpvClientMutedNotes.includes(note.renoteId)) { return true; }
+	if (store.s.stpvClientMutedNotes.includes(note.id)) { return true; }
+	if (note.replyId && store.s.stpvClientMutedNotes.includes(note.replyId)) { return true; }
+	if (note.renoteId && store.s.stpvClientMutedNotes.includes(note.renoteId)) { return true; }
 	return isMuted(note, $i?.mutedWords);
 }
 

@@ -34,15 +34,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue';
-import { misskeyApi } from '@/scripts/misskey-api';
+import { misskeyApi } from '@/utility/misskey-api';
 import { i18n } from '@/i18n.js';
-import { definePageMetadata } from '@/scripts/page-metadata.js';
-import { signinRequired } from '@/account';
 import MkInfo from '@/components/MkInfo.vue';
 import MkButton from '@/components/MkButton.vue';
-import { copyToClipboard } from '@/scripts/copy-to-clipboard';
+import { copyToClipboard } from '@/utility/copy-to-clipboard';
+import { definePage } from '@/page';
+import { ensureSignin } from '@/i';
 
-const $i = signinRequired();
+const $i = ensureSignin();
 
 const myReactionsListMfm = ref('Loading...');
 const serverReactionsListMfm = ref('Loading...');
@@ -79,7 +79,7 @@ const headerTabs = computed(() => [{
 	icon: 'ph-planet ph-bold ph-lg',
 }]);
 
-definePageMetadata(() => ({
+definePage(() => ({
 	title: i18n.ts.stpvReactionsStat,
 	icon: 'ph-chart-bar ph-bold ph-lg',
 }));
