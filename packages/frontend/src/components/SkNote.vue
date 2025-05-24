@@ -157,7 +157,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<button v-if="appearNote.myReaction == null && appearNote.reactionAcceptance !== 'likeOnly' && !stpvDisableReactions" ref="likeButton" :class="$style.footerButton" class="_button" @click.stop @click="like()">
 					<i class="ph-heart ph-bold ph-lg"></i>
 				</button>
-				<button ref="reactButton" :class="$style.footerButton" class="_button" @click="toggleReact()" @click.stop>
+				<button ref="reactButton" :class="$style.footerButton" class="_button" @click.stop="toggleReact()">
 					<i v-if="(appearNote.reactionAcceptance === 'likeOnly' || stpvDisableReactions) && appearNote.myReaction != null" class="ti ti-heart-filled" style="color: var(--MI_THEME-love);"></i>
 					<i v-else-if="appearNote.myReaction != null" class="ti ti-minus" style="color: var(--MI_THEME-accent);"></i>
 					<i v-else-if="appearNote.reactionAcceptance === 'likeOnly' || stpvDisableReactions" class="ti ti-heart"></i>
@@ -740,7 +740,6 @@ function react(viaKeyboard = false): void {
 			});
 		}
 	} else {
-		blur();
 		reactionPicker.show(reactButton.value ?? null, note.value, async (reaction) => {
 			if (prefer.s.confirmOnReact) {
 				const confirm = await os.confirm({
@@ -768,6 +767,7 @@ function react(viaKeyboard = false): void {
 		}, () => {
 			focus();
 		});
+		blur();
 	}
 }
 
