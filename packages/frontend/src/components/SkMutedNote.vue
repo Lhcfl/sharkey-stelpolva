@@ -9,6 +9,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkUserName :user="note.user"/>
 	</template>
 </I18n>
+<I18n v-else-if="mutedByDomain" :src="i18n.ts.stpvDomainUserSaysSomething" tag="small">
+	<template #name>
+		<MkUserName :user="note.user"/>
+	</template>
+	<template #domain>
+		{{ mutedByDomain }}
+	</template>
+</I18n>
+<I18n v-else-if="muted === 'authorMuted' || 'noteMuted'" :src="i18n.ts.userSaysSomething">
+	<template #name>
+		<MkUserName :user="note.user"/>
+	</template>
+</I18n>
 <I18n v-else-if="prefer.s.showSoftWordMutedWord" :src="i18n.ts.userSaysSomething" tag="small">
 	<template #name>
 		<MkUserName :user="note.user"/>
@@ -31,13 +44,22 @@ import { i18n } from '@/i18n.js';
 import { prefer } from '@/preferences.js';
 
 const props = defineProps<{
-	muted: false | 'sensitiveMute' | string[];
+	muted: false | 'sensitiveMute' | string | string[];
 	note: Misskey.entities.Note;
 }>();
 
 const mutedWords = computed(() => Array.isArray(props.muted)
 	? props.muted.join(', ')
 	: props.muted);
+
+const mutedByDomain = computed(() => {
+	if (typeof props.muted === 'string') {
+		if (props.muted.startsWith('mutedByDomain:')) {
+			return props.muted.slice('mutedByDomain:'.length);
+		}
+	}
+	return null;
+});
 </script>
 
 <style module lang="scss">
