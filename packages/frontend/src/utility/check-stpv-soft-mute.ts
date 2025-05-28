@@ -1,6 +1,5 @@
 import { store } from '@/store';
 import * as Misskey from 'misskey-js';
-import type { Ref } from 'vue';
 
 function checkForSub<T>(note: Misskey.entities.Note, fn: (n: Misskey.entities.Note) => T) {
 	let res = fn(note);
@@ -16,10 +15,10 @@ function checkForSub<T>(note: Misskey.entities.Note, fn: (n: Misskey.entities.No
 	return false;
 }
 
-export const checkStpvSoftMute = (note: Ref<Misskey.entities.Note>) => {
-	if (checkForSub(note.value, n => store.r.stpvClientMutedNotes.value.includes(n.id))) { return true;}
-	if (checkForSub(note.value, n => store.r.stpvClientMutedUsers.value.includes(n.userId))) { return true; }
-	return checkForSub(note.value, n => (
-		n.user.host && store.r.stpvClientMutedDomains.value.includes(n.user.host)) ? `mutedByDomain:${n.user.host}` : false,
+export const checkStpvSoftMute = (note: Misskey.entities.Note) => {
+	if (checkForSub(note, n => store.r.stpvClientMutedNotes.value.includes(n.id))) { return ['noteMuted'];}
+	if (checkForSub(note, n => store.r.stpvClientMutedUsers.value.includes(n.userId))) { return ['authorMuted']; }
+	return checkForSub(note, n => (
+		n.user.host && store.r.stpvClientMutedDomains.value.includes(n.user.host)) ? [`mutedByDomain:${n.user.host}`] : false,
 	);
 };

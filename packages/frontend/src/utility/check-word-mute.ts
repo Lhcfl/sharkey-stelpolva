@@ -6,9 +6,11 @@ import * as Misskey from 'misskey-js';
 import { inject, ref } from 'vue';
 import type { Ref } from 'vue';
 import { $i } from '@/i';
+import { checkStpvSoftMute } from './check-stpv-soft-mute';
 
 export function checkMutes(noteToCheck: Misskey.entities.Note, withHardMute = false) {
-	const muted = ref(checkMute(noteToCheck, $i?.mutedWords));
+	const stpvMuted = checkStpvSoftMute(noteToCheck);
+	const muted = ref(stpvMuted || checkMute(noteToCheck, $i?.mutedWords));
 	const hardMuted = ref(withHardMute && checkMute(noteToCheck, $i?.hardMutedWords, true));
 	return { muted, hardMuted };
 }
