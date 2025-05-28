@@ -20,10 +20,10 @@ import type MkNoteDetailed from '@/components/MkNoteDetailed.vue';
 import type SkNoteDetailed from '@/components/SkNoteDetailed.vue';
 import { prefer } from '@/preferences';
 
-const XNoteDetailed = computed(() =>
-	prefer.r.noteDesign.value === 'misskey'
-		? defineAsyncComponent(() => import('@/components/MkNoteDetailed.vue'))
-		: defineAsyncComponent(() => import('@/components/SkNoteDetailed.vue')),
+const XNoteDetailed = defineAsyncComponent(() =>
+	prefer.s.noteDesign === 'misskey'
+	? import('@/components/MkNoteDetailed.vue')
+	: import('@/components/SkNoteDetailed.vue'),
 );
 
 const rootEl = useTemplateRef<ComponentExposed<typeof MkNoteDetailed | typeof SkNoteDetailed>>('rootEl');

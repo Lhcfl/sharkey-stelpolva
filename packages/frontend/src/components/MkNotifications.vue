@@ -23,10 +23,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 				:moveClass=" $style.transition_x_move"
 				tag="div"
 			>
-				<template v-for="(notification, i) in notifications" :key="notification.id">
+				<div v-for="(notification, i) in notifications" :key="notification.id">
 					<DynamicNote v-if="['reply', 'quote', 'mention'].includes(notification.type)" :class="$style.item" :note="notification.note" :withHardMute="true" :data-scroll-anchor="notification.id"/>
 					<XNotification v-else :class="$style.item" :notification="notification" :withTime="true" :full="true" :data-scroll-anchor="notification.id"/>
-				</template>
+				</div>
 			</component>
 		</template>
 	</MkPagination>

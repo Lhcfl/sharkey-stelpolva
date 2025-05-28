@@ -33,7 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import * as Misskey from 'misskey-js';
-import { host } from '@@/js/config.js';
+import * as config from '@@/js/config.js';
 import { useInterval } from '@@/js/use-interval.js';
 import type { OpenOnRemoteOptions } from '@/utility/please-login.js';
 import { sum } from '@/utility/array.js';
@@ -72,7 +72,7 @@ const showResult = ref(props.readOnly || isVoted.value);
 
 const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({
 	type: 'lookup',
-	url: `https://${host}/notes/${props.noteId}`,
+	url: `${config.url}/notes/${props.noteId}`,
 }));
 
 // 期限付きアンケート

@@ -63,8 +63,6 @@ export class DeleteAccountService {
 			// 知り得る全SharedInboxにDelete配信
 			const content = this.apRendererService.addContext(this.apRendererService.renderDelete(this.userEntityService.genLocalUserUri(user.id), user));
 
-			const queue: string[] = [];
-
 			const followings = await this.followingsRepository.find({
 				where: [
 					{ followerSharedInbox: Not(IsNull()) },
@@ -73,22 +71,17 @@ export class DeleteAccountService {
 				select: ['followerSharedInbox', 'followeeSharedInbox'],
 			});
 
-			const inboxes = followings.map(x => x.followerSharedInbox ?? x.followeeSharedInbox);
+			const inboxes = followings.map(x => [x.followerSharedInbox ?? x.followeeSharedInbox as string, true] as const);
+			const queue = new Map<string, true>(inboxes);
 
-			for (const inbox of inboxes) {
-				if (inbox != null && !queue.includes(inbox)) queue.push(inbox);
-			}
+			await this.queueService.deliverMany(user, content, queue);
 
-			for (const inbox of queue) {
-				this.queueService.deliver(user, content, inbox, true);
-			}
-
-			this.queueService.createDeleteAccountJob(user, {
+			await this.queueService.createDeleteAccountJob(user, {
 				soft: false,
 			});
 		} else {
 			// リモートユーザーの削除は、完全にDBから物理削除してしまうと再度連合してきてアカウントが復活する可能性があるため、soft指定する
-			this.queueService.createDeleteAccountJob(user, {
+			await this.queueService.createDeleteAccountJob(user, {
 				soft: true,
 			});
 		}

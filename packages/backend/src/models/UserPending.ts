@@ -34,6 +34,7 @@ export class MiUserPending {
 
 	@Column('varchar', {
 		length: 1000,
+		nullable: true,
 	})
 	public reason: string;
 }

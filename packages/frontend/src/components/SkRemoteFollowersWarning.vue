@@ -11,10 +11,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { FollowingFeedModel } from '@/utility/following-feed-utils.js';
+import type { FollowingFeedModel } from '@/types/following-feed.js';
 import { i18n } from '@/i18n.js';
 import MkInfo from '@/components/MkInfo.vue';
-import { followersTab } from '@/utility/following-feed-utils.js';
+import { followersTab } from '@/types/following-feed.js';
 
 const props = defineProps<{
 	model: FollowingFeedModel,

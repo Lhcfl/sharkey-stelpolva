@@ -24,7 +24,9 @@ export class MiUserListMembership {
 	@ManyToOne(type => MiUser, {
 		onDelete: 'CASCADE',
 	})
-	@JoinColumn()
+	@JoinColumn({
+		foreignKeyConstraintName: 'FK_d844bfc6f3f523a05189076efaa',
+	})
 	public user: MiUser | null;
 
 	@Index()
@@ -37,7 +39,9 @@ export class MiUserListMembership {
 	@ManyToOne(type => MiUserList, {
 		onDelete: 'CASCADE',
 	})
-	@JoinColumn()
+	@JoinColumn({
+		foreignKeyConstraintName: 'FK_605472305f26818cc93d1baaa74',
+	})
 	public userList: MiUserList | null;
 
 	// タイムラインにその人のリプライまで含めるかどうか

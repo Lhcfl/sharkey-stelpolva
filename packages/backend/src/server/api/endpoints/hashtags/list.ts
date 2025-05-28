@@ -58,6 +58,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.attachedToLocalUserOnly) query.andWhere('tag.attachedLocalUsersCount != 0');
 			if (ps.attachedToRemoteUserOnly) query.andWhere('tag.attachedRemoteUsersCount != 0');
 
+			// Ignore hidden hashtags
+			query.andWhere(`
+				NOT EXISTS (
+    			SELECT 1 FROM meta WHERE tag.name = ANY(meta."hiddenTags")
+				)`);
+
 			switch (ps.sort) {
 				case '+mentionedUsers': query.orderBy('tag.mentionedUsersCount', 'DESC'); break;
 				case '-mentionedUsers': query.orderBy('tag.mentionedUsersCount', 'ASC'); break;

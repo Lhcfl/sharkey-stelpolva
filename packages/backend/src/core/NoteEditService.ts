@@ -610,6 +610,8 @@ export class NoteEditService implements OnApplicationShutdown {
 			}
 		}
 
+		this.usersRepository.update({ id: user.id }, { updatedAt: new Date() });
+
 		// ハッシュタグ更新
 		this.pushToTl(note, user);
 

@@ -675,9 +675,11 @@ export class FileServerService {
 		if (info.blocked) {
 			reply.code(429);
 			reply.send({
-				message: 'Rate limit exceeded. Please try again later.',
-				code: 'RATE_LIMIT_EXCEEDED',
-				id: 'd5826d14-3982-4d2e-8011-b9e9f02499ef',
+				error: {
+					message: 'Rate limit exceeded. Please try again later.',
+					code: 'RATE_LIMIT_EXCEEDED',
+					id: 'd5826d14-3982-4d2e-8011-b9e9f02499ef',
+				},
 			});
 
 			return false;

@@ -79,8 +79,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i class="ti ti-brand-x"></i> {{ i18n.ts.expandTweet }}
 			</MkButton>
 		</div>
-		<div v-if="showAsQuote && activityPub && !theNote && !fetchingTheNote" :class="$style.action">
-			<MkButton :small="true" inline @click="fetchNote()">
+		<div v-if="showAsQuote && activityPub && !theNote && $i" :class="$style.action">
+			<MkButton :small="true" :disabled="!!fetching || fetchingTheNote" inline @click="() => refresh(true)">
 				<i class="ti ti-note"></i> {{ i18n.ts.fetchLinkedNote }}
 			</MkButton>
 		</div>
@@ -106,6 +106,7 @@ import { defineAsyncComponent, onDeactivated, onUnmounted, ref } from 'vue';
 import { url as local } from '@@/js/config.js';
 import { versatileLang } from '@@/js/intl-const.js';
 import * as Misskey from 'misskey-js';
+import { maybeMakeRelative } from '@@/js/url.js';
 import type { summaly } from '@misskey-dev/summaly';
 import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
@@ -117,7 +118,7 @@ import { prefer } from '@/preferences.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { warningExternalWebsite } from '@/utility/warning-external-website.js';
 import DynamicNoteSimple from '@/components/DynamicNoteSimple.vue';
-import { maybeMakeRelative } from '@@/js/url.js';
+import { $i } from '@/i';
 
 type SummalyResult = Awaited<ReturnType<typeof summaly>>;
 
@@ -144,7 +145,7 @@ const maybeRelativeUrl = maybeMakeRelative(props.url, local);
 const self = maybeRelativeUrl !== props.url;
 const attr = self ? 'to' : 'href';
 const target = self ? null : '_blank';
-const fetching = ref(true);
+const fetching = ref<Promise<void> | null>(null);
 const title = ref<string | null>(null);
 const description = ref<string | null>(null);
 const thumbnail = ref<string | null>(null);
@@ -152,11 +153,12 @@ const icon = ref<string | null>(null);
 const sitename = ref<string | null>(null);
 const sensitive = ref<boolean>(false);
 const activityPub = ref<string | null>(null);
-const player = ref({
+const player = ref<SummalyResult['player']>({
 	url: null,
 	width: null,
 	height: null,
-} as SummalyResult['player']);
+	allow: [],
+});
 const playerEnabled = ref(false);
 const tweetId = ref<string | null>(null);
 const tweetExpanded = ref(props.detail);
@@ -187,14 +189,14 @@ async function fetchNote() {
 			return;
 		}
 		theNote.value = response['object'];
-		fetchingTheNote.value = false;
 	} catch (err) {
 		if (_DEV_) {
 			console.error(`failed to extract note for preview of ${activityPub.value}`, err);
 		}
 		activityPub.value = null;
-		fetchingTheNote.value = false;
 		theNote.value = null;
+	} finally {
+		fetchingTheNote.value = false;
 	}
 }
 
@@ -212,39 +214,52 @@ if (requestUrl.hostname === 'music.youtube.com' && requestUrl.pathname.match('^/
 
 requestUrl.hash = '';
 
-window.fetch(`/url?url=${encodeURIComponent(requestUrl.href)}&lang=${versatileLang}`)
-	.then(res => {
-		if (!res.ok) {
-			if (_DEV_) {
-				console.warn(`[HTTP${res.status}] Failed to fetch url preview`);
-			}
-			return null;
-		}
-
-		return res.json();
-	})
-	.then((info: SummalyResult & { haveNoteLocally?: boolean } | null) => {
-		if (!info || info.url == null) {
-			fetching.value = false;
-			unknownUrl.value = true;
-			return;
-		}
-
-		fetching.value = false;
-		unknownUrl.value = false;
-
-		title.value = info.title;
-		description.value = info.description;
-		thumbnail.value = info.thumbnail;
-		icon.value = info.icon;
-		sitename.value = info.sitename;
-		player.value = info.player;
-		sensitive.value = info.sensitive ?? false;
-		activityPub.value = info.activityPub;
-		if (info.haveNoteLocally) {
-			fetchNote();
-		}
+function refresh(withFetch = false) {
+	const params = new URLSearchParams({
+		url: requestUrl.href,
+		lang: versatileLang,
 	});
+	if (withFetch) {
+		params.set('fetch', 'true');
+	}
+
+	const headers = $i ? { Authorization: `Bearer ${$i.token}` } : undefined;
+	return fetching.value ??= window.fetch(`/url?${params.toString()}`, { headers })
+		.then(res => {
+			if (!res.ok) {
+				if (_DEV_) {
+					console.warn(`[HTTP${res.status}] Failed to fetch url preview`);
+				}
+				return null;
+			}
+
+			return res.json();
+		})
+		.then(async (info: SummalyResult & { haveNoteLocally?: boolean } | null) => {
+			unknownUrl.value = info == null;
+			title.value = info?.title ?? null;
+			description.value = info?.description ?? null;
+			thumbnail.value = info?.thumbnail ?? null;
+			icon.value = info?.icon ?? null;
+			sitename.value = info?.sitename ?? null;
+			player.value = info?.player ?? {
+				url: null,
+				width: null,
+				height: null,
+				allow: [],
+			};
+			sensitive.value = info?.sensitive ?? false;
+			activityPub.value = info?.activityPub ?? null;
+
+			theNote.value = null;
+			if (info?.haveNoteLocally) {
+				await fetchNote();
+			}
+		})
+		.finally(() => {
+			fetching.value = null;
+		});
+}
 
 function adjustTweetHeight(message: MessageEvent) {
 	if (message.origin !== 'https://platform.twitter.com') return;
@@ -270,6 +285,9 @@ window.addEventListener('message', adjustTweetHeight);
 onUnmounted(() => {
 	window.removeEventListener('message', adjustTweetHeight);
 });
+
+// Load initial data
+refresh();
 </script>
 
 <style lang="scss" module>

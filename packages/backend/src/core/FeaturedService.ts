@@ -8,6 +8,7 @@ import * as Redis from 'ioredis';
 import type { MiGalleryPost, MiNote, MiUser } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
+import { RoleService } from '@/core/RoleService.js';
 
 const GLOBAL_NOTES_RANKING_WINDOW = 1000 * 60 * 60 * 24 * 3; // 3日ごと
 export const GALLERY_POSTS_RANKING_WINDOW = 1000 * 60 * 60 * 24 * 3; // 3日ごと
@@ -21,6 +22,8 @@ export class FeaturedService {
 	constructor(
 		@Inject(DI.redis)
 		private redisClient: Redis.Redis, // TODO: 専用のRedisサーバーを設定できるようにする
+
+		private readonly roleService: RoleService,
 	) {
 	}
 
@@ -31,7 +34,14 @@ export class FeaturedService {
 	}
 
 	@bindThis
-	private async updateRankingOf(name: string, windowRange: number, element: string, score = 1): Promise<void> {
+	private async updateRankingOf(name: string, windowRange: number, element: string, score: number, userId: string | null): Promise<void> {
+		if (userId) {
+			const policies = await this.roleService.getUserPolicies(userId);
+			if (!policies.canTrend) {
+				return;
+			}
+		}
+
 		const currentWindow = this.getCurrentWindow(windowRange);
 		const redisTransaction = this.redisClient.multi();
 		redisTransaction.zincrby(
@@ -89,28 +99,28 @@ export class FeaturedService {
 	}
 
 	@bindThis
-	public updateGlobalNotesRanking(noteId: MiNote['id'], score = 1): Promise<void> {
-		return this.updateRankingOf('featuredGlobalNotesRanking', GLOBAL_NOTES_RANKING_WINDOW, noteId, score);
+	public updateGlobalNotesRanking(note: Pick<MiNote, 'id' | 'userId'>, score = 1): Promise<void> {
+		return this.updateRankingOf('featuredGlobalNotesRanking', GLOBAL_NOTES_RANKING_WINDOW, note.id, score, note.userId);
 	}
 
 	@bindThis
-	public updateGalleryPostsRanking(galleryPostId: MiGalleryPost['id'], score = 1): Promise<void> {
-		return this.updateRankingOf('featuredGalleryPostsRanking', GALLERY_POSTS_RANKING_WINDOW, galleryPostId, score);
+	public updateGalleryPostsRanking(galleryPost: Pick<MiGalleryPost, 'id' | 'userId'>, score = 1): Promise<void> {
+		return this.updateRankingOf('featuredGalleryPostsRanking', GALLERY_POSTS_RANKING_WINDOW, galleryPost.id, score, galleryPost.userId);
 	}
 
 	@bindThis
-	public updateInChannelNotesRanking(channelId: MiNote['channelId'], noteId: MiNote['id'], score = 1): Promise<void> {
-		return this.updateRankingOf(`featuredInChannelNotesRanking:${channelId}`, GLOBAL_NOTES_RANKING_WINDOW, noteId, score);
+	public updateInChannelNotesRanking(channelId: MiNote['channelId'], note: Pick<MiNote, 'id' | 'userId'>, score = 1): Promise<void> {
+		return this.updateRankingOf(`featuredInChannelNotesRanking:${channelId}`, GLOBAL_NOTES_RANKING_WINDOW, note.id, score, note.userId);
 	}
 
 	@bindThis
-	public updatePerUserNotesRanking(userId: MiUser['id'], noteId: MiNote['id'], score = 1): Promise<void> {
-		return this.updateRankingOf(`featuredPerUserNotesRanking:${userId}`, PER_USER_NOTES_RANKING_WINDOW, noteId, score);
+	public updatePerUserNotesRanking(userId: MiUser['id'], note: Pick<MiNote, 'id'>, score = 1): Promise<void> {
+		return this.updateRankingOf(`featuredPerUserNotesRanking:${userId}`, PER_USER_NOTES_RANKING_WINDOW, note.id, score, userId);
 	}
 
 	@bindThis
 	public updateHashtagsRanking(hashtag: string, score = 1): Promise<void> {
-		return this.updateRankingOf('featuredHashtagsRanking', HASHTAG_RANKING_WINDOW, hashtag, score);
+		return this.updateRankingOf('featuredHashtagsRanking', HASHTAG_RANKING_WINDOW, hashtag, score, null);
 	}
 
 	@bindThis

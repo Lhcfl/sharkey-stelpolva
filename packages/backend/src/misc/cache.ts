@@ -19,16 +19,16 @@ export class RedisKVCache<T> {
 		opts: {
 			lifetime: RedisKVCache<T>['lifetime'];
 			memoryCacheLifetime: number;
-			fetcher: RedisKVCache<T>['fetcher'];
-			toRedisConverter: RedisKVCache<T>['toRedisConverter'];
-			fromRedisConverter: RedisKVCache<T>['fromRedisConverter'];
+			fetcher?: RedisKVCache<T>['fetcher'];
+			toRedisConverter?: RedisKVCache<T>['toRedisConverter'];
+			fromRedisConverter?: RedisKVCache<T>['fromRedisConverter'];
 		},
 	) {
 		this.lifetime = opts.lifetime;
 		this.memoryCache = new MemoryKVCache(opts.memoryCacheLifetime);
-		this.fetcher = opts.fetcher;
-		this.toRedisConverter = opts.toRedisConverter;
-		this.fromRedisConverter = opts.fromRedisConverter;
+		this.fetcher = opts.fetcher ?? (() => { throw new Error('fetch not supported - use get/set directly'); });
+		this.toRedisConverter = opts.toRedisConverter ?? ((value) => JSON.stringify(value));
+		this.fromRedisConverter = opts.fromRedisConverter ?? ((value) => JSON.parse(value));
 	}
 
 	@bindThis

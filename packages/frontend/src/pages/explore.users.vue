@@ -46,7 +46,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<template v-if="tag == null">
 			<MkFoldableSection class="_margin">
-				<template #header><i class="ti ti-chart-line ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.popularUsers }}</template>
+				<template #header><i class="ti ti-chart-line ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.tsx.popularUsersLocal({ name: instance.name ?? host }) }}</template>
+				<MkUserList :pagination="popularUsersLocalF"/>
+			</MkFoldableSection>
+			<MkFoldableSection class="_margin">
+				<template #header><i class="ti ti-chart-line ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.popularUsersGlobal }}</template>
 				<MkUserList :pagination="popularUsersF"/>
 			</MkFoldableSection>
 			<MkFoldableSection class="_margin">
@@ -65,6 +69,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { watch, ref, useTemplateRef, computed } from 'vue';
 import * as Misskey from 'misskey-js';
+import { host } from '@@/js/config';
 import MkUserList from '@/components/MkUserList.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
 import MkTab from '@/components/MkTab.vue';
@@ -73,7 +78,7 @@ import { instance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 
 const props = defineProps<{
-	tag?: string;
+	tag?: string | undefined;
 }>();
 
 const origin = ref('local');
@@ -86,43 +91,48 @@ watch(() => props.tag, () => {
 });
 
 const tagUsers = computed(() => ({
-	endpoint: 'hashtags/users' as const,
+	endpoint: 'hashtags/users',
 	limit: 30,
 	params: {
 		tag: props.tag,
 		origin: 'combined',
 		sort: '+follower',
 	},
-}));
+} as const));
 
-const pinnedUsers = { endpoint: 'pinned-users', noPaging: true };
+const pinnedUsers = { endpoint: 'pinned-users', limit: 10, noPaging: true } as const;
 const popularUsers = { endpoint: 'users', limit: 10, noPaging: true, params: {
 	state: 'alive',
 	origin: 'local',
 	sort: '+follower',
-} };
+} } as const;
 const recentlyUpdatedUsers = { endpoint: 'users', limit: 10, noPaging: true, params: {
 	origin: 'local',
 	sort: '+updatedAt',
-} };
+} } as const;
 const recentlyRegisteredUsers = { endpoint: 'users', limit: 10, noPaging: true, params: {
 	origin: 'local',
 	state: 'alive',
 	sort: '+createdAt',
-} };
+} } as const;
 const popularUsersF = { endpoint: 'users', limit: 10, noPaging: true, params: {
 	state: 'alive',
 	origin: 'remote',
 	sort: '+follower',
-} };
+} } as const;
+const popularUsersLocalF = { endpoint: 'users', limit: 10, noPaging: true, params: {
+	state: 'alive',
+	origin: 'remote',
+	sort: '+localFollower',
+} } as const;
 const recentlyUpdatedUsersF = { endpoint: 'users', limit: 10, noPaging: true, params: {
 	origin: 'combined',
 	sort: '+updatedAt',
-} };
+} } as const;
 const recentlyRegisteredUsersF = { endpoint: 'users', limit: 10, noPaging: true, params: {
 	origin: 'combined',
 	sort: '+createdAt',
-} };
+} } as const;
 
 misskeyApi('hashtags/list', {
 	sort: '+attachedLocalUsers',

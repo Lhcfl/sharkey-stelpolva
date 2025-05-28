@@ -176,7 +176,7 @@ function getNoteEmbedCodeMenu(note: Misskey.entities.Note, text: string): MenuIt
 
 export function getNoteMenu(props: {
 	note: Misskey.entities.Note;
-	translation: Ref<Misskey.entities.NotesTranslateResponse | null>;
+	translation: Ref<Misskey.entities.NotesTranslateResponse | false | null>;
 	translating: Ref<boolean>;
 	isDeleted: Ref<boolean>;
 	currentClip?: Misskey.entities.Clip;
@@ -303,17 +303,6 @@ export function getNoteMenu(props: {
 		os.pageWindow(`/notes/${appearNote.id}`);
 	}
 
-	async function translate(): Promise<void> {
-		if (props.translation.value != null) return;
-		props.translating.value = true;
-		const res = await misskeyApi('notes/translate', {
-			noteId: appearNote.id,
-			targetLang: miLocalStorage.getItem('lang') ?? navigator.language,
-		});
-		props.translating.value = false;
-		props.translation.value = res;
-	}
-
 	const menuItems: MenuItem[] = [];
 
 	if ($i) {
@@ -370,7 +359,7 @@ export function getNoteMenu(props: {
 			menuItems.push({
 				icon: 'ti ti-language-hiragana',
 				text: i18n.ts.translate,
-				action: translate,
+				action: () => translateNote(appearNote.id, props.translation, props.translating),
 			});
 		}
 
@@ -733,4 +722,21 @@ export function getRenoteMenu(props: {
 	return {
 		menu: renoteItems,
 	};
+}
+
+export async function translateNote(noteId: string, translation: Ref<Misskey.entities.NotesTranslateResponse | false | null>, translating: Ref<boolean>): Promise<void> {
+	if (translating.value || translation.value) return;
+	translating.value = true;
+	try {
+		const targetLang = miLocalStorage.getItem('lang') ?? navigator.language;
+		translation.value = await misskeyApi('notes/translate', {
+			noteId,
+			targetLang,
+		});
+	} catch (err) {
+		console.error(`Translation failed for ${noteId}: `, err);
+		translation.value = false;
+	} finally {
+		translating.value = false;
+	}
 }

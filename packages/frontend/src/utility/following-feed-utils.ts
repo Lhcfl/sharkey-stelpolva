@@ -7,16 +7,12 @@ import { computed } from 'vue';
 import type { Ref, WritableComputedRef } from 'vue';
 import type { PageHeaderItem } from '@/types/page-header.js';
 import type { MenuItem } from '@/types/menu.js';
+import type { FollowingFeedTab, FollowingFeedState, FollowingFeedModel } from '@/types/following-feed.js';
 import { deepMerge } from '@/utility/merge.js';
 import { i18n } from '@/i18n.js';
 import { popupMenu } from '@/os.js';
 import { prefer } from '@/preferences.js';
-
-export const followingTab = 'following' as const;
-export const mutualsTab = 'mutuals' as const;
-export const followersTab = 'followers' as const;
-export const followingFeedTabs = [followingTab, mutualsTab, followersTab] as const;
-export type FollowingFeedTab = typeof followingFeedTabs[number];
+import { followingTab, followersTab, mutualsTab, defaultFollowingFeedState } from '@/types/following-feed.js';
 
 export function followingTabName(tab: FollowingFeedTab): string;
 export function followingTabName(tab: FollowingFeedTab | null | undefined): null;
@@ -32,30 +28,6 @@ export function followingTabIcon(tab: FollowingFeedTab | null | undefined): stri
 	if (tab === mutualsTab) return 'ph-user-switch ph-bold ph-lg';
 	return 'ph-user-check ph-bold ph-lg';
 }
-
-export type FollowingFeedModel = {
-	[Key in keyof FollowingFeedState]: WritableComputedRef<FollowingFeedState[Key]>;
-};
-
-export type FollowingFeedState = {
-	withNonPublic: boolean,
-	withQuotes: boolean,
-	withBots: boolean,
-	withReplies: boolean,
-	onlyFiles: boolean,
-	userList: FollowingFeedTab,
-	remoteWarningDismissed: boolean,
-};
-
-export const defaultFollowingFeedState: FollowingFeedState = {
-	withNonPublic: false,
-	withQuotes: false,
-	withBots: true,
-	withReplies: false,
-	onlyFiles: false,
-	userList: followingTab,
-	remoteWarningDismissed: false,
-};
 
 interface StorageInterface {
 	readonly state: Ref<Partial<FollowingFeedState>>;
@@ -177,3 +149,4 @@ function createDefaultStorage(): Ref<StorageInterface> {
 		},
 	}));
 }
+

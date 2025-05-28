@@ -39,14 +39,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 					:moveClass="prefer.s.animation ? $style.transition_x_move : ''"
 					tag="div" class="_gaps"
 				>
-					<template v-for="item in timeline.toReversed()" :key="item.id">
+					<div v-for="item in timeline.toReversed()" :key="item.id">
 						<XMessage v-if="item.type === 'item'" :message="item.data"/>
 						<div v-else-if="item.type === 'date'" :class="$style.dateDivider">
 							<span><i class="ti ti-chevron-up"></i> {{ item.nextText }}</span>
 							<span style="height: 1em; width: 1px; background: var(--MI_THEME-divider);"></span>
 							<span>{{ item.prevText }} <i class="ti ti-chevron-down"></i></span>
 						</div>
-					</template>
+					</div>
 				</TransitionGroup>
 			</div>
 

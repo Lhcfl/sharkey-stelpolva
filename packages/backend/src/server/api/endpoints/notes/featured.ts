@@ -117,7 +117,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('note.renote', 'renote')
 				.leftJoinAndSelect('reply.user', 'replyUser')
 				.leftJoinAndSelect('renote.user', 'renoteUser')
-				.leftJoinAndSelect('note.channel', 'channel');
+				.leftJoinAndSelect('note.channel', 'channel')
+				.andWhere('user.isExplorable = TRUE');
 
 			this.queryService.generateBlockedHostQueryForNote(query);
 

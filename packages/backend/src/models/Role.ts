@@ -48,6 +48,22 @@ type CondFormulaValueIsRemote = {
 };
 
 /**
+ * User is from a specific instance
+ */
+type CondFormulaValueIsFromInstance = {
+	type: 'isFromInstance';
+	host: string;
+	subdomains: boolean;
+};
+
+/**
+ * Is the user from a local bubble instance
+ */
+type CondFormulaValueFromBubbleInstance = {
+	type: 'fromBubbleInstance';
+};
+
+/**
  * 既に指定のマニュアルロールにアサインされている場合のみ成立とする
  */
 type CondFormulaValueRoleAssignedTo = {
@@ -139,6 +155,70 @@ type CondFormulaValueFollowingMoreThanOrEq = {
 };
 
 /**
+ * Is followed by at most N local users
+ */
+type CondFormulaValueLocalFollowersLessThanOrEq = {
+	type: 'localFollowersLessThanOrEq';
+	value: number;
+};
+
+/**
+ * Is followed by at least N local users
+ */
+type CondFormulaValueLocalFollowersMoreThanOrEq = {
+	type: 'localFollowersMoreThanOrEq';
+	value: number;
+};
+
+/**
+ * Is following at most N local users
+ */
+type CondFormulaValueLocalFollowingLessThanOrEq = {
+	type: 'localFollowingLessThanOrEq';
+	value: number;
+};
+
+/**
+ * Is following at least N local users
+ */
+type CondFormulaValueLocalFollowingMoreThanOrEq = {
+	type: 'localFollowingMoreThanOrEq';
+	value: number;
+};
+
+/**
+ * Is followed by at most N remote users
+ */
+type CondFormulaValueRemoteFollowersLessThanOrEq = {
+	type: 'remoteFollowersLessThanOrEq';
+	value: number;
+};
+
+/**
+ * Is followed by at least N remote users
+ */
+type CondFormulaValueRemoteFollowersMoreThanOrEq = {
+	type: 'remoteFollowersMoreThanOrEq';
+	value: number;
+};
+
+/**
+ * Is following at most N remote users
+ */
+type CondFormulaValueRemoteFollowingLessThanOrEq = {
+	type: 'remoteFollowingLessThanOrEq';
+	value: number;
+};
+
+/**
+ * Is following at least N remote users
+ */
+type CondFormulaValueRemoteFollowingMoreThanOrEq = {
+	type: 'remoteFollowingMoreThanOrEq';
+	value: number;
+};
+
+/**
  * 投稿数が指定値以下の場合のみ成立とする
  */
 type CondFormulaValueNotesLessThanOrEq = {
@@ -160,6 +240,8 @@ export type RoleCondFormulaValue = { id: string } & (
 	CondFormulaValueNot |
 	CondFormulaValueIsLocal |
 	CondFormulaValueIsRemote |
+	CondFormulaValueIsFromInstance |
+	CondFormulaValueFromBubbleInstance |
 	CondFormulaValueIsSuspended |
 	CondFormulaValueIsLocked |
 	CondFormulaValueIsBot |
@@ -172,6 +254,14 @@ export type RoleCondFormulaValue = { id: string } & (
 	CondFormulaValueFollowersMoreThanOrEq |
 	CondFormulaValueFollowingLessThanOrEq |
 	CondFormulaValueFollowingMoreThanOrEq |
+	CondFormulaValueLocalFollowersLessThanOrEq |
+	CondFormulaValueLocalFollowersMoreThanOrEq |
+	CondFormulaValueLocalFollowingLessThanOrEq |
+	CondFormulaValueLocalFollowingMoreThanOrEq |
+	CondFormulaValueRemoteFollowersLessThanOrEq |
+	CondFormulaValueRemoteFollowersMoreThanOrEq |
+	CondFormulaValueRemoteFollowingLessThanOrEq |
+	CondFormulaValueRemoteFollowingMoreThanOrEq |
 	CondFormulaValueNotesLessThanOrEq |
 	CondFormulaValueNotesMoreThanOrEq
 );

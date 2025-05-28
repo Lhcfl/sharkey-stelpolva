@@ -45,6 +45,7 @@ export class SkLatestNote {
 	})
 	@JoinColumn({
 		name: 'user_id',
+		foreignKeyConstraintName: 'FK_20e346fffe4a2174585005d6d80',
 	})
 	public user: MiUser | null;
 
@@ -60,6 +61,7 @@ export class SkLatestNote {
 	})
 	@JoinColumn({
 		name: 'note_id',
+		foreignKeyConstraintName: 'FK_47a38b1c13de6ce4e5090fb1acd',
 	})
 	public note: MiNote | null;
 

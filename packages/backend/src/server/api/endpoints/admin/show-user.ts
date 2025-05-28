@@ -12,6 +12,7 @@ import { RoleEntityService } from '@/core/entities/RoleEntityService.js';
 import { IdService } from '@/core/IdService.js';
 import { notificationRecieveConfig } from '@/models/json-schema/user.js';
 import { isSystemAccount } from '@/misc/is-system-account.js';
+import { CacheService } from '@/core/CacheService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -186,6 +187,36 @@ export const meta = {
 					},
 				},
 			},
+			followStats: {
+				type: 'object',
+				optional: false, nullable: false,
+				properties: {
+					totalFollowing: {
+						type: 'number',
+						optional: false, nullable: false,
+					},
+					totalFollowers: {
+						type: 'number',
+						optional: false, nullable: false,
+					},
+					localFollowing: {
+						type: 'number',
+						optional: false, nullable: false,
+					},
+					localFollowers: {
+						type: 'number',
+						optional: false, nullable: false,
+					},
+					remoteFollowing: {
+						type: 'number',
+						optional: false, nullable: false,
+					},
+					remoteFollowers: {
+						type: 'number',
+						optional: false, nullable: false,
+					},
+				},
+			},
 		},
 	},
 } as const;
@@ -213,6 +244,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 		private roleEntityService: RoleEntityService,
 		private idService: IdService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const [user, profile] = await Promise.all([
@@ -236,6 +268,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const roleAssigns = await this.roleService.getUserAssigns(user.id);
 			const roles = await this.roleService.getUserRoles(user.id);
+
+			const followStats = await this.cacheService.getFollowStats(user.id);
 
 			return {
 				email: profile.email,
@@ -269,6 +303,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					expiresAt: a.expiresAt ? a.expiresAt.toISOString() : null,
 					roleId: a.roleId,
 				})),
+				followStats: {
+					...followStats,
+					totalFollowers: Math.max(user.followersCount, followStats.localFollowers + followStats.remoteFollowers),
+					totalFollowing: Math.max(user.followingCount, followStats.localFollowing + followStats.remoteFollowing),
+				},
 			};
 		});
 	}

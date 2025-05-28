@@ -23,6 +23,13 @@ import type { NoteEntityService } from './NoteEntityService.js';
 
 const NOTE_REQUIRED_NOTIFICATION_TYPES = new Set(['note', 'mention', 'reply', 'renote', 'renote:grouped', 'quote', 'reaction', 'reaction:grouped', 'pollEnded', 'edited', 'scheduledNotePosted'] as (typeof groupedNotificationTypes[number])[]);
 
+function undefOnMissing<T>(packPromise: Promise<T>): Promise<T | undefined> {
+	return packPromise.catch(err => {
+		if (err instanceof EntityNotFoundError) return undefined;
+		throw err;
+	});
+}
+
 @Injectable()
 export class NotificationEntityService implements OnModuleInit {
 	private userEntityService: UserEntityService;
@@ -75,9 +82,9 @@ export class NotificationEntityService implements OnModuleInit {
 		const noteIfNeed = needsNote ? (
 			hint?.packedNotes != null
 				? hint.packedNotes.get(notification.noteId)
-				: this.noteEntityService.pack(notification.noteId, { id: meId }, {
+				: undefOnMissing(this.noteEntityService.pack(notification.noteId, { id: meId }, {
 					detail: true,
-				})
+				}))
 		) : undefined;
 		// if the note has been deleted, don't show this notification
 		if (needsNote && !noteIfNeed) return null;
@@ -86,7 +93,7 @@ export class NotificationEntityService implements OnModuleInit {
 		const userIfNeed = needsUser ? (
 			hint?.packedUsers != null
 				? hint.packedUsers.get(notification.notifierId)
-				: this.userEntityService.pack(notification.notifierId, { id: meId })
+				: undefOnMissing(this.userEntityService.pack(notification.notifierId, { id: meId }))
 		) : undefined;
 		// if the user has been deleted, don't show this notification
 		if (needsUser && !userIfNeed) return null;
@@ -96,7 +103,7 @@ export class NotificationEntityService implements OnModuleInit {
 			const reactions = (await Promise.all(notification.reactions.map(async reaction => {
 				const user = hint?.packedUsers != null
 					? hint.packedUsers.get(reaction.userId)!
-					: await this.userEntityService.pack(reaction.userId, { id: meId });
+					: await undefOnMissing(this.userEntityService.pack(reaction.userId, { id: meId }));
 				return {
 					user,
 					reaction: reaction.reaction,
@@ -121,7 +128,7 @@ export class NotificationEntityService implements OnModuleInit {
 					return packedUser;
 				}
 
-				return this.userEntityService.pack(userId, { id: meId });
+				return undefOnMissing(this.userEntityService.pack(userId, { id: meId }));
 			}))).filter(x => x != null);
 			// if all users have been deleted, don't show this notification
 			if (users.length === 0) {
@@ -140,10 +147,7 @@ export class NotificationEntityService implements OnModuleInit {
 
 		const needsRole = notification.type === 'roleAssigned';
 		const role = needsRole
-			? await this.roleEntityService.pack(notification.roleId).catch(err => {
-				if (err instanceof EntityNotFoundError) return undefined;
-				throw err;
-			})
+			? await undefOnMissing(this.roleEntityService.pack(notification.roleId))
 			: undefined;
 		// if the role has been deleted, don't show this notification
 		if (needsRole && !role) {

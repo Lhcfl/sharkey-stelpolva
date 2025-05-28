@@ -890,6 +890,7 @@ export class ClientServerService {
 			return await reply.view('info-card', {
 				version: this.config.version,
 				host: this.config.host,
+				url: this.config.url,
 				meta: this.meta,
 				originalUsersCount: await this.usersRepository.countBy({ host: IsNull() }),
 				originalNotesCount: await this.notesRepository.countBy({ userHost: IsNull() }),

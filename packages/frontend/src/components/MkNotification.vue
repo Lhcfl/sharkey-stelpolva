@@ -243,13 +243,18 @@ watch(props, async () => {
 	const type = props.notification.type;
 
 	// To avoid extra lookups, only do the query when it actually matters.
-	if (type === 'follow' || type === 'receiveFollowRequest') {
-		const user = await misskeyApi('users/show', {
-			userId: props.notification.userId,
-		});
+	if ((type === 'follow' || type === 'receiveFollowRequest') && props.notification.userId) {
+		try {
+			const user = await misskeyApi('users/show', {
+				userId: props.notification.userId,
+			});
 
-		userDetailed.value = user;
-		followRequestDone.value = !user.hasPendingFollowRequestToYou;
+			userDetailed.value = user;
+			followRequestDone.value = !user.hasPendingFollowRequestToYou;
+		} catch {
+			userDetailed.value = null;
+			followRequestDone.value = false;
+		}
 	} else {
 		userDetailed.value = null;
 		followRequestDone.value = false;

@@ -176,6 +176,7 @@ export const ROLE_POLICIES = [
 	'canImportMuting',
 	'canImportUserLists',
 	'chatAvailability',
+	'canTrend',
 ] as const;
 
 export const DEFAULT_SERVER_ERROR_IMAGE_URL = '/client-assets/status/error.png';

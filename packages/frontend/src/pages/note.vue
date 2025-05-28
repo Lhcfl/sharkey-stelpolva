@@ -50,7 +50,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { computed, watch, ref } from 'vue';
 import * as Misskey from 'misskey-js';
-import { host } from '@@/js/config.js';
+import * as config from '@@/js/config.js';
 import type { Paging } from '@/components/MkPagination.vue';
 import DynamicNoteDetailed from '@/components/DynamicNoteDetailed.vue';
 import MkNotes from '@/components/MkNotes.vue';
@@ -151,7 +151,7 @@ function fetchNote() {
 				message: i18n.ts.thisContentsAreMarkedAsSigninRequiredByAuthor,
 				openOnRemote: {
 					type: 'lookup',
-					url: `https://${host}/notes/${props.noteId}`,
+					url: `${config.url}/notes/${props.noteId}`,
 				},
 			});
 		}

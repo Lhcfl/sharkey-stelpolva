@@ -11,6 +11,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<template #caption>{{ i18n.ts._wordMute.muteWordsDescription }}<br>{{ i18n.ts._wordMute.muteWordsDescription2 }}</template>
 		</MkTextarea>
 	</div>
+
+	<SkPatternTest :mutedWords="mutedWords"></SkPatternTest>
+
 	<MkButton primary inline :disabled="!changed" @click="save()"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
 </div>
 </template>
@@ -19,8 +22,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { ref, watch } from 'vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import MkButton from '@/components/MkButton.vue';
-import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
+import { parseMutes } from '@/utility/parse-mutes';
+import SkPatternTest from '@/components/SkPatternTest.vue';
 
 const props = defineProps<{
 	muted: (string[] | string)[];
@@ -30,7 +34,7 @@ const emit = defineEmits<{
 	(ev: 'save', value: (string[] | string)[]): void;
 }>();
 
-const render = (mutedWords) => mutedWords.map(x => {
+const render = (mutedWords: (string | string[])[]) => mutedWords.map(x => {
 	if (Array.isArray(x)) {
 		return x.join(' ');
 	} else {
@@ -46,47 +50,15 @@ watch(mutedWords, () => {
 });
 
 async function save() {
-	const parseMutes = (mutes) => {
-		// split into lines, remove empty lines and unnecessary whitespace
-		let lines = mutes.trim().split('\n').map(line => line.trim()).filter(line => line !== '');
-
-		// check each line if it is a RegExp or not
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i];
-			const regexp = line.match(/^\/(.+)\/(.*)$/);
-			if (regexp) {
-				// check that the RegExp is valid
-				try {
-					new RegExp(regexp[1], regexp[2]);
-					// note that regex lines will not be split by spaces!
-				} catch (err: any) {
-					// invalid syntax: do not save, do not reset changed flag
-					os.alert({
-						type: 'error',
-						title: i18n.ts.regexpError,
-						text: i18n.tsx.regexpErrorDescription({ tab: 'word mute', line: i + 1 }) + '\n' + err.toString(),
-					});
-					// re-throw error so these invalid settings are not saved
-					throw err;
-				}
-			} else {
-				lines[i] = line.split(' ');
-			}
-		}
-
-		return lines;
-	};
-
-	let parsed;
 	try {
-		parsed = parseMutes(mutedWords.value);
-	} catch (err) {
+		const parsed = parseMutes(mutedWords.value);
+
+		emit('save', parsed);
+
+		changed.value = false;
+	} catch {
 		// already displayed error message in parseMutes
 		return;
 	}
-
-	emit('save', parsed);
-
-	changed.value = false;
 }
 </script>

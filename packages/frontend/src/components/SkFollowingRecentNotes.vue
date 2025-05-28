@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<template #default="{ items: notes }">
 			<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.panel" :noGap="true">
-				<SkFollowingFeedEntry v-if="!isHardMuted(note)" :isMuted="isSoftMuted(note)" :note="note" :class="props.selectedUserId == note.userId && $style.selected" @select="u => selectUser(u.id)"/>
+				<SkFollowingFeedEntry :note="note" :class="props.selectedUserId == note.userId && $style.selected" @select="u => selectUser(u.id)"/>
 			</MkDateSeparatedList>
 		</template>
 	</MkPagination>
@@ -23,17 +23,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script setup lang="ts">
-import * as Misskey from 'misskey-js';
 import { computed, shallowRef } from 'vue';
-import type { FollowingFeedTab } from '@/utility/following-feed-utils.js';
 import type { Paging } from '@/components/MkPagination.vue';
+import type { FollowingFeedTab } from '@/types/following-feed.js';
 import { infoImageUrl } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import SkFollowingFeedEntry from '@/components/SkFollowingFeedEntry.vue';
-import { $i } from '@/i.js';
-import { checkWordMute } from '@/utility/check-word-mute.js';
 import MkPullToRefresh from '@/components/MkPullToRefresh.vue';
 import { store } from '@/store';
 
@@ -85,40 +82,6 @@ const latestNotesPagination: Paging<'notes/following'> = {
 };
 
 const latestNotesPaging = shallowRef<InstanceType<typeof MkPagination>>();
-
-function isSoftMuted(note: Misskey.entities.Note): boolean {
-	if (store.s.stpvClientMutedNotes.includes(note.id)) { return true; }
-	if (note.replyId && store.s.stpvClientMutedNotes.includes(note.replyId)) { return true; }
-	if (note.renoteId && store.s.stpvClientMutedNotes.includes(note.renoteId)) { return true; }
-	return isMuted(note, $i?.mutedWords);
-}
-
-function isHardMuted(note: Misskey.entities.Note): boolean {
-	return isMuted(note, $i?.hardMutedWords);
-}
-
-// Match the typing used by Misskey
-type Mutes = (string | string[])[] | null | undefined;
-
-// Adapted from MkNote.ts
-function isMuted(note: Misskey.entities.Note, mutes: Mutes): boolean {
-	return checkMute(note, mutes)
-		|| checkMute(note.reply, mutes)
-		|| checkMute(note.renote, mutes);
-}
-
-// Adapted from check-word-mute.ts
-function checkMute(note: Misskey.entities.Note | undefined | null, mutes: Mutes): boolean {
-	if (!note) {
-		return false;
-	}
-
-	if (!mutes || mutes.length < 1) {
-		return false;
-	}
-
-	return !!checkWordMute(note, $i, mutes);
-}
 </script>
 
 <style module lang="scss">

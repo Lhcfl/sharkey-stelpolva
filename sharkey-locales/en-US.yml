@@ -239,9 +239,23 @@ _role:
     canImportNotes: "Can import notes"
     canUpdateBioMedia: "Allow users to edit their avatar or banner"
     scheduleNoteMax: "Maximum number of scheduled notes"
+    canTrend: "Can appear in trending notes / users"
   _condition:
     isLocked: "Private account"
     isExplorable: "Account is discoverable"
+    isFromInstance: "Is from a specific instance"
+    isFromInstanceHost: "Hostname (case-insensitive)"
+    isFromInstanceSubdomains: "Match subdomains"
+    fromBubbleInstance: "User is from a bubble instance"
+    localFollowersLessThanOrEq: "Has X or fewer local followers"
+    localFollowersMoreThanOrEq: "Has X or more local followers"
+    localFollowingLessThanOrEq: "Follows X or fewer local accounts"
+    localFollowingMoreThanOrEq: "Follows X or more local accounts"
+    remoteFollowersLessThanOrEq: "Has X or fewer remote followers"
+    remoteFollowersMoreThanOrEq: "Has X or more remote followers"
+    remoteFollowingLessThanOrEq: "Follows X or fewer remote accounts"
+    remoteFollowingMoreThanOrEq: "Follows X or more remote accounts"
+  remoteDataWarning: "This condition may be incorrect for remote users."
 _emailUnavailable:
   banned: "This email address is banned"
 _signup:
@@ -509,6 +523,8 @@ id: "ID"
 mandatoryCW: "Force content warning"
 mandatoryCWDescription: "Applies a content warning to all posts created by this user. If the post already has a CW, then this is appended to the end."
 fetchLinkedNote: "Fetch linked note"
+showTranslationButtonInNoteFooter: "Add \"Translate\" to note action menu"
+translationFailed: "Failed to translate note. Please try again later or contact an administrator for assistance."
 
 _processErrors:
   quoteUnavailable: "Unable to process quote. This post may be missing context."
@@ -540,3 +556,36 @@ enableProxyAccountDescription: "If disabled, then the proxy account will not be 
 _confirmPollEdit:
   title: Are you sure you want to edit this poll
   text: Editing this poll will cause it to lose all previous votes
+
+wordMuteTestLabel: "Test patterns"
+wordMuteTestDescription: "Enter some text here to test your word patterns. The matched words, if any, will be displayed below."
+wordMuteTestTest: "Test"
+wordMuteTestMatch: "Matched words: {words}"
+wordMuteTestNoResults: "No results yet, enter some text and click \"Test\" to check it."
+wordMuteTestNoMatch: "Text does not match any patterns."
+wordMuteWarning: "All word mutes are *case-sensitive* and match on any substring, including part of a longer word or name. You can use regular expressions for more precise control."
+
+bubbleTimeline: "Bubble timeline"
+bubbleTimelineDescription: "Choose which instances should be displayed in the bubble."
+bubbleTimelineMustBeEnabled: "Note: the bubble timeline is hidden by default, and must be enabled via roles."
+
+popularUsersGlobal: "Users popular on the global network"
+popularUsersLocal: "Users popular on {name}"
+
+silenced: "Silenced"
+totalFollowers: "Total followers"
+totalFollowing: "Total following"
+localFollowers: "Local followers"
+localFollowing: "Local following"
+remoteFollowers: "Remote followers"
+remoteFollowing: "Remote following"
+updateRemoteUser: "Refresh remote data"
+activityPub: "Activity Pub"
+ip: "IP"
+ipTip: "The date is when IP address was first used."
+rolePeriod: "Period"
+roleAssigned: "Assigned"
+roleAutomatic: "automatic"
+
+translationTimeoutLabel: "Translation timeout"
+translationTimeoutCaption: "Timeout in milliseconds for translation API requests."

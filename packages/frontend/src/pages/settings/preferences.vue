@@ -271,6 +271,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 									</MkPreferenceContainer>
 								</SearchMarker>
 
+								<SearchMarker :keywords="['footer', 'action', 'translation', 'show']">
+									<MkPreferenceContainer k="showTranslationButtonInNoteFooter">
+										<MkSwitch v-model="showTranslationButtonInNoteFooter">
+											<template #label><SearchLabel>{{ i18n.ts.showTranslationButtonInNoteFooter }}</SearchLabel></template>
+										</MkSwitch>
+									</MkPreferenceContainer>
+								</SearchMarker>
+
 								<SearchMarker :keywords="['reaction', 'count', 'show']">
 									<MkPreferenceContainer k="showReactionsCount">
 										<MkSwitch v-model="showReactionsCount">
@@ -814,6 +822,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 										<template #label><SearchLabel>{{ i18n.ts.withRepliesByDefaultForNewlyFollowed }}</SearchLabel></template>
 									</MkSwitch>
 								</MkPreferenceContainer>
+								<div class="_buttons">
+									<MkButton danger @click="updateRepliesAll(true)"><i class="ph-chats ph-bold ph-lg"></i> {{ i18n.ts.showRepliesToOthersInTimelineAll }}</MkButton>
+									<MkButton danger @click="updateRepliesAll(false)"><i class="ph-chat ph-bold ph-lg"></i> {{ i18n.ts.hideRepliesToOthersInTimelineAll }}</MkButton>
+								</div>
 							</SearchMarker>
 						</div>
 
@@ -960,6 +972,7 @@ const serverDisconnectedBehavior = prefer.model('serverDisconnectedBehavior');
 const hemisphere = prefer.model('hemisphere');
 const showNoteActionsOnlyHover = prefer.model('showNoteActionsOnlyHover');
 const showClipButtonInNoteFooter = prefer.model('showClipButtonInNoteFooter');
+const showTranslationButtonInNoteFooter = prefer.model('showTranslationButtonInNoteFooter');
 const collapseRenotes = prefer.model('collapseRenotes');
 const advancedMfm = prefer.model('advancedMfm');
 const showReactionsCount = prefer.model('showReactionsCount');
@@ -1093,6 +1106,7 @@ watch([
 	fontSize,
 	useSystemFont,
 	makeEveryTextElementsSelectable,
+	noteDesign,
 ], async () => {
 	await reloadAsk({ reason: i18n.ts.reloadToApplySetting, unison: true });
 });
@@ -1216,6 +1230,16 @@ async function testNotificationDot() {
 	} else {
 		os.toast(i18n.ts.notificationDotNotWorking);
 	}
+}
+
+async function updateRepliesAll(withReplies: boolean) {
+	const { canceled } = await os.confirm({
+		type: 'warning',
+		text: withReplies ? i18n.ts.confirmShowRepliesAll : i18n.ts.confirmHideRepliesAll,
+	});
+	if (canceled) return;
+
+	misskeyApi('following/update-all', { withReplies });
 }
 
 function save() {

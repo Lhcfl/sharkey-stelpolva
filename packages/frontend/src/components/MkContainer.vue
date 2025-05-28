@@ -28,7 +28,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		@leave="leave"
 		@afterLeave="afterLeave"
 	>
-		<div v-show="showBody" ref="contentEl" :class="[$style.content, { [$style.omitted]: omitted }]">
+		<div v-show="showBody" ref="contentEl" :class="[$style.content, { [$style.omitted]: omitted, [$style.naked]: naked }]">
 			<slot></slot>
 			<button v-if="omitted" :class="$style.fade" class="_button" @click="showMore">
 				<span :class="$style.fadeLabel">{{ i18n.ts.showMore }}</span>
@@ -227,6 +227,11 @@ onUnmounted(() => {
 	backgroundが透明だと裏側を描画しないといけなくなるとかそういう理由かもしれない
 	*/
 	background: var(--MI_THEME-panel);
+
+	&.naked {
+		background: transparent !important;
+		box-shadow: none !important;
+	}
 
 	&.omitted {
 		position: relative;

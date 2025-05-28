@@ -19,18 +19,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts">
 import { computed, shallowRef } from 'vue';
 import type { Column } from '@/deck.js';
-import type { FollowingFeedState } from '@/utility/following-feed-utils.js';
+import type { FollowingFeedState } from '@/types/following-feed.js';
 export type FollowingColumn = Column & Partial<FollowingFeedState>;
 </script>
 
 <script setup lang="ts">
-import type { FollowingFeedTab } from '@/utility/following-feed-utils.js';
+import type { FollowingFeedTab } from '@/types/following-feed.js';
 import type { MenuItem } from '@/types/menu.js';
 import { getColumn, updateColumn } from '@/deck.js';
 import XColumn from '@/ui/deck/column.vue';
 import SkFollowingRecentNotes from '@/components/SkFollowingRecentNotes.vue';
 import SkRemoteFollowersWarning from '@/components/SkRemoteFollowersWarning.vue';
-import { createModel, createOptionsMenu, followingTab, followingTabName, followingTabIcon, followingFeedTabs } from '@/utility/following-feed-utils.js';
+import { followingTab, followingFeedTabs } from '@/types/following-feed.js';
+import { createModel, createOptionsMenu, followingTabName, followingTabIcon } from '@/utility/following-feed-utils.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 import { useRouter } from '@/router.js';

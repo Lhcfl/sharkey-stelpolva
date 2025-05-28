@@ -4,11 +4,14 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import type { UsersRepository } from '@/models/_.js';
+import { MiFollowing } from '@/models/_.js';
+import type { MiUser, UsersRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { RoleService } from '@/core/RoleService.js';
+import type { SelectQueryBuilder } from 'typeorm';
 
 export const meta = {
 	tags: ['users'],
@@ -38,7 +41,7 @@ export const paramDef = {
 	properties: {
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		offset: { type: 'integer', default: 0 },
-		sort: { type: 'string', enum: ['+follower', '-follower', '+createdAt', '-createdAt', '+updatedAt', '-updatedAt'] },
+		sort: { type: 'string', enum: ['+follower', '-follower', '+localFollower', '-localFollower', '+createdAt', '-createdAt', '+updatedAt', '-updatedAt'] },
 		state: { type: 'string', enum: ['all', 'alive'], default: 'all' },
 		origin: { type: 'string', enum: ['combined', 'local', 'remote'], default: 'local' },
 		hostname: {
@@ -59,6 +62,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private userEntityService: UserEntityService,
 		private queryService: QueryService,
+		private readonly roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.usersRepository.createQueryBuilder('user')
@@ -81,6 +85,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			switch (ps.sort) {
 				case '+follower': query.orderBy('user.followersCount', 'DESC'); break;
 				case '-follower': query.orderBy('user.followersCount', 'ASC'); break;
+				case '+localFollower': this.addLocalFollowers(query); query.orderBy('f."localFollowers"', 'DESC'); break;
+				case '-localFollower': this.addLocalFollowers(query); query.orderBy('f."localFollowers"', 'ASC'); break;
 				case '+createdAt': query.orderBy('user.id', 'DESC'); break;
 				case '-createdAt': query.orderBy('user.id', 'ASC'); break;
 				case '+updatedAt': query.andWhere('user.updatedAt IS NOT NULL').orderBy('user.updatedAt', 'DESC'); break;
@@ -94,9 +100,29 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			query.limit(ps.limit);
 			query.offset(ps.offset);
 
-			const users = await query.getMany();
+			const allUsers = await query.getMany();
+
+			// This is not ideal, for a couple of reasons:
+			// 1. It may return less than "limit" results.
+			// 2. A span of more than "limit" consecutive non-trendable users may cause the pagination to stop early.
+			// Unfortunately, there's no better solution unless we refactor role policies to be persisted to the DB.
+			const usersWithRoles = await Promise.all(allUsers.map(async u => [u, await this.roleService.getUserPolicies(u)] as const));
+			const users = usersWithRoles
+				.filter(([,p]) => p.canTrend)
+				.map(([u]) => u);
 
 			return await this.userEntityService.packMany(users, me, { schema: 'UserDetailed' });
 		});
+	}
+
+	private addLocalFollowers(query: SelectQueryBuilder<MiUser>) {
+		query.innerJoin(qb => {
+			return qb
+				.from(MiFollowing, 'f')
+				.addSelect('f."followeeId"')
+				.addSelect('COUNT(*) FILTER (where f."followerHost" IS NULL)', 'localFollowers')
+				.addSelect('COUNT(*) FILTER (where f."followeeHost" IS NOT NULL)', 'remoteFollowers')
+				.groupBy('"followeeId"');
+		}, 'f', 'user.id = f."followeeId"');
 	}
 }

@@ -10,11 +10,11 @@ import darkTheme from '@@/themes/d-green-lime.json5';
 import { hemisphere } from '@@/js/intl-const.js';
 import type { DeviceKind } from '@/utility/device-kind.js';
 import type { Plugin } from '@/plugin.js';
+import type { FollowingFeedState } from '@/types/following-feed.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { Pizzax } from '@/lib/pizzax.js';
 import { DEFAULT_DEVICE_KIND } from '@/utility/device-kind.js';
-import { defaultFollowingFeedState } from '@/utility/following-feed-utils.js';
-import type { FollowingFeedState } from '@/utility/following-feed-utils.js';
+import { defaultFollowingFeedState } from '@/types/following-feed.js';
 import { searchEngineMap } from '@/utility/search-engine-map.js';
 import { stpvDefaultStoreExtension } from './stpv-store-ext';
 
@@ -459,7 +459,7 @@ export const store = markRaw(new Pizzax('base', {
 	},
 	sound_note: {
 		where: 'device',
-		default: { type: 'syuilo/n-aec', volume: 1 },
+		default: { type: 'syuilo/n-aec', volume: 0 },
 	},
 	sound_noteMy: {
 		where: 'device',

@@ -59,6 +59,7 @@ export class I18n<T extends ILocale> {
 					if (typeof value === 'string') {
 						const parameters = Array.from(value.matchAll(/\{(\w+)\}/g), ([, parameter]) => parameter);
 
+						// TODO add a flag to suppress this warning from uses of <I18n> component
 						if (parameters.length) {
 							console.error(`Missing locale parameters: ${parameters.join(', ')} at ${String(p)}`);
 						}

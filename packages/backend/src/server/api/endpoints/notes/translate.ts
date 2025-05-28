@@ -10,22 +10,28 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { RoleService } from '@/core/RoleService.js';
-import { MiMeta } from '@/models/_.js';
+import type { MiMeta, MiNote } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
+import { CacheService } from '@/core/CacheService.js';
+import { hasText } from '@/models/Note.js';
+import { ApiLoggerService } from '@/server/api/ApiLoggerService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
 	tags: ['notes'],
 
+	// TODO allow unauthenticated if default template allows?
+	//   Maybe a value 'optional' that allows unauthenticated OR a token w/ appropriate role.
+	//   This will allow unauthenticated requests without leaking post data to restricted clients.
 	requireCredential: true,
 	kind: 'read:account',
 
 	res: {
 		type: 'object',
-		optional: true, nullable: false,
+		optional: false, nullable: false,
 		properties: {
-			sourceLang: { type: 'string' },
-			text: { type: 'string' },
+			sourceLang: { type: 'string', optional: true, nullable: false },
+			text: { type: 'string', optional: true, nullable: false },
 		},
 	},
 
@@ -44,6 +50,11 @@ export const meta = {
 			message: 'Cannot translate invisible note.',
 			code: 'CANNOT_TRANSLATE_INVISIBLE_NOTE',
 			id: 'ea29f2ca-c368-43b3-aaf1-5ac3e74bbe5d',
+		},
+		translationFailed: {
+			message: 'Failed to translate note. Please try again later or contact an administrator for assistance.',
+			code: 'TRANSLATION_FAILED',
+			id: '4e7a1a4f-521c-4ba2-b10a-69e5e2987b2f',
 		},
 	},
 
@@ -73,6 +84,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private getterService: GetterService,
 		private httpRequestService: HttpRequestService,
 		private roleService: RoleService,
+		private readonly cacheService: CacheService,
+		private readonly loggerService: ApiLoggerService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me.id);
@@ -89,8 +102,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.cannotTranslateInvisibleNote);
 			}
 
-			if (note.text == null) {
-				return;
+			if (!hasText(note)) {
+				return {};
 			}
 
 			const canDeeplFree = this.serverSettings.deeplFreeMode && !!this.serverSettings.deeplFreeInstance;
@@ -101,14 +114,33 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (targetLang.includes('-')) targetLang = targetLang.split('-')[0];
 
 			if (!canDeepl && !canLibre) return await this.translateByGoogle(note.text, targetLang);
+			let response = await this.cacheService.getCachedTranslation(note, targetLang);
+			if (!response) {
+				this.loggerService.logger.debug(`Fetching new translation for note=${note.id} lang=${targetLang}`);
+				response = await this.fetchTranslation(note, targetLang);
+				if (!response) {
+					throw new ApiError(meta.errors.translationFailed);
+				}
+
+				await this.cacheService.setCachedTranslation(note, targetLang, response);
+			}
+			return response;
+		});
+	}
+
+	private async fetchTranslation(note: MiNote & { text: string }, targetLang: string) {
+		// Load-bearing try/catch - removing this will shift indentation and cause ~80 lines of upstream merge conflicts
+		try {
+			// Ignore deeplFreeInstance unless deeplFreeMode is set
+			const deeplFreeInstance = this.serverSettings.deeplFreeMode ? this.serverSettings.deeplFreeInstance : null;
 
 			// DeepL/DeepLX handling
-			if (canDeepl) {
+			if (this.serverSettings.deeplAuthKey || deeplFreeInstance) {
 				const params = new URLSearchParams();
 				if (this.serverSettings.deeplAuthKey) params.append('auth_key', this.serverSettings.deeplAuthKey);
 				params.append('text', note.text);
 				params.append('target_lang', targetLang);
-				const endpoint = canDeeplFree ? this.serverSettings.deeplFreeInstance as string : this.serverSettings.deeplIsPro ? 'https://api.deepl.com/v2/translate' : 'https://api-free.deepl.com/v2/translate';
+				const endpoint = deeplFreeInstance ?? this.serverSettings.deeplIsPro ? 'https://api.deepl.com/v2/translate' : 'https://api-free.deepl.com/v2/translate';
 
 				const res = await this.httpRequestService.send(endpoint, {
 					method: 'POST',
@@ -117,6 +149,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						Accept: 'application/json, */*',
 					},
 					body: params.toString(),
+					timeout: this.serverSettings.translationTimeout,
 				});
 				if (this.serverSettings.deeplAuthKey) {
 					const json = (await res.json()) as {
@@ -152,8 +185,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			// LibreTranslate handling
-			if (canLibre) {
-				const res = await this.httpRequestService.send(this.serverSettings.libreTranslateURL as string, {
+			if (this.serverSettings.libreTranslateURL) {
+				const res = await this.httpRequestService.send(this.serverSettings.libreTranslateURL, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -166,6 +199,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						format: 'text',
 						api_key: this.serverSettings.libreTranslateKey ?? '',
 					}),
+					timeout: this.serverSettings.translationTimeout,
 				});
 
 				const json = (await res.json()) as {
@@ -183,17 +217,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					text: json.translatedText,
 				};
 			}
+		} catch (e) {
+			this.loggerService.logger.error('Unhandled error from translation API: ', { e });
+		}
 
-			return;
-		});
+		return null;
 	}
 
 	async translateByGoogle(text: string, targetLang: string) {
 		const MAX_TRANSLATE = 15000;
 		const MAX_TRANSLATE_PER_REQ = 1500;
-	
+
 		const toTranslate: string[] = [];
-	
+
 		for (
 			let i = 0;
 			i < text.length && i < MAX_TRANSLATE;
@@ -201,14 +237,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		) {
 			toTranslate.push(text.slice(i, i + MAX_TRANSLATE_PER_REQ));
 		}
-	
+
 		const googleTranslate = async (toTranslate: string) => {
 			const googleUrl = new URL(
 				'https://translate.google.com/translate_a/single?client=gtx&dt=t&dj=1&ie=UTF-8&sl=auto',
 			);
 			googleUrl.searchParams.append('tl', targetLang);
 			googleUrl.searchParams.append('q', toTranslate);
-	
+
 			const res = await this.httpRequestService.send(googleUrl.toString());
 			const json = (await res.json()) as {
 				sentences: {
@@ -219,13 +255,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}[];
 				src: string;
 			};
-	
+
 			return {
 				sourceLang: json.src,
 				text: json.sentences.map((s) => s.trans).join(' '),
 			};
 		};
-	
+
 		const result: {
 			sourceLang: string;
 			text: string;
@@ -233,7 +269,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			sourceLang: '',
 			text: '',
 		};
-	
+
 		for (const text of toTranslate) {
 			// If it is not the first request, sleep 500 milliseconds to prevent 429 too many requests.
 			if (!result.text) {
@@ -249,11 +285,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return result;
 			}
 		}
-	
+
 		if (text.length > MAX_TRANSLATE + MAX_TRANSLATE_PER_REQ) {
 			result.text += '... (text is too long to translate)';
 		}
-	
+
 		return result;
 	}
 }

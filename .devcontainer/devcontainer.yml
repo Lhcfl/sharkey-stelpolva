@@ -199,6 +199,10 @@ proxyBypassHosts:
 #proxySmtp: socks4://127.0.0.1:1080 # use SOCKS4
 #proxySmtp: socks5://127.0.0.1:1080 # use SOCKS5
 
+# Path to the directory that uploaded media will be saved to
+# Defaults to a folder called "files" in the Sharkey directory
+#mediaDirectory: /var/lib/sharkey
+
 # Media Proxy
 #mediaProxy: https://example.com/proxy
 

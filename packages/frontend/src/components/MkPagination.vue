@@ -280,18 +280,16 @@ const fetchMore = async (): Promise<void> => {
 
 		if (res.length === 0) {
 			if (props.pagination.reversed) {
-				reverseConcat(res).then(() => {
-					more.value = false;
-				});
+				await reverseConcat(res);
+				more.value = false;
 			} else {
 				items.value = concatMapWithArray(items.value, res);
 				more.value = false;
 			}
 		} else {
 			if (props.pagination.reversed) {
-				reverseConcat(res).then(() => {
-					more.value = true;
-				});
+				await reverseConcat(res);
+				more.value = true;
 			} else {
 				items.value = concatMapWithArray(items.value, res);
 				more.value = true;

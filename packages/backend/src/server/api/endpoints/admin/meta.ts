@@ -445,6 +445,10 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			translationTimeout: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
 			deeplAuthKey: {
 				type: 'string',
 				optional: false, nullable: true,
@@ -476,6 +480,10 @@ export const meta = {
 			defaultLightTheme: {
 				type: 'string',
 				optional: false, nullable: true,
+			},
+			defaultLike: {
+				type: 'string',
+				optional: false, nullable: false,
 			},
 			description: {
 				type: 'string',
@@ -728,6 +736,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				objectStorageUseProxy: instance.objectStorageUseProxy,
 				objectStorageSetPublicRead: instance.objectStorageSetPublicRead,
 				objectStorageS3ForcePathStyle: instance.objectStorageS3ForcePathStyle,
+				translationTimeout: instance.translationTimeout,
 				deeplAuthKey: instance.deeplAuthKey,
 				deeplIsPro: instance.deeplIsPro,
 				deeplFreeMode: instance.deeplFreeMode,

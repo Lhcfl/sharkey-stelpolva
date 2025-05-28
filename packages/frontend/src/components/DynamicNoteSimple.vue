@@ -21,10 +21,10 @@ import type MkNoteSimple from '@/components/MkNoteSimple.vue';
 import type SkNoteSimple from '@/components/SkNoteSimple.vue';
 import { prefer } from '@/preferences';
 
-const XNoteSimple = computed(() =>
-	prefer.r.noteDesign.value === 'misskey'
-		? defineAsyncComponent(() => import('@/components/MkNoteSimple.vue'))
-		: defineAsyncComponent(() => import('@/components/SkNoteSimple.vue')),
+const XNoteSimple = defineAsyncComponent(() =>
+	prefer.s.noteDesign === 'misskey'
+	? import('@/components/MkNoteSimple.vue')
+	: import('@/components/SkNoteSimple.vue'),
 );
 
 const rootEl = useTemplateRef<ComponentExposed<typeof MkNoteSimple | typeof SkNoteSimple>>('rootEl');

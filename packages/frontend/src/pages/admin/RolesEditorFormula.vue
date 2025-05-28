@@ -9,6 +9,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkSelect v-model="type" :class="$style.typeSelect">
 			<option value="isLocal">{{ i18n.ts._role._condition.isLocal }}</option>
 			<option value="isRemote">{{ i18n.ts._role._condition.isRemote }}</option>
+			<option value="isFromInstance">{{ i18n.ts._role._condition.isFromInstance }}</option>
+			<option value="fromBubbleInstance">{{ i18n.ts._role._condition.fromBubbleInstance }}</option>
 			<option value="isSuspended">{{ i18n.ts._role._condition.isSuspended }}</option>
 			<option value="isLocked">{{ i18n.ts._role._condition.isLocked }}</option>
 			<option value="isBot">{{ i18n.ts._role._condition.isBot }}</option>
@@ -21,6 +23,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<option value="followersMoreThanOrEq">{{ i18n.ts._role._condition.followersMoreThanOrEq }}</option>
 			<option value="followingLessThanOrEq">{{ i18n.ts._role._condition.followingLessThanOrEq }}</option>
 			<option value="followingMoreThanOrEq">{{ i18n.ts._role._condition.followingMoreThanOrEq }}</option>
+			<option value="localFollowersLessThanOrEq">{{ i18n.ts._role._condition.localFollowersLessThanOrEq }}</option>
+			<option value="localFollowersMoreThanOrEq">{{ i18n.ts._role._condition.localFollowersMoreThanOrEq }}</option>
+			<option value="localFollowingLessThanOrEq">{{ i18n.ts._role._condition.localFollowingLessThanOrEq }}</option>
+			<option value="localFollowingMoreThanOrEq">{{ i18n.ts._role._condition.localFollowingMoreThanOrEq }}</option>
+			<option value="remoteFollowersLessThanOrEq">{{ i18n.ts._role._condition.remoteFollowersLessThanOrEq }}</option>
+			<option value="remoteFollowersMoreThanOrEq">{{ i18n.ts._role._condition.remoteFollowersMoreThanOrEq }}</option>
+			<option value="remoteFollowingLessThanOrEq">{{ i18n.ts._role._condition.remoteFollowingLessThanOrEq }}</option>
+			<option value="remoteFollowingMoreThanOrEq">{{ i18n.ts._role._condition.remoteFollowingMoreThanOrEq }}</option>
 			<option value="notesLessThanOrEq">{{ i18n.ts._role._condition.notesLessThanOrEq }}</option>
 			<option value="notesMoreThanOrEq">{{ i18n.ts._role._condition.notesMoreThanOrEq }}</option>
 			<option value="and">{{ i18n.ts._role._condition.and }}</option>
@@ -55,12 +65,44 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template #suffix>sec</template>
 	</MkInput>
 
-	<MkInput v-else-if="['followersLessThanOrEq', 'followersMoreThanOrEq', 'followingLessThanOrEq', 'followingMoreThanOrEq', 'notesLessThanOrEq', 'notesMoreThanOrEq'].includes(type)" v-model="v.value" type="number">
+	<MkInput
+		v-else-if="[
+			'followersLessThanOrEq',
+			'followersMoreThanOrEq',
+			'followingLessThanOrEq',
+			'followingMoreThanOrEq',
+			'localFollowersLessThanOrEq',
+			'localFollowersMoreThanOrEq',
+			'localFollowingLessThanOrEq',
+			'localFollowingMoreThanOrEq',
+			'remoteFollowersLessThanOrEq',
+			'remoteFollowersMoreThanOrEq',
+			'remoteFollowingLessThanOrEq',
+			'remoteFollowingMoreThanOrEq',
+			'notesLessThanOrEq',
+			'notesMoreThanOrEq'
+		].includes(type)"
+		v-model="v.value"
+		type="number"
+	>
 	</MkInput>
 
 	<MkSelect v-else-if="type === 'roleAssignedTo'" v-model="v.roleId">
 		<option v-for="role in roles.filter(r => r.target === 'manual')" :key="role.id" :value="role.id">{{ role.name }}</option>
 	</MkSelect>
+
+	<MkInput v-else-if="type === 'isFromInstance'" v-model="v.host" type="text">
+		<template #label>{{ i18n.ts._role._condition.isFromInstanceHost }}</template>
+	</MkInput>
+
+	<MkSwitch v-if="type === 'isFromInstance'" v-model="v.subdomains">
+		<template #label>{{ i18n.ts._role._condition.isFromInstanceSubdomains }}</template>
+	</MkSwitch>
+
+	<div v-if="['remoteFollowersLessThanOrEq', 'remoteFollowersMoreThanOrEq', 'remoteFollowingLessThanOrEq', 'remoteFollowingMoreThanOrEq'].includes(type)" :class="$style.warningBanner">
+		<i class="ti ti-alert-triangle"></i>
+		{{ i18n.ts._role.remoteDataWarning }}
+	</div>
 </div>
 </template>
 
@@ -73,6 +115,7 @@ import MkButton from '@/components/MkButton.vue';
 import { i18n } from '@/i18n.js';
 import { deepClone } from '@/utility/clone.js';
 import { rolesCache } from '@/cache.js';
+import MkSwitch from '@/components/MkSwitch.vue';
 
 const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
 
@@ -102,6 +145,7 @@ watch(v, () => {
 const type = computed({
 	get: () => v.value.type,
 	set: (t) => {
+		// TODO there's a bug here: switching types leaves extra properties in the JSON
 		if (t === 'and') v.value.values = [];
 		if (t === 'or') v.value.values = [];
 		if (t === 'not') v.value.value = { id: uuid(), type: 'isRemote' };
@@ -112,8 +156,20 @@ const type = computed({
 		if (t === 'followersMoreThanOrEq') v.value.value = 10;
 		if (t === 'followingLessThanOrEq') v.value.value = 10;
 		if (t === 'followingMoreThanOrEq') v.value.value = 10;
+		if (t === 'localFollowersLessThanOrEq') v.value.value = 10;
+		if (t === 'localFollowersMoreThanOrEq') v.value.value = 10;
+		if (t === 'localFollowingLessThanOrEq') v.value.value = 10;
+		if (t === 'localFollowingMoreThanOrEq') v.value.value = 10;
+		if (t === 'remoteFollowersLessThanOrEq') v.value.value = 10;
+		if (t === 'remoteFollowersMoreThanOrEq') v.value.value = 10;
+		if (t === 'remoteFollowingLessThanOrEq') v.value.value = 10;
+		if (t === 'remoteFollowingMoreThanOrEq') v.value.value = 10;
 		if (t === 'notesLessThanOrEq') v.value.value = 10;
 		if (t === 'notesMoreThanOrEq') v.value.value = 10;
+		if (t === 'isFromInstance') {
+			v.value.host = '';
+			v.value.subdomains = true;
+		}
 		v.value.type = t;
 	},
 });
@@ -161,6 +217,16 @@ function removeSelf() {
 
 	&:hover {
 		border-color: var(--MI_THEME-accent);
+	}
+}
+
+.warningBanner {
+	color: var(--MI_THEME-warn);
+	width: 100%;
+	padding: 0 6px;
+
+	> i {
+		margin-right: 4px;
 	}
 }
 </style>

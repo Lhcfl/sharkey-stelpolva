@@ -11,10 +11,10 @@ import type { Plugin } from '@/plugin.js';
 import type { DeviceKind } from '@/utility/device-kind.js';
 import type { DeckProfile } from '@/deck.js';
 import type { PreferencesDefinition } from './manager.js';
-import type { FollowingFeedState } from '@/utility/following-feed-utils.js';
+import type { FollowingFeedState } from '@/types/following-feed.js';
 import { DEFAULT_DEVICE_KIND } from '@/utility/device-kind.js';
 import { searchEngineMap } from '@/utility/search-engine-map.js';
-import { defaultFollowingFeedState } from '@/utility/following-feed-utils.js';
+import { defaultFollowingFeedState } from '@/types/following-feed.js';
 
 /** サウンド設定 */
 export type SoundStore = {
@@ -246,6 +246,9 @@ export const PREF_DEF = {
 		default: false,
 	},
 	showClipButtonInNoteFooter: {
+		default: false,
+	},
+	showTranslationButtonInNoteFooter: {
 		default: false,
 	},
 	reactionsDisplaySize: {

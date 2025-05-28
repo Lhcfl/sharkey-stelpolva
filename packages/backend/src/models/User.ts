@@ -130,7 +130,9 @@ export class MiUser {
 	@OneToOne(() => MiDriveFile, {
 		onDelete: 'SET NULL',
 	})
-	@JoinColumn()
+	@JoinColumn({
+		foreignKeyConstraintName: 'FK_q5lm0tbgejtfskzg0rc4wd7t1n',
+	})
 	public background: MiDriveFile | null;
 
 	// avatarId が null になったとしてもこれが null でない可能性があるため、このフィールドを使うときは avatarId の non-null チェックをすること
@@ -346,7 +348,7 @@ export class MiUser {
 	 */
 	@Column('boolean', {
 		name: 'enable_rss',
-		default: true,
+		default: false,
 	})
 	public enableRss: boolean;
 

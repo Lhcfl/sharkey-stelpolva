@@ -29,6 +29,7 @@ export class MiEmoji {
 	})
 	public host: string | null;
 
+	@Index('IDX_EMOJI_CATEGORY')
 	@Column('varchar', {
 		length: 128, nullable: true,
 	})
@@ -77,6 +78,8 @@ export class MiEmoji {
 	public isSensitive: boolean;
 
 	// TODO: 定期ジョブで存在しなくなったロールIDを除去するようにする
+	// Synchronize: false is needed because TypeORM doesn't understand GIN indexes
+	@Index('IDX_EMOJI_ROLE_IDS', { synchronize: false })
 	@Column('varchar', {
 		array: true, length: 128, default: '{}',
 	})

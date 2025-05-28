@@ -30,6 +30,7 @@ import { trackPromise } from '@/misc/promise-tracker.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
 import { PER_NOTE_REACTION_USER_PAIR_CACHE_MAX } from '@/const.js';
+import { CacheService } from '@/core/CacheService.js';
 
 const FALLBACK = '\u2764';
 
@@ -102,6 +103,7 @@ export class ReactionService {
 		private apDeliverManagerService: ApDeliverManagerService,
 		private notificationService: NotificationService,
 		private perUserReactionsChart: PerUserReactionsChart,
+		private readonly cacheService: CacheService,
 	) {
 	}
 
@@ -212,20 +214,28 @@ export class ReactionService {
 				.execute();
 		}
 
+		this.usersRepository.update({ id: user.id }, { updatedAt: new Date() });
+
 		// 30%の確率、セルフではない、3日以内に投稿されたノートの場合ハイライト用ランキング更新
 		if (
 			Math.random() < 0.3 &&
 			note.userId !== user.id &&
 			(Date.now() - this.idService.parse(note.id).date.getTime()) < 1000 * 60 * 60 * 24 * 3
 		) {
-			if (note.channelId != null) {
-				if (note.replyId == null) {
-					this.featuredService.updateInChannelNotesRanking(note.channelId, note.id, 1);
-				}
-			} else {
-				if (note.visibility === 'public' && note.userHost == null && note.replyId == null) {
-					this.featuredService.updateGlobalNotesRanking(note.id, 1);
-					this.featuredService.updatePerUserNotesRanking(note.userId, note.id, 1);
+			const author = await this.cacheService.findUserById(note.userId);
+			if (author.isExplorable) {
+				const policies = await this.roleService.getUserPolicies(author);
+				if (policies.canTrend) {
+					if (note.channelId != null) {
+						if (note.replyId == null) {
+							this.featuredService.updateInChannelNotesRanking(note.channelId, note, 1);
+						}
+					} else {
+						if (note.visibility === 'public' && note.userHost == null && note.replyId == null) {
+							this.featuredService.updateGlobalNotesRanking(note, 1);
+							this.featuredService.updatePerUserNotesRanking(note.userId, note, 1);
+						}
+					}
 				}
 			}
 		}
@@ -298,9 +308,9 @@ export class ReactionService {
 	}
 
 	@bindThis
-	public async delete(user: { id: MiUser['id']; host: MiUser['host']; isBot: MiUser['isBot']; }, note: MiNote) {
+	public async delete(user: { id: MiUser['id']; host: MiUser['host']; isBot: MiUser['isBot']; }, note: MiNote, exist?: MiNoteReaction | null) {
 		// if already unreacted
-		const exist = await this.noteReactionsRepository.findOneBy({
+		exist ??= await this.noteReactionsRepository.findOneBy({
 			noteId: note.id,
 			userId: user.id,
 		});
@@ -329,6 +339,8 @@ export class ReactionService {
 				.where('id = :id', { id: note.id })
 				.execute();
 		}
+
+		this.usersRepository.update({ id: user.id }, { updatedAt: new Date() });
 
 		this.globalEventService.publishNoteStream(note.id, 'unreacted', {
 			reaction: this.decodeReaction(exist.reaction).reaction,

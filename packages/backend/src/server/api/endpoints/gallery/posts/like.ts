@@ -98,7 +98,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			// ランキング更新
 			if (Date.now() - this.idService.parse(post.id).date.getTime() < GALLERY_POSTS_RANKING_WINDOW) {
-				await this.featuredService.updateGalleryPostsRanking(post.id, 1);
+				await this.featuredService.updateGalleryPostsRanking(post, 1);
 			}
 
 			this.galleryPostsRepository.increment({ id: post.id }, 'likedCount', 1);

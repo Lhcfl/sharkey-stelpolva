@@ -155,6 +155,8 @@ export class ApRequestService {
 
 	@bindThis
 	public async signedPost(user: { id: MiUser['id'] }, url: string, object: unknown, digest?: string): Promise<void> {
+		this.apUtilityService.assertApUrl(url);
+
 		const body = typeof object === 'string' ? object : JSON.stringify(object);
 
 		const keypair = await this.userKeypairService.getUserKeypair(user.id);
@@ -186,6 +188,8 @@ export class ApRequestService {
 	 */
 	@bindThis
 	public async signedGet(url: string, user: { id: MiUser['id'] }, followAlternate?: boolean): Promise<IObjectWithId> {
+		this.apUtilityService.assertApUrl(url);
+
 		const _followAlternate = followAlternate ?? true;
 		const keypair = await this.userKeypairService.getUserKeypair(user.id);
 

@@ -592,6 +592,8 @@ export class NoteCreateService implements OnApplicationShutdown {
 		if (!this.isRenote(note) || this.isQuote(note)) {
 			// Increment notes count (user)
 			this.incNotesCountOfUser(user);
+		} else {
+			this.usersRepository.update({ id: user.id }, { updatedAt: new Date() });
 		}
 
 		this.pushToTl(note, user);
@@ -631,7 +633,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		}
 
 		if (this.isRenote(data) && !this.isQuote(data) && data.renote.userId !== user.id && !user.isBot) {
-			this.incRenoteCount(data.renote);
+			this.incRenoteCount(data.renote, user);
 		}
 
 		if (data.poll && data.poll.expiresAt) {
@@ -814,8 +816,8 @@ export class NoteCreateService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private incRenoteCount(renote: MiNote) {
-		this.notesRepository.createQueryBuilder().update()
+	private async incRenoteCount(renote: MiNote, user: MiUser) {
+		await this.notesRepository.createQueryBuilder().update()
 			.set({
 				renoteCount: () => '"renoteCount" + 1',
 			})
@@ -823,15 +825,18 @@ export class NoteCreateService implements OnApplicationShutdown {
 			.execute();
 
 		// 30%の確率、3日以内に投稿されたノートの場合ハイライト用ランキング更新
-		if (Math.random() < 0.3 && (Date.now() - this.idService.parse(renote.id).date.getTime()) < 1000 * 60 * 60 * 24 * 3) {
-			if (renote.channelId != null) {
-				if (renote.replyId == null) {
-					this.featuredService.updateInChannelNotesRanking(renote.channelId, renote.id, 5);
-				}
-			} else {
-				if (renote.visibility === 'public' && renote.userHost == null && renote.replyId == null) {
-					this.featuredService.updateGlobalNotesRanking(renote.id, 5);
-					this.featuredService.updatePerUserNotesRanking(renote.userId, renote.id, 5);
+		if (user.isExplorable && Math.random() < 0.3 && (Date.now() - this.idService.parse(renote.id).date.getTime()) < 1000 * 60 * 60 * 24 * 3) {
+			const policies = await this.roleService.getUserPolicies(user);
+			if (policies.canTrend) {
+				if (renote.channelId != null) {
+					if (renote.replyId == null) {
+						this.featuredService.updateInChannelNotesRanking(renote.channelId, renote, 5);
+					}
+				} else {
+					if (renote.visibility === 'public' && renote.userHost == null && renote.replyId == null) {
+						this.featuredService.updateGlobalNotesRanking(renote, 5);
+						this.featuredService.updatePerUserNotesRanking(renote.userId, renote, 5);
+					}
 				}
 			}
 		}

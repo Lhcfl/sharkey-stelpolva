@@ -117,18 +117,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<hr>
 
-		<SearchMarker :keywords="['replies']">
-			<FormSection>
-				<div class="_gaps_s">
-					<MkSwitch v-model="defaultWithReplies"><SearchLabel>{{ i18n.ts.withRepliesByDefaultForNewlyFollowed }}</SearchLabel></MkSwitch>
-					<MkButton danger @click="updateRepliesAll(true)"><i class="ph-chats ph-bold ph-lg"></i> {{ i18n.ts.showRepliesToOthersInTimelineAll }}</MkButton>
-					<MkButton danger @click="updateRepliesAll(false)"><i class="ph-chat ph-bold ph-lg"></i> {{ i18n.ts.hideRepliesToOthersInTimelineAll }}</MkButton>
-				</div>
-			</FormSection>
-		</SearchMarker>
-
-		<hr>
-
 		<FormSlot>
 			<MkButton danger @click="migrate"><i class="ti ti-refresh"></i> {{ i18n.ts.migrateOldSettings }}</MkButton>
 			<template #caption>{{ i18n.ts.migrateOldSettings_description }}</template>

@@ -26,15 +26,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<FormLink to="/admin/server-rules">{{ i18n.ts.serverRules }}</FormLink>
 
-				<!-- TODO translate -->
-				<MkFolder v-if="bubbleTimelineEnabled">
+				<MkFolder>
 					<template #icon><i class="ph-drop ph-bold ph-lg"></i></template>
-					<template #label>Bubble timeline</template>
+					<template #label>{{ i18n.ts.bubbleTimeline }}</template>
 
 					<div class="_gaps">
+						<div v-if="!$i.policies.btlAvailable">
+							<i class="ti ti-alert-triangle"></i> {{ i18n.ts.bubbleTimelineMustBeEnabled }}
+						</div>
+
 						<MkTextarea v-model="bubbleTimeline">
-							<template #caption>Choose which instances should be displayed in the bubble.</template>
+							<template #caption>{{ i18n.ts.bubbleTimelineDescription }}</template>
 						</MkTextarea>
+
 						<MkButton primary @click="save_bubbleTimeline">{{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
@@ -47,6 +51,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkTextarea v-model="trustedLinkUrlPatterns">
 							<template #caption>{{ i18n.ts.trustedLinkUrlPatternsDescription }}</template>
 						</MkTextarea>
+
+						<SkPatternTest :mutedWords="trustedLinkUrlPatterns"></SkPatternTest>
+
 						<MkButton primary @click="save_trustedLinkUrlPatterns">{{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
@@ -71,6 +78,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkTextarea v-model="sensitiveWords">
 							<template #caption>{{ i18n.ts.sensitiveWordsDescription }}<br>{{ i18n.ts.sensitiveWordsDescription2 }}</template>
 						</MkTextarea>
+
+						<SkPatternTest :mutedWords="sensitiveWords"></SkPatternTest>
+
 						<MkButton primary @click="save_sensitiveWords">{{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
@@ -83,6 +93,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkTextarea v-model="prohibitedWords">
 							<template #caption>{{ i18n.ts.prohibitedWordsDescription }}<br>{{ i18n.ts.prohibitedWordsDescription2 }}</template>
 						</MkTextarea>
+
+						<SkPatternTest :mutedWords="prohibitedWords"></SkPatternTest>
+
 						<MkButton primary @click="save_prohibitedWords">{{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
@@ -95,6 +108,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkTextarea v-model="prohibitedWordsForNameOfUser">
 							<template #caption>{{ i18n.ts.prohibitedWordsForNameOfUserDescription }}<br>{{ i18n.ts.prohibitedWordsDescription2 }}</template>
 						</MkTextarea>
+
+						<SkPatternTest :mutedWords="prohibitedWordsForNameOfUser"></SkPatternTest>
+
 						<MkButton primary @click="save_prohibitedWordsForNameOfUser">{{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
@@ -166,11 +182,12 @@ import { definePage } from '@/page.js';
 import MkButton from '@/components/MkButton.vue';
 import FormLink from '@/components/form/link.vue';
 import MkFolder from '@/components/MkFolder.vue';
+import SkPatternTest from '@/components/SkPatternTest.vue';
+import { $i } from '@/i';
 
 const enableRegistration = ref<boolean>(false);
 const emailRequiredForSignup = ref<boolean>(false);
 const approvalRequiredForSignup = ref<boolean>(false);
-const bubbleTimelineEnabled = ref<boolean>(false);
 const sensitiveWords = ref<string>('');
 const prohibitedWords = ref<string>('');
 const prohibitedWordsForNameOfUser = ref<string>('');
@@ -193,7 +210,6 @@ async function init() {
 	hiddenTags.value = meta.hiddenTags.join('\n');
 	preservedUsernames.value = meta.preservedUsernames.join('\n');
 	bubbleTimeline.value = meta.bubbleInstances.join('\n');
-	bubbleTimelineEnabled.value = meta.policies.btlAvailable;
 	trustedLinkUrlPatterns.value = meta.trustedLinkUrlPatterns.join('\n');
 	blockedHosts.value = meta.blockedHosts.join('\n');
 	silencedHosts.value = meta.silencedHosts?.join('\n') ?? '';

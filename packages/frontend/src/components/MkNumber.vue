@@ -10,6 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { reactive, watch } from 'vue';
 import number from '@/filters/number.js';
+import { prefer } from '@/preferences';
 
 const props = defineProps<{
 	value: number;
@@ -36,7 +37,11 @@ watch(() => props.value, (to, from) => {
 		}
 	}
 
-	window.requestAnimationFrame(step);
+	if (prefer.s.animation) {
+		window.requestAnimationFrame(step);
+	} else {
+		tweened.number = to;
+	}
 }, {
 	immediate: true,
 });

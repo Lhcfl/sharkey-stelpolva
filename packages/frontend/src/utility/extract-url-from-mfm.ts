@@ -4,21 +4,34 @@
  */
 
 import * as mfm from '@transfem-org/sfm-js';
-import { unique } from '@/utility/array.js';
 
 // unique without hash
 // [ http://a/#1, http://a/#2, http://b/#3 ] => [ http://a/#1, http://b/#3 ]
-const removeHash = (x: string) => x.replace(/#[^#]*$/, '');
+const removeHash = (x: string) => {
+	if (URL.canParse(x)) {
+		const url = new URL(x);
+		url.hash = '';
+		return url.toString();
+	} else {
+		return x.replace(/#[^#]*$/, '');
+	}
+};
 
 export function extractUrlFromMfm(nodes: mfm.MfmNode[], respectSilentFlag = true): string[] {
-	const urlNodes = mfm.extract(nodes, (node) => {
-		return (node.type === 'url') || (node.type === 'link' && (!respectSilentFlag || !node.props.silent));
-	});
-	const urls: string[] = unique(urlNodes.map(x => x.props.url));
+	const urls = new Map<string, string>();
 
-	return urls.reduce((array, url) => {
-		const urlWithoutHash = removeHash(url);
-		if (!array.map(x => removeHash(x)).includes(urlWithoutHash)) array.push(url);
-		return array;
-	}, [] as string[]);
+	// Single iteration pass to avoid potential DoS in maliciously-constructed notes.
+	for (const node of nodes) {
+		if ((node.type === 'url') || (node.type === 'link' && (!respectSilentFlag || !node.props.silent))) {
+			const url = (node as mfm.MfmUrl | mfm.MfmLink).props.url;
+			const key = removeHash(url);
+
+			// Keep the first match only, to preserve existing behavior.
+			if (!urls.has(key)) {
+				urls.set(key, url);
+			}
+		}
+	}
+
+	return Array.from(urls.values());
 }
