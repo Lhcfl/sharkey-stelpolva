@@ -585,6 +585,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (Object.keys(updates).length > 0) {
 				await this.usersRepository.update(user.id, updates);
 				this.globalEventService.publishInternalEvent('localUserUpdated', { id: user.id });
+				Object.assign(user, updates);
 			}
 
 			const verified_links = await verifyFieldLinks(newFields, `${this.config.url}/@${user.username}`, this.httpRequestService);
