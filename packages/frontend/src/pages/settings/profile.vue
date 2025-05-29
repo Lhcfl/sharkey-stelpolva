@@ -71,9 +71,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkSelect>
 		</SearchMarker>
 
-		<SearchMarker :keywords="['metadata']">
+		<SearchMarker v-slot="slotProps" :keywords="['metadata']">
 			<FormSlot>
-				<MkFolder>
+				<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 					<template #icon><i class="ti ti-list"></i></template>
 					<template #label><SearchLabel>{{ i18n.ts._profile.metadataEdit }}</SearchLabel></template>
 					<template #footer>
@@ -139,8 +139,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkSelect>
 		</SearchMarker>
 
-		<SearchMarker>
-			<MkFolder>
+		<SearchMarker v-slot="slotProps">
+			<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 				<template #label><SearchLabel>{{ i18n.ts.advancedSettings }}</SearchLabel></template>
 
 				<div class="_gaps_m">
@@ -149,6 +149,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<template #label><SearchLabel>{{ i18n.ts.flagAsCat }}</SearchLabel></template>
 							<template #caption>{{ i18n.ts.flagAsCatDescription }}</template>
 						</MkSwitch>
+					</SearchMarker>
+					<SearchMarker :keywords="['cat']">
 						<MkSwitch v-if="profile.isCat" v-model="profile.speakAsCat">
 							<template #label><SearchLabel>{{ i18n.ts.flagSpeakAsCat }}</SearchLabel></template>
 							<template #caption>{{ i18n.ts.flagSpeakAsCatDescription }}</template>

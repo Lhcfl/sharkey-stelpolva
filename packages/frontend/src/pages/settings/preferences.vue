@@ -196,8 +196,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 								</MkPreferenceContainer>
 							</SearchMarker>
 
-							<SearchMarker :keywords="['pinned', 'list']">
-								<MkFolder>
+							<SearchMarker v-slot="slotProps" :keywords="['pinned', 'list']">
+								<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 									<template #label><SearchLabel>{{ i18n.ts.pinnedList }}</SearchLabel></template>
 									<!-- 複数ピン止め管理できるようにしたいけどめんどいので一旦ひとつのみ -->
 									<MkButton v-if="prefer.r.pinnedUserLists.value.length === 0" @click="setPinnedList()">{{ i18n.ts.add }}</MkButton>
@@ -436,9 +436,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</SearchMarker>
 						</div>
 
-						<SearchMarker :keywords="['default', 'note', 'visibility']">
+						<SearchMarker v-slot="slotProps" :keywords="['default', 'note', 'visibility']">
 							<MkDisableSection :disabled="rememberNoteVisibility">
-								<MkFolder>
+								<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 									<template #label><SearchLabel>{{ i18n.ts.defaultNoteVisibility }}</SearchLabel></template>
 									<template v-if="defaultNoteVisibility === 'public'" #suffix>{{ i18n.ts._visibility.public }}</template>
 									<template v-else-if="defaultNoteVisibility === 'home'" #suffix>{{ i18n.ts._visibility.home }}</template>
@@ -850,24 +850,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</MkPreferenceContainer>
 						</SearchMarker>
 
-						<SearchMarker :keywords="['boost', 'show', 'visib', 'selector']">
+						<SearchMarker v-slot="slotProps" :keywords="['boost', 'show', 'visib', 'selector']">
 							<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 								<template #label><SearchLabel>{{ i18n.ts.boostSettings }}</SearchLabel></template>
 								<div class="_gaps_m">
-									<MkPreferenceContainer k="showVisibilitySelectorOnBoost">
-										<MkSwitch v-model="showVisibilitySelectorOnBoost">
-											<template #label><SearchLabel>{{ i18n.ts.showVisibilitySelectorOnBoost }}</SearchLabel></template>
-											<template #caption>{{ i18n.ts.showVisibilitySelectorOnBoostDescription }}</template>
-										</MkSwitch>
-									</MkPreferenceContainer>
-									<MkPreferenceContainer k="visibilityOnBoost">
-										<MkSelect v-model="visibilityOnBoost">
-											<template #label><SearchLabel>{{ i18n.ts.visibilityOnBoost }}</SearchLabel></template>
-											<option value="public">{{ i18n.ts._visibility['public'] }}</option>
-											<option value="home">{{ i18n.ts._visibility['home'] }}</option>
-											<option value="followers">{{ i18n.ts._visibility['followers'] }}</option>
-										</MkSelect>
-									</MkPreferenceContainer>
+									<SearchMarker :keywords="['boost', 'show', 'visib', 'selector']">
+										<MkPreferenceContainer k="showVisibilitySelectorOnBoost">
+											<MkSwitch v-model="showVisibilitySelectorOnBoost">
+												<template #label><SearchLabel>{{ i18n.ts.showVisibilitySelectorOnBoost }}</SearchLabel></template>
+												<template #caption>{{ i18n.ts.showVisibilitySelectorOnBoostDescription }}</template>
+											</MkSwitch>
+										</MkPreferenceContainer>
+									</SearchMarker>
+									<SearchMarker :keywords="['boost', 'visib']">
+										<MkPreferenceContainer k="visibilityOnBoost">
+											<MkSelect v-model="visibilityOnBoost">
+												<template #label><SearchLabel>{{ i18n.ts.visibilityOnBoost }}</SearchLabel></template>
+												<option value="public">{{ i18n.ts._visibility['public'] }}</option>
+												<option value="home">{{ i18n.ts._visibility['home'] }}</option>
+												<option value="followers">{{ i18n.ts._visibility['followers'] }}</option>
+											</MkSelect>
+										</MkPreferenceContainer>
+									</SearchMarker>
 								</div>
 							</MkFolder>
 						</SearchMarker>
@@ -899,8 +903,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</MkPreferenceContainer>
 						</SearchMarker>
 
-						<SearchMarker :keywords="['emoji', 'dictionary', 'additional', 'extra']">
-							<MkFolder>
+						<SearchMarker v-slot="slotProps" :keywords="['emoji', 'dictionary', 'additional', 'extra']">
+							<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 								<template #label><SearchLabel>{{ i18n.ts.additionalEmojiDictionary }}</SearchLabel></template>
 								<div class="_buttons">
 									<template v-for="lang in emojiIndexLangs" :key="lang">

@@ -263,6 +263,12 @@ rt {
 	contain: strict;
 	overflow: auto;
 	overscroll-behavior: contain;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
 }
 
 ._pageScrollable {

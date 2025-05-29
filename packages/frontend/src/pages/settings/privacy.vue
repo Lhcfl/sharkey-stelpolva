@@ -203,19 +203,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</FormSlot>
 					</SearchMarker>
 
-					<SearchMarker :keywords="['federate', 'auth', 'fetch']">
-						<MkFolder v-if="instance.federation !== 'none'">
+					<SearchMarker v-slot="slotProps" :keywords="['federate', 'auth', 'fetch']">
+						<MkFolder v-if="instance.federation !== 'none'" :defaultOpen="slotProps.isParentOfTarget">
 							<template #label><SearchLabel>{{ i18n.ts.authorizedFetchSection }}</SearchLabel></template>
 							<template #suffix>{{ computedAllowUnsignedFetch !== 'always' ? i18n.ts.enabled : i18n.ts.disabled }}</template>
 
-							<MkRadios v-model="allowUnsignedFetch" @update:modelValue="save()">
-								<template #label><SearchLabel>{{ i18n.ts.authorizedFetchLabel }}</SearchLabel></template>
-								<template #caption><SearchKeyword>{{ i18n.ts.authorizedFetchDescription }}</SearchKeyword></template>
-								<option value="never">{{ i18n.ts._authorizedFetchValue.never }} - {{ i18n.ts._authorizedFetchValueDescription.never }}</option>
-								<option value="always">{{ i18n.ts._authorizedFetchValue.always }} - {{ i18n.ts._authorizedFetchValueDescription.always }}</option>
-								<option value="essential">{{ i18n.ts._authorizedFetchValue.essential }} - {{ i18n.ts._authorizedFetchValueDescription.essential }}</option>
-								<option value="staff">{{ i18n.ts._authorizedFetchValue.staff }} - {{ i18n.tsx._authorizedFetchValueDescription.staff({ value: i18n.ts._authorizedFetchValue[instance.allowUnsignedFetch] }) }}</option>
-							</MkRadios>
+							<SearchMarker :keywords="['federate', 'auth', 'fetch']">
+								<MkRadios v-model="allowUnsignedFetch" @update:modelValue="save()">
+									<template #label><SearchLabel>{{ i18n.ts.authorizedFetchLabel }}</SearchLabel></template>
+									<template #caption><SearchKeyword>{{ i18n.ts.authorizedFetchDescription }}</SearchKeyword></template>
+									<option value="never">{{ i18n.ts._authorizedFetchValue.never }} - {{ i18n.ts._authorizedFetchValueDescription.never }}</option>
+									<option value="always">{{ i18n.ts._authorizedFetchValue.always }} - {{ i18n.ts._authorizedFetchValueDescription.always }}</option>
+									<option value="essential">{{ i18n.ts._authorizedFetchValue.essential }} - {{ i18n.ts._authorizedFetchValueDescription.essential }}</option>
+									<option value="staff">{{ i18n.ts._authorizedFetchValue.staff }} - {{ i18n.tsx._authorizedFetchValueDescription.staff({ value: i18n.ts._authorizedFetchValue[instance.allowUnsignedFetch] }) }}</option>
+								</MkRadios>
+							</SearchMarker>
 						</MkFolder>
 					</SearchMarker>
 
