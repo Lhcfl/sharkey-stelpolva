@@ -68,6 +68,16 @@ export function misskeyApi<
 			headers,
 			signal,
 		}).then(async (res) => {
+			if (res.status === 502 && window.location.host === 'stelpolva.moe') {
+				reject({
+					id: 'b942c85a-58eb-4e64-8a49-0ad216343394',
+					code: 'OOPS_STELPOLVA_CRASHED',
+					message: '呜呜，屑又小崩了，等半分钟吧',
+					kind: 'server',
+				});
+				return;
+			}
+
 			const body = res.status === 204 ? null : await res.json();
 
 			if (res.status === 200) {
