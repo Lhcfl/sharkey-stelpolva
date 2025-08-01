@@ -224,25 +224,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			.limit(ps.limit);
 
 		if (!ps.withReplies) {
-			// const shouldShowReplyUserIds = [me.id, ...followees.filter(x => x.withReplies).map(x => x.followeeId)];
-			// query.andWhere(new Brackets(qb => {
-			// 	qb
-			// 		.where('note.replyId IS NULL') // 返信ではない
-			// 		.orWhere('note.replyUserId = :meId', { meId: me.id }) // reply my note
-			// 		.orWhere(new Brackets(qb => {
-			// 			qb // 返信だけど投稿者自身への返信
-			// 				.where('note.replyId IS NOT NULL')
-			// 				.andWhere('note.replyUserId = note.userId');
-			// 		}))
-			// 		.orWhere('note.userId IN (:...shouldShowReplyUserIds)', {
-			// 			shouldShowReplyUserIds,
-			// 		});
-			// }));
 			query
-				// 1. Not a reply, 2. a self-reply
-				.andWhere(new Brackets(qb => qb
-					.orWhere('note.replyId IS NULL') // 返信ではない
-					.orWhere('note.replyUserId = note.userId')));
+				.andWhere(new Brackets(qb => {
+					qb
+						// 1. Not a reply
+						.orWhere('note.replyId IS NULL')
+						// 2. a self-reply
+						.orWhere('note.replyUserId = note.userId')
+						// 3. a reply to me
+						.orWhere('note.replyUserId = :meId')
+						// 4. my reply
+						.orWhere('note.userId = :meId');
+
+					if (ps.withReplies) {
+						qb.orWhere(new Brackets(qb2 => this.queryService.andFollowingWithReply(qb2, ':meId', 'note.userId')));
+					}
+				}));
 		}
 
 		this.queryService.generateVisibilityQuery(query, me);
