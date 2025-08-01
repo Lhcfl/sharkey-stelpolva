@@ -60,10 +60,10 @@ class HomeTimelineChannel extends Channel {
 			// 自分のフォローしていないユーザーの visibility: followers な投稿への返信は弾く
 			if (!this.isNoteVisibleToMe(reply)) return;
 
-			const fail = reply.userId !== this.user?.id && !isMe && reply.userId !== note.userId;
-
-			if (fail && !this.withReplies) return;
-			if (!this.following.get(note.userId)?.withReplies) return;
+			if (!this.following.get(note.userId)?.withReplies && !this.withReplies) {
+				// 「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
+				if (reply.userId !== this.user!.id && !isMe && reply.userId !== note.userId) return;
+			}
 		}
 
 		// 純粋なリノート（引用リノートでないリノート）の場合
