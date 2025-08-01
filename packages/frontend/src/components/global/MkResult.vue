@@ -40,7 +40,9 @@ const props = defineProps<{
 
 .img {
 	vertical-align: bottom;
-	height: 128px;
+	height: 196px;
+  width: 196px;
+  margin: auto;
 	margin-bottom: 16px;
 	border-radius: var(--MI-radius-md);
 }
