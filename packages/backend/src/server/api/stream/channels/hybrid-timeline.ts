@@ -62,31 +62,23 @@ class HybridTimelineChannel extends Channel {
 		// フォローしているチャンネルの投稿 の場合だけ
 		if (!(
 			(note.channelId == null && isMe) ||
-			(note.channelId == null && Object.hasOwn(this.following, note.userId)) ||
+			(note.channelId == null && this.following.has(note.userId)) ||
 			(note.channelId == null && (note.user.host == null && note.visibility === 'public')) ||
 			(note.channelId != null && this.followingChannels.has(note.channelId))
 		)) return;
 
-		if (note.visibility === 'followers') {
-			if (!isMe && !Object.hasOwn(this.following, note.userId)) return;
-		} else if (note.visibility === 'specified') {
-			if (!isMe && !note.visibleUserIds!.includes(this.user!.id)) return;
-		}
-
 		if (this.isNoteMutedOrBlocked(note)) return;
+		if (!this.isNoteVisibleToMe(note)) return;
 
 		if (note.reply) {
 			const reply = note.reply;
-			if ((this.following[note.userId]?.withReplies ?? false) || this.withReplies) {
-				// 自分のフォローしていないユーザーの visibility: followers な投稿への返信は弾く
-				if (reply.visibility === 'followers' && !Object.hasOwn(this.following, reply.userId) && reply.userId !== this.user!.id) return;
-			} else {
+			// 自分のフォローしていないユーザーの visibility: followers な投稿への返信は弾く
+			if (!this.isNoteVisibleToMe(reply)) return;
+			if (!this.following.get(note.userId)?.withReplies && !this.withReplies) {
 				// 「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
 				if (reply.userId !== this.user!.id && !isMe && reply.userId !== note.userId) return;
 			}
 		}
-
-		if (note.user.isSilenced && !this.following[note.userId] && note.userId !== this.user!.id) return;
 
 		// 純粋なリノート（引用リノートでないリノート）の場合
 		if (isRenotePacked(note) && !isQuotePacked(note) && note.renote) {
@@ -94,13 +86,11 @@ class HybridTimelineChannel extends Channel {
 			if (note.renote.reply) {
 				const reply = note.renote.reply;
 				// 自分のフォローしていないユーザーの visibility: followers な投稿への返信のリノートは弾く
-				if (reply.visibility === 'followers' && !Object.hasOwn(this.following, reply.userId) && reply.userId !== this.user!.id) return;
+				if (!this.isNoteVisibleToMe(reply)) return;
 			}
 		}
 
-		const clonedNote = await this.assignMyReaction(note);
-		await this.hideNote(clonedNote);
-
+		const clonedNote = await this.rePackNote(note);
 		this.send('note', clonedNote);
 	}
 

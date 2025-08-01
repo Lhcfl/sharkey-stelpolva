@@ -37,6 +37,7 @@ type TimelineOptions = {
 	excludeReplies?: boolean;
 	excludeBots?: boolean;
 	excludePureRenotes: boolean;
+	ignoreAuthorFromUserSuspension?: boolean;
 	dbFallback: (untilId: string | null, sinceId: string | null, limit: number) => Promise<MiNote[]>,
 };
 
@@ -136,10 +137,27 @@ export class FanoutTimelineEndpointService {
 				const parentFilter = filter;
 				filter = (note) => {
 					if (!ps.ignoreAuthorFromInstanceBlock) {
-						if (this.utilityService.isBlockedHost(this.meta.blockedHosts, note.userHost)) return false;
+						if (note.userInstance?.isBlocked) return false;
 					}
-					if (note.userId !== note.renoteUserId && this.utilityService.isBlockedHost(this.meta.blockedHosts, note.renoteUserHost)) return false;
-					if (note.userId !== note.replyUserId && this.utilityService.isBlockedHost(this.meta.blockedHosts, note.replyUserHost)) return false;
+					if (note.userId !== note.renoteUserId && note.renoteUserInstance?.isBlocked) return false;
+					if (note.userId !== note.replyUserId && note.replyUserInstance?.isBlocked) return false;
+
+					return parentFilter(note);
+				};
+			}
+
+			{
+				const parentFilter = filter;
+				filter = (note) => {
+					const noteJoined = note as MiNote & {
+						renoteUser: MiUser | null;
+						replyUser: MiUser | null;
+					};
+					if (!ps.ignoreAuthorFromUserSuspension) {
+						if (note.user!.isSuspended) return false;
+					}
+					if (note.userId !== note.renoteUserId && noteJoined.renoteUser?.isSuspended) return false;
+					if (note.userId !== note.replyUserId && noteJoined.replyUser?.isSuspended) return false;
 
 					return parentFilter(note);
 				};
@@ -194,7 +212,10 @@ export class FanoutTimelineEndpointService {
 			.leftJoinAndSelect('note.renote', 'renote')
 			.leftJoinAndSelect('reply.user', 'replyUser')
 			.leftJoinAndSelect('renote.user', 'renoteUser')
-			.leftJoinAndSelect('note.channel', 'channel');
+			.leftJoinAndSelect('note.channel', 'channel')
+			.leftJoinAndSelect('note.userInstance', 'userInstance')
+			.leftJoinAndSelect('note.replyUserInstance', 'replyUserInstance')
+			.leftJoinAndSelect('note.renoteUserInstance', 'renoteUserInstance');
 
 		const notes = (await query.getMany()).filter(noteFilter);
 

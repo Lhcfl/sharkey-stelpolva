@@ -4,6 +4,7 @@
  */
 
 import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typeorm';
+import { MiInstance } from '@/models/Instance.js';
 import { id } from './util/id.js';
 import { MiUser } from './User.js';
 
@@ -88,11 +89,31 @@ export class MiAbuseUserReport {
 	})
 	public targetUserHost: string | null;
 
+	@ManyToOne(() => MiInstance, {
+		// TODO create a foreign key constraint after hazelnoot/labs/persisted-instance-blocks is merged
+		createForeignKeyConstraints: false,
+	})
+	@JoinColumn({
+		name: 'targetUserHost',
+		referencedColumnName: 'host',
+	})
+	public targetUserInstance: MiInstance | null;
+
 	@Index()
 	@Column('varchar', {
 		length: 128, nullable: true,
 		comment: '[Denormalized]',
 	})
 	public reporterHost: string | null;
+
+	@ManyToOne(() => MiInstance, {
+		// TODO create a foreign key constraint after hazelnoot/labs/persisted-instance-blocks is merged
+		createForeignKeyConstraints: false,
+	})
+	@JoinColumn({
+		name: 'reporterHost',
+		referencedColumnName: 'host',
+	})
+	public reporterInstance: MiInstance | null;
 	//#endregion
 }

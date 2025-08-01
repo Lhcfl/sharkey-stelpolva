@@ -12,6 +12,7 @@ import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { DI } from '@/di-symbols.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { ApiError } from '../../error.js';
+import { CacheService } from '@/core/CacheService.js';
 
 export const meta = {
 	tags: ['following', 'users'],
@@ -39,6 +40,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		@Inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.followingsRepository.update({
@@ -47,6 +49,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				notify: ps.notify != null ? (ps.notify === 'none' ? null : ps.notify) : undefined,
 				withReplies: ps.withReplies != null ? ps.withReplies : undefined,
 			});
+
+			await this.cacheService.refreshFollowRelationsFor(me.id);
 
 			return;
 		});

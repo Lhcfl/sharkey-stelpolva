@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { jest } from '@jest/globals';
+import { describe, jest } from '@jest/globals';
 import type { Mock } from 'jest-mock';
 import type { PrivateNetwork } from '@/config.js';
 import type { Socket } from 'net';
-import { HttpRequestService, isPrivateIp, validateSocketConnect } from '@/core/HttpRequestService.js';
+import { HttpRequestService, isAllowedPrivateIp, isPrivateUrl, resolveIp, validateSocketConnect } from '@/core/HttpRequestService.js';
 import { parsePrivateNetworks } from '@/config.js';
 
 describe(HttpRequestService, () => {
@@ -21,35 +21,82 @@ describe(HttpRequestService, () => {
 		]);
 	});
 
-	describe('isPrivateIp', () => {
+	describe(isAllowedPrivateIp, () => {
 		it('should return false when ip public', () => {
-			const result = isPrivateIp(allowedPrivateNetworks, '74.125.127.100', 80);
+			const result = isAllowedPrivateIp(allowedPrivateNetworks, '74.125.127.100', 80);
 			expect(result).toBeFalsy();
 		});
 
 		it('should return false when ip private and port matches', () => {
-			const result = isPrivateIp(allowedPrivateNetworks, '127.0.0.1', 1);
+			const result = isAllowedPrivateIp(allowedPrivateNetworks, '127.0.0.1', 1);
 			expect(result).toBeFalsy();
 		});
 
 		it('should return false when ip private and all ports undefined', () => {
-			const result = isPrivateIp(allowedPrivateNetworks, '10.0.0.1', undefined);
+			const result = isAllowedPrivateIp(allowedPrivateNetworks, '10.0.0.1', undefined);
 			expect(result).toBeFalsy();
 		});
 
 		it('should return true when ip private and no ports specified', () => {
-			const result = isPrivateIp(allowedPrivateNetworks, '10.0.0.2', 80);
+			const result = isAllowedPrivateIp(allowedPrivateNetworks, '10.0.0.2', 80);
 			expect(result).toBeTruthy();
 		});
 
 		it('should return true when ip private and port does not match', () => {
-			const result = isPrivateIp(allowedPrivateNetworks, '127.0.0.1', 80);
+			const result = isAllowedPrivateIp(allowedPrivateNetworks, '127.0.0.1', 80);
 			expect(result).toBeTruthy();
 		});
 
 		it('should return true when ip private and port is null but ports are specified', () => {
-			const result = isPrivateIp(allowedPrivateNetworks, '127.0.0.1', undefined);
+			const result = isAllowedPrivateIp(allowedPrivateNetworks, '127.0.0.1', undefined);
 			expect(result).toBeTruthy();
+		});
+	});
+
+	const fakeLookup = (host: string, _: unknown, callback: (err: Error | null, ip: string) => void) => {
+		if (host === 'localhost') {
+			callback(null, '127.0.0.1');
+		} else {
+			callback(null, '23.192.228.80');
+		}
+	};
+
+	describe(resolveIp, () => {
+		it('should parse inline IPs', async () => {
+			const result = await resolveIp(new URL('https://10.0.0.1'), fakeLookup);
+			expect(result.toString()).toEqual('10.0.0.1');
+		});
+
+		it('should resolve domain names', async () => {
+			const result = await resolveIp(new URL('https://localhost'), fakeLookup);
+			expect(result.toString()).toEqual('127.0.0.1');
+		});
+	});
+
+	describe(isPrivateUrl, () => {
+		it('should return false when URL is public host', async () => {
+			const result = await isPrivateUrl(new URL('https://example.com'), fakeLookup);
+			expect(result).toBe(false);
+		});
+
+		it('should return true when URL is private host', async () => {
+			const result = await isPrivateUrl(new URL('https://localhost'), fakeLookup);
+			expect(result).toBe(true);
+		});
+
+		it('should return false when IP is public', async () => {
+			const result = await isPrivateUrl(new URL('https://23.192.228.80'), fakeLookup);
+			expect(result).toBe(false);
+		});
+
+		it('should return true when IP is private', async () => {
+			const result = await isPrivateUrl(new URL('https://127.0.0.1'), fakeLookup);
+			expect(result).toBe(true);
+		});
+
+		it('should return true when IP is private with port and path', async () => {
+			const result = await isPrivateUrl(new URL('https://127.0.0.1:443/some/path'), fakeLookup);
+			expect(result).toBe(true);
 		});
 	});
 

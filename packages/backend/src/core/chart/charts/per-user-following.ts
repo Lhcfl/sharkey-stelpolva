@@ -15,6 +15,7 @@ import Chart from '../core.js';
 import { ChartLoggerService } from '../ChartLoggerService.js';
 import { name, schema } from './entities/per-user-following.js';
 import type { KVs } from '../core.js';
+import { CacheService } from '@/core/CacheService.js';
 
 /**
  * ユーザーごとのフォローに関するチャート
@@ -31,22 +32,24 @@ export default class PerUserFollowingChart extends Chart<typeof schema> { // esl
 		private appLockService: AppLockService,
 		private userEntityService: UserEntityService,
 		private chartLoggerService: ChartLoggerService,
+		private readonly cacheService: CacheService,
 	) {
 		super(db, (k) => appLockService.getChartInsertLock(k), chartLoggerService.logger, name, schema, true);
 	}
 
 	protected async tickMajor(group: string): Promise<Partial<KVs<typeof schema>>> {
 		const [
-			localFollowingsCount,
-			localFollowersCount,
-			remoteFollowingsCount,
-			remoteFollowersCount,
+			followees,
+			followers,
 		] = await Promise.all([
-			this.followingsRepository.countBy({ followerId: group, followeeHost: IsNull() }),
-			this.followingsRepository.countBy({ followeeId: group, followerHost: IsNull() }),
-			this.followingsRepository.countBy({ followerId: group, followeeHost: Not(IsNull()) }),
-			this.followingsRepository.countBy({ followeeId: group, followerHost: Not(IsNull()) }),
+			this.cacheService.userFollowingsCache.fetch(group).then(fs => Array.from(fs.values())),
+			this.cacheService.userFollowersCache.fetch(group).then(fs => Array.from(fs.values())),
 		]);
+
+		const localFollowingsCount = followees.reduce((sum, f) => sum + (f.followeeHost == null ? 1 : 0), 0);
+		const localFollowersCount = followers.reduce((sum, f) => sum + (f.followerHost == null ? 1 : 0), 0);
+		const remoteFollowingsCount = followees.reduce((sum, f) => sum + (f.followeeHost == null ? 0 : 1), 0);
+		const remoteFollowersCount = followers.reduce((sum, f) => sum + (f.followerHost == null ? 0 : 1), 0);
 
 		return {
 			'local.followings.total': localFollowingsCount,

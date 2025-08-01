@@ -128,6 +128,8 @@ export class NodeinfoServerService {
 					maxRemoteCwLength: this.config.maxRemoteCwLength,
 					maxAltTextLength: this.config.maxAltTextLength,
 					maxRemoteAltTextLength: this.config.maxRemoteAltTextLength,
+					maxBioLength: this.config.maxBioLength,
+					maxRemoteBioLength: this.config.maxRemoteBioLength,
 					enableEmail: meta.enableEmail,
 					enableServiceWorker: meta.enableServiceWorker,
 					proxyAccountName: proxyAccount.username,

@@ -93,7 +93,6 @@ export class ApQuestionService {
 		// eslint-disable-next-line no-param-reassign
 		if (resolver == null) resolver = this.apResolverService.createResolver();
 		const question = await resolver.resolve(value);
-		this.logger.debug(`fetched question: ${JSON.stringify(question, null, 2)}`);
 
 		if (!isQuestion(question)) throw new UnrecoverableError(`object ${getApType(question)} is not a Question: ${uri}`);
 

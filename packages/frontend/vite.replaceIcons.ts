@@ -224,6 +224,7 @@ export function pluginReplaceIcons() {
 					'ti ti-dice-5': 'ph ph-dice-five ph-bold ph-lg',
 					'ti ti-dots': 'ph-dots-three ph-bold ph-lg',
 					'ti ti-download': 'ph-download ph-bold ph-lg',
+					'ti-download': 'ph-download ph-bold ph-lg', // in custom-emoji-manager.remote.list
 					'ti ti-edit': 'ph-pencil-simple-line ph-bold ph-lg',
 					'ti ti-equal-double': 'ph-equals ph-bold ph-lg',
 					'ti ti-equal-not': 'ph-prohibit ph-bold ph-lg',
@@ -258,6 +259,7 @@ export function pluginReplaceIcons() {
 					'ti ti-home': 'ph-house ph-bold ph-lg',
 					'ti ti-hourglass-empty': 'ph-hourglass ph-bold ph-lg',
 					'ti ti-icons': 'ph-squares-four ph-bold ph-lg',
+					'ti-icons': 'ph-squares-four ph-bold ph-lg', // in custom-emoji-manager.local.list
 					'ti ti-id': 'ph-identification-card ph-bold ph-lg',
 					'ti ti-info-circle': 'ph-info ph-bold ph-lg',
 					'ti ti-json': 'ph-brackets-curly ph-bold ph-lg',
@@ -275,6 +277,7 @@ export function pluginReplaceIcons() {
 					'ti ti-lock-star': 'ph-shield-star ph-bold ph-lg',
 					'ti ti-login-2': 'ph-sign-in ph-bold ph-lg',
 					'ti ti-mail': 'ph-envelope ph-bold ph-lg',
+					'ti-mail': 'ph-envelope ph-bold ph-lg', // in notification-recipient.item.vue
 					'ti ti-map-pin': 'ph-map-pin ph-bold ph-lg',
 					'ti ti-maximize': 'ph-frame-corners ph-bold ph-lg',
 					'ti ti-medal': 'ph-trophy ph-bold ph-lg',
@@ -359,6 +362,7 @@ export function pluginReplaceIcons() {
 					'ti ti-text-caption': 'ph-text-indent ph-bold ph-lg',
 					'ti ti-tool': 'ph-wrench ph-bold ph-lg',
 					'ti ti-trash': 'ph-trash ph-bold ph-lg',
+					'ti-trash': 'ph-trash ph-bold ph-lg', // in custom-emoji-manager.local.list
 					'ti ti-trophy': 'ph-trophy ph-bold ph-lg',
 					'ti ti-universe': 'ph-rocket-launch ph-bold ph-lg',
 					'ti ti-upload': 'ph-upload ph-bold ph-lg',
@@ -379,6 +383,7 @@ export function pluginReplaceIcons() {
 					'ti ti-volume': 'ph-speaker-high ph-bold ph-lg',
 					'ti ti-volume-3': 'ph-speaker-x ph-bold ph-lg',
 					'ti ti-webhook': 'ph-webhooks-logo ph-bold ph-lg',
+					'ti-webhook': 'ph-webhooks-logo ph-bold ph-lg', // in notification-recipient.item.vue
 					'ti ti-whirl': 'ph-globe-hemisphere-west ph-bold ph-lg',
 					'ti ti-window-maximize': 'ph-frame-corners ph-bold ph-lg',
 					'ti ti-world': 'ph-globe-hemisphere-west ph-bold ph-lg',
@@ -389,6 +394,7 @@ export function pluginReplaceIcons() {
 					'ti ti-world-x': 'ph-planet ph-bold ph-lg',
 					'ti ti-x': 'ph-x ph-bold ph-lg',
 					'ti ti-help': 'ph-question ph-bold ph-lg',
+					'ti-help': 'ph-question ph-bold ph-lg', // in notification-recipient.item.vue
  					'ti ti ti-caret-down': 'ph-caret-down ph-bold ph-lg',
  					'ti ti-chevron-down': 'ph-caret-down ph-bold ph-lg',
 					'ti ti-accessible': 'ph-person-simple-circle ph-bold ph-lg',

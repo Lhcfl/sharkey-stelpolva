@@ -61,7 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					'Your Account has been declined!');
 			}
 
-			await this.usedUsernamesRepository.delete({ username: user.username });
+			await this.usedUsernamesRepository.delete({ username: user.username.toLowerCase() });
 
 			await this.deleteAccountService.deleteAccount(user);
 

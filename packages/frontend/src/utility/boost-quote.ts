@@ -82,9 +82,9 @@ export function boostMenuItems(appearNote: Ref<Misskey.entities.Note>, renote: (
 	];
 }
 
-export function computeRenoteTooltip(renoted: Ref<boolean>): ComputedRef<string> {
+export function computeRenoteTooltip(note: ComputedRef<Misskey.entities.Note>): ComputedRef<string> {
 	return computed(() => {
-		if (renoted.value) return i18n.ts.unrenote;
+		if (note.value.isRenoted) return i18n.ts.unrenote;
 		if (prefer.s.showVisibilitySelectorOnBoost) return i18n.ts.renote;
 		return i18n.ts.renoteShift;
 	});

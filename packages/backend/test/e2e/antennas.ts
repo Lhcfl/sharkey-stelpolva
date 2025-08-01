@@ -16,6 +16,7 @@ import {
 	testPaginationConsistency,
 	uploadFile,
 	userList,
+  withNotesCount,
 } from '../utils.js';
 import type * as misskey from 'misskey-js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
@@ -114,6 +115,7 @@ describe('アンテナ', () => {
 		userBlockedByAlice = await signup({ username: 'userBlockedByAlice' });
 		await post(userBlockedByAlice, { text: 'test' });
 		await api('blocking/create', { userId: userBlockedByAlice.id }, alice);
+		await api('mute/delete', { userId: userBlockedByAlice.id }, alice); // blocking implies muting, in Sharkey, but we want to test un-muted block
 		userMutingAlice = await signup({ username: 'userMutingAlice' });
 		await post(userMutingAlice, { text: 'test' });
 		await api('mute/create', { userId: alice.id }, userMutingAlice);
@@ -347,7 +349,7 @@ describe('アンテナ', () => {
 				parameters: { antennaId: antenna.id },
 				user: alice,
 			});
-			const expected = [note];
+			const expected = withNotesCount([note], 2);
 			assert.deepStrictEqual(response, expected);
 		});
 
@@ -666,10 +668,10 @@ describe('アンテナ', () => {
 				user: alice,
 			});
 			// 最後に投稿したものが先頭に来る。
-			const expected = [
+			const expected = withNotesCount([
 				noteInNonSensitiveChannel,
 				noteInLocal,
-			];
+			], 64);
 			assert.deepStrictEqual(response, expected);
 		});
 

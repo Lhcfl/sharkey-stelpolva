@@ -5,25 +5,22 @@
 
 import { URL } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
-import * as parse5 from 'parse5';
-import { type Document, type HTMLParagraphElement, Window } from 'happy-dom';
+import { isText, isTag, Text } from 'domhandler';
+import * as htmlparser2 from 'htmlparser2';
+import { Node, Document, ChildNode, Element, ParentNode } from 'domhandler';
+import * as domserializer from 'dom-serializer';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { intersperse } from '@/misc/prelude/array.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import type { IMentionedRemoteUsers } from '@/models/Note.js';
 import { bindThis } from '@/decorators.js';
-import type { DefaultTreeAdapterMap } from 'parse5';
-import type * as mfm from '@transfem-org/sfm-js';
-
-const treeAdapter = parse5.defaultTreeAdapter;
-type Node = DefaultTreeAdapterMap['node'];
-type ChildNode = DefaultTreeAdapterMap['childNode'];
+import type * as mfm from 'mfm-js';
 
 const urlRegex = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+/;
 const urlRegexFull = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+$/;
 
-export type Appender = (document: Document, body: HTMLParagraphElement) => void;
+export type Appender = (document: Document, body: Element) => void;
 
 @Injectable()
 export class MfmService {
@@ -40,7 +37,7 @@ export class MfmService {
 
 		const normalizedHashtagNames = hashtagNames == null ? undefined : new Set<string>(hashtagNames.map(x => normalizeForSearch(x)));
 
-		const dom = parse5.parseFragment(html);
+		const dom = htmlparser2.parseDocument(html);
 
 		let text = '';
 
@@ -51,57 +48,50 @@ export class MfmService {
 		return text.trim();
 
 		function getText(node: Node): string {
-			if (treeAdapter.isTextNode(node)) return node.value;
-			if (!treeAdapter.isElementNode(node)) return '';
-			if (node.nodeName === 'br') return '\n';
+			if (isText(node)) return node.data;
+			if (!isTag(node)) return '';
+			if (node.tagName === 'br') return '\n';
 
-			if (node.childNodes) {
-				return node.childNodes.map(n => getText(n)).join('');
-			}
-
-			return '';
+			return node.childNodes.map(n => getText(n)).join('');
 		}
 
 		function appendChildren(childNodes: ChildNode[]): void {
-			if (childNodes) {
-				for (const n of childNodes) {
-					analyze(n);
-				}
+			for (const n of childNodes) {
+				analyze(n);
 			}
 		}
 
 		function analyze(node: Node) {
-			if (treeAdapter.isTextNode(node)) {
-				text += node.value;
+			if (isText(node)) {
+				text += node.data;
 				return;
 			}
 
 			// Skip comment or document type node
-			if (!treeAdapter.isElementNode(node)) {
+			if (!isTag(node)) {
 				return;
 			}
 
-			switch (node.nodeName) {
+			switch (node.tagName) {
 				case 'br': {
 					text += '\n';
-					break;
+					return;
 				}
-
 				case 'a': {
 					const txt = getText(node);
-					const rel = node.attrs.find(x => x.name === 'rel');
-					const href = node.attrs.find(x => x.name === 'href');
+					const rel = node.attribs.rel;
+					const href = node.attribs.href;
 
 					// ハッシュタグ
 					if (normalizedHashtagNames && href && normalizedHashtagNames.has(normalizeForSearch(txt))) {
 						text += txt;
 						// メンション
-					} else if (txt.startsWith('@') && !(rel && rel.value.startsWith('me '))) {
+					} else if (txt.startsWith('@') && !(rel && rel.startsWith('me '))) {
 						const part = txt.split('@');
 
 						if (part.length === 2 && href) {
 							//#region ホスト名部分が省略されているので復元する
-							const acct = `${txt}@${(new URL(href.value)).hostname}`;
+							const acct = `${txt}@${(new URL(href)).hostname}`;
 							text += acct;
 							//#endregion
 						} else if (part.length === 3) {
@@ -116,25 +106,32 @@ export class MfmService {
 							if (!href) {
 								return txt;
 							}
-							if (!txt || txt === href.value) {	// #6383: Missing text node
-								if (href.value.match(urlRegexFull)) {
-									return href.value;
+							if (!txt || txt === href) {	// #6383: Missing text node
+								if (href.match(urlRegexFull)) {
+									return href;
 								} else {
-									return `<${href.value}>`;
+									return `<${href}>`;
 								}
 							}
-							if (href.value.match(urlRegex) && !href.value.match(urlRegexFull)) {
-								return `[${txt}](<${href.value}>)`;	// #6846
+							if (href.match(urlRegex) && !href.match(urlRegexFull)) {
+								return `[${txt}](<${href}>)`;	// #6846
 							} else {
-								return `[${txt}](${href.value})`;
+								return `[${txt}](${href})`;
 							}
 						};
 
 						text += generateLink();
 					}
-					break;
+					return;
 				}
+			}
 
+			// Don't produce invalid empty MFM
+			if (node.childNodes.length < 1) {
+				return;
+			}
+
+			switch (node.tagName) {
 				case 'h1': {
 					text += '**【';
 					appendChildren(node.childNodes);
@@ -185,14 +182,17 @@ export class MfmService {
 				case 'ruby--': {
 					let ruby: [string, string][] = [];
 					for (const child of node.childNodes) {
-						if (child.nodeName === 'rp') {
+						if (isText(child) && !/\s|\[|\]/.test(child.data)) {
+							ruby.push([child.data, '']);
 							continue;
 						}
-						if (treeAdapter.isTextNode(child) && !/\s|\[|\]/.test(child.value)) {
-							ruby.push([child.value, '']);
+						if (!isTag(child)) {
 							continue;
 						}
-						if (child.nodeName === 'rt' && ruby.length > 0) {
+						if (child.tagName === 'rp') {
+							continue;
+						}
+						if (child.tagName === 'rt' && ruby.length > 0) {
 							const rt = getText(child);
 							if (/\s|\[|\]/.test(rt)) {
 								// If any space is included in rt, it is treated as a normal text
@@ -217,7 +217,7 @@ export class MfmService {
 
 				// block code (<pre><code>)
 				case 'pre': {
-					if (node.childNodes.length === 1 && node.childNodes[0].nodeName === 'code') {
+					if (node.childNodes.length === 1 && isTag(node.childNodes[0]) && node.childNodes[0].tagName === 'code') {
 						text += '\n```\n';
 						text += getText(node.childNodes[0]);
 						text += '\n```\n';
@@ -240,21 +240,6 @@ export class MfmService {
 					if (t) {
 						text += '\n> ';
 						text += t.split('\n').join('\n> ');
-					}
-					break;
-				}
-
-				case 'ruby': {
-					const rtText = node.childNodes
-						.filter((n) => n.nodeName === 'rt')
-						.map((n) => getText(n)).join(' ');
-					const rubyText = node.childNodes
-						.filter((n) => treeAdapter.isTextNode(n))
-						.map((n) => getText(n)).join(' ');
-					if (rubyText && rtText) {
-						text += `$[ruby ${rubyText}|${rtText} ]`;
-					} else {
-						appendChildren(node.childNodes);
 					}
 					break;
 				}
@@ -317,17 +302,17 @@ export class MfmService {
 						let nonRtNodes = [];
 						// scan children, ignore `rp`, split on `rt`
 						for (const child of node.childNodes) {
-							if (treeAdapter.isTextNode(child)) {
+							if (isText(child)) {
 								nonRtNodes.push(child);
 								continue;
 							}
-							if (!treeAdapter.isElementNode(child)) {
+							if (!isTag(child)) {
 								continue;
 							}
-							if (child.nodeName === 'rp') {
+							if (child.tagName === 'rp') {
 								continue;
 							}
-							if (child.nodeName === 'rt') {
+							if (child.tagName === 'rt') {
 								// the only case in which we don't need a `$[group ]`
 								// is when both sides of the ruby are simple words
 								const needsGroup = nonRtNodes.length > 1 ||
@@ -350,6 +335,38 @@ export class MfmService {
 					break;
 				}
 
+				// Replace iframe with link so we can generate previews.
+				// We shouldn't normally see this, but federated blogging platforms (WordPress, MicroBlog.Pub) can send it.
+				case 'iframe': {
+					const txt: string | undefined = node.attribs.title || node.attribs.alt;
+					const href: string | undefined = node.attribs.src;
+					if (href) {
+						if (href.match(/[\s>]/)) {
+							if (txt) {
+								// href is invalid + has a label => render a pseudo-link
+								text += `${text} (${href})`;
+							} else {
+								// href is invalid + no label => render plain text
+								text += href;
+							}
+						} else {
+							if (txt) {
+								// href is valid + has a label => render a link
+								const label = txt
+									.replaceAll('[', '(')
+									.replaceAll(']', ')')
+									.replaceAll(/\r?\n/, ' ')
+									.replaceAll('`', '\'');
+								text += `[${label}](<${href}>)`;
+							} else {
+								// href is valid + no label => render a plain URL
+								text += `<${href}>`;
+							}
+						}
+					}
+					break;
+				}
+
 				default:	// includes inline elements
 				{
 					appendChildren(node.childNodes);
@@ -360,50 +377,49 @@ export class MfmService {
 	}
 
 	@bindThis
-	public toHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = [], additionalAppenders: Appender[] = []) {
+	public toHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = [], additionalAppenders: Appender[] = [], inline = false) {
 		if (nodes == null) {
 			return null;
 		}
 
-		const { happyDOM, window } = new Window();
+		const doc = new Document([]);
 
-		const doc = window.document;
+		const body = new Element('p', {});
+		doc.childNodes.push(body);
 
-		const body = doc.createElement('p');
-
-		function appendChildren(children: mfm.MfmNode[], targetElement: any): void {
-			if (children) {
-				for (const child of children.map(x => (handlers as any)[x.type](x))) targetElement.appendChild(child);
+		function appendChildren(children: mfm.MfmNode[], targetElement: ParentNode): void {
+			for (const child of children.map(x => handle(x))) {
+				targetElement.childNodes.push(child);
 			}
 		}
 
 		function fnDefault(node: mfm.MfmFn) {
-			const el = doc.createElement('i');
+			const el = new Element('i', {});
 			appendChildren(node.children, el);
 			return el;
 		}
 
-		const handlers: { [K in mfm.MfmNode['type']]: (node: mfm.NodeType<K>) => any } = {
+		const handlers: { [K in mfm.MfmNode['type']]: (node: mfm.NodeType<K>) => ChildNode } = {
 			bold: (node) => {
-				const el = doc.createElement('b');
+				const el = new Element('b', {});
 				appendChildren(node.children, el);
 				return el;
 			},
 
 			small: (node) => {
-				const el = doc.createElement('small');
+				const el = new Element('small', {});
 				appendChildren(node.children, el);
 				return el;
 			},
 
 			strike: (node) => {
-				const el = doc.createElement('del');
+				const el = new Element('del', {});
 				appendChildren(node.children, el);
 				return el;
 			},
 
 			italic: (node) => {
-				const el = doc.createElement('i');
+				const el = new Element('i', {});
 				appendChildren(node.children, el);
 				return el;
 			},
@@ -414,11 +430,12 @@ export class MfmService {
 						const text = node.children[0].type === 'text' ? node.children[0].props.text : '';
 						try {
 							const date = new Date(parseInt(text, 10) * 1000);
-							const el = doc.createElement('time');
-							el.setAttribute('datetime', date.toISOString());
-							el.textContent = date.toISOString();
+							const el = new Element('time', {
+								datetime: date.toISOString(),
+							});
+							el.childNodes.push(new Text(date.toISOString()));
 							return el;
-						} catch (err) {
+						} catch {
 							return fnDefault(node);
 						}
 					}
@@ -427,26 +444,20 @@ export class MfmService {
 						if (node.children.length === 1) {
 							const child = node.children[0];
 							const text = child.type === 'text' ? child.props.text : '';
-							const rubyEl = doc.createElement('ruby');
-							const rtEl = doc.createElement('rt');
+							const rubyEl = new Element('ruby', {});
+							const rtEl = new Element('rt', {});
 
 							// ruby未対応のHTMLサニタイザーを通したときにルビが「劉備（りゅうび）」となるようにする
-							const rpStartEl = doc.createElement('rp');
-							rpStartEl.appendChild(doc.createTextNode('('));
-							const rpEndEl = doc.createElement('rp');
-							rpEndEl.appendChild(doc.createTextNode(')'));
+							const rpStartEl = new Element('rp', {});
+							rpStartEl.childNodes.push(new Text('('));
+							const rpEndEl = new Element('rp', {});
+							rpEndEl.childNodes.push(new Text(')'));
 
-							// Optimization for Latin users
-							if (text.includes('|')) {
-								rubyEl.appendChild(doc.createTextNode(text.split('|')[0]));
-								rtEl.appendChild(doc.createTextNode(text.split('|')[1]));
-							} else {
-								rubyEl.appendChild(doc.createTextNode(text.split(' ')[0]));
-								rtEl.appendChild(doc.createTextNode(text.split(' ')[1]));
-							}
-							rubyEl.appendChild(rpStartEl);
-							rubyEl.appendChild(rtEl);
-							rubyEl.appendChild(rpEndEl);
+							rubyEl.childNodes.push(new Text(text.split(' ')[0]));
+							rtEl.childNodes.push(new Text(text.split(' ')[1]));
+							rubyEl.childNodes.push(rpStartEl);
+							rubyEl.childNodes.push(rtEl);
+							rubyEl.childNodes.push(rpEndEl);
 							return rubyEl;
 						} else {
 							const rt = node.children.at(-1);
@@ -456,20 +467,20 @@ export class MfmService {
 							}
 
 							const text = rt.type === 'text' ? rt.props.text : '';
-							const rubyEl = doc.createElement('ruby');
-							const rtEl = doc.createElement('rt');
+							const rubyEl = new Element('ruby', {});
+							const rtEl = new Element('rt', {});
 
 							// ruby未対応のHTMLサニタイザーを通したときにルビが「劉備（りゅうび）」となるようにする
-							const rpStartEl = doc.createElement('rp');
-							rpStartEl.appendChild(doc.createTextNode('('));
-							const rpEndEl = doc.createElement('rp');
-							rpEndEl.appendChild(doc.createTextNode(')'));
+							const rpStartEl = new Element('rp', {});
+							rpStartEl.childNodes.push(new Text('('));
+							const rpEndEl = new Element('rp', {});
+							rpEndEl.childNodes.push(new Text(')'));
 
 							appendChildren(node.children.slice(0, node.children.length - 1), rubyEl);
-							rtEl.appendChild(doc.createTextNode(text.trim()));
-							rubyEl.appendChild(rpStartEl);
-							rubyEl.appendChild(rtEl);
-							rubyEl.appendChild(rpEndEl);
+							rtEl.childNodes.push(new Text(text.trim()));
+							rubyEl.childNodes.push(rpStartEl);
+							rubyEl.childNodes.push(rtEl);
+							rubyEl.childNodes.push(rpEndEl);
 							return rubyEl;
 						}
 					}
@@ -477,7 +488,7 @@ export class MfmService {
 					// hack for ruby, should never be needed because we should
 					// never send this out to other instances
 					case 'group': {
-						const el = doc.createElement('span');
+						const el = new Element('span', {});
 						appendChildren(node.children, el);
 						return el;
 					}
@@ -489,113 +500,125 @@ export class MfmService {
 			},
 
 			blockCode: (node) => {
-				const pre = doc.createElement('pre');
-				const inner = doc.createElement('code');
-				inner.textContent = node.props.code;
-				pre.appendChild(inner);
+				const pre = new Element('pre', {});
+				const inner = new Element('code', {});
+				inner.childNodes.push(new Text(node.props.code));
+				pre.childNodes.push(inner);
 				return pre;
 			},
 
 			center: (node) => {
-				const el = doc.createElement('div');
+				const el = new Element('div', {});
 				appendChildren(node.children, el);
 				return el;
 			},
 
 			emojiCode: (node) => {
-				return doc.createTextNode(`\u200B:${node.props.name}:\u200B`);
+				return new Text(`\u200B:${node.props.name}:\u200B`);
 			},
 
 			unicodeEmoji: (node) => {
-				return doc.createTextNode(node.props.emoji);
+				return new Text(node.props.emoji);
 			},
 
 			hashtag: (node) => {
-				const a = doc.createElement('a');
-				a.setAttribute('href', `${this.config.url}/tags/${node.props.hashtag}`);
-				a.textContent = `#${node.props.hashtag}`;
-				a.setAttribute('rel', 'tag');
+				const a = new Element('a', {
+					href: `${this.config.url}/tags/${node.props.hashtag}`,
+					rel: 'tag',
+				});
+				a.childNodes.push(new Text(`#${node.props.hashtag}`));
 				return a;
 			},
 
 			inlineCode: (node) => {
-				const el = doc.createElement('code');
-				el.textContent = node.props.code;
+				const el = new Element('code', {});
+				el.childNodes.push(new Text(node.props.code));
 				return el;
 			},
 
 			mathInline: (node) => {
-				const el = doc.createElement('code');
-				el.textContent = node.props.formula;
+				const el = new Element('code', {});
+				el.childNodes.push(new Text(node.props.formula));
 				return el;
 			},
 
 			mathBlock: (node) => {
-				const el = doc.createElement('code');
-				el.textContent = node.props.formula;
+				const el = new Element('code', {});
+				el.childNodes.push(new Text(node.props.formula));
 				return el;
 			},
 
 			link: (node) => {
-				const a = doc.createElement('a');
-				a.setAttribute('href', node.props.url);
+				const a = new Element('a', {
+					href: node.props.url,
+				});
 				appendChildren(node.children, a);
 				return a;
 			},
 
 			mention: (node) => {
-				const a = doc.createElement('a');
 				const { username, host, acct } = node.props;
 				const remoteUserInfo = mentionedRemoteUsers.find(remoteUser => remoteUser.username.toLowerCase() === username.toLowerCase() && remoteUser.host?.toLowerCase() === host?.toLowerCase());
-				a.setAttribute('href', remoteUserInfo
-					? (remoteUserInfo.url ? remoteUserInfo.url : remoteUserInfo.uri)
-					: `${this.config.url}/${acct.endsWith(`@${this.config.url}`) ? acct.substring(0, acct.length - this.config.url.length - 1) : acct}`);
-				a.className = 'u-url mention';
-				a.textContent = acct;
+
+				const a = new Element('a', {
+					href: remoteUserInfo
+						? (remoteUserInfo.url ? remoteUserInfo.url : remoteUserInfo.uri)
+						: `${this.config.url}/${acct.endsWith(`@${this.config.url}`) ? acct.substring(0, acct.length - this.config.url.length - 1) : acct}`,
+					class: 'u-url mention',
+				});
+				a.childNodes.push(new Text(acct));
 				return a;
 			},
 
 			quote: (node) => {
-				const el = doc.createElement('blockquote');
+				const el = new Element('blockquote', {});
 				appendChildren(node.children, el);
 				return el;
 			},
 
 			text: (node) => {
 				if (!node.props.text.match(/[\r\n]/)) {
-					return doc.createTextNode(node.props.text);
+					return new Text(node.props.text);
 				}
 
-				const el = doc.createElement('span');
-				const nodes = node.props.text.split(/\r\n|\r|\n/).map(x => doc.createTextNode(x));
+				const el = new Element('span', {});
+				const nodes = node.props.text.split(/\r\n|\r|\n/).map(x => new Text(x));
 
 				for (const x of intersperse<FIXME | 'br'>('br', nodes)) {
-					el.appendChild(x === 'br' ? doc.createElement('br') : x);
+					el.childNodes.push(x === 'br' ? new Element('br', {}) : x);
 				}
 
 				return el;
 			},
 
 			url: (node) => {
-				const a = doc.createElement('a');
-				a.setAttribute('href', node.props.url);
-				a.textContent = node.props.url;
+				const a = new Element('a', {
+					href: node.props.url,
+				});
+				a.childNodes.push(new Text(node.props.url));
 				return a;
 			},
 
 			search: (node) => {
-				const a = doc.createElement('a');
-				a.setAttribute('href', `https://www.google.com/search?q=${node.props.query}`);
-				a.textContent = node.props.content;
+				const a = new Element('a', {
+					href: `https://www.google.com/search?q=${node.props.query}`,
+				});
+				a.childNodes.push(new Text(node.props.content));
 				return a;
 			},
 
 			plain: (node) => {
-				const el = doc.createElement('span');
+				const el = new Element('span', {});
 				appendChildren(node.children, el);
 				return el;
 			},
 		};
+
+		// Utility function to make TypeScript behave
+		function handle<T extends mfm.MfmNode>(node: T): ChildNode {
+			const handler = handlers[node.type] as (node: T) => ChildNode;
+			return handler(node);
+		}
 
 		appendChildren(nodes, body);
 
@@ -603,11 +626,15 @@ export class MfmService {
 			additionalAppender(doc, body);
 		}
 
-		const serialized = body.outerHTML;
+		let result = domserializer.render(body, {
+			encodeEntities: 'utf8'
+		});
 
-		happyDOM.close().catch(err => {});
+		if (inline) {
+			result = result.replace(/^<p>/, '').replace(/<\/p>$/, '');
+		}
 
-		return serialized;
+		return result;
 	}
 
 	// the toMastoApiHtml function was taken from Iceshrimp and written by zotan and modified by marie to work with the current MK version
@@ -619,55 +646,55 @@ export class MfmService {
 			return null;
 		}
 
-		const { happyDOM, window } = new Window();
+		const doc = new Document([]);
 
-		const doc = window.document;
+		const body = new Element('p', {});
+		doc.childNodes.push(body);
 
-		const body = doc.createElement('p');
-
-		function appendChildren(children: mfm.MfmNode[], targetElement: any): void {
-			if (children) {
-				for (const child of children.map((x) => (handlers as any)[x.type](x))) targetElement.appendChild(child);
+		function appendChildren(children: mfm.MfmNode[], targetElement: ParentNode): void {
+			for (const child of children) {
+				const result = handle(child);
+				targetElement.childNodes.push(result);
 			}
 		}
 
 		const handlers: {
-			[K in mfm.MfmNode['type']]: (node: mfm.NodeType<K>) => any;
+			[K in mfm.MfmNode['type']]: (node: mfm.NodeType<K>) => ChildNode;
 		} = {
 			bold(node) {
-				const el = doc.createElement('span');
-				el.textContent = '**';
+				const el = new Element('span', {});
+				el.childNodes.push(new Text('**'));
 				appendChildren(node.children, el);
-				el.textContent += '**';
+				el.childNodes.push(new Text('**'));
 				return el;
 			},
 
 			small(node) {
-				const el = doc.createElement('small');
+				const el = new Element('small', {});
 				appendChildren(node.children, el);
 				return el;
 			},
 
 			strike(node) {
-				const el = doc.createElement('span');
-				el.textContent = '~~';
+				const el = new Element('span', {});
+				el.childNodes.push(new Text('~~'));
 				appendChildren(node.children, el);
-				el.textContent += '~~';
+				el.childNodes.push(new Text('~~'));
 				return el;
 			},
 
 			italic(node) {
-				const el = doc.createElement('span');
-				el.textContent = '*';
+				const el = new Element('span', {});
+				el.childNodes.push(new Text('*'));
 				appendChildren(node.children, el);
-				el.textContent += '*';
+				el.childNodes.push(new Text('*'));
 				return el;
 			},
 
 			fn(node) {
 				switch (node.props.name) {
 					case 'group': { // hack for ruby
-						const el = doc.createElement('span');
+						const el = new Element('span', {});
 						appendChildren(node.children, el);
 						return el;
 					}
@@ -675,119 +702,121 @@ export class MfmService {
 						if (node.children.length === 1) {
 							const child = node.children[0];
 							const text = child.type === 'text' ? child.props.text : '';
-							const rubyEl = doc.createElement('ruby');
-							const rtEl = doc.createElement('rt');
+							const rubyEl = new Element('ruby', {});
+							const rtEl = new Element('rt', {});
 
-							const rpStartEl = doc.createElement('rp');
-							rpStartEl.appendChild(doc.createTextNode('('));
-							const rpEndEl = doc.createElement('rp');
-							rpEndEl.appendChild(doc.createTextNode(')'));
+							const rpStartEl = new Element('rp', {});
+							rpStartEl.childNodes.push(new Text('('));
+							const rpEndEl = new Element('rp', {});
+							rpEndEl.childNodes.push(new Text(')'));
 
-							rubyEl.appendChild(doc.createTextNode(text.split(' ')[0]));
-							rtEl.appendChild(doc.createTextNode(text.split(' ')[1]));
-							rubyEl.appendChild(rpStartEl);
-							rubyEl.appendChild(rtEl);
-							rubyEl.appendChild(rpEndEl);
+							rubyEl.childNodes.push(new Text(text.split(' ')[0]));
+							rtEl.childNodes.push(new Text(text.split(' ')[1]));
+							rubyEl.childNodes.push(rpStartEl);
+							rubyEl.childNodes.push(rtEl);
+							rubyEl.childNodes.push(rpEndEl);
 							return rubyEl;
 						} else {
 							const rt = node.children.at(-1);
 
 							if (!rt) {
-								const el = doc.createElement('span');
+								const el = new Element('span', {});
 								appendChildren(node.children, el);
 								return el;
 							}
 
 							const text = rt.type === 'text' ? rt.props.text : '';
-							const rubyEl = doc.createElement('ruby');
-							const rtEl = doc.createElement('rt');
+							const rubyEl = new Element('ruby', {});
+							const rtEl = new Element('rt', {});
 
-							const rpStartEl = doc.createElement('rp');
-							rpStartEl.appendChild(doc.createTextNode('('));
-							const rpEndEl = doc.createElement('rp');
-							rpEndEl.appendChild(doc.createTextNode(')'));
+							const rpStartEl = new Element('rp', {});
+							rpStartEl.childNodes.push(new Text('('));
+							const rpEndEl = new Element('rp', {});
+							rpEndEl.childNodes.push(new Text(')'));
 
 							appendChildren(node.children.slice(0, node.children.length - 1), rubyEl);
-							rtEl.appendChild(doc.createTextNode(text.trim()));
-							rubyEl.appendChild(rpStartEl);
-							rubyEl.appendChild(rtEl);
-							rubyEl.appendChild(rpEndEl);
+							rtEl.childNodes.push(new Text(text.trim()));
+							rubyEl.childNodes.push(rpStartEl);
+							rubyEl.childNodes.push(rtEl);
+							rubyEl.childNodes.push(rpEndEl);
 							return rubyEl;
 						}
 					}
 
 					default: {
-						const el = doc.createElement('span');
-						el.textContent = '*';
+						const el = new Element('span', {});
+						el.childNodes.push(new Text('*'));
 						appendChildren(node.children, el);
-						el.textContent += '*';
+						el.childNodes.push(new Text('*'));
 						return el;
 					}
 				}
 			},
 
 			blockCode(node) {
-				const pre = doc.createElement('pre');
-				const inner = doc.createElement('code');
+				const pre = new Element('pre', {});
+				const inner = new Element('code', {});
 
 				const nodes = node.props.code
 					.split(/\r\n|\r|\n/)
-					.map((x) => doc.createTextNode(x));
+					.map((x) => new Text(x));
 
 				for (const x of intersperse<FIXME | 'br'>('br', nodes)) {
-					inner.appendChild(x === 'br' ? doc.createElement('br') : x);
+					inner.childNodes.push(x === 'br' ? new Element('br', {}) : x);
 				}
 
-				pre.appendChild(inner);
+				pre.childNodes.push(inner);
 				return pre;
 			},
 
 			center(node) {
-				const el = doc.createElement('div');
+				const el = new Element('div', {});
 				appendChildren(node.children, el);
 				return el;
 			},
 
 			emojiCode(node) {
-				return doc.createTextNode(`\u200B:${node.props.name}:\u200B`);
+				return new Text(`\u200B:${node.props.name}:\u200B`);
 			},
 
 			unicodeEmoji(node) {
-				return doc.createTextNode(node.props.emoji);
+				return new Text(node.props.emoji);
 			},
 
 			hashtag: (node) => {
-				const a = doc.createElement('a');
-				a.setAttribute('href', `${this.config.url}/tags/${node.props.hashtag}`);
-				a.textContent = `#${node.props.hashtag}`;
-				a.setAttribute('rel', 'tag');
-				a.setAttribute('class', 'hashtag');
+				const a = new Element('a', {
+					href: `${this.config.url}/tags/${node.props.hashtag}`,
+					rel: 'tag',
+					class: 'hashtag',
+				});
+				a.childNodes.push(new Text(`#${node.props.hashtag}`));
 				return a;
 			},
 
 			inlineCode(node) {
-				const el = doc.createElement('code');
-				el.textContent = node.props.code;
+				const el = new Element('code', {});
+				el.childNodes.push(new Text(node.props.code));
 				return el;
 			},
 
 			mathInline(node) {
-				const el = doc.createElement('code');
-				el.textContent = node.props.formula;
+				const el = new Element('code', {});
+				el.childNodes.push(new Text(node.props.formula));
 				return el;
 			},
 
 			mathBlock(node) {
-				const el = doc.createElement('code');
-				el.textContent = node.props.formula;
+				const el = new Element('code', {});
+				el.childNodes.push(new Text(node.props.formula));
 				return el;
 			},
 
 			link(node) {
-				const a = doc.createElement('a');
-				a.setAttribute('rel', 'nofollow noopener noreferrer');
-				a.setAttribute('target', '_blank');
-				a.setAttribute('href', node.props.url);
+				const a = new Element('a', {
+					rel: 'nofollow noopener noreferrer',
+					target: '_blank',
+					href: node.props.url,
+				});
 				appendChildren(node.children, a);
 				return a;
 			},
@@ -796,91 +825,106 @@ export class MfmService {
 				const { username, host, acct } = node.props;
 				const resolved = mentionedRemoteUsers.find(remoteUser => remoteUser.username === username && remoteUser.host === host);
 
-				const el = doc.createElement('span');
+				const el = new Element('span', {});
 				if (!resolved) {
-					el.textContent = acct;
+					el.childNodes.push(new Text(acct));
 				} else {
-					el.setAttribute('class', 'h-card');
-					el.setAttribute('translate', 'no');
-					const a = doc.createElement('a');
-					a.setAttribute('href', resolved.url ? resolved.url : resolved.uri);
-					a.className = 'u-url mention';
-					const span = doc.createElement('span');
-					span.textContent = resolved.username || username;
-					a.textContent = '@';
-					a.appendChild(span);
-					el.appendChild(a);
+					el.attribs.class = 'h-card';
+					el.attribs.translate = 'no';
+					const a = new Element('a', {
+						href: resolved.url ? resolved.url : resolved.uri,
+						class: 'u-url mention',
+					});
+					const span = new Element('span', {});
+					span.childNodes.push(new Text(resolved.username || username));
+					a.childNodes.push(new Text('@'));
+					a.childNodes.push(span);
+					el.childNodes.push(a);
 				}
 
 				return el;
 			},
 
 			quote(node) {
-				const el = doc.createElement('blockquote');
+				const el = new Element('blockquote', {});
 				appendChildren(node.children, el);
 				return el;
 			},
 
 			text(node) {
-				const el = doc.createElement('span');
+				if (!node.props.text.match(/[\r\n]/)) {
+					return new Text(node.props.text);
+				}
+
+				const el = new Element('span', {});
 				const nodes = node.props.text
 					.split(/\r\n|\r|\n/)
-					.map((x) => doc.createTextNode(x));
+					.map((x) => new Text(x));
 
 				for (const x of intersperse<FIXME | 'br'>('br', nodes)) {
-					el.appendChild(x === 'br' ? doc.createElement('br') : x);
+					el.childNodes.push(x === 'br' ? new Element('br', {}) : x);
 				}
 
 				return el;
 			},
 
 			url(node) {
-				const a = doc.createElement('a');
-				a.setAttribute('rel', 'nofollow noopener noreferrer');
-				a.setAttribute('target', '_blank');
-				a.setAttribute('href', node.props.url);
-				a.textContent = node.props.url.replace(/^https?:\/\//, '');
+				const a = new Element('a', {
+					rel: 'nofollow noopener noreferrer',
+					target: '_blank',
+					href: node.props.url,
+				});
+				a.childNodes.push(new Text(node.props.url.replace(/^https?:\/\//, '')));
 				return a;
 			},
 
 			search: (node) => {
-				const a = doc.createElement('a');
-				a.setAttribute('href', `https://www.google.com/search?q=${node.props.query}`);
-				a.textContent = node.props.content;
+				const a = new Element('a', {
+					href: `https://www.google.com/search?q=${node.props.query}`,
+				});
+				a.childNodes.push(new Text(node.props.content));
 				return a;
 			},
 
 			plain(node) {
-				const el = doc.createElement('span');
+				const el = new Element('span', {});
 				appendChildren(node.children, el);
 				return el;
 			},
 		};
 
+		// Utility function to make TypeScript behave
+		function handle<T extends mfm.MfmNode>(node: T): ChildNode {
+			const handler = handlers[node.type] as (node: T) => ChildNode;
+			return handler(node);
+		}
+
 		appendChildren(nodes, body);
 
 		if (quoteUri !== null) {
-			const a = doc.createElement('a');
-			a.setAttribute('href', quoteUri);
-			a.textContent = quoteUri.replace(/^https?:\/\//, '');
+			const a = new Element('a', {
+				href: quoteUri,
+			});
+			a.childNodes.push(new Text(quoteUri.replace(/^https?:\/\//, '')));
 
-			const quote = doc.createElement('span');
-			quote.setAttribute('class', 'quote-inline');
-			quote.appendChild(doc.createElement('br'));
-			quote.appendChild(doc.createElement('br'));
-			quote.innerHTML += 'RE: ';
-			quote.appendChild(a);
+			const quote = new Element('span', {
+				class: 'quote-inline',
+			});
+			quote.childNodes.push(new Element('br', {}));
+			quote.childNodes.push(new Element('br', {}));
+			quote.childNodes.push(new Text('RE: '));
+			quote.childNodes.push(a);
 
-			body.appendChild(quote);
+			body.childNodes.push(quote);
 		}
 
-		let result = body.outerHTML;
+		let result = domserializer.render(body, {
+			encodeEntities: 'utf8'
+		});
 
 		if (inline) {
 			result = result.replace(/^<p>/, '').replace(/<\/p>$/, '');
 		}
-
-		happyDOM.close().catch(() => {});
 
 		return result;
 	}

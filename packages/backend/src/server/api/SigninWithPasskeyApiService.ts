@@ -128,7 +128,7 @@ export class SigninWithPasskeyApiService {
 		try {
 			authorizedUserId = await this.webAuthnService.verifySignInWithPasskeyAuthentication(context, credential);
 		} catch (err) {
-			this.logger.warn(`Passkey challenge Verify error! : ${err}`);
+			this.logger.warn('Passkey challenge verify error:', err as Error);
 			const errorId = (err as IdentifiableError).id;
 			return error(403, {
 				id: errorId,

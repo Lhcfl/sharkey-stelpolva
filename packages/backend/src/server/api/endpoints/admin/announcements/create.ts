@@ -61,6 +61,7 @@ export const paramDef = {
 		forExistingUsers: { type: 'boolean', default: false },
 		silence: { type: 'boolean', default: false },
 		needConfirmationToRead: { type: 'boolean', default: false },
+		confetti: { type: 'boolean', default: false },
 		userId: { type: 'string', format: 'misskey:id', nullable: true, default: null },
 	},
 	required: ['title', 'text', 'imageUrl'],
@@ -83,6 +84,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				forExistingUsers: ps.forExistingUsers,
 				silence: ps.silence,
 				needConfirmationToRead: ps.needConfirmationToRead,
+				confetti: ps.confetti,
 				userId: ps.userId,
 			}, me);
 

@@ -53,7 +53,7 @@ describe('Block', () => {
 
 		assert.strictEqual(res.status, 400);
 		assert.ok(res.body);
-		assert.strictEqual(castAsError(res.body).error.id, 'b390d7e1-8a5e-46ed-b625-06271cafd3d3');
+		assert.strictEqual(castAsError(res.body).error.id, 'b98980fa-3780-406c-a935-b6d0eeee10d1');
 	});
 
 	test('ブロックされているユーザーのノートをRenoteできない', async () => {
@@ -62,7 +62,7 @@ describe('Block', () => {
 		const res = await api('notes/create', { renoteId: note.id, text: 'yo' }, bob);
 
 		assert.strictEqual(res.status, 400);
-		assert.strictEqual(castAsError(res.body).error.id, 'b390d7e1-8a5e-46ed-b625-06271cafd3d3');
+		assert.strictEqual(castAsError(res.body).error.id, 'be9529e9-fe72-4de0-ae43-0b363c4938af');
 	});
 
 	// TODO: ユーザーリストに入れられないテスト

@@ -37,6 +37,6 @@ export class BakeBufferedReactionsProcessorService {
 
 		await this.reactionsBufferingService.bake();
 
-		this.logger.succ('All buffered reactions baked.');
+		this.logger.info('All buffered reactions baked.');
 	}
 }

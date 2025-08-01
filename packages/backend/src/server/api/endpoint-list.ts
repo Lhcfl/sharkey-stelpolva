@@ -95,6 +95,7 @@ export * as 'admin/reset-password' from './endpoints/admin/reset-password.js';
 export * as 'admin/resolve-abuse-user-report' from './endpoints/admin/resolve-abuse-user-report.js';
 export * as 'admin/roles/assign' from './endpoints/admin/roles/assign.js';
 export * as 'admin/roles/create' from './endpoints/admin/roles/create.js';
+export * as 'admin/roles/clone' from './endpoints/admin/roles/clone.js';
 export * as 'admin/roles/delete' from './endpoints/admin/roles/delete.js';
 export * as 'admin/roles/list' from './endpoints/admin/roles/list.js';
 export * as 'admin/roles/show' from './endpoints/admin/roles/show.js';

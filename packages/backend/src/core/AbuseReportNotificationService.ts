@@ -83,6 +83,28 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	}
 
 	/**
+	 * Collects all email addresses that a abuse report should be sent to.
+	 */
+	@bindThis
+	public async getRecipientEMailAddresses(): Promise<string[]> {
+		const recipientEMailAddresses = await this.fetchEMailRecipients().then(it => it
+			.filter(it => it.isActive && it.userProfile?.emailVerified)
+			.map(it => it.userProfile?.email)
+			.filter(x => x != null),
+		);
+
+		if (this.meta.email) {
+			recipientEMailAddresses.push(this.meta.email);
+		}
+
+		if (this.meta.maintainerEmail) {
+			recipientEMailAddresses.push(this.meta.maintainerEmail);
+		}
+
+		return recipientEMailAddresses;
+	}
+
+	/**
 	 * Mailを用いて{@link abuseReports}の内容を管理者各位に通知する.
 	 * メールアドレスの送信先は以下の通り.
 	 * - モデレータ権限所有者ユーザ(設定画面からメールアドレスの設定を行っているユーザに限る)
@@ -96,15 +118,7 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 			return;
 		}
 
-		const recipientEMailAddresses = await this.fetchEMailRecipients().then(it => it
-			.filter(it => it.isActive && it.userProfile?.emailVerified)
-			.map(it => it.userProfile?.email)
-			.filter(x => x != null),
-		);
-
-		recipientEMailAddresses.push(
-			...(this.meta.email ? [this.meta.email] : []),
-		);
+		const recipientEMailAddresses = await this.getRecipientEMailAddresses();
 
 		if (recipientEMailAddresses.length <= 0) {
 			return;

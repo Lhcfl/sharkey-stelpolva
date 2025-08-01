@@ -44,16 +44,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// Skip if there's nothing to do
 			if (user.mandatoryCW === ps.cw) return;
 
-			// Log event first.
-			// This ensures that we don't "lose" the log if an error occurs
-			await this.moderationLogService.log(me, 'setMandatoryCW', {
-				newCW: ps.cw,
-				oldCW: user.mandatoryCW,
-				userId: user.id,
-				userUsername: user.username,
-				userHost: user.host,
-			});
-
 			await this.usersRepository.update(ps.userId, {
 				// Collapse empty strings to null
 				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -62,6 +52,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			// Synchronize caches and other processes
 			this.globalEventService.publishInternalEvent('localUserUpdated', { id: ps.userId });
+
+			await this.moderationLogService.log(me, 'setMandatoryCW', {
+				newCW: ps.cw,
+				oldCW: user.mandatoryCW,
+				userId: user.id,
+				userUsername: user.username,
+				userHost: user.host,
+			});
 		});
 	}
 }

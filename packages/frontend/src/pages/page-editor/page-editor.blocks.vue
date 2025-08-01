@@ -5,10 +5,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <Sortable :modelValue="modelValue" tag="div" itemKey="id" handle=".drag-handle" :group="{ name: 'blocks' }" :animation="150" :swapThreshold="0.5" @update:modelValue="v => emit('update:modelValue', v)">
-	<template #item="{element}">
+	<template #item="{element, index}">
 		<div :class="$style.item">
 			<!-- divが無いとエラーになる https://github.com/SortableJS/vue.draggable.next/issues/189 -->
-			<component :is="getComponent(element.type)" :modelValue="element" @update:modelValue="updateItem" @remove="() => removeItem(element)"/>
+			<component
+				:is="getComponent(element.type)"
+				:modelValue="element"
+				:index="index"
+				@update:modelValue="updateItem"
+				@remove="() => removeItem(element)"
+			/>
 		</div>
 	</template>
 </Sortable>

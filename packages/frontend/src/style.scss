@@ -237,9 +237,16 @@ rt {
 ._spacer {
 	width: 100%;
 	max-width: min(var(--MI_SPACER-w, 100%), calc(100% - (var(--MI_SPACER-max, 24px) * 2)));
-	margin: var(--MI_SPACER-max, 24px) auto;
-	container-type: inline-size;
 
+	/* marginを使って余白を表現すると、margin特有の親突き抜け仕様などが厄介になってくるので上下はpaddingを使う */
+	padding: var(--MI_SPACER-max, 24px) 0;
+	margin: 0 auto;
+
+	box-sizing: border-box;
+	container-type: inline-size;
+}
+
+._spacer > * {
 	/* 子に継承させない */
 	--MI_SPACER-w: initial;
 	--MI_SPACER-min: initial;
@@ -248,13 +255,13 @@ rt {
 
 ._forceShrinkSpacer ._spacer {
 	max-width: min(var(--MI_SPACER-w, 100%), calc(100% - (var(--MI_SPACER-min, 12px) * 2)));
-	margin: var(--MI_SPACER-min, 12px) auto;
+	padding: var(--MI_SPACER-min, 12px) 0;
 }
 
 @container (max-width: 450px) {
 	._spacer {
 		max-width: min(var(--MI_SPACER-w, 100%), calc(100% - (var(--MI_SPACER-min, 12px) * 2)));
-		margin: var(--MI_SPACER-min, 12px) auto;
+		padding: var(--MI_SPACER-min, 12px) 0;
 	}
 }
 
@@ -456,6 +463,14 @@ rt {
 	gap: var(--MI-margin);
 }
 
+/**
+ * Use with _gaps, _gaps_m, or _gaps_s.
+ * Place the other class *first*!
+ */
+._h_gaps {
+	flex-direction: row;
+}
+
 ._buttons {
 	display: flex;
 	gap: 8px;
@@ -546,18 +561,6 @@ rt {
 				}
 			}
 		}
-	}
-}
-
-._fullinfo {
-	padding: 64px 32px;
-	text-align: center;
-
-	> img {
-		vertical-align: bottom;
-		height: 128px;
-		margin-bottom: 16px;
-		border-radius: var(--MI-radius-md);
 	}
 }
 

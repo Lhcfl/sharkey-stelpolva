@@ -15,36 +15,50 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkButton from '@/components/MkButton.vue';
 import { ensureSignin } from '@/i.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
+import * as os from '@/os.js';
 
 const $i = ensureSignin();
 
 const instanceMutes = ref($i.mutedInstances.join('\n'));
+const domainArray = computed(() => {
+	return instanceMutes.value
+		.trim().split('\n')
+		.map(el => el.trim().toLowerCase())
+		.filter(el => el);
+});
 const changed = ref(false);
 
 async function save() {
-	let mutes = instanceMutes.value
-		.trim().split('\n')
-		.map(el => el.trim())
-		.filter(el => el);
+	// checks for a full line without whitespace.
+	if (!domainArray.value.every(d => /^\S+$/.test(d))) {
+		os.alert({
+			type: 'error',
+			title: i18n.ts.invalidValue,
+		});
+		return;
+	}
 
 	await misskeyApi('i/update', {
-		mutedInstances: mutes,
+		mutedInstances: domainArray.value,
 	});
 
-	changed.value = false;
-
 	// Refresh filtered list to signal to the user how they've been saved
-	instanceMutes.value = mutes.join('\n');
+	instanceMutes.value = domainArray.value.join('\n');
+
+	changed.value = false;
 }
 
-watch(instanceMutes, () => {
-	changed.value = true;
+watch(domainArray, (newArray, oldArray) => {
+	// compare arrays
+	if (newArray.length !== oldArray.length || !newArray.every((a, i) => a === oldArray[i])) {
+		changed.value = true;
+	}
 });
 </script>

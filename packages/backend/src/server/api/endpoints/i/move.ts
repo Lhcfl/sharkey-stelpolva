@@ -17,7 +17,7 @@ import { ApiLoggerService } from '@/server/api/ApiLoggerService.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
-
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import * as Acct from '@/misc/acct.js';
 import { DI } from '@/di-symbols.js';
 import { MiMeta } from '@/models/_.js';
@@ -105,7 +105,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const { username, host } = Acct.parse(ps.moveToAccount);
 			// retrieve the destination account
 			let moveTo = await this.remoteUserResolveService.resolveUser(username, host).catch((e) => {
-				this.apiLoggerService.logger.warn(`failed to resolve remote user: ${e}`);
+				this.apiLoggerService.logger.warn(`failed to resolve remote user: ${renderInlineError(e)}`);
 				throw new ApiError(meta.errors.noSuchUser);
 			});
 			const destination = await this.getterService.getUser(moveTo.id) as MiLocalUser | MiRemoteUser;

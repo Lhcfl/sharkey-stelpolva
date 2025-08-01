@@ -28,7 +28,7 @@ console.log('Sharkey Embed');
 //#region Embedパラメータの取得・パース
 const params = new URLSearchParams(location.search);
 const embedParams = parseEmbedParams(params);
-if (_DEV_) console.log(embedParams);
+if (_DEV_) console.debug(embedParams);
 //#endregion
 
 //#region テーマ

@@ -32,6 +32,7 @@ import { getIpHash } from '@/misc/get-ip-hash.js';
 import { AuthenticateService } from '@/server/api/AuthenticateService.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
 import { Keyed, RateLimit, sendRateLimitHeaders } from '@/misc/rate-limit-utils.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginOptions } from 'fastify';
 
 const _filename = fileURLToPath(import.meta.url);
@@ -69,6 +70,10 @@ export class FileServerService {
 		fastify.addHook('onRequest', (request, reply, done) => {
 			reply.header('Content-Security-Policy', 'default-src \'none\'; img-src \'self\'; media-src \'self\'; style-src \'unsafe-inline\'');
 			reply.header('Access-Control-Allow-Origin', '*');
+
+			// Tell crawlers not to index files endpoints.
+			// https://developers.google.com/search/docs/crawling-indexing/block-indexing
+			reply.header('X-Robots-Tag', 'noindex');
 			done();
 		});
 
@@ -120,7 +125,7 @@ export class FileServerService {
 
 	@bindThis
 	private async errorHandler(request: FastifyRequest<{ Params?: { [x: string]: any }; Querystring?: { [x: string]: any }; }>, reply: FastifyReply, err?: any) {
-		this.logger.error(`${err}`);
+		this.logger.error(`Unhandled error in file server: ${renderInlineError(err)}`);
 
 		reply.header('Cache-Control', 'max-age=300');
 
@@ -353,7 +358,7 @@ export class FileServerService {
 		if (!request.headers['user-agent']) {
 			throw new StatusError('User-Agent is required', 400, 'User-Agent is required');
 		} else if (request.headers['user-agent'].toLowerCase().indexOf('misskey/') !== -1) {
-			throw new StatusError('Refusing to proxy a request from another proxy', 403, 'Proxy is recursive');
+			throw new StatusError(`Refusing to proxy recursive request to ${url} (from user-agent ${request.headers['user-agent']})`, 403, 'Proxy is recursive');
 		}
 
 		// Create temp file
@@ -383,7 +388,7 @@ export class FileServerService {
 			) {
 				if (!isConvertibleImage) {
 					// 画像でないなら404でお茶を濁す
-					throw new StatusError('Unexpected mime', 404);
+					throw new StatusError(`Unexpected non-convertible mime: ${file.mime}`, 404, 'Unexpected mime');
 				}
 			}
 
@@ -447,7 +452,7 @@ export class FileServerService {
 			} else if (file.mime === 'image/svg+xml') {
 				image = this.imageProcessingService.convertToWebpStream(file.path, 2048, 2048);
 			} else if (!file.mime.startsWith('image/') || !FILE_TYPE_BROWSERSAFE.includes(file.mime)) {
-				throw new StatusError('Rejected type', 403, 'Rejected type');
+				throw new StatusError(`Blocked mime type: ${file.mime}`, 403, 'Blocked mime type');
 			}
 
 			if (!image) {
@@ -521,7 +526,7 @@ export class FileServerService {
 	> {
 		if (url.startsWith(`${this.config.url}/files/`)) {
 			const key = url.replace(`${this.config.url}/files/`, '').split('/').shift();
-			if (!key) throw new StatusError('Invalid File Key', 400, 'Invalid File Key');
+			if (!key) throw new StatusError(`Invalid file URL ${url}`, 400, 'Invalid file url');
 
 			return await this.getFileFromKey(key);
 		}

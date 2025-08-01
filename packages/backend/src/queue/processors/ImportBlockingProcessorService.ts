@@ -40,10 +40,9 @@ export class ImportBlockingProcessorService {
 
 	@bindThis
 	public async process(job: Bull.Job<DbUserImportJobData>): Promise<void> {
-		this.logger.info(`Importing blocking of ${job.data.user.id} ...`);
-
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
+			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
 			return;
 		}
 
@@ -51,14 +50,17 @@ export class ImportBlockingProcessorService {
 			id: job.data.fileId,
 		});
 		if (file == null) {
+			this.logger.debug(`Skip: file ${job.data.fileId} does not exist`);
 			return;
 		}
+
+		this.logger.debug(`Importing blocking of ${job.data.user.id} ...`);
 
 		const csv = await this.downloadService.downloadTextFile(file.url);
 		const targets = csv.trim().split('\n');
 		this.queueService.createImportBlockingToDbJob({ id: user.id }, targets);
 
-		this.logger.succ('Import jobs created');
+		this.logger.debug('Import jobs created');
 	}
 
 	@bindThis
@@ -93,11 +95,11 @@ export class ImportBlockingProcessorService {
 			// skip myself
 			if (target.id === job.data.user.id) return;
 
-			this.logger.info(`Block ${target.id} ...`);
+			this.logger.debug(`Block ${target.id} ...`);
 
 			this.queueService.createBlockJob([{ from: { id: user.id }, to: { id: target.id }, silent: true }]);
 		} catch (e) {
-			this.logger.warn(`Error: ${e}`);
+			this.logger.error('Error importing blockings:', e as Error);
 		}
 	}
 }

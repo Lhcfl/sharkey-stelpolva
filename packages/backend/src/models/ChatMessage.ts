@@ -50,8 +50,8 @@ export class MiChatMessage {
 	@JoinColumn()
 	public toRoom: MiChatRoom | null;
 
-	@Column('varchar', {
-		length: 4096, nullable: true,
+	@Column('text', {
+		nullable: true,
 	})
 	public text: string | null;
 

@@ -303,9 +303,12 @@ describe(SkRateLimiterService, () => {
 
 				const i1 = await serviceUnderTest().limit(limit, actor); // 1 + 1 = 2
 				const i2 = await serviceUnderTest().limit(limit, actor); // 2 + 1 = 3
+				mockTimeService.now += 500; // 3 - 1 = 2 (at 1/2 time)
+				const i3 = await serviceUnderTest().limit(limit, actor);
 
 				expect(i1.blocked).toBeFalsy();
 				expect(i2.blocked).toBeTruthy();
+				expect(i3.blocked).toBeFalsy();
 			});
 
 			it('should set counter expiration', async () => {
@@ -563,11 +566,15 @@ describe(SkRateLimiterService, () => {
 				mockDefaultUserPolicies.rateLimitFactor = 0.5;
 				limitCounter = 1;
 				limitTimestamp = 0;
+
+				const i1 = await serviceUnderTest().limit(limit, actor);
+				const i2 = await serviceUnderTest().limit(limit, actor);
 				mockTimeService.now += 500;
+				const i3 = await serviceUnderTest().limit(limit, actor);
 
-				const info = await serviceUnderTest().limit(limit, actor);
-
-				expect(info.blocked).toBeFalsy();
+				expect(i1.blocked).toBeFalsy();
+				expect(i2.blocked).toBeTruthy();
+				expect(i3.blocked).toBeFalsy();
 			});
 
 			it('should set counter expiration', async () => {
@@ -738,12 +745,17 @@ describe(SkRateLimiterService, () => {
 
 			it('should scale limit by factor', async () => {
 				mockDefaultUserPolicies.rateLimitFactor = 0.5;
-				limitCounter = 10;
+				limitCounter = 1;
 				limitTimestamp = 0;
 
-				const info = await serviceUnderTest().limit(limit, actor); // 10 + 1 = 11
+				const i1 = await serviceUnderTest().limit(limit, actor);
+				const i2 = await serviceUnderTest().limit(limit, actor);
+				mockTimeService.now += 500;
+				const i3 = await serviceUnderTest().limit(limit, actor);
 
-				expect(info.blocked).toBeTruthy();
+				expect(i1.blocked).toBeFalsy();
+				expect(i2.blocked).toBeTruthy();
+				expect(i3.blocked).toBeFalsy();
 			});
 
 			it('should set counter expiration', async () => {
@@ -932,13 +944,17 @@ describe(SkRateLimiterService, () => {
 
 			it('should scale limit and interval by factor', async () => {
 				mockDefaultUserPolicies.rateLimitFactor = 0.5;
-				limitCounter = 5;
+				limitCounter = 19;
 				limitTimestamp = 0;
+
+				const i1 = await serviceUnderTest().limit(limit, actor);
+				const i2 = await serviceUnderTest().limit(limit, actor);
 				mockTimeService.now += 500;
+				const i3 = await serviceUnderTest().limit(limit, actor);
 
-				const info = await serviceUnderTest().limit(limit, actor);
-
-				expect(info.blocked).toBeFalsy();
+				expect(i1.blocked).toBeFalsy();
+				expect(i2.blocked).toBeTruthy();
+				expect(i3.blocked).toBeFalsy();
 			});
 
 			it('should set counter expiration', async () => {

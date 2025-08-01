@@ -10,6 +10,7 @@ import { IdService } from '@/core/IdService.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { DI } from '@/di-symbols.js';
+import { CacheService } from '@/core/CacheService.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -19,9 +20,11 @@ export const meta = {
 
 	kind: 'write:account',
 
+	// Up to 10 calls, then 1/second
 	limit: {
-		duration: ms('1hour'),
-		max: 10,
+		type: 'bucket',
+		size: 10,
+		dripRate: 1000,
 	},
 
 	errors: {
@@ -37,6 +40,7 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		noteId: { type: 'string', format: 'misskey:id' },
+		noteOnly: { type: 'boolean', default: false },
 	},
 	required: ['noteId'],
 } as const;
@@ -52,6 +56,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private getterService: GetterService,
 		private idService: IdService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {
@@ -59,6 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw err;
 			});
 
+			/*
 			const mutedNotes = await this.notesRepository.find({
 				where: [{
 					id: note.threadId ?? note.id,
@@ -66,12 +72,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					threadId: note.threadId ?? note.id,
 				}],
 			});
+			*/
 
+			const threadId = note.threadId ?? note.id;
 			await this.noteThreadMutingsRepository.insert({
 				id: this.idService.gen(),
-				threadId: note.threadId ?? note.id,
+				threadId: ps.noteOnly ? note.id : threadId,
 				userId: me.id,
+				isPostMute: ps.noteOnly,
 			});
+
+			await Promise.all([
+				this.cacheService.threadMutingsCache.refresh(me.id),
+				this.cacheService.noteMutingsCache.refresh(me.id),
+			]);
 		});
 	}
 }

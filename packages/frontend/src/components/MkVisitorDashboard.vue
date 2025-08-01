@@ -18,6 +18,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<!-- eslint-disable-next-line vue/no-v-html -->
 				<div v-html="sanitizeHtml(instance.description) || i18n.ts.headlineMisskey"></div>
 			</div>
+			<div v-if="instance.about && instance.description !== instance.about" :class=$style.showMore>
+				<p><a href="/about">{{ i18n.ts.showMore }}</a></p>
+			</div>
 			<div v-if="instance.disableRegistration || instance.federation !== 'all'" :class="$style.mainWarn" class="_gaps_s">
 				<MkInfo v-if="instance.disableRegistration" warn>{{ i18n.ts.invitationRequiredToRegister }}</MkInfo>
 				<MkInfo v-if="instance.federation === 'specified'" warn>{{ i18n.ts.federationSpecified }}</MkInfo>
@@ -215,5 +218,10 @@ function showMenu(ev: MouseEvent) {
 .tlBody {
 	height: 350px;
 	overflow: auto;
+}
+
+.showMore {
+	font-size: 0.8m;
+	color: var(--MI_THEME-accent);
 }
 </style>

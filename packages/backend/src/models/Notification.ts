@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { userExportableEntities } from '@/types.js';
+import { userExportableEntities, userImportableEntities } from '@/types.js';
 import { MiUser } from './User.js';
 import { MiNote } from './Note.js';
 import { MiAccessToken } from './AccessToken.js';
@@ -92,6 +92,12 @@ export type MiNotification = {
 	createdAt: string;
 	exportedEntity: typeof userExportableEntities[number];
 	fileId: MiDriveFile['id'];
+} | {
+	type: 'importCompleted';
+	id: string;
+	createdAt: string;
+	importedEntity: typeof userImportableEntities[number];
+	fileId?: MiDriveFile['id'];
 } | {
 	type: 'login';
 	id: string;

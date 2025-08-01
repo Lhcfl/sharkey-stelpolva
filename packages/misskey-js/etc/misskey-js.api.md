@@ -31,6 +31,12 @@ declare namespace acct {
 export { acct }
 
 // @public (undocumented)
+type Achievement = components['schemas']['Achievement'];
+
+// @public (undocumented)
+type AchievementName = components['schemas']['AchievementName'];
+
+// @public (undocumented)
 type Ad = components['schemas']['Ad'];
 
 // Warning: (ae-forgotten-export) The symbol "operations" needs to be exported by the entry point index.d.ts
@@ -157,6 +163,9 @@ type AdminDeleteAccountRequest = operations['admin___delete-account']['requestBo
 
 // @public (undocumented)
 type AdminDeleteAllFilesOfAUserRequest = operations['admin___delete-all-files-of-a-user']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveCleanRemoteFilesRequest = operations['admin___drive___clean-remote-files']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type AdminDriveFilesRequest = operations['admin___drive___files']['requestBody']['content']['application/json'];
@@ -325,6 +334,12 @@ type AdminResolveAbuseUserReportRequest = operations['admin___resolve-abuse-user
 
 // @public (undocumented)
 type AdminRolesAssignRequest = operations['admin___roles___assign']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminRolesCloneRequest = operations['admin___roles___clone']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminRolesCloneResponse = operations['admin___roles___clone']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type AdminRolesCreateRequest = operations['admin___roles___create']['requestBody']['content']['application/json'];
@@ -1492,6 +1507,8 @@ declare namespace entities {
         SigninWithPasskeyInitResponse,
         SigninWithPasskeyResponse,
         PartialRolePolicyOverride,
+        exportEntityName,
+        importEntityName,
         EmptyRequest,
         EmptyResponse,
         AdminAbuseReportNotificationRecipientCreateRequest,
@@ -1535,6 +1552,7 @@ declare namespace entities {
         AdminDeclineUserRequest,
         AdminDeleteAccountRequest,
         AdminDeleteAllFilesOfAUserRequest,
+        AdminDriveCleanRemoteFilesRequest,
         AdminDriveFilesRequest,
         AdminDriveFilesResponse,
         AdminDriveShowFileRequest,
@@ -1591,6 +1609,8 @@ declare namespace entities {
         AdminResetPasswordResponse,
         AdminResolveAbuseUserReportRequest,
         AdminRolesAssignRequest,
+        AdminRolesCloneRequest,
+        AdminRolesCloneResponse,
         AdminRolesCreateRequest,
         AdminRolesCreateResponse,
         AdminRolesDeleteRequest,
@@ -2057,6 +2077,7 @@ declare namespace entities {
         PagesUnlikeRequest,
         PagesUpdateRequest,
         PingResponse,
+        PinnedUsersRequest,
         PinnedUsersResponse,
         PromoReadRequest,
         RenoteMuteCreateRequest,
@@ -2166,6 +2187,8 @@ declare namespace entities {
         UserDetailed,
         User,
         UserList,
+        Achievement,
+        AchievementName,
         Ad,
         Announcement,
         App,
@@ -2225,6 +2248,19 @@ export { entities }
 
 // @public (undocumented)
 type Error_2 = components['schemas']['Error'];
+
+// @public (undocumented)
+const exportEntityName: (i18n: any) => {
+    readonly antenna: any;
+    readonly blocking: any;
+    readonly clip: any;
+    readonly customEmoji: any;
+    readonly favorite: any;
+    readonly following: any;
+    readonly muting: any;
+    readonly note: any;
+    readonly userList: any;
+};
 
 // @public (undocumented)
 type FederationFollowersRequest = operations['federation___followers']['requestBody']['content']['application/json'];
@@ -2602,6 +2638,19 @@ type IMoveRequest = operations['i___move']['requestBody']['content']['applicatio
 
 // @public (undocumented)
 type IMoveResponse = operations['i___move']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+const importEntityName: (i18n: any) => {
+    readonly antenna: any;
+    readonly blocking: any;
+    readonly clip: any;
+    readonly customEmoji: any;
+    readonly favorite: any;
+    readonly following: any;
+    readonly muting: any;
+    readonly note: any;
+    readonly userList: any;
+};
 
 // @public (undocumented)
 type INotificationsGroupedRequest = operations['i___notifications-grouped']['requestBody']['content']['application/json'];
@@ -3382,6 +3431,9 @@ export const permissions: readonly ["read:account", "write:account", "read:block
 type PingResponse = operations['ping']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type PinnedUsersRequest = operations['pinned-users']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type PinnedUsersResponse = operations['pinned-users']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
@@ -3927,7 +3979,7 @@ type V2AdminEmojiListResponse = operations['v2___admin___emoji___list']['respons
 
 // Warnings were encountered during analysis:
 //
-// src/entities.ts:50:2 - (ae-forgotten-export) The symbol "ModerationLogPayloads" needs to be exported by the entry point index.d.ts
+// src/entities.ts:51:2 - (ae-forgotten-export) The symbol "ModerationLogPayloads" needs to be exported by the entry point index.d.ts
 // src/streaming.ts:57:3 - (ae-forgotten-export) The symbol "ReconnectingWebSocket" needs to be exported by the entry point index.d.ts
 // src/streaming.types.ts:234:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
 // src/streaming.types.ts:244:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts

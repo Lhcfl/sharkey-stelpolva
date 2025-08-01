@@ -6,6 +6,7 @@
 /*
  * Notification manager for SW
  */
+import * as Misskey from 'misskey-js';
 import type { BadgeNames, PushNotificationDataMap } from '@/types.js';
 import { char2fileName } from '@/scripts/twemoji-base.js';
 import { cli } from '@/scripts/operations.js';
@@ -216,24 +217,17 @@ async function composeNotification(data: PushNotificationDataMap[keyof PushNotif
 						data,
 					}];
 
-				case 'exportCompleted': {
-					const entityName = {
-						antenna: i18n.ts.antennas,
-						blocking: i18n.ts.blockedUsers,
-						clip: i18n.ts.clips,
-						customEmoji: i18n.ts.customEmojis,
-						favorite: i18n.ts.favorites,
-						following: i18n.ts.following,
-						muting: i18n.ts.mutedUsers,
-						note: i18n.ts.notes,
-						userList: i18n.ts.lists,
-					} as const satisfies Record<typeof data.body.exportedEntity, string>;
-
-					return [i18n.tsx._notification.exportOfXCompleted({ x: entityName[data.body.exportedEntity] }), {
+				case 'exportCompleted':
+					return [i18n.tsx._notification.exportOfXCompleted({ x: Misskey.entities.exportEntityName(i18n)[data.body.exportedEntity] }), {
 						badge: iconUrl('circle-check'),
 						data,
 					}];
-				}
+
+				case 'importCompleted':
+					return [i18n.tsx._notification.importOfXCompleted({ x: Misskey.entities.importEntityName(i18n)[data.body.importedEntity] }), {
+						badge: iconUrl('circle-check'),
+						data,
+					}];
 
 				case 'pollEnded':
 					return [i18n.ts._notification.pollEnded, {

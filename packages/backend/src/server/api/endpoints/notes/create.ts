@@ -27,10 +27,11 @@ export const meta = {
 
 	prohibitMoved: true,
 
+	// Up to 10 post burst, then 4/second
 	limit: {
-		duration: ms('1hour'),
-		max: 300,
-		minInterval: ms('1sec'),
+		type: 'bucket',
+		size: 10,
+		dripRate: 250,
 	},
 
 	kind: 'write:notes',
@@ -302,6 +303,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					throw new ApiError(meta.errors.noSuchRenoteTarget);
 				} else if (isRenote(renote) && !isQuote(renote)) {
 					throw new ApiError(meta.errors.cannotReRenote);
+				} else if (!await this.noteEntityService.isVisibleForMe(renote, me.id)) {
+					throw new ApiError(meta.errors.cannotRenoteDueToVisibility);
 				}
 
 				// Check blocking
@@ -348,7 +351,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					throw new ApiError(meta.errors.noSuchReplyTarget);
 				} else if (isRenote(reply) && !isQuote(reply)) {
 					throw new ApiError(meta.errors.cannotReplyToPureRenote);
-				} else if (!await this.noteEntityService.isVisibleForMe(reply, me.id)) {
+				} else if (!await this.noteEntityService.isVisibleForMe(reply, me.id, { me })) {
 					throw new ApiError(meta.errors.cannotReplyToInvisibleNote);
 				} else if (reply.visibility === 'specified' && ps.visibility !== 'specified') {
 					throw new ApiError(meta.errors.cannotReplyToSpecifiedVisibilityNoteWithExtendedVisibility);

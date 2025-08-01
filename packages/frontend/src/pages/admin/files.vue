@@ -58,14 +58,40 @@ const pagination = {
 	})),
 };
 
-function clear() {
-	os.confirm({
-		type: 'warning',
-		text: i18n.ts.clearCachedFilesConfirm,
-	}).then(({ canceled }) => {
-		if (canceled) return;
+async function clear() {
+	const { canceled, result } = await os.form(i18n.ts.clearCachedFilesOptions.title, {
+		olderThanEnum: {
+			label: i18n.ts.clearCachedFilesOptions.olderThan,
+			type: 'enum',
+			default: 'now',
+			required: true,
+			enum: [
+				{ label: i18n.ts.clearCachedFilesOptions.now, value: 'now' },
+				{ label: i18n.ts.clearCachedFilesOptions.oneWeek, value: 'oneWeek' },
+				{ label: i18n.ts.clearCachedFilesOptions.oneMonth, value: 'oneMonth' },
+				{ label: i18n.ts.clearCachedFilesOptions.oneYear, value: 'oneYear' },
+			],
+		},
+		keepFilesInUse: {
+			label: i18n.ts.clearCachedFilesOptions.keepFilesInUse,
+			description: i18n.ts.clearCachedFilesOptions.keepFilesInUseDescription,
+			type: 'boolean',
+			default: false,
+		},
+	});
 
-		os.apiWithDialog('admin/drive/clean-remote-files', {});
+	if (canceled) return;
+
+	const timesMap = {
+		now: 0,
+		oneWeek: 7 * 86400,
+		oneMonth: 30 * 86400,
+		oneYear: 365 * 86400,
+	};
+
+	await os.apiWithDialog('admin/drive/clean-remote-files', {
+		olderThanSeconds: timesMap[result.olderThanEnum] ?? 0,
+		keepFilesInUse: result.keepFilesInUse,
 	});
 }
 

@@ -118,8 +118,14 @@ db:
   user: example-misskey-user
   pass: example-misskey-pass
 
-  # Whether disable Caching queries
-  #disableCache: true
+  ## Log a warning to the server console if any query takes longer than this to complete.
+  ## Measured in milliseconds; set to 0 to disable. (default: 300)
+  #slowQueryThreshold: 300
+
+  # If false, then query results will be cached in redis.
+  # If true (default), then queries will not be cached.
+  # This will reduce database load at the cost of increased Redis traffic and risk of bugs and unpredictable behavior.
+  #disableCache: false
 
   # Extra Connection options
   #extra:
@@ -335,6 +341,10 @@ id: 'aidx'
 #maxAltTextLength: 20000
 # Amount of characters that will be saved for remote media descriptions (alt text). Longer descriptions will be truncated to this length. (minimum: 1)
 #maxRemoteAltTextLength: 100000
+# Amount of characters that can be used when writing user bios. Longer descriptions will be rejected. (minimum: 1)
+#maxBioLength: 1500
+# Amount of characters that will be saved for remote user bios. Longer descriptions will be truncated to this length. (minimum: 1)
+#maxRemoteBioLength: 15000
 
 # Proxy for HTTP/HTTPS
 #proxy: http://127.0.0.1:3128

@@ -32,11 +32,13 @@ import { AbuseReportService } from '@/core/AbuseReportService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { fromTuple } from '@/misc/from-tuple.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import InstanceChart from '@/core/chart/charts/instance.js';
 import FederationChart from '@/core/chart/charts/federation.js';
 import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
 import { UpdateInstanceQueue } from '@/core/UpdateInstanceQueue.js';
-import { getApHrefNullable, getApId, getApIds, getApType, getNullableApId, isAccept, isActor, isAdd, isAnnounce, isApObject, isBlock, isCollection, isCollectionOrOrderedCollection, isCreate, isDelete, isFlag, isFollow, isLike, isDislike, isMove, isPost, isReject, isRemove, isTombstone, isUndo, isUpdate, validActor, validPost, isActivity, IObjectWithId } from './type.js';
+import { CacheService } from '@/core/CacheService.js';
+import { getApHrefNullable, getApId, getApIds, getApType, getNullableApId, isAccept, isActor, isAdd, isAnnounce, isApObject, isBlock, isCollectionOrOrderedCollection, isCreate, isDelete, isFlag, isFollow, isLike, isDislike, isMove, isPost, isReject, isRemove, isTombstone, isUndo, isUpdate, validActor, validPost, isActivity, IObjectWithId } from './type.js';
 import { ApNoteService } from './models/ApNoteService.js';
 import { ApLoggerService } from './ApLoggerService.js';
 import { ApDbResolverService } from './ApDbResolverService.js';
@@ -97,6 +99,7 @@ export class ApInboxService {
 		private readonly instanceChart: InstanceChart,
 		private readonly federationChart: FederationChart,
 		private readonly updateInstanceQueue: UpdateInstanceQueue,
+		private readonly cacheService: CacheService,
 	) {
 		this.logger = this.apLoggerService.logger;
 	}
@@ -106,25 +109,29 @@ export class ApInboxService {
 		let result = undefined as string | void;
 		if (isCollectionOrOrderedCollection(activity)) {
 			const results = [] as [string, string | void][];
-			// eslint-disable-next-line no-param-reassign
 			resolver ??= this.apResolverService.createResolver();
 
-			const items = toArray(isCollection(activity) ? activity.items : activity.orderedItems);
-			if (items.length >= resolver.getRecursionLimit()) {
-				throw new Error(`skipping activity: collection would surpass recursion limit: ${this.utilityService.extractDbHost(actor.uri)}`);
-			}
-
-			for (const item of items) {
-				const act = await resolver.resolve(item);
-				if (act.id == null || this.utilityService.extractDbHost(act.id) !== this.utilityService.extractDbHost(actor.uri)) {
-					this.logger.debug('skipping activity: activity id is null or mismatching');
-					continue;
+			const items = await resolver.resolveCollectionItems(activity);
+			for (let i = 0; i < items.length; i++) {
+				const act = items[i];
+				if (act.id != null) {
+					if (this.utilityService.extractDbHost(act.id) !== this.utilityService.extractDbHost(actor.uri)) {
+						this.logger.warn('skipping activity: activity id mismatch');
+						continue;
+					}
+				} else {
+					// Activity ID should only be string or undefined.
+					act.id = undefined;
 				}
+
+				const id = getNullableApId(act) ?? `${getNullableApId(activity)}#${i}`;
+
 				try {
-					results.push([getApId(item), await this.performOneActivity(actor, act, resolver)]);
+					const result = await this.performOneActivity(actor, act, resolver);
+					results.push([id, result]);
 				} catch (err) {
 					if (err instanceof Error || typeof err === 'string') {
-						this.logger.error(err);
+						this.logger.error(`Unhandled error in activity ${id}:`, err);
 					} else {
 						throw err;
 					}
@@ -144,7 +151,8 @@ export class ApInboxService {
 			if (actor.lastFetchedAt == null || Date.now() - actor.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24) {
 				setImmediate(() => {
 					// 同一ユーザーの情報を再度処理するので、使用済みのresolverを再利用してはいけない
-					this.apPersonService.updatePerson(actor.uri);
+					this.apPersonService.updatePerson(actor.uri)
+						.catch(err => this.logger.error(`Failed to update person: ${renderInlineError(err)}`));
 				});
 			}
 		}
@@ -217,6 +225,10 @@ export class ApInboxService {
 		const note = await this.apNoteService.resolveNote(object, { resolver });
 		if (!note) return `skip: target note not found ${targetUri}`;
 
+		if (note.userHost == null && note.localOnly) {
+			throw new IdentifiableError('12e23cec-edd9-442b-aa48-9c21f0c3b215', 'Cannot react to local-only note');
+		}
+
 		await this.apNoteService.extractEmojis(activity.tag ?? [], actor.host).catch(() => null);
 
 		try {
@@ -246,7 +258,7 @@ export class ApInboxService {
 		resolver ??= this.apResolverService.createResolver();
 
 		const object = await resolver.resolve(activity.object).catch(err => {
-			this.logger.error(`Resolution failed: ${err}`);
+			this.logger.error(`Resolution failed: ${renderInlineError(err)}`);
 			throw err;
 		});
 
@@ -319,7 +331,7 @@ export class ApInboxService {
 		if (targetUri.startsWith('bear:')) return 'skip: bearcaps url not supported.';
 
 		const target = await resolver.secureResolve(activityObject, uri).catch(e => {
-			this.logger.error(`Resolution failed: ${e}`);
+			this.logger.error(`Resolution failed: ${renderInlineError(e)}`);
 			throw e;
 		});
 
@@ -350,25 +362,17 @@ export class ApInboxService {
 			}
 
 			// Announce対象をresolve
-			let renote;
-			try {
-				// The target ID is verified by secureResolve, so we know it shares host authority with the actor who sent it.
-				// This means we can pass that ID to resolveNote and avoid an extra fetch, which will fail if the note is private.
-				renote = await this.apNoteService.resolveNote(target, { resolver, sentFrom: getApId(target) });
-				if (renote == null) return 'announce target is null';
-			} catch (err) {
-				// 対象が4xxならスキップ
-				if (err instanceof StatusError) {
-					if (!err.isRetryable) {
-						return `skip: ignored announce target ${target.id} - ${err.statusCode}`;
-					}
-					return `Error in announce target ${target.id} - ${err.statusCode}`;
-				}
-				throw err;
+			// The target ID is verified by secureResolve, so we know it shares host authority with the actor who sent it.
+			// This means we can pass that ID to resolveNote and avoid an extra fetch, which will fail if the note is private.
+			const renote = await this.apNoteService.resolveNote(target, { resolver, sentFrom: getApId(target) });
+			if (renote == null) return 'announce target is null';
+
+			if (!await this.noteEntityService.isVisibleForMe(renote, actor.id, { me: actor })) {
+				return 'skip: invalid actor for this activity';
 			}
 
-			if (!await this.noteEntityService.isVisibleForMe(renote, actor.id)) {
-				return 'skip: invalid actor for this activity';
+			if (renote.userHost == null && renote.localOnly) {
+				throw new IdentifiableError('12e23cec-edd9-442b-aa48-9c21f0c3b215', 'Cannot renote a local-only note');
 			}
 
 			this.logger.info(`Creating the (Re)Note: ${uri}`);
@@ -443,9 +447,11 @@ export class ApInboxService {
 					setImmediate(() => {
 						// Don't re-use the resolver, or it may throw recursion errors.
 						// Instead, create a new resolver with an appropriately-reduced recursion limit.
-						this.apPersonService.updatePerson(actor.uri, this.apResolverService.createResolver({
+						const subResolver = this.apResolverService.createResolver({
 							recursionLimit: resolver.getRecursionLimit() - resolver.getHistory().length,
-						}));
+						});
+						this.apPersonService.updatePerson(actor.uri, subResolver)
+							.catch(err => this.logger.error(`Failed to update person: ${renderInlineError(err)}`));
 					});
 				}
 			});
@@ -500,7 +506,7 @@ export class ApInboxService {
 		resolver ??= this.apResolverService.createResolver();
 
 		const object = await resolver.resolve(activityObject).catch(e => {
-			this.logger.error(`Resolution failed: ${e}`);
+			this.logger.error(`Resolution failed: ${renderInlineError(e)}`);
 			throw e;
 		});
 
@@ -537,12 +543,6 @@ export class ApInboxService {
 
 			await this.apNoteService.createNote(note, actor, resolver, silent);
 			return 'ok';
-		} catch (err) {
-			if (err instanceof StatusError && !err.isRetryable) {
-				return `skip: ${err.statusCode}`;
-			} else {
-				throw err;
-			}
 		} finally {
 			unlock();
 		}
@@ -675,7 +675,7 @@ export class ApInboxService {
 		resolver ??= this.apResolverService.createResolver();
 
 		const object = await resolver.resolve(activity.object).catch(e => {
-			this.logger.error(`Resolution failed: ${e}`);
+			this.logger.error(`Resolution failed: ${renderInlineError(e)}`);
 			throw e;
 		});
 
@@ -747,7 +747,7 @@ export class ApInboxService {
 		resolver ??= this.apResolverService.createResolver();
 
 		const object = await resolver.resolve(activity.object).catch(e => {
-			this.logger.error(`Resolution failed: ${e}`);
+			this.logger.error(`Resolution failed: ${renderInlineError(e)}`);
 			throw e;
 		});
 
@@ -768,12 +768,7 @@ export class ApInboxService {
 			return 'skip: follower not found';
 		}
 
-		const isFollowing = await this.followingsRepository.exists({
-			where: {
-				followerId: follower.id,
-				followeeId: actor.id,
-			},
-		});
+		const isFollowing = await this.cacheService.userFollowingsCache.fetch(follower.id).then(f => f.has(actor.id));
 
 		if (isFollowing) {
 			await this.userFollowingService.unfollow(follower, actor);
@@ -832,12 +827,7 @@ export class ApInboxService {
 			},
 		});
 
-		const isFollowing = await this.followingsRepository.exists({
-			where: {
-				followerId: actor.id,
-				followeeId: followee.id,
-			},
-		});
+		const isFollowing = await this.cacheService.userFollowingsCache.fetch(actor.id).then(f => f.has(followee.id));
 
 		if (requestExist) {
 			await this.userFollowingService.cancelFollowRequest(followee, actor);
@@ -879,7 +869,7 @@ export class ApInboxService {
 		resolver ??= this.apResolverService.createResolver();
 
 		const object = await resolver.resolve(activity.object).catch(e => {
-			this.logger.error(`Resolution failed: ${e}`);
+			this.logger.error(`Resolution failed: ${renderInlineError(e)}`);
 			throw e;
 		});
 

@@ -12,7 +12,8 @@ import type { Packed } from '@/misc/json-schema.js';
 import { getNoteSummary } from '@/misc/get-note-summary.js';
 import type { MiMeta, MiSwSubscription, SwSubscriptionsRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
-import { RedisKVCache } from '@/misc/cache.js';
+import { QuantumKVCache } from '@/misc/QuantumKVCache.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 
 // Defined also packages/sw/types.ts#L13
 type PushNotificationsTypes = {
@@ -48,7 +49,7 @@ function truncateBody<T extends keyof PushNotificationsTypes>(type: T, body: Pus
 
 @Injectable()
 export class PushNotificationService implements OnApplicationShutdown {
-	private subscriptionsCache: RedisKVCache<MiSwSubscription[]>;
+	private subscriptionsCache: QuantumKVCache<MiSwSubscription[]>;
 
 	constructor(
 		@Inject(DI.config)
@@ -62,13 +63,11 @@ export class PushNotificationService implements OnApplicationShutdown {
 
 		@Inject(DI.swSubscriptionsRepository)
 		private swSubscriptionsRepository: SwSubscriptionsRepository,
+		private readonly internalEventService: InternalEventService,
 	) {
-		this.subscriptionsCache = new RedisKVCache<MiSwSubscription[]>(this.redisClient, 'userSwSubscriptions', {
+		this.subscriptionsCache = new QuantumKVCache<MiSwSubscription[]>(this.internalEventService, 'userSwSubscriptions', {
 			lifetime: 1000 * 60 * 60 * 1, // 1h
-			memoryCacheLifetime: 1000 * 60 * 3, // 3m
 			fetcher: (key) => this.swSubscriptionsRepository.findBy({ userId: key }),
-			toRedisConverter: (value) => JSON.stringify(value),
-			fromRedisConverter: (value) => JSON.parse(value),
 		});
 	}
 
@@ -114,8 +113,8 @@ export class PushNotificationService implements OnApplicationShutdown {
 						endpoint: subscription.endpoint,
 						auth: subscription.auth,
 						publickey: subscription.publickey,
-					}).then(() => {
-						this.refreshCache(userId);
+					}).then(async () => {
+						await this.refreshCache(userId);
 					});
 				}
 			});
@@ -123,8 +122,8 @@ export class PushNotificationService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public refreshCache(userId: string): void {
-		this.subscriptionsCache.refresh(userId);
+	public async refreshCache(userId: string): Promise<void> {
+		await this.subscriptionsCache.refresh(userId);
 	}
 
 	@bindThis

@@ -22,24 +22,9 @@ import { unisonReload } from '@/utility/unison-reload.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { miLocalStorage } from '@/local-storage.js';
+import { prefer } from '@/preferences.js';
 
-const localCustomCss = ref(miLocalStorage.getItem('customCss') ?? '');
-
-async function apply() {
-	miLocalStorage.setItem('customCss', localCustomCss.value);
-
-	const { canceled } = await os.confirm({
-		type: 'info',
-		text: i18n.ts.reloadToApplySetting,
-	});
-	if (canceled) return;
-
-	unisonReload();
-}
-
-watch(localCustomCss, async () => {
-	await apply();
-});
+const localCustomCss = prefer.model('customCss');
 
 const headerActions = computed(() => []);
 

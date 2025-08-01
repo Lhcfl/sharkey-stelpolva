@@ -7,7 +7,6 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import promiseLimit from 'promise-limit';
 import { DataSource } from 'typeorm';
 import { ModuleRef } from '@nestjs/core';
-import { AbortError } from 'node-fetch';
 import { UnrecoverableError } from 'bullmq';
 import { DI } from '@/di-symbols.js';
 import type { FollowingsRepository, InstancesRepository, MiMeta, UserProfilesRepository, UserPublickeysRepository, UsersRepository } from '@/models/_.js';
@@ -32,7 +31,6 @@ import type UsersChart from '@/core/chart/charts/users.js';
 import type InstanceChart from '@/core/chart/charts/instance.js';
 import type { HashtagService } from '@/core/HashtagService.js';
 import { MiUserNotePining } from '@/models/UserNotePining.js';
-import { StatusError } from '@/misc/status-error.js';
 import type { UtilityService } from '@/core/UtilityService.js';
 import type { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
@@ -44,6 +42,9 @@ import { AppLockService } from '@/core/AppLockService.js';
 import { MemoryKVCache } from '@/misc/cache.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { verifyFieldLinks } from '@/misc/verify-field-link.js';
+import { isRetryableError } from '@/misc/is-retryable-error.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { getApId, getApType, isActor, isCollection, isCollectionOrOrderedCollection, isPropertyValue } from '../type.js';
 import { extractApHashtags } from './tag.js';
 import type { OnModuleInit } from '@nestjs/common';
@@ -56,7 +57,6 @@ import type { ApImageService } from './ApImageService.js';
 import type { IActor, ICollection, IObject, IOrderedCollection } from '../type.js';
 
 const nameLength = 128;
-const summaryLength = 2048;
 
 type Field = Record<'name' | 'value', string>;
 
@@ -153,89 +153,88 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 	 */
 	@bindThis
 	private validateActor(x: IObject, uri: string): IActor {
-		this.apUtilityService.assertApUrl(uri);
-		const expectHost = this.utilityService.punyHostPSLDomain(uri);
+		const parsedUri = this.utilityService.assertUrl(uri);
+		const expectHost = this.utilityService.punyHostPSLDomain(parsedUri);
 
+		// Validate type
 		if (!isActor(x)) {
-			throw new UnrecoverableError(`invalid Actor type '${x.type}' in ${uri}`);
+			throw new UnrecoverableError(`invalid Actor ${uri}: unknown type '${x.type}'`);
 		}
 
-		if (!(typeof x.id === 'string' && x.id.length > 0)) {
-			throw new UnrecoverableError(`invalid Actor ${uri} - wrong id type`);
+		// Validate id
+		if (!x.id) {
+			throw new UnrecoverableError(`invalid Actor ${uri}: missing id`);
+		}
+		if (typeof(x.id) !== 'string') {
+			throw new UnrecoverableError(`invalid Actor ${uri}: wrong id type ${typeof(x.id)}`);
+		}
+		const parsedId = this.utilityService.assertUrl(x.id);
+		const idHost = this.utilityService.punyHostPSLDomain(parsedId);
+		if (idHost !== expectHost) {
+			throw new UnrecoverableError(`invalid Actor ${uri}: wrong host in id ${x.id} (got ${parsedId}, expected ${expectHost})`);
 		}
 
-		if (!(typeof x.inbox === 'string' && x.inbox.length > 0)) {
-			throw new UnrecoverableError(`invalid Actor ${uri} - wrong inbox type`);
+		// Validate inbox
+		this.apUtilityService.sanitizeInlineObject(x, 'inbox', parsedUri, expectHost);
+		if (!x.inbox || typeof(x.inbox) !== 'string') {
+			throw new UnrecoverableError(`invalid Actor ${uri}: missing or invalid inbox ${x.inbox}`);
 		}
 
-		this.apUtilityService.assertApUrl(x.inbox);
-		const inboxHost = this.utilityService.punyHostPSLDomain(x.inbox);
-		if (inboxHost !== expectHost) {
-			throw new UnrecoverableError(`invalid Actor ${uri} - wrong inbox ${inboxHost}`);
+		// Sanitize sharedInbox
+		this.apUtilityService.sanitizeInlineObject(x, 'sharedInbox', parsedUri, expectHost);
+
+		// Sanitize endpoints object
+		if (typeof(x.endpoints) === 'object') {
+			x.endpoints = {
+				sharedInbox: x.endpoints.sharedInbox,
+			};
+		} else {
+			x.endpoints = undefined;
 		}
 
-		const sharedInboxObject = x.sharedInbox ?? (x.endpoints ? x.endpoints.sharedInbox : undefined);
-		if (sharedInboxObject != null) {
-			const sharedInbox = getApId(sharedInboxObject);
-			this.apUtilityService.assertApUrl(sharedInbox);
-			if (!(typeof sharedInbox === 'string' && sharedInbox.length > 0 && this.utilityService.punyHostPSLDomain(sharedInbox) === expectHost)) {
-				throw new UnrecoverableError(`invalid Actor ${uri} - wrong shared inbox ${sharedInbox}`);
+		// Sanitize endpoints.sharedInbox
+		if (x.endpoints) {
+			this.apUtilityService.sanitizeInlineObject(x.endpoints, 'sharedInbox', parsedUri, expectHost, 'endpoints.');
+
+			if (!x.endpoints.sharedInbox) {
+				x.endpoints = undefined;
 			}
 		}
 
-		for (const collection of ['outbox', 'followers', 'following'] as (keyof IActor)[]) {
-			const xCollection = (x as IActor)[collection];
-			if (xCollection != null) {
-				const collectionUri = getApId(xCollection);
-				if (typeof collectionUri === 'string' && collectionUri.length > 0) {
-					this.apUtilityService.assertApUrl(collectionUri);
-					if (this.utilityService.punyHostPSLDomain(collectionUri) !== expectHost) {
-						throw new UnrecoverableError(`invalid Actor ${uri} - wrong ${collection} ${collectionUri}`);
-					}
-				} else if (collectionUri != null) {
-					throw new UnrecoverableError(`invalid Actor ${uri}: wrong ${collection} type`);
-				}
-			}
+		// Sanitize collections
+		for (const collection of ['outbox', 'followers', 'following', 'featured'] as const) {
+			this.apUtilityService.sanitizeInlineObject(x, collection, parsedUri, expectHost);
 		}
 
+		// Validate username
 		if (!(typeof x.preferredUsername === 'string' && x.preferredUsername.length > 0 && x.preferredUsername.length <= 128 && /^\w([\w-.]*\w)?$/.test(x.preferredUsername))) {
-			throw new UnrecoverableError(`invalid Actor ${uri} - wrong username`);
+			throw new UnrecoverableError(`invalid Actor ${uri}: wrong username`);
 		}
 
+		// Sanitize name
 		// These fields are only informational, and some AP software allows these
 		// fields to be very long. If they are too long, we cut them off. This way
 		// we can at least see these users and their activities.
-		if (x.name) {
-			if (!(typeof x.name === 'string' && x.name.length > 0)) {
-				throw new UnrecoverableError(`invalid Actor ${uri} - wrong name`);
-			}
-			x.name = truncate(x.name, nameLength);
-		} else if (x.name === '') {
-			// Mastodon emits empty string when the name is not set.
+		if (!x.name) {
 			x.name = undefined;
-		}
-		if (x.summary) {
-			if (!(typeof x.summary === 'string' && x.summary.length > 0)) {
-				throw new UnrecoverableError(`invalid Actor ${uri} - wrong summary`);
-			}
-			x.summary = truncate(x.summary, summaryLength);
-		}
-
-		const idHost = this.utilityService.punyHostPSLDomain(x.id);
-		if (idHost !== expectHost) {
-			throw new UnrecoverableError(`invalid Actor ${uri} - wrong id ${x.id}`);
+		} else if (typeof(x.name) !== 'string') {
+			this.logger.warn(`Excluding name from object ${uri}: incorrect type ${typeof(x)}`);
+			x.name = undefined;
+		} else {
+			x.name = truncate(x.name, nameLength);
 		}
 
-		if (x.publicKey) {
-			if (typeof x.publicKey.id !== 'string') {
-				throw new UnrecoverableError(`invalid Actor ${uri} - wrong publicKey.id type`);
-			}
-
-			const publicKeyIdHost = this.utilityService.punyHostPSLDomain(x.publicKey.id);
-			if (publicKeyIdHost !== expectHost) {
-				throw new UnrecoverableError(`invalid Actor ${uri} - wrong publicKey.id ${x.publicKey.id}`);
-			}
+		// Sanitize summary
+		if (!x.summary) {
+			x.summary = undefined;
+		} else if (typeof(x.summary) !== 'string') {
+			this.logger.warn(`Excluding summary from object ${uri}: incorrect type ${typeof(x)}`);
+		} else {
+			x.summary = truncate(x.summary, this.config.maxRemoteBioLength);
 		}
+
+		// Sanitize publicKey
+		this.apUtilityService.sanitizeInlineObject(x, 'publicKey', parsedUri, expectHost);
 
 		return x;
 	}
@@ -271,8 +270,6 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 	}
 
 	private async resolveAvatarAndBanner(user: MiRemoteUser, icon: any, image: any, bgimg: any): Promise<Partial<Pick<MiRemoteUser, 'avatarId' | 'bannerId' | 'backgroundId' | 'avatarUrl' | 'bannerUrl' | 'backgroundUrl' | 'avatarBlurhash' | 'bannerBlurhash' | 'backgroundBlurhash'>>> {
-		if (user == null) throw new Error('failed to create user: user is null');
-
 		const [avatar, banner, background] = await Promise.all([icon, image, bgimg].map(img => {
 			// icon and image may be arrays
 			// see https://www.w3.org/TR/activitystreams-vocabulary/#dfn-icon
@@ -325,12 +322,11 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 	 */
 	@bindThis
 	public async createPerson(uri: string, resolver?: Resolver): Promise<MiRemoteUser> {
-		if (typeof uri !== 'string') throw new UnrecoverableError(`uri is not string: ${uri}`);
+		if (typeof uri !== 'string') throw new UnrecoverableError(`failed to create user ${uri}: input is not string`);
 
 		const host = this.utilityService.punyHost(uri);
 		if (host === this.utilityService.toPuny(this.config.host)) {
-			// TODO convert to unrecoverable error
-			throw new StatusError(`cannot resolve local user: ${uri}`, 400, 'cannot resolve local user');
+			throw new UnrecoverableError(`failed to create user ${uri}: URI is local`);
 		}
 
 		return await this._createPerson(uri, resolver);
@@ -340,8 +336,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		const uri = getApId(value);
 		const host = this.utilityService.punyHost(uri);
 
-		// eslint-disable-next-line no-param-reassign
-		if (resolver == null) resolver = this.apResolverService.createResolver();
+		resolver ??= this.apResolverService.createResolver();
 
 		const object = await resolver.resolve(value);
 		const person = this.validateActor(object, uri);
@@ -356,14 +351,16 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 
 		const [followingVisibility, followersVisibility] = await Promise.all(
 			[
-				this.isPublicCollection(person.following, resolver),
-				this.isPublicCollection(person.followers, resolver),
+				this.isPublicCollection(person.following, resolver, uri),
+				this.isPublicCollection(person.followers, resolver, uri),
 			].map((p): Promise<'public' | 'private'> => p
 				.then(isPublic => isPublic ? 'public' : 'private')
 				.catch(err => {
-					if (!(err instanceof StatusError) || err.isRetryable) {
-						this.logger.error('error occurred while fetching following/followers collection', { stack: err });
+					// Permanent error implies hidden or inaccessible, which is a normal thing.
+					if (isRetryableError(err)) {
+						this.logger.error(`error occurred while fetching following/followers collection: ${renderInlineError(err)}`);
 					}
+
 					return 'private';
 				}),
 			),
@@ -372,12 +369,13 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		const bday = person['vcard:bday']?.match(/^\d{4}-\d{2}-\d{2}/);
 
 		if (person.id == null) {
-			throw new UnrecoverableError(`Refusing to create person without id: ${uri}`);
+			throw new UnrecoverableError(`failed to create user ${uri}: missing ID`);
 		}
 
 		const url = this.apUtilityService.findBestObjectUrl(person);
 
-		const verifiedLinks = url ? await verifyFieldLinks(fields, url, this.httpRequestService) : [];
+		const profileUrls = url ? [url, person.id] : [person.id];
+		const verifiedLinks = await verifyFieldLinks(fields, profileUrls, this.httpRequestService);
 
 		// Create user
 		let user: MiRemoteUser | null = null;
@@ -387,16 +385,27 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		const emojis = await this.apNoteService.extractEmojis(person.tag ?? [], host)
 			.then(_emojis => _emojis.map(emoji => emoji.name))
 			.catch(err => {
-				this.logger.error('error occurred while fetching user emojis', { stack: err });
+				// Permanent error implies hidden or inaccessible, which is a normal thing.
+				if (isRetryableError(err)) {
+					this.logger.error(`error occurred while fetching user emojis: ${renderInlineError(err)}`);
+				}
 				return [];
 			});
 		//#endregion
 
 		//#region resolve counts
-		const _resolver = resolver ?? this.apResolverService.createResolver();
-		const outboxcollection = await _resolver.resolveCollection(person.outbox).catch(() => { return null; });
-		const followerscollection = await _resolver.resolveCollection(person.followers!).catch(() => { return null; });
-		const followingcollection = await _resolver.resolveCollection(person.following!).catch(() => { return null; });
+		const outboxCollection = person.outbox
+			? await resolver.resolveCollection(person.outbox, true, uri).catch(() => { return null; })
+			: null;
+		const followersCollection = person.followers
+			? await resolver.resolveCollection(person.followers, true, uri).catch(() => { return null; })
+			: null;
+		const followingCollection = person.following
+			? await resolver.resolveCollection(person.following, true, uri).catch(() => { return null; })
+			: null;
+
+		// Register the instance first, to avoid FK errors
+		await this.federatedInstanceService.fetchOrRegister(host);
 
 		try {
 			// Start transaction
@@ -423,9 +432,9 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 					host,
 					inbox: person.inbox,
 					sharedInbox: person.sharedInbox ?? person.endpoints?.sharedInbox ?? null,
-					notesCount: outboxcollection?.totalItems ?? 0,
-					followersCount: followerscollection?.totalItems ?? 0,
-					followingCount: followingcollection?.totalItems ?? 0,
+					notesCount: outboxCollection?.totalItems ?? 0,
+					followersCount: followersCollection?.totalItems ?? 0,
+					followingCount: followingCollection?.totalItems ?? 0,
 					followersUri: person.followers ? getApId(person.followers) : undefined,
 					featured: person.featured ? getApId(person.featured) : undefined,
 					uri: person.id,
@@ -437,14 +446,19 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 					makeNotesFollowersOnlyBefore: (person as any).makeNotesFollowersOnlyBefore ?? null,
 					makeNotesHiddenBefore: (person as any).makeNotesHiddenBefore ?? null,
 					emojis,
+					attributionDomains: Array.isArray(person.attributionDomains)
+						? person.attributionDomains
+							.filter((a: unknown) => typeof(a) === 'string' && a.length > 0 && a.length <= 128)
+							.slice(0, 32)
+						: [],
 				})) as MiRemoteUser;
 
 				let _description: string | null = null;
 
 				if (person._misskey_summary) {
-					_description = truncate(person._misskey_summary, summaryLength);
+					_description = truncate(person._misskey_summary, this.config.maxRemoteBioLength);
 				} else if (person.summary) {
-					_description = this.apMfmService.htmlToMfm(truncate(person.summary, summaryLength), person.tag);
+					_description = this.apMfmService.htmlToMfm(truncate(person.summary, this.config.maxRemoteBioLength), person.tag);
 				}
 
 				await transactionalEntityManager.save(new MiUserProfile({
@@ -480,7 +494,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 				user = u as MiRemoteUser;
 				publicKey = await this.userPublickeysRepository.findOneBy({ userId: user.id });
 			} else {
-				this.logger.error(e instanceof Error ? e : new Error(e as string));
+				this.logger.error(`Error creating Person ${uri}: ${renderInlineError(e)}`);
 				throw e;
 			}
 		}
@@ -520,11 +534,19 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 			// Register to the cache
 			this.cacheService.uriPersonCache.set(user.uri, user);
 		} catch (err) {
-			this.logger.error('error occurred while fetching user avatar/banner', { stack: err });
+			// Permanent error implies hidden or inaccessible, which is a normal thing.
+			if (isRetryableError(err)) {
+				this.logger.error(`error occurred while fetching user avatar/banner: ${renderInlineError(err)}`);
+			}
 		}
 		//#endregion
 
-		await this.updateFeatured(user.id, resolver).catch(err => this.logger.error(err));
+		await this.updateFeatured(user.id, resolver).catch(err => {
+			// Permanent error implies hidden or inaccessible, which is a normal thing.
+			if (isRetryableError(err)) {
+				this.logger.error(`Error updating featured notes: ${renderInlineError(err)}`);
+			}
+		});
 
 		return user;
 	}
@@ -541,7 +563,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 	 */
 	@bindThis
 	public async updatePerson(uri: string, resolver?: Resolver | null, hint?: IObject, movePreventUris: string[] = []): Promise<string | void> {
-		if (typeof uri !== 'string') throw new UnrecoverableError('uri is not string');
+		if (typeof uri !== 'string') throw new UnrecoverableError(`failed to update user ${uri}: input is not string`);
 
 		// URIがこのサーバーを指しているならスキップ
 		if (this.utilityService.isUriLocal(uri)) return;
@@ -551,7 +573,6 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		if (exist === null) return;
 		//#endregion
 
-		// eslint-disable-next-line no-param-reassign
 		if (resolver == null) resolver = this.apResolverService.createResolver();
 
 		const object = hint ?? await resolver.resolve(uri);
@@ -561,8 +582,11 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		this.logger.info(`Updating the Person: ${person.id}`);
 
 		// カスタム絵文字取得
-		const emojis = await this.apNoteService.extractEmojis(person.tag ?? [], exist.host).catch(e => {
-			this.logger.info(`extractEmojis: ${e}`);
+		const emojis = await this.apNoteService.extractEmojis(person.tag ?? [], exist.host).catch(err => {
+			// Permanent error implies hidden or inaccessible, which is a normal thing.
+			if (isRetryableError(err)) {
+				this.logger.error(`error occurred while fetching user emojis: ${renderInlineError(err)}`);
+			}
 			return [];
 		});
 
@@ -574,16 +598,18 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 
 		const [followingVisibility, followersVisibility] = await Promise.all(
 			[
-				this.isPublicCollection(person.following, resolver),
-				this.isPublicCollection(person.followers, resolver),
+				this.isPublicCollection(person.following, resolver, exist.uri),
+				this.isPublicCollection(person.followers, resolver, exist.uri),
 			].map((p): Promise<'public' | 'private' | undefined> => p
 				.then(isPublic => isPublic ? 'public' : 'private')
 				.catch(err => {
-					if (!(err instanceof StatusError) || err.isRetryable) {
-						this.logger.error('error occurred while fetching following/followers collection', { stack: err });
+					// Permanent error implies hidden or inaccessible, which is a normal thing.
+					if (isRetryableError(err)) {
+						this.logger.error(`error occurred while fetching following/followers collection: ${renderInlineError(err)}`);
 						// Do not update the visibility on transient errors.
 						return undefined;
 					}
+
 					return 'private';
 				}),
 			),
@@ -592,12 +618,13 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		const bday = person['vcard:bday']?.match(/^\d{4}-\d{2}-\d{2}/);
 
 		if (person.id == null) {
-			throw new UnrecoverableError(`Refusing to update person without id: ${uri}`);
+			throw new UnrecoverableError(`failed to update user ${uri}: missing ID`);
 		}
 
 		const url = this.apUtilityService.findBestObjectUrl(person);
 
-		const verifiedLinks = url ? await verifyFieldLinks(fields, url, this.httpRequestService) : [];
+		const profileUrls = url ? [url, person.id] : [person.id];
+		const verifiedLinks = await verifyFieldLinks(fields, profileUrls, this.httpRequestService);
 
 		const updates = {
 			lastFetchedAt: new Date(),
@@ -620,7 +647,20 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 			// We use "!== false" to handle incorrect types, missing / null values, and "default to true" logic.
 			hideOnlineStatus: person.hideOnlineStatus !== false,
 			isExplorable: person.discoverable !== false,
-			...(await this.resolveAvatarAndBanner(exist, person.icon, person.image, person.backgroundUrl).catch(() => ({}))),
+			attributionDomains: Array.isArray(person.attributionDomains)
+				? person.attributionDomains
+					.filter((a: unknown) => typeof(a) === 'string' && a.length > 0 && a.length <= 128)
+					.slice(0, 32)
+				: [],
+			...(await this.resolveAvatarAndBanner(exist, person.icon, person.image, person.backgroundUrl).catch(err => {
+				// Permanent error implies hidden or inaccessible, which is a normal thing.
+				if (isRetryableError(err)) {
+					this.logger.error(`error occurred while fetching user avatar/banner: ${renderInlineError(err)}`);
+				}
+
+				// Can't return null or destructuring operator will break
+				return {};
+			})),
 		} as Partial<MiRemoteUser> & Pick<MiRemoteUser, 'isBot' | 'isCat' | 'speakAsCat' | 'isLocked' | 'movedToUri' | 'alsoKnownAs' | 'isExplorable'>;
 
 		const moving = ((): boolean => {
@@ -675,9 +715,9 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		let _description: string | null = null;
 
 		if (person._misskey_summary) {
-			_description = truncate(person._misskey_summary, summaryLength);
+			_description = truncate(person._misskey_summary, this.config.maxRemoteBioLength);
 		} else if (person.summary) {
-			_description = this.apMfmService.htmlToMfm(truncate(person.summary, summaryLength), person.tag);
+			_description = this.apMfmService.htmlToMfm(truncate(person.summary, this.config.maxRemoteBioLength), person.tag);
 		}
 
 		await this.userProfilesRepository.update({ userId: exist.id }, {
@@ -699,12 +739,24 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		this.hashtagService.updateUsertags(exist, tags);
 
 		// 該当ユーザーが既にフォロワーになっていた場合はFollowingもアップデートする
-		await this.followingsRepository.update(
-			{ followerId: exist.id },
-			{ followerSharedInbox: person.sharedInbox ?? person.endpoints?.sharedInbox ?? null },
-		);
+		if (exist.inbox !== person.inbox || exist.sharedInbox !== (person.sharedInbox ?? person.endpoints?.sharedInbox)) {
+			await this.followingsRepository.update(
+				{ followerId: exist.id },
+				{
+					followerInbox: person.inbox,
+					followerSharedInbox: person.sharedInbox ?? person.endpoints?.sharedInbox ?? null,
+				},
+			);
 
-		await this.updateFeatured(exist.id, resolver).catch(err => this.logger.error(err));
+			await this.cacheService.refreshFollowRelationsFor(exist.id);
+		}
+
+		await this.updateFeatured(exist.id, resolver).catch(err => {
+			// Permanent error implies hidden or inaccessible, which is a normal thing.
+			if (isRetryableError(err)) {
+				this.logger.error(`Error updating featured notes: ${renderInlineError(err)}`);
+			}
+		});
 
 		const updated = { ...exist, ...updates };
 
@@ -725,7 +777,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 					return result;
 				})
 				.catch(e => {
-					this.logger.info(`Processing Move Failed @${updated.username}@${updated.host} (${uri})`, { stack: e });
+					this.logger.info(`Processing Move Failed @${updated.username}@${updated.host} (${uri}): ${renderInlineError(e)}`);
 				});
 		}
 
@@ -743,8 +795,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		const uri = getApId(value);
 
 		if (!this.utilityService.isFederationAllowedUri(uri)) {
-			// TODO convert to identifiable error
-			throw new StatusError(`blocked host: ${uri}`, 451, 'blocked host');
+			throw new IdentifiableError('590719b3-f51f-48a9-8e7d-6f559ad00e5d', `failed to resolve person ${uri}: host is blocked`);
 		}
 
 		//#region このサーバーに既に登録されていたらそれを返す
@@ -754,8 +805,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 
 		// Bail if local URI doesn't exist
 		if (this.utilityService.isUriLocal(uri)) {
-			// TODO convert to identifiable error
-			throw new StatusError(`cannot resolve local person: ${uri}`, 400, 'cannot resolve local person');
+			throw new IdentifiableError('efb573fd-6b9e-4912-9348-a02f5603df4f', `failed to resolve person ${uri}: URL is local and does not exist`);
 		}
 
 		const unlock = await this.appLockService.getApLock(uri);
@@ -799,16 +849,17 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		const _resolver = resolver ?? this.apResolverService.createResolver();
 
 		// Resolve to (Ordered)Collection Object
-		const collection = await _resolver.resolveCollection(user.featured).catch(err => {
-			if (err instanceof AbortError || err instanceof StatusError) {
-				this.logger.warn(`Failed to update featured notes: ${err.name}: ${err.message}`);
-			} else {
-				this.logger.error('Failed to update featured notes:', err);
+		const collection = user.featured ? await _resolver.resolveCollection(user.featured, true, user.uri).catch(err => {
+			// Permanent error implies hidden or inaccessible, which is a normal thing.
+			if (isRetryableError(err)) {
+				this.logger.warn(`Failed to update featured notes: ${renderInlineError(err)}`);
 			}
-		});
+
+			return null;
+		}) : null;
 		if (!collection) return;
 
-		if (!isCollectionOrOrderedCollection(collection)) throw new UnrecoverableError(`featured ${user.featured} is not Collection or OrderedCollection in ${user.uri}`);
+		if (!isCollectionOrOrderedCollection(collection)) throw new UnrecoverableError(`failed to update user ${user.uri}: featured ${user.featured} is not Collection or OrderedCollection`);
 
 		// Resolve to Object(may be Note) arrays
 		const unresolvedItems = isCollection(collection) ? collection.items : collection.orderedItems;
@@ -891,11 +942,13 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async isPublicCollection(collection: string | ICollection | IOrderedCollection | undefined, resolver: Resolver): Promise<boolean> {
+	private async isPublicCollection(collection: string | ICollection | IOrderedCollection | undefined, resolver: Resolver, sentFrom: string): Promise<boolean> {
 		if (collection) {
-			const resolved = await resolver.resolveCollection(collection);
-			if (resolved.first || (resolved as ICollection).items || (resolved as IOrderedCollection).orderedItems) {
-				return true;
+			const resolved = await resolver.resolveCollection(collection, true, sentFrom).catch(() => null);
+			if (resolved) {
+				if (resolved.first || (resolved as ICollection).items || (resolved as IOrderedCollection).orderedItems) {
+					return true;
+				}
 			}
 		}
 

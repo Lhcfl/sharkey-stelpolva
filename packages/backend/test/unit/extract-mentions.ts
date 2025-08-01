@@ -5,7 +5,7 @@
 
 import * as assert from 'assert';
 
-import { parse } from '@transfem-org/sfm-js';
+import { parse } from 'mfm-js';
 import { extractMentions } from '@/misc/extract-mentions.js';
 
 describe('Extract mentions', () => {

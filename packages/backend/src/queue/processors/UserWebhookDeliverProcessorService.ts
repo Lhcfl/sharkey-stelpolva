@@ -69,14 +69,9 @@ export class UserWebhookDeliverProcessorService {
 				latestStatus: res instanceof StatusError ? res.statusCode : 1,
 			});
 
-			if (res instanceof StatusError) {
+			if (res instanceof StatusError && !res.isRetryable) {
 				// 4xx
-				if (!res.isRetryable) {
-					throw new Bull.UnrecoverableError(`${res.statusCode} ${res.statusMessage}`);
-				}
-
-				// 5xx etc.
-				throw new Error(`${res.statusCode} ${res.statusMessage}`);
+				throw new Bull.UnrecoverableError(`${res.statusCode} ${res.statusMessage}`);
 			} else {
 				// DNS error, socket error, timeout ...
 				throw res;

@@ -69,6 +69,6 @@ export class CleanProcessorService {
 
 		this.reversiService.cleanOutdatedGames();
 
-		this.logger.succ('Cleaned.');
+		this.logger.info('Cleaned.');
 	}
 }

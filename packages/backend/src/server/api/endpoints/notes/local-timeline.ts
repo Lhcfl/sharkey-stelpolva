@@ -15,6 +15,7 @@ import { IdService } from '@/core/IdService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { MiLocalUser } from '@/models/User.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -83,6 +84,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
 		private queryService: QueryService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
@@ -103,16 +105,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withFiles: ps.withFiles,
 					withReplies: ps.withReplies,
 					withBots: ps.withBots,
+					withRenotes: ps.withRenotes,
 				}, me);
 
-				process.nextTick(() => {
-					if (me) {
+				if (me) {
+					process.nextTick(() => {
 						this.activeUsersChart.read(me);
-					}
-				});
+					});
+				}
 
 				return await this.noteEntityService.packMany(timeline, me);
 			}
+
+			const mutedThreads = me ? await this.cacheService.threadMutingsCache.fetch(me.id) : null;
 
 			const timeline = await this.fanoutTimelineEndpointService.timeline({
 				untilId,
@@ -136,14 +141,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withFiles: ps.withFiles,
 					withReplies: ps.withReplies,
 					withBots: ps.withBots,
+					withRenotes: ps.withRenotes,
 				}, me),
+				noteFilter: note => {
+					if (mutedThreads?.has(note.threadId ?? note.id)) {
+						return false;
+					}
+
+					return true;
+				},
 			});
 
-			process.nextTick(() => {
-				if (me) {
+			if (me) {
+				process.nextTick(() => {
 					this.activeUsersChart.read(me);
-				}
-			});
+				});
+			}
 
 			return timeline;
 		});
@@ -156,40 +169,49 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		withFiles: boolean,
 		withReplies: boolean,
 		withBots: boolean,
+		withRenotes: boolean,
 	}, me: MiLocalUser | null) {
 		const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'),
 			ps.sinceId, ps.untilId)
-			.andWhere('(note.visibility = \'public\') AND (note.userHost IS NULL) AND (note.channelId IS NULL)')
+			.andWhere('note.visibility = \'public\'')
+			.andWhere('note.channelId IS NULL')
+			.andWhere('note.userHost IS NULL')
 			.innerJoinAndSelect('note.user', 'user')
 			.leftJoinAndSelect('note.reply', 'reply')
 			.leftJoinAndSelect('note.renote', 'renote')
 			.leftJoinAndSelect('reply.user', 'replyUser')
-			.leftJoinAndSelect('renote.user', 'renoteUser');
+			.leftJoinAndSelect('renote.user', 'renoteUser')
+			.limit(ps.limit);
 
-		this.queryService.generateVisibilityQuery(query, me);
+		if (!ps.withReplies) {
+			query
+				// 1. Not a reply, 2. a self-reply
+				.andWhere(new Brackets(qb => qb
+					.orWhere('note.replyId IS NULL') // 返信ではない
+					.orWhere('note.replyUserId = note.userId')));
+		}
+
 		this.queryService.generateBlockedHostQueryForNote(query);
-		if (me) this.queryService.generateMutedUserQueryForNotes(query, me);
-		if (me) this.queryService.generateBlockedUserQueryForNotes(query, me);
-		if (me) this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+		this.queryService.generateSuspendedUserQueryForNote(query);
+		this.queryService.generateSilencedUserQueryForNotes(query, me);
+		if (me) {
+			this.queryService.generateMutedUserQueryForNotes(query, me);
+			this.queryService.generateBlockedUserQueryForNotes(query, me);
+			this.queryService.generateMutedNoteThreadQuery(query, me);
+		}
 
 		if (ps.withFiles) {
 			query.andWhere('note.fileIds != \'{}\'');
 		}
 
-		if (!ps.withReplies) {
-			query.andWhere(new Brackets(qb => {
-				qb
-					.where('note.replyId IS NULL') // 返信ではない
-					.orWhere(new Brackets(qb => {
-						qb // 返信だけど投稿者自身への返信
-							.where('note.replyId IS NOT NULL')
-							.andWhere('note.replyUserId = note.userId');
-					}));
-			}));
-		}
-
 		if (!ps.withBots) query.andWhere('user.isBot = FALSE');
 
-		return await query.limit(ps.limit).getMany();
+		if (!ps.withRenotes) {
+			this.queryService.generateExcludedRenotesQueryForNotes(query);
+		} else if (me) {
+			this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+		}
+
+		return await query.getMany();
 	}
 }

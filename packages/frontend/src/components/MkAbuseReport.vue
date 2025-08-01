@@ -33,10 +33,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkFolder :withSpacer="false">
 			<template #icon><MkAvatar :user="report.targetUser" style="width: 18px; height: 18px;"/></template>
 			<template #label>{{ i18n.ts.target }}: <MkAcct :user="report.targetUser"/></template>
-			<template #suffix>#{{ report.targetUserId.toUpperCase() }}</template>
+			<template #suffix>{{ i18n.ts.id }}# {{ report.targetUserId }}</template>
 
-			<div style="height: 300px; --MI-stickyTop: 0; --MI-stickyBottom: 0;">
-				<RouterView :router="targetRouter"/>
+			<div style="--MI-stickyTop: 0; --MI-stickyBottom: 0;">
+				<admin-user :userId="report.targetUserId" :userHint="report.targetUser"></admin-user>
+			</div>
+		</MkFolder>
+
+		<MkFolder v-if="report.targetInstance" :withSpacer="false">
+			<template #icon>
+				<img
+					v-if="targetInstanceIcon"
+					:src="targetInstanceIcon"
+					:alt="i18n.tsx.instanceIconAlt({ name: report.targetInstance.name || report.targetInstance.host })"
+					:class="$style.instanceIcon"
+					class="icon"
+				/>
+			</template>
+			<template #label>{{ i18n.ts.instance }}: {{ report.targetInstance.name || report.targetInstance.host }}</template>
+			<template #suffix>{{ i18n.ts.id }}# {{ report.targetInstance.id }}</template>
+
+			<div style="--MI-stickyTop: 0; --MI-stickyBottom: 0;">
+				<instance-info :host="report.targetInstance.host" :instanceHint="report.targetInstance" :metaHint="metaHint"></instance-info>
 			</div>
 		</MkFolder>
 
@@ -44,23 +62,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<template #icon><i class="ti ti-message-2"></i></template>
 			<template #label>{{ i18n.ts.details }}</template>
 			<div class="_gaps_s">
-				<Mfm :text="report.comment" :isBlock="true" :linkNavigationBehavior="'window'"/>
+				<Mfm :text="report.comment" :parsedNodes="parsedComment" :isBlock="true" :linkNavigationBehavior="'window'" :author="report.reporter" :nyaize="false" :isAnim="false"/>
+				<div class="_gaps_s" @click.stop>
+					<SkUrlPreviewGroup :sourceNodes="parsedComment" :compact="false" :detail="false" :showAsQuote="true"/>
+				</div>
 			</div>
 		</MkFolder>
 
 		<MkFolder :withSpacer="false">
 			<template #icon><MkAvatar :user="report.reporter" style="width: 18px; height: 18px;"/></template>
 			<template #label>{{ i18n.ts.reporter }}: <MkAcct :user="report.reporter"/></template>
-			<template #suffix>#{{ report.reporterId.toUpperCase() }}</template>
+			<template #suffix>{{ i18n.ts.id }}# {{ report.reporterId }}</template>
 
-			<div style="height: 300px; --MI-stickyTop: 0; --MI-stickyBottom: 0;">
-				<RouterView :router="reporterRouter"/>
+			<div style="--MI-stickyTop: 0; --MI-stickyBottom: 0;">
+				<admin-user :userId="report.reporterId" :userHint="report.reporter"></admin-user>
 			</div>
 		</MkFolder>
 
 		<MkFolder :defaultOpen="false">
 			<template #icon><i class="ti ti-message-2"></i></template>
-			<template #label>{{ i18n.ts.moderationNote }}</template>
+			<template #label>{{ i18n.ts.staffNotes }}</template>
 			<template #suffix>{{ moderationNote.length > 0 ? '...' : i18n.ts.none }}</template>
 			<div class="_gaps_s">
 				<MkTextarea v-model="moderationNote" manualSave>
@@ -78,8 +99,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { provide, ref, watch } from 'vue';
+import { computed, provide, ref, watch } from 'vue';
 import * as Misskey from 'misskey-js';
+import * as mfm from 'mfm-js';
 import MkButton from '@/components/MkButton.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
@@ -91,19 +113,38 @@ import RouterView from '@/components/global/RouterView.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 import { createRouter } from '@/router.js';
+import { getProxiedImageUrlNullable } from '@/utility/media-proxy';
+import InstanceInfo from '@/pages/instance-info.vue';
+import { iAmAdmin } from '@/i';
+import { misskeyApi } from '@/utility/misskey-api';
+import AdminUser from '@/pages/admin-user.vue';
+import SkUrlPreviewGroup from '@/components/SkUrlPreviewGroup.vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	report: Misskey.entities.AdminAbuseUserReportsResponse[number];
-}>();
+	metaHint?: Misskey.entities.AdminMetaResponse | undefined;
+}>(), {
+	metaHint: undefined,
+});
 
 const emit = defineEmits<{
 	(ev: 'resolved', reportId: string): void;
 }>();
 
+/*
 const targetRouter = createRouter(`/admin/user/${props.report.targetUserId}`);
 targetRouter.init();
 const reporterRouter = createRouter(`/admin/user/${props.report.reporterId}`);
 reporterRouter.init();
+*/
+
+const parsedComment = computed(() => mfm.parse(props.report.comment));
+
+const targetInstanceIcon = computed(() => props.report.targetInstance?.faviconUrl
+	? getProxiedImageUrlNullable(props.report.targetInstance.faviconUrl, 'preview')
+	: props.report.targetInstance?.iconUrl
+		? getProxiedImageUrlNullable(props.report.targetInstance.iconUrl, 'preview')
+		: null);
 
 const moderationNote = ref(props.report.moderationNote ?? '');
 
@@ -150,4 +191,8 @@ function showMenu(ev: MouseEvent) {
 </script>
 
 <style lang="scss" module>
+.instanceIcon {
+	width: 18px;
+	height: 18px;
+}
 </style>

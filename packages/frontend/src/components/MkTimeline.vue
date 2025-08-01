@@ -4,39 +4,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkPullToRefresh ref="prComponent" :refresher="() => reloadTimeline()">
-	<MkPagination v-if="paginationQuery" ref="pagingComponent" :pagination="paginationQuery" @queue="emit('queue', $event)" @status="prComponent?.setDisabled($event)" :data-timeline-src="src">
-		<template #empty>
-			<div class="_fullinfo">
-				<img :src="infoImageUrl" draggable="false"/>
-				<div>{{ i18n.ts.noNotes }}</div>
-			</div>
-		</template>
+<component :is="prefer.s.enablePullToRefresh ? MkPullToRefresh : 'div'" :refresher="() => reloadTimeline()">
+	<MkPagination v-if="paginationQuery" ref="pagingComponent" :pagination="paginationQuery" @queue="emit('queue', $event)">
+		<template #empty><MkResult type="empty" :text="i18n.ts.noNotes"/></template>
 
 		<template #default="{ items: notes }">
-			<component
-				:is="prefer.s.animation ? TransitionGroup : 'div'"
+			<SkTransitionGroup
 				:class="[$style.root, { [$style.noGap]: noGap, '_gaps': !noGap, [$style.reverse]: paginationQuery.reversed }]"
 				:enterActiveClass="$style.transition_x_enterActive"
 				:leaveActiveClass="$style.transition_x_leaveActive"
 				:enterFromClass="$style.transition_x_enterFrom"
 				:leaveToClass="$style.transition_x_leaveTo"
-				:moveClass=" $style.transition_x_move"
+				:moveClass="$style.transition_x_move"
 				tag="div"
 			>
-				<div v-for="(note, i) in notes" :key="note.id">
-					<div v-if="note._shouldInsertAd_" :class="[$style.noteWithAd, { '_gaps': !noGap }]" :data-scroll-anchor="note.id">
-						<DynamicNote :class="$style.note" :note="note" :withHardMute="true"/>
-						<div :class="$style.ad">
-							<MkAd :preferForms="['horizontal', 'horizontal-big']"/>
-						</div>
-					</div>
-					<DynamicNote v-else :class="$style.note" :note="note" :withHardMute="true" :data-scroll-anchor="note.id"/>
+				<div v-for="(note, i) in notes" :key="note.id" :class="{ '_gaps': !noGap }">
+					<DynamicNote :class="$style.note" :note="note as Misskey.entities.Note" :withHardMute="true" :data-scroll-anchor="note.id"/>
+					<MkAd v-if="note._shouldInsertAd_" :preferForms="['horizontal', 'horizontal-big']" :class="$style.ad"/>
 				</div>
-			</component>
+			</SkTransitionGroup>
 		</template>
 	</MkPagination>
-</MkPullToRefresh>
+</component>
 </template>
 
 <script lang="ts" setup>
@@ -53,7 +42,7 @@ import { prefer } from '@/preferences.js';
 import DynamicNote from '@/components/DynamicNote.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import { i18n } from '@/i18n.js';
-import { infoImageUrl } from '@/instance.js';
+import SkTransitionGroup from '@/components/SkTransitionGroup.vue';
 
 const props = withDefaults(defineProps<{
 	src: BasicTimelineType | 'mentions' | 'directs' | 'list' | 'antenna' | 'channel' | 'role';
@@ -96,7 +85,6 @@ type TimelineQueryType = {
 	roleId?: string
 };
 
-const prComponent = useTemplateRef('prComponent');
 const pagingComponent = useTemplateRef('pagingComponent');
 
 let tlNotesCount = 0;
@@ -347,18 +335,38 @@ defineExpose({
 </script>
 
 <style lang="scss" module>
-.transition_x_move,
-.transition_x_enterActive,
-.transition_x_leaveActive {
-	transition: opacity 0.3s cubic-bezier(0,.5,.5,1), transform 0.3s cubic-bezier(0,.5,.5,1) !important;
+.transition_x_move {
+	transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
 }
-.transition_x_enterFrom,
+
+.transition_x_enterActive {
+	transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+
+	&.note,
+	.note {
+		/* Skip Note Rendering有効時、TransitionGroupでnoteを追加するときに一瞬がくっとなる問題を抑制する */
+		content-visibility: visible !important;
+	}
+}
+
+.transition_x_leaveActive {
+	transition: height 0.2s cubic-bezier(0,.5,.5,1), opacity 0.2s cubic-bezier(0,.5,.5,1);
+}
+
+.transition_x_enterFrom {
+	opacity: 0;
+	transform: translateY(max(-64px, -100%));
+}
+
+@supports (interpolate-size: allow-keywords) {
+	.transition_x_leaveTo {
+		interpolate-size: allow-keywords; // heightのtransitionを動作させるために必要
+		height: 0;
+	}
+}
+
 .transition_x_leaveTo {
 	opacity: 0;
-	transform: translateY(-50%);
-}
-.transition_x_leaveActive {
-	position: absolute;
 }
 
 .reverse {
@@ -372,7 +380,7 @@ defineExpose({
 	&.noGap {
 		background: var(--MI_THEME-panel);
 
-		.note {
+		.note:not(:empty) {
 			border-bottom: solid 0.5px var(--MI_THEME-divider);
 		}
 

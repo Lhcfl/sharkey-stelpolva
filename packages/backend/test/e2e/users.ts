@@ -7,7 +7,7 @@ process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
 import { inspect } from 'node:util';
-import { api, post, role, signup, successfulApiCall, uploadFile } from '../utils.js';
+import { api, failedApiCall, post, role, signup, successfulApiCall, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 
@@ -35,6 +35,8 @@ describe('ユーザー', () => {
 			name: user.name,
 			username: user.username,
 			host: user.host,
+			createdAt: user.createdAt,
+			approved: user.approved,
 			avatarUrl: user.avatarUrl,
 			avatarBlurhash: user.avatarBlurhash,
 			avatarDecorations: user.avatarDecorations,
@@ -45,6 +47,16 @@ describe('ユーザー', () => {
 			emojis: user.emojis,
 			onlineStatus: user.onlineStatus,
 			badgeRoles: user.badgeRoles,
+			enableRss: user.enableRss,
+			mandatoryCW: user.mandatoryCW,
+			noindex: user.noindex,
+			rejectQuotes: user.rejectQuotes,
+			followersCount: user.followersCount,
+			followingCount: user.followingCount,
+			notesCount: user.notesCount,
+			isSilenced: user.isSilenced,
+			description: user.description,
+			attributionDomains: user.attributionDomains,
 
 			// BUG isAdmin/isModeratorはUserLiteではなくMeDetailedOnlyに含まれる。
 			isAdmin: undefined,
@@ -60,7 +72,6 @@ describe('ユーザー', () => {
 			uri: user.uri,
 			movedTo: user.movedTo,
 			alsoKnownAs: user.alsoKnownAs,
-			createdAt: user.createdAt,
 			updatedAt: user.updatedAt,
 			lastFetchedAt: user.lastFetchedAt,
 			bannerUrl: user.bannerUrl,
@@ -68,17 +79,13 @@ describe('ユーザー', () => {
 			backgroundUrl: user.backgroundUrl,
 			backgroundBlurhash: user.backgroundBlurhash,
 			isLocked: user.isLocked,
-			isSilenced: user.isSilenced,
 			isSuspended: user.isSuspended,
-			description: user.description,
 			location: user.location,
 			birthday: user.birthday,
+			listenbrainz: user.listenbrainz,
 			lang: user.lang,
 			fields: user.fields,
 			verifiedLinks: user.verifiedLinks,
-			followersCount: user.followersCount,
-			followingCount: user.followingCount,
-			notesCount: user.notesCount,
 			pinnedNoteIds: user.pinnedNoteIds,
 			pinnedNotes: user.pinnedNotes,
 			pinnedPageId: user.pinnedPageId,
@@ -117,6 +124,7 @@ describe('ユーザー', () => {
 			...userDetailedNotMe(user),
 			avatarId: user.avatarId,
 			bannerId: user.bannerId,
+			backgroundId: user.backgroundId,
 			followedMessage: user.followedMessage,
 			isModerator: user.isModerator,
 			isAdmin: user.isAdmin,
@@ -153,6 +161,11 @@ describe('ユーザー', () => {
 			achievements: user.achievements,
 			loggedInDays: user.loggedInDays,
 			policies: user.policies,
+			defaultCW: user.defaultCW,
+			defaultCWPriority: user.defaultCWPriority,
+			allowUnsignedFetch: user.allowUnsignedFetch,
+			defaultSensitive: user.defaultSensitive,
+			isSystem: false,
 			twoFactorEnabled: user.twoFactorEnabled,
 			usePasswordLessLogin: user.usePasswordLessLogin,
 			securityKeys: user.securityKeys,
@@ -160,6 +173,7 @@ describe('ユーザー', () => {
 				email: user.email,
 				emailVerified: user.emailVerified,
 				securityKeysList: user.securityKeysList,
+				signupReason: user.signupReason,
 			} : {}),
 		});
 	};
@@ -268,6 +282,7 @@ describe('ユーザー', () => {
 		userBlockedByAlice = await signup({ username: 'userBlockedByAlice' });
 		await post(userBlockedByAlice, { text: 'test' });
 		await api('blocking/create', { userId: userBlockedByAlice.id }, alice);
+		await api('mute/delete', { userId: userBlockedByAlice.id }, alice); // blocking implies muting, in Sharkey, but we want to test un-muted block
 		userMutingAlice = await signup({ username: 'userMutingAlice' });
 		await post(userMutingAlice, { text: 'test' });
 		await api('mute/create', { userId: alice.id }, userMutingAlice);
@@ -319,7 +334,7 @@ describe('ユーザー', () => {
 		assert.deepStrictEqual(response.avatarDecorations, []);
 		assert.strictEqual(response.isBot, false);
 		assert.strictEqual(response.isCat, false);
-		assert.strictEqual(response.speakAsCat, false);
+		assert.strictEqual(response.speakAsCat, true);
 		assert.strictEqual(response.instance, undefined);
 		assert.deepStrictEqual(response.emojis, {});
 		assert.strictEqual(response.onlineStatus, 'unknown');
@@ -377,7 +392,7 @@ describe('ユーザー', () => {
 		assert.strictEqual(response.isExplorable, true);
 		assert.strictEqual(response.isDeleted, false);
 		assert.strictEqual(response.twoFactorBackupCodesStock, 'none');
-		assert.strictEqual(response.hideOnlineStatus, false);
+		assert.strictEqual(response.hideOnlineStatus, true);
 		assert.strictEqual(response.hasUnreadSpecifiedNotes, false);
 		assert.strictEqual(response.hasUnreadMentions, false);
 		assert.strictEqual(response.hasUnreadAnnouncement, false);
@@ -457,8 +472,6 @@ describe('ユーザー', () => {
 		{ parameters: () => ({ autoAcceptFollowed: false }) },
 		{ parameters: () => ({ noCrawle: true }) },
 		{ parameters: () => ({ noCrawle: false }) },
-		{ parameters: () => ({ preventAiLearning: false }) },
-		{ parameters: () => ({ preventAiLearning: true }) },
 		{ parameters: () => ({ isBot: true }) },
 		{ parameters: () => ({ isBot: false }) },
 		{ parameters: () => ({ isCat: true }) },
@@ -469,8 +482,8 @@ describe('ユーザー', () => {
 		{ parameters: () => ({ receiveAnnouncementEmail: false }) },
 		{ parameters: () => ({ alwaysMarkNsfw: true }) },
 		{ parameters: () => ({ alwaysMarkNsfw: false }) },
-		{ parameters: () => ({ autoSensitive: true }) },
-		{ parameters: () => ({ autoSensitive: false }) },
+		{ parameters: () => ({ defaultSensitive: true }) },
+		{ parameters: () => ({ defaultSensitive: false }) },
 		{ parameters: () => ({ followingVisibility: 'private' as const }) },
 		{ parameters: () => ({ followingVisibility: 'followers' as const }) },
 		{ parameters: () => ({ followingVisibility: 'public' as const }) },
@@ -544,7 +557,7 @@ describe('ユーザー', () => {
 
 	test('を書き換えることができる(Background)', async () => {
 		const aliceFile = (await uploadFile(alice)).body;
-		const parameters = { bannerId: aliceFile!.id };
+		const parameters = { backgroundId: aliceFile!.id };
 		const response = await successfulApiCall({ endpoint: 'i/update', parameters: parameters, user: alice });
 		assert.match(response.backgroundUrl ?? '.', /^[-a-zA-Z0-9@:%._\+~#&?=\/]+$/);
 		assert.match(response.backgroundBlurhash ?? '.', /[ -~]{54}/);
@@ -919,6 +932,12 @@ describe('ユーザー', () => {
 	});
 
 	//#endregion
+
+	test('user with to long bio', async () => {
+		await failedApiCall({ endpoint: 'i/update', user: alice, parameters: {
+			description: 'x'.repeat(10000),
+		} }, { status: 422, code: 'MAX_BIO_LENGTH', id: 'f3bb3543-8bd1-4e6d-9375-55efaf2b4102' });
+	});
 
 	test.todo('を管理人として確認することができる(admin/show-user)');
 	test.todo('を管理人として確認することができる(admin/show-users)');

@@ -54,6 +54,7 @@ describe('.well-known', () => {
 
 		assert.deepStrictEqual(webfinger, {
 			subject: `acct:alice@${host}`,
+			aliases: [`${origin}/@alice`],
 			links: [{
 				rel: 'self',
 				type: 'application/activity+json',

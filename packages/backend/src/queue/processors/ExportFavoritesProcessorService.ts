@@ -45,17 +45,18 @@ export class ExportFavoritesProcessorService {
 
 	@bindThis
 	public async process(job: Bull.Job<DbJobDataWithUser>): Promise<void> {
-		this.logger.info(`Exporting favorites of ${job.data.user.id} ...`);
-
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
+			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
 			return;
 		}
+
+		this.logger.info(`Exporting favorites of ${job.data.user.id} ...`);
 
 		// Create temp file
 		const [path, cleanup] = await createTemp();
 
-		this.logger.info(`Temp file is ${path}`);
+		this.logger.debug(`Temp file is ${path}`);
 
 		try {
 			const stream = fs.createWriteStream(path, { flags: 'a' });
@@ -64,7 +65,7 @@ export class ExportFavoritesProcessorService {
 				return new Promise<void>((res, rej) => {
 					stream.write(text, err => {
 						if (err) {
-							this.logger.error(err);
+							this.logger.error('Error exporting favorites:', err);
 							rej(err);
 						} else {
 							res();
@@ -119,12 +120,12 @@ export class ExportFavoritesProcessorService {
 			await write(']');
 
 			stream.end();
-			this.logger.succ(`Exported to: ${path}`);
+			this.logger.debug(`Exported to: ${path}`);
 
 			const fileName = 'favorites-' + dateFormat(new Date(), 'yyyy-MM-dd-HH-mm-ss') + '.json';
 			const driveFile = await this.driveService.addFile({ user, path, name: fileName, force: true, ext: 'json' });
 
-			this.logger.succ(`Exported to: ${driveFile.id}`);
+			this.logger.debug(`Exported to: ${driveFile.id}`);
 
 			this.notificationService.createNotification(user.id, 'exportCompleted', {
 				exportedEntity: 'favorite',

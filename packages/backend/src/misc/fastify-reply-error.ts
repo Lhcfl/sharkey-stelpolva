@@ -8,8 +8,8 @@ export class FastifyReplyError extends Error {
 	public message: string;
 	public statusCode: number;
 
-	constructor(statusCode: number, message: string) {
-		super(message);
+	constructor(statusCode: number, message: string, cause?: unknown) {
+		super(message, cause ? { cause } : undefined);
 		this.message = message;
 		this.statusCode = statusCode;
 	}

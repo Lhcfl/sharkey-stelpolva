@@ -43,6 +43,10 @@ export const packedMetaLiteSchema = {
 			type: 'string',
 			optional: false, nullable: true,
 		},
+		about: {
+			type: 'string',
+			optional: false, nullable: true,
+		},
 		langs: {
 			type: 'array',
 			optional: false, nullable: false,
@@ -203,6 +207,14 @@ export const packedMetaLiteSchema = {
 			optional: false, nullable: false,
 		},
 		maxRemoteAltTextLength: {
+			type: 'number',
+			optional: false, nullable: false,
+		},
+		maxBioLength: {
+			type: 'number',
+			optional: false, nullable: false,
+		},
+		maxRemoteBioLength: {
 			type: 'number',
 			optional: false, nullable: false,
 		},

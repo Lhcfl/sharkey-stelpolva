@@ -17,6 +17,7 @@
 		"esModuleInterop": true,
 		"exactOptionalPropertyTypes": true,
 		"skipLibCheck": true,
+		"incremental": true,
 		"typeRoots": [
 			"./node_modules/@types"
 		],

@@ -64,7 +64,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('note.reply', 'reply')
 				.leftJoinAndSelect('note.renote', 'renote')
 				.leftJoinAndSelect('reply.user', 'replyUser')
-				.leftJoinAndSelect('renote.user', 'renoteUser');
+				.leftJoinAndSelect('renote.user', 'renoteUser')
+				.limit(ps.limit);
+
+			this.queryService.generateVisibilityQuery(query, me);
+			this.queryService.generateBlockedHostQueryForNote(query);
+			if (me) {
+				this.queryService.generateSilencedUserQueryForNotes(query, me);
+				this.queryService.generateMutedUserQueryForNotes(query, me);
+				this.queryService.generateBlockedUserQueryForNotes(query, me);
+			}
 
 			if (ps.local) {
 				query.andWhere('note.userHost IS NULL');
@@ -75,7 +84,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.renote !== undefined) {
-				query.andWhere(ps.renote ? 'note.renoteId IS NOT NULL' : 'note.renoteId IS NULL');
+				if (ps.renote) {
+					this.queryService.andIsRenote(query, 'note');
+
+					if (me) {
+						this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+					}
+				} else {
+					this.queryService.andIsNotRenote(query, 'note');
+				}
 			}
 
 			if (ps.withFiles !== undefined) {
@@ -91,7 +108,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			//	query.isBot = bot;
 			//}
 
-			const notes = await query.limit(ps.limit).getMany();
+			const notes = await query.getMany();
 
 			return await this.noteEntityService.packMany(notes);
 		});

@@ -9,9 +9,9 @@ import { bindThis } from '@/decorators.js';
 export class RedisKVCache<T> {
 	private readonly lifetime: number;
 	private readonly memoryCache: MemoryKVCache<T>;
-	private readonly fetcher: (key: string) => Promise<T>;
-	private readonly toRedisConverter: (value: T) => string;
-	private readonly fromRedisConverter: (value: string) => T | undefined;
+	public readonly fetcher: (key: string) => Promise<T>;
+	public readonly toRedisConverter: (value: T) => string;
+	public readonly fromRedisConverter: (value: string) => T | undefined;
 
 	constructor(
 		private redisClient: Redis.Redis,
@@ -100,6 +100,11 @@ export class RedisKVCache<T> {
 	}
 
 	@bindThis
+	public clear() {
+		this.memoryCache.clear();
+	}
+
+	@bindThis
 	public gc() {
 		this.memoryCache.gc();
 	}
@@ -113,9 +118,9 @@ export class RedisKVCache<T> {
 export class RedisSingleCache<T> {
 	private readonly lifetime: number;
 	private readonly memoryCache: MemorySingleCache<T>;
-	private readonly fetcher: () => Promise<T>;
-	private readonly toRedisConverter: (value: T) => string;
-	private readonly fromRedisConverter: (value: string) => T | undefined;
+	public readonly fetcher: () => Promise<T>;
+	public readonly toRedisConverter: (value: T) => string;
+	public readonly fromRedisConverter: (value: string) => T | undefined;
 
 	constructor(
 		private redisClient: Redis.Redis,
@@ -123,16 +128,17 @@ export class RedisSingleCache<T> {
 		opts: {
 			lifetime: number;
 			memoryCacheLifetime: number;
-			fetcher: RedisSingleCache<T>['fetcher'];
-			toRedisConverter: RedisSingleCache<T>['toRedisConverter'];
-			fromRedisConverter: RedisSingleCache<T>['fromRedisConverter'];
+			fetcher?: RedisSingleCache<T>['fetcher'];
+			toRedisConverter?: RedisSingleCache<T>['toRedisConverter'];
+			fromRedisConverter?: RedisSingleCache<T>['fromRedisConverter'];
 		},
 	) {
 		this.lifetime = opts.lifetime;
 		this.memoryCache = new MemorySingleCache(opts.memoryCacheLifetime);
-		this.fetcher = opts.fetcher;
-		this.toRedisConverter = opts.toRedisConverter;
-		this.fromRedisConverter = opts.fromRedisConverter;
+
+		this.fetcher = opts.fetcher ?? (() => { throw new Error('fetch not supported - use get/set directly'); });
+		this.toRedisConverter = opts.toRedisConverter ?? ((value) => JSON.stringify(value));
+		this.fromRedisConverter = opts.fromRedisConverter ?? ((value) => JSON.parse(value));
 	}
 
 	@bindThis
@@ -237,6 +243,16 @@ export class MemoryKVCache<T> {
 		return cached.value;
 	}
 
+	public has(key: string): boolean {
+		const cached = this.cache.get(key);
+		if (cached == null) return false;
+		if ((Date.now() - cached.date) > this.lifetime) {
+			this.cache.delete(key);
+			return false;
+		}
+		return true;
+	}
+
 	@bindThis
 	public delete(key: string): void {
 		this.cache.delete(key);
@@ -308,9 +324,22 @@ export class MemoryKVCache<T> {
 		}
 	}
 
+	/**
+	 * Removes all entries from the cache, but does not dispose it.
+	 */
+	@bindThis
+	public clear(): void {
+		this.cache.clear();
+	}
+
 	@bindThis
 	public dispose(): void {
+		this.clear();
 		clearInterval(this.gcIntervalHandle);
+	}
+
+	public get size() {
+		return this.cache.size;
 	}
 
 	public get entries() {

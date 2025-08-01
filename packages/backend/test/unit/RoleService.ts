@@ -10,11 +10,15 @@ import { jest } from '@jest/globals';
 import { ModuleMocker } from 'jest-mock';
 import { Test } from '@nestjs/testing';
 import * as lolex from '@sinonjs/fake-timers';
+import { NoOpCacheService } from '../misc/noOpCaches.js';
+import { FakeInternalEventService } from '../misc/FakeInternalEventService.js';
 import type { TestingModule } from '@nestjs/testing';
 import type { MockFunctionMetadata } from 'jest-mock';
 import { GlobalModule } from '@/GlobalModule.js';
 import { RoleService } from '@/core/RoleService.js';
 import {
+	InstancesRepository,
+	MetasRepository,
 	MiMeta,
 	MiRole,
 	MiRoleAssignment,
@@ -33,20 +37,36 @@ import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { RoleCondFormulaValue } from '@/models/Role.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 
 const moduleMocker = new ModuleMocker(global);
 
 describe('RoleService', () => {
 	let app: TestingModule;
 	let roleService: RoleService;
+	let instancesRepository: InstancesRepository;
 	let usersRepository: UsersRepository;
 	let rolesRepository: RolesRepository;
 	let roleAssignmentsRepository: RoleAssignmentsRepository;
 	let meta: jest.Mocked<MiMeta>;
+	let metasRepository: MetasRepository;
 	let notificationService: jest.Mocked<NotificationService>;
 	let clock: lolex.InstalledClock;
 
 	async function createUser(data: Partial<MiUser> = {}) {
+		if (data.host != null) {
+			await instancesRepository
+				.createQueryBuilder('instance')
+				.insert()
+				.values({
+					id: genAidx(Date.now()),
+					firstRetrievedAt: new Date(),
+					host: data.host,
+				})
+				.orIgnore()
+				.execute();
+		}
+
 		const un = secureRndstr(16);
 		const x = await usersRepository.insert({
 			id: genAidx(Date.now()),
@@ -128,26 +148,30 @@ describe('RoleService', () => {
 					provide: NotificationService.name,
 					useExisting: NotificationService,
 				},
+				MetaService,
+				InternalEventService,
 			],
 		})
 			.useMocker((token) => {
-				if (token === MetaService) {
-					return { fetch: jest.fn() };
-				}
 				if (typeof token === 'function') {
 					const mockMetadata = moduleMocker.getMetadata(token) as MockFunctionMetadata<any, any>;
 					const Mock = moduleMocker.generateFromMetadata(mockMetadata);
 					return new Mock();
 				}
 			})
+			.overrideProvider(MetaService).useValue({ fetch: jest.fn() })
+			.overrideProvider(InternalEventService).useClass(FakeInternalEventService)
+			.overrideProvider(CacheService).useClass(NoOpCacheService)
 			.compile();
 
 		app.enableShutdownHooks();
 
 		roleService = app.get<RoleService>(RoleService);
+		instancesRepository = app.get<InstancesRepository>(DI.instancesRepository);
 		usersRepository = app.get<UsersRepository>(DI.usersRepository);
 		rolesRepository = app.get<RolesRepository>(DI.rolesRepository);
 		roleAssignmentsRepository = app.get<RoleAssignmentsRepository>(DI.roleAssignmentsRepository);
+		metasRepository = app.get<MetasRepository>(DI.metasRepository);
 
 		meta = app.get<MiMeta>(DI.meta) as jest.Mocked<MiMeta>;
 		notificationService = app.get<NotificationService>(NotificationService) as jest.Mocked<NotificationService>;
@@ -159,7 +183,7 @@ describe('RoleService', () => {
 		clock.uninstall();
 
 		await Promise.all([
-			app.get(DI.metasRepository).delete({}),
+			metasRepository.delete({}),
 			usersRepository.delete({}),
 			rolesRepository.delete({}),
 			roleAssignmentsRepository.delete({}),
@@ -957,6 +981,52 @@ describe('RoleService', () => {
 			expect(assignments).toHaveLength(1);
 
 			expect(notificationService.createNotification).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('clone', () => {
+		test('clones a role', async () => {
+			const role = await createRole({
+				name: 'original role',
+				color: '#ff0000',
+				policies: {
+					canManageCustomEmojis: {
+						useDefault: false,
+						priority: 0,
+						value: true,
+					},
+				},
+			});
+
+			const clonedRole = await roleService.clone(role);
+
+			expect(clonedRole).toBeDefined();
+			expect(clonedRole.id).not.toBe(role.id);
+			expect(clonedRole.name).toBe(`${role.name} (cloned)`);
+
+			expect(clonedRole).toEqual(expect.objectContaining({
+				color: role.color,
+				policies: {
+					canManageCustomEmojis: {
+						useDefault: false,
+						priority: 0,
+						value: true,
+					},
+				},
+			}));
+		});
+
+		test('clones a role with a too long name', async () => {
+			const role = await createRole({
+				name: 'a'.repeat(254),
+			});
+
+			const clonedRole = await roleService.clone(role);
+
+			expect(clonedRole).toBeDefined();
+			expect(clonedRole.id).not.toBe(role.id);
+			expect(clonedRole.name.endsWith(' (cloned)')).toBeTruthy();
+			expect(clonedRole.name.length).toBe(256);
 		});
 	});
 });

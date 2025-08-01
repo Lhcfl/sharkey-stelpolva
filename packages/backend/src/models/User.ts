@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Entity, Column, Index, OneToOne, JoinColumn, PrimaryColumn } from 'typeorm';
+import { Entity, Column, Index, OneToOne, JoinColumn, PrimaryColumn, ManyToOne } from 'typeorm';
 import { type UserUnsignedFetchOption, userUnsignedFetchOptions } from '@/const.js';
+import { MiInstance } from '@/models/Instance.js';
 import { id } from './util/id.js';
 import { MiDriveFile } from './DriveFile.js';
+import type { MiUserProfile } from './UserProfile.js';
 
 @Entity('user')
 @Index(['usernameLower', 'host'], { unique: true })
@@ -293,6 +295,16 @@ export class MiUser {
 	})
 	public host: string | null;
 
+	@ManyToOne(() => MiInstance, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn({
+		name: 'host',
+		foreignKeyConstraintName: 'FK_user_host',
+		referencedColumnName: 'host',
+	})
+	public instance: MiInstance | null;
+
 	@Column('varchar', {
 		length: 512, nullable: true,
 		comment: 'The inbox URL of the User. It will be null if the origin of the user is local.',
@@ -379,6 +391,15 @@ export class MiUser {
 	})
 	public allowUnsignedFetch: UserUnsignedFetchOption;
 
+	@Column('text', {
+		name: 'attributionDomains',
+		array: true, default: '{}',
+	})
+	public attributionDomains: string[];
+
+	@OneToOne('user_profile', (profile: MiUserProfile) => profile.user)
+	public userProfile: MiUserProfile | null;
+
 	constructor(data: Partial<MiUser>) {
 		if (data == null) return;
 
@@ -413,7 +434,7 @@ export type MiPartialRemoteUser = Partial<MiUser> & {
 export const localUsernameSchema = { type: 'string', pattern: /^\w{1,20}$/.toString().slice(1, -1) } as const;
 export const passwordSchema = { type: 'string', minLength: 1 } as const;
 export const nameSchema = { type: 'string', minLength: 1, maxLength: 50 } as const;
-export const descriptionSchema = { type: 'string', minLength: 1, maxLength: 1500 } as const;
+export const descriptionSchema = { type: 'string', minLength: 1 } as const;
 export const followedMessageSchema = { type: 'string', minLength: 1, maxLength: 256 } as const;
 export const locationSchema = { type: 'string', minLength: 1, maxLength: 50 } as const;
 export const listenbrainzSchema = { type: 'string', minLength: 1, maxLength: 128 } as const;

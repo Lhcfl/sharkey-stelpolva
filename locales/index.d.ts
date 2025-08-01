@@ -899,6 +899,10 @@ export interface Locale extends ILocale {
      */
     "software": string;
     /**
+     * ソフトウェア名
+     */
+    "softwareName": string;
+    /**
      * バージョン
      */
     "version": string;
@@ -5410,6 +5414,10 @@ export interface Locale extends ILocale {
      * フォルダを作って整理することもできます。
      */
     "driveAboutTip": string;
+    /**
+     * スクロールして閉じる
+     */
+    "scrollToClose": string;
     "_chat": {
         /**
          * まだメッセージはありません
@@ -5706,6 +5714,14 @@ export interface Locale extends ILocale {
          * デバイス間でインストールしたテーマを同期
          */
         "enableSyncThemesBetweenDevices": string;
+        /**
+         * ひっぱって更新
+         */
+        "enablePullToRefresh": string;
+        /**
+         * マウスでは、ホイールを押し込みながらドラッグします。
+         */
+        "enablePullToRefresh_description": string;
         "_chat": {
             /**
              * 送信者の名前を表示
@@ -5730,6 +5746,10 @@ export interface Locale extends ILocale {
          * 例: 「メインPC」、「スマホ」など
          */
         "profileNameDescription2": string;
+        /**
+         * プロファイルの管理
+         */
+        "manageProfiles": string;
     };
     "_preferencesBackup": {
         /**
@@ -5872,6 +5892,10 @@ export interface Locale extends ILocale {
              * サーバー応答なしのため停止中
              */
             "autoSuspendedForNotResponding": string;
+            /**
+             * 配信停止中のソフトウェアであるため停止中
+             */
+            "softwareSuspended": string;
         };
     };
     "_bubbleGame": {
@@ -5981,6 +6005,14 @@ export interface Locale extends ILocale {
          * New
          */
         "new": string;
+        /**
+         * Throw confetti
+         */
+        "confetti": string;
+        /**
+         * If enabled, the announcement will display a confetti effect when viewed.
+         */
+        "confettiDescription": string;
     };
     "_initialAccountSetting": {
         /**
@@ -6370,6 +6402,14 @@ export interface Locale extends ILocale {
          */
         "thisSettingWillAutomaticallyOffWhenModeratorsInactive": string;
         /**
+         * 配信停止中のソフトウェア
+         */
+        "deliverSuspendedSoftware": string;
+        /**
+         * 脆弱性などの理由で、サーバーのソフトウェアの名前及びバージョンの範囲を指定して配信を停止できます。このバージョン情報はサーバーが提供したものであり、信頼性は保証されません。バージョン指定には semver の範囲指定が使用できますが、>= 2024.3.1 と指定すると 2024.3.1-custom.0 のようなカスタムバージョンが含まれないため、>= 2024.3.1-0 のように prerelease の指定を行うことを推奨します。
+         */
+        "deliverSuspendedSoftwareDescription": string;
+        /**
          * Logo URL
          */
         "sidebarLogoUrl": string;
@@ -6381,6 +6421,14 @@ export interface Locale extends ILocale {
          * E.g. In the sidebar, to visitors and in the "About" page.
          */
         "sidebarLogoUsageExample": string;
+        /**
+         * About instance
+         */
+        "aboutInstance": string;
+        /**
+         * A longer description that will be displayed in the 'Instance Information' page, going in place of the regular instance description. Supports HTML.
+         */
+        "aboutInstanceDescription": string;
     };
     "_accountMigration": {
         /**
@@ -10346,6 +10394,10 @@ export interface Locale extends ILocale {
          * Scheduled Note was posted
          */
         "scheduledNotePosted": string;
+        /**
+         * Import of {x} has been completed
+         */
+        "importOfXCompleted": ParameterizedString<"x">;
     };
     "_deck": {
         /**
@@ -11941,6 +11993,14 @@ export interface Locale extends ILocale {
      */
     "trustedLinkUrlPatternsDescription": string;
     /**
+     * Link to external site warning exclusion list
+     */
+    "trustedDomainsList": string;
+    /**
+     * Following links to these domains will not show a warning. Write one domain per line.
+     */
+    "trustedDomainsListDescription": string;
+    /**
      * Mutuals
      */
     "mutuals": string;
@@ -11988,6 +12048,22 @@ export interface Locale extends ILocale {
      * Boosts muted
      */
     "renoteMuted": string;
+    /**
+     * Mute note
+     */
+    "muteNote": string;
+    /**
+     * Unmute note
+     */
+    "unmuteNote": string;
+    /**
+     * {name} said something in a muted post
+     */
+    "userSaysSomethingInMutedNote": ParameterizedString<"name">;
+    /**
+     * {name} said something in a muted thread
+     */
+    "userSaysSomethingInMutedThread": ParameterizedString<"name">;
     /**
      * Mark all media from user as NSFW
      */
@@ -12266,6 +12342,10 @@ export interface Locale extends ILocale {
      */
     "collapseFiles": string;
     /**
+     * Clone
+     */
+    "clone": string;
+    /**
      * Uncollapse CWs on notes
      */
     "uncollapseCW": string;
@@ -12492,6 +12572,14 @@ export interface Locale extends ILocale {
          * Displays content centered.
          */
         "centerDescription": string;
+        /**
+         * Unix Time
+         */
+        "unixtime": string;
+        /**
+         * Displays a timestamp in the viewer's current timezone.
+         */
+        "unixtimeDescription": string;
         /**
          * Code (Inline)
          */
@@ -12946,6 +13034,10 @@ export interface Locale extends ILocale {
          * Unable to process quote. This post may be missing context.
          */
         "quoteUnavailable": string;
+        /**
+         * One or more media attachments are unavailable and cannot be shown.
+         */
+        "attachmentFailed": string;
     };
     /**
      * Authorized Fetch
@@ -13070,6 +13162,26 @@ export interface Locale extends ILocale {
      */
     "popularUsersLocal": ParameterizedString<"name">;
     /**
+     * Polls trending on {name}
+     */
+    "pollsOnLocal": ParameterizedString<"name">;
+    /**
+     * Polls trending on the global network
+     */
+    "pollsOnRemote": string;
+    /**
+     * Polls that have ended recently
+     */
+    "pollsExpired": string;
+    /**
+     * Trending polls are disabled on this instance.
+     */
+    "trendingPollsDisabled": string;
+    /**
+     * Please log in to view trending polls.
+     */
+    "trendingPollsDisabledLogIn": string;
+    /**
      * Silenced
      */
     "silenced": string;
@@ -13129,6 +13241,144 @@ export interface Locale extends ILocale {
      * Timeout in milliseconds for translation API requests.
      */
     "translationTimeoutCaption": string;
+    /**
+     * Staff notes
+     */
+    "staffNotes": string;
+    /**
+     * Icon of {name}
+     */
+    "instanceIconAlt": ParameterizedString<"name">;
+    /**
+     * Attribution Domains
+     */
+    "attributionDomains": string;
+    /**
+     * A list of domains whose content can be attributed to you on link previews, separated by new-line. Any subdomain will also be valid. The following needs to be on the webpage:
+     */
+    "attributionDomainsDescription": string;
+    /**
+     * Written by {user}
+     */
+    "writtenBy": ParameterizedString<"user">;
+    /**
+     * Following (Pub)
+     */
+    "followingPub": string;
+    /**
+     * Followers (Sub)
+     */
+    "followersSub": string;
+    /**
+     * Well-known resources
+     */
+    "wellKnownResources": string;
+    /**
+     * Last posted: {at}
+     */
+    "lastPosted": ParameterizedString<"at">;
+    /**
+     * NSFW
+     */
+    "nsfw": string;
+    /**
+     * Raw
+     */
+    "raw": string;
+    /**
+     * CW
+     */
+    "cw": string;
+    /**
+     * Media Silenced
+     */
+    "mediaSilenced": string;
+    /**
+     * Bubble
+     */
+    "bubble": string;
+    /**
+     * Verified
+     */
+    "verified": string;
+    /**
+     * Not Verified
+     */
+    "notVerified": string;
+    /**
+     * Hibernated
+     */
+    "hibernated": string;
+    /**
+     * When replying to a post with a Content Warning, automatically use the same CW for the reply.
+     */
+    "keepCwDescription": string;
+    /**
+     * Disabled (do not copy CWs)
+     */
+    "keepCwDisabled": string;
+    /**
+     * Enabled (copy CWs verbatim)
+     */
+    "keepCwEnabled": string;
+    /**
+     * Enabled (copy CW and prepend "RE:")
+     */
+    "keepCwPrependRe": string;
+    /**
+     * Note controls
+     */
+    "noteFooterLabel": string;
+    /**
+     * Packed user data in its raw form. Most of these fields are public and visible to all users.
+     */
+    "rawUserDescription": string;
+    /**
+     * Extended user data in its raw form. These fields are private and can only be accessed by moderators.
+     */
+    "rawInfoDescription": string;
+    /**
+     * ActivityPub user data in its raw form. These fields are public and accessible to other instances.
+     */
+    "rawApDescription": string;
+    /**
+     * Signup Reason
+     */
+    "signupReason": string;
+    "clearCachedFilesOptions": {
+        /**
+         * Delete all cached remote files
+         */
+        "title": string;
+        /**
+         * Only delete files older than:
+         */
+        "olderThan": string;
+        /**
+         * now
+         */
+        "now": string;
+        /**
+         * one week
+         */
+        "oneWeek": string;
+        /**
+         * one month
+         */
+        "oneMonth": string;
+        /**
+         * one year
+         */
+        "oneYear": string;
+        /**
+         * Don't delete files used as avatars&c
+         */
+        "keepFilesInUse": string;
+        /**
+         * this option requires more complicated database queries, you may need to increase the value of db.extra.statement_timeout in the configuration file
+         */
+        "keepFilesInUseDescription": string;
+    };
     /**
      * Sharkey Stelpolva Edition 为天线的设置添加了额外的关键词语法。
      * 具体而言， `domain:example.com` 这个特殊关键词会匹配所有来自 `example.com` 的帖子。这个关键词同样能使用在 OR 语法中。

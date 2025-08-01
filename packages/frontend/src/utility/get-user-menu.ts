@@ -462,7 +462,7 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 	return {
 		menu: menuItems,
 		cleanup: () => {
-			if (_DEV_) console.log('user menu cleanup', cleanups);
+			if (_DEV_) console.debug('user menu cleanup', cleanups);
 			for (const cl of cleanups) {
 				cl();
 			}

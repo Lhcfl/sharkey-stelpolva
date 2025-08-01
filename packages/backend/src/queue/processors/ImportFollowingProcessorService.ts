@@ -40,10 +40,9 @@ export class ImportFollowingProcessorService {
 
 	@bindThis
 	public async process(job: Bull.Job<DbUserImportJobData>): Promise<void> {
-		this.logger.info(`Importing following of ${job.data.user.id} ...`);
-
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
+			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
 			return;
 		}
 
@@ -51,14 +50,17 @@ export class ImportFollowingProcessorService {
 			id: job.data.fileId,
 		});
 		if (file == null) {
+			this.logger.debug(`Skip: file ${job.data.fileId} does not exist`);
 			return;
 		}
+
+		this.logger.info(`Importing following of ${job.data.user.id} ...`);
 
 		const csv = await this.downloadService.downloadTextFile(file.url);
 		const targets = csv.trim().split('\n');
 		this.queueService.createImportFollowingToDbJob({ id: user.id }, targets, job.data.withReplies);
 
-		this.logger.succ('Import jobs created');
+		this.logger.debug('Import jobs created');
 	}
 
 	@bindThis
@@ -93,11 +95,11 @@ export class ImportFollowingProcessorService {
 			// skip myself
 			if (target.id === job.data.user.id) return;
 
-			this.logger.info(`Follow ${target.id} ${job.data.withReplies ? 'with replies' : 'without replies'} ...`);
+			this.logger.debug(`Follow ${target.id} ${job.data.withReplies ? 'with replies' : 'without replies'} ...`);
 
 			this.queueService.createFollowJob([{ from: user, to: { id: target.id }, silent: true, withReplies: job.data.withReplies }]);
 		} catch (e) {
-			this.logger.warn(`Error: ${e}`);
+			this.logger.error('Error importing followings:', e as Error);
 		}
 	}
 }

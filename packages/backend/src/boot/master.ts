@@ -51,7 +51,7 @@ function greet() {
 	}
 
 	bootLogger.info('Welcome to Sharkey!');
-	bootLogger.info(`Sharkey v${meta.version}`, null, true);
+	bootLogger.info(`Sharkey v${meta.gitVersion ?? meta.version}`, null, true);
 }
 
 /**
@@ -74,7 +74,7 @@ export async function masterMain() {
 		process.exit(1);
 	}
 
-	bootLogger.succ('Sharkey initialized');
+	bootLogger.info('Sharkey initialized');
 
 	if (config.sentryForBackend) {
 		Sentry.init({
@@ -91,7 +91,7 @@ export async function masterMain() {
 			maxBreadcrumbs: 0,
 
 			// Set release version
-			release: 'Sharkey@' + meta.version,
+			release: 'Sharkey@' + (meta.gitVersion ?? meta.version),
 
 			...config.sentryForBackend.options,
 		});
@@ -140,10 +140,10 @@ export async function masterMain() {
 	}
 
 	if (envOption.onlyQueue) {
-		bootLogger.succ('Queue started', null, true);
+		bootLogger.info('Queue started', null, true);
 	} else {
 		const addressString = net.isIPv6(config.address) ? `[${config.address}]` : config.address;
-		bootLogger.succ(config.socket ? `Now listening on socket ${config.socket} on ${config.url}` : `Now listening on ${addressString}:${config.port} on ${config.url}`, null, true);
+		bootLogger.info(config.socket ? `Now listening on socket ${config.socket} on ${config.url}` : `Now listening on ${addressString}:${config.port} on ${config.url}`, null, true);
 	}
 }
 
@@ -172,7 +172,7 @@ function loadConfigBoot(): Config {
 		config = loadConfig();
 	} catch (exception) {
 		if (typeof exception === 'string') {
-			configLogger.error(exception);
+			configLogger.error('Exception loading config:', exception);
 			process.exit(1);
 		} else if ((exception as any).code === 'ENOENT') {
 			configLogger.error('Configuration file not found', null, true);
@@ -181,7 +181,7 @@ function loadConfigBoot(): Config {
 		throw exception;
 	}
 
-	configLogger.succ('Loaded');
+	configLogger.info('Loaded');
 
 	return config;
 }
@@ -195,7 +195,7 @@ async function connectDb(): Promise<void> {
 		dbLogger.info('Connecting...');
 		await initDb();
 		const v = await db.query('SHOW server_version').then(x => x[0].server_version);
-		dbLogger.succ(`Connected: v${v}`);
+		dbLogger.info(`Connected: v${v}`);
 	} catch (err) {
 		dbLogger.error('Cannot connect', null, true);
 		dbLogger.error(err);
@@ -211,7 +211,7 @@ async function spawnWorkers(limit = 1) {
 
 	bootLogger.info(`Starting ${workers} worker${workers === 1 ? '' : 's'}...`);
 	await Promise.all([...Array(workers)].map(spawnWorker));
-	bootLogger.succ('All workers started');
+	bootLogger.info('All workers started');
 }
 
 function spawnWorker(): Promise<void> {

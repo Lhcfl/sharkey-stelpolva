@@ -38,6 +38,7 @@ export const paramDef = {
 		forExistingUsers: { type: 'boolean' },
 		silence: { type: 'boolean' },
 		needConfirmationToRead: { type: 'boolean' },
+		confetti: { type: 'boolean' },
 		isActive: { type: 'boolean' },
 	},
 	required: ['id'],
@@ -67,6 +68,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				forExistingUsers: ps.forExistingUsers,
 				silence: ps.silence,
 				needConfirmationToRead: ps.needConfirmationToRead,
+				confetti: ps.confetti,
 				isActive: ps.isActive,
 			}, me);
 		});

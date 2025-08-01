@@ -81,10 +81,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchFile);
 			}
 
-			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId);
-			query.andWhere(':file <@ note.fileIds', { file: [file.id] });
+			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
+				.andWhere(':file <@ note.fileIds', { file: [file.id] })
+				.innerJoinAndSelect('note.user', 'user')
+				.leftJoinAndSelect('note.reply', 'reply')
+				.leftJoinAndSelect('note.renote', 'renote')
+				.leftJoinAndSelect('reply.user', 'replyUser')
+				.leftJoinAndSelect('renote.user', 'renoteUser')
+				.limit(ps.limit);
 
-			const notes = await query.limit(ps.limit).getMany();
+			this.queryService.generateVisibilityQuery(query, me);
+			this.queryService.generateBlockedHostQueryForNote(query);
+			this.queryService.generateSilencedUserQueryForNotes(query, me);
+			this.queryService.generateMutedUserQueryForNotes(query, me);
+			this.queryService.generateBlockedUserQueryForNotes(query, me);
+
+			const notes = await query.getMany();
 
 			return await this.noteEntityService.packMany(notes, me, {
 				detail: true,

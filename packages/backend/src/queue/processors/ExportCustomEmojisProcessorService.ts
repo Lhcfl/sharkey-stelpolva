@@ -45,16 +45,17 @@ export class ExportCustomEmojisProcessorService {
 
 	@bindThis
 	public async process(job: Bull.Job): Promise<void> {
-		this.logger.info('Exporting custom emojis ...');
-
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
+			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
 			return;
 		}
 
+		this.logger.info(`Exporting custom emojis of ${job.data.user.id} ...`);
+
 		const [path, cleanup] = await createTempDir();
 
-		this.logger.info(`Temp dir is ${path}`);
+		this.logger.debug(`Temp dir is ${path}`);
 
 		const metaPath = path + '/meta.json';
 
@@ -66,7 +67,7 @@ export class ExportCustomEmojisProcessorService {
 			return new Promise<void>((res, rej) => {
 				metaStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error exporting custom emojis:', err);
 						rej(err);
 					} else {
 						res();
@@ -101,7 +102,7 @@ export class ExportCustomEmojisProcessorService {
 				await this.downloadService.downloadUrl(emoji.originalUrl, emojiPath);
 				downloaded = true;
 			} catch (e) { // TODO: 何度か再試行
-				this.logger.error(e instanceof Error ? e : new Error(e as string));
+				this.logger.error('Error exporting custom emojis:', e as Error);
 			}
 
 			if (!downloaded) {
@@ -130,12 +131,12 @@ export class ExportCustomEmojisProcessorService {
 				zlib: { level: 0 },
 			});
 			archiveStream.on('close', async () => {
-				this.logger.succ(`Exported to: ${archivePath}`);
+				this.logger.debug(`Exported to: ${archivePath}`);
 
 				const fileName = 'custom-emojis-' + dateFormat(new Date(), 'yyyy-MM-dd-HH-mm-ss') + '.zip';
 				const driveFile = await this.driveService.addFile({ user, path: archivePath, name: fileName, force: true });
 
-				this.logger.succ(`Exported to: ${driveFile.id}`);
+				this.logger.debug(`Exported to: ${driveFile.id}`);
 
 				this.notificationService.createNotification(user.id, 'exportCompleted', {
 					exportedEntity: 'customEmoji',

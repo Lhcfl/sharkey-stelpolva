@@ -98,9 +98,12 @@ pg.types.setTypeParser(20, Number);
 export const dbLogger = new MisskeyLogger('db');
 
 const sqlLogger = dbLogger.createSubLogger('sql', 'gray');
+const sqlMigrateLogger = sqlLogger.createSubLogger('migrate');
+const sqlSchemaLogger = sqlLogger.createSubLogger('schema');
 
 export type LoggerProps = {
 	disableQueryTruncation?: boolean;
+	enableQueryLogging?: boolean;
 	enableQueryParamLogging?: boolean;
 	printReplicationMode?: boolean,
 };
@@ -112,7 +115,7 @@ function highlightSql(sql: string) {
 }
 
 function truncateSql(sql: string) {
-	return sql.length > 100 ? `${sql.substring(0, 100)}...` : sql;
+	return sql.length > 100 ? `${sql.substring(0, 100)} [truncated]` : sql;
 }
 
 function stringifyParameter(param: any) {
@@ -136,13 +139,16 @@ class MyCustomLogger implements Logger {
 			modded = truncateSql(modded);
 		}
 
-		return highlightSql(modded);
+		return this.props.enableQueryLogging ? highlightSql(modded) : modded;
 	}
 
 	@bindThis
 	private transformParameters(parameters?: any[]) {
 		if (this.props.enableQueryParamLogging && parameters && parameters.length > 0) {
-			return parameters.map(stringifyParameter);
+			return parameters.reduce((params, p, i) => {
+				params[`$${i + 1}`] = stringifyParameter(p);
+				return params;
+			}, {} as Record<string, string>);
 		}
 
 		return undefined;
@@ -150,10 +156,13 @@ class MyCustomLogger implements Logger {
 
 	@bindThis
 	public logQuery(query: string, parameters?: any[], queryRunner?: QueryRunner) {
+		if (!this.props.enableQueryLogging) return;
+
 		const prefix = (this.props.printReplicationMode && queryRunner)
 			? `[${queryRunner.getReplicationMode()}] `
 			: undefined;
-		sqlLogger.info(this.transformQueryLog(query, { prefix }), this.transformParameters(parameters));
+		const transformed = this.transformQueryLog(query, { prefix });
+		sqlLogger.debug(`Query run: ${transformed}`, this.transformParameters(parameters));
 	}
 
 	@bindThis
@@ -161,7 +170,8 @@ class MyCustomLogger implements Logger {
 		const prefix = (this.props.printReplicationMode && queryRunner)
 			? `[${queryRunner.getReplicationMode()}] `
 			: undefined;
-		sqlLogger.error(this.transformQueryLog(query, { prefix }), this.transformParameters(parameters));
+		const transformed = this.transformQueryLog(query, { prefix });
+		sqlLogger.error(`Query error (${error}): ${transformed}`, this.transformParameters(parameters));
 	}
 
 	@bindThis
@@ -169,22 +179,32 @@ class MyCustomLogger implements Logger {
 		const prefix = (this.props.printReplicationMode && queryRunner)
 			? `[${queryRunner.getReplicationMode()}] `
 			: undefined;
-		sqlLogger.warn(this.transformQueryLog(query, { prefix }), this.transformParameters(parameters));
+		const transformed = this.transformQueryLog(query, { prefix });
+		sqlLogger.warn(`Query is slow (${time}ms): ${transformed}`, this.transformParameters(parameters));
 	}
 
 	@bindThis
 	public logSchemaBuild(message: string) {
-		sqlLogger.info(message);
+		sqlSchemaLogger.debug(message);
 	}
 
 	@bindThis
-	public log(message: string) {
-		sqlLogger.info(message);
+	public log(level: 'log' | 'info' | 'warn', message: string) {
+		switch (level) {
+			case 'log':
+			case 'info': {
+				sqlLogger.info(message);
+				break;
+			}
+			case 'warn': {
+				sqlLogger.warn(message);
+			}
+		}
 	}
 
 	@bindThis
 	public logMigration(message: string) {
-		sqlLogger.info(message);
+		sqlMigrateLogger.debug(message);
 	}
 }
 
@@ -306,7 +326,7 @@ export function createPostgresDataSource(config: Config) {
 		} : {}),
 		synchronize: process.env.NODE_ENV === 'test',
 		dropSchema: process.env.NODE_ENV === 'test',
-		cache: !config.db.disableCache && process.env.NODE_ENV !== 'test' ? { // dbをcloseしても何故かredisのコネクションが内部的に残り続けるようで、テストの際に支障が出るため無効にする(キャッシュも含めてテストしたいため本当は有効にしたいが...)
+		cache: config.db.disableCache === false && process.env.NODE_ENV !== 'test' ? { // dbをcloseしても何故かredisのコネクションが内部的に残り続けるようで、テストの際に支障が出るため無効にする(キャッシュも含めてテストしたいため本当は有効にしたいが...)
 			type: 'ioredis',
 			options: {
 				...config.redis,
@@ -314,14 +334,13 @@ export function createPostgresDataSource(config: Config) {
 			},
 		} : false,
 		logging: log,
-		logger: log
-			? new MyCustomLogger({
-				disableQueryTruncation: config.logging?.sql?.disableQueryTruncation,
-				enableQueryParamLogging: config.logging?.sql?.enableQueryParamLogging,
-				printReplicationMode: !!config.dbReplications,
-			})
-			: undefined,
-		maxQueryExecutionTime: 300,
+		logger: new MyCustomLogger({
+			disableQueryTruncation: config.logging?.sql?.disableQueryTruncation,
+			enableQueryLogging: log,
+			enableQueryParamLogging: config.logging?.sql?.enableQueryParamLogging,
+			printReplicationMode: !!config.dbReplications,
+		}),
+		maxQueryExecutionTime: config.db.slowQueryThreshold,
 		entities: entities,
 		migrations: ['../../migration/*.js'],
 	});

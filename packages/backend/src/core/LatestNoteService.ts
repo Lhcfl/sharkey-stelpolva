@@ -7,6 +7,7 @@ import { DI } from '@/di-symbols.js';
 import type { LatestNotesRepository, NotesRepository } from '@/models/_.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import Logger from '@/logger.js';
+import { QueryService } from './QueryService.js';
 
 @Injectable()
 export class LatestNoteService {
@@ -14,11 +15,12 @@ export class LatestNoteService {
 
 	constructor(
 		@Inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
+		private readonly notesRepository: NotesRepository,
 
 		@Inject(DI.latestNotesRepository)
-		private latestNotesRepository: LatestNotesRepository,
+		private readonly latestNotesRepository: LatestNotesRepository,
 
+		private readonly queryService: QueryService,
 		loggerService: LoggerService,
 	) {
 		this.logger = loggerService.getLogger('LatestNoteService');
@@ -91,7 +93,7 @@ export class LatestNoteService {
 
 		// Find the newest remaining note for the user.
 		// We exclude DMs and pure renotes.
-		const nextLatest = await this.notesRepository
+		const query = this.notesRepository
 			.createQueryBuilder('note')
 			.select()
 			.where({
@@ -106,18 +108,11 @@ export class LatestNoteService {
 					? Not(null)
 					: null,
 			})
-			.andWhere(`
-				(
-					note."renoteId" IS NULL
-					OR note.text IS NOT NULL
-					OR note.cw IS NOT NULL
-					OR note."replyId" IS NOT NULL
-					OR note."hasPoll"
-					OR note."fileIds" != '{}'
-				)
-			`)
-			.orderBy({ id: 'DESC' })
-			.getOne();
+			.orderBy({ id: 'DESC' });
+
+		this.queryService.andIsNotRenote(query, 'note');
+
+		const nextLatest = await query.getOne();
 		if (!nextLatest) return;
 
 		// Record it as the latest

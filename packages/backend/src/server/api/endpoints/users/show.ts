@@ -13,6 +13,7 @@ import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
 import { DI } from '@/di-symbols.js';
 import PerUserPvChart from '@/core/chart/charts/per-user-pv.js';
 import { RoleService } from '@/core/RoleService.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { ApiError } from '../../error.js';
 import { ApiLoggerService } from '../../ApiLoggerService.js';
 import type { FindOptionsWhere } from 'typeorm';
@@ -29,13 +30,13 @@ export const meta = {
 		oneOf: [
 			{
 				type: 'object',
-				ref: 'UserDetailed',
+				ref: 'User',
 			},
 			{
 				type: 'array',
 				items: {
 					type: 'object',
-					ref: 'UserDetailed',
+					ref: 'User',
 				},
 			},
 		],
@@ -77,6 +78,11 @@ export const paramDef = {
 			type: 'string',
 			nullable: true,
 			description: 'The local host is represented with `null`.',
+		},
+		detail: {
+			type: 'boolean',
+			nullable: false,
+			default: true,
 		},
 	},
 	anyOf: [
@@ -124,14 +130,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					if (user != null) _users.push(user);
 				}
 
-				const _userMap = await this.userEntityService.packMany(_users, me, { schema: 'UserDetailed' })
+				const _userMap = await this.userEntityService.packMany(_users, me, { schema: ps.detail ? 'UserDetailed' : 'UserLite' })
 					.then(users => new Map(users.map(u => [u.id, u])));
 				return _users.map(u => _userMap.get(u.id)!);
 			} else {
 				// Lookup user
 				if (typeof ps.host === 'string' && typeof ps.username === 'string') {
 					user = await this.remoteUserResolveService.resolveUser(ps.username, ps.host).catch(err => {
-						this.apiLoggerService.logger.warn(`failed to resolve remote user: ${err}`);
+						this.apiLoggerService.logger.warn(`failed to resolve remote user: ${renderInlineError(err)}`);
 						throw new ApiError(meta.errors.failedToResolveRemoteUser);
 					});
 				} else {
@@ -155,7 +161,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}
 
 				return await this.userEntityService.pack(user, me, {
-					schema: 'UserDetailed',
+					schema: ps.detail ? 'UserDetailed' : 'UserLite',
 				});
 			}
 		});

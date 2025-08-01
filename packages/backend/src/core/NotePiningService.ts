@@ -61,7 +61,7 @@ export class NotePiningService {
 		});
 
 		if (note == null) {
-			throw new IdentifiableError('70c4e51f-5bea-449c-a030-53bee3cce202', 'No such note.');
+			throw new IdentifiableError('70c4e51f-5bea-449c-a030-53bee3cce202', `Note ${noteId} does not exist`);
 		}
 
 		await this.db.transaction(async tem => {
@@ -102,7 +102,7 @@ export class NotePiningService {
 		});
 
 		if (note == null) {
-			throw new IdentifiableError('b302d4cf-c050-400a-bbb3-be208681f40c', 'No such note.');
+			throw new IdentifiableError('b302d4cf-c050-400a-bbb3-be208681f40c', `Note ${noteId} does not exist`);
 		}
 
 		this.userNotePiningsRepository.delete({

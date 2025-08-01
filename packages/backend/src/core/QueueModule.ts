@@ -9,6 +9,7 @@ import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { baseQueueOptions, QUEUE } from '@/queue/const.js';
 import { allSettled } from '@/misc/promise-tracker.js';
+import Logger from '@/logger.js';
 import {
 	DeliverJobData,
 	EndedPollNotificationJobData,
@@ -120,6 +121,8 @@ const $scheduleNotePost: Provider = {
 	],
 })
 export class QueueModule implements OnApplicationShutdown {
+	private readonly logger = new Logger('queue');
+
 	constructor(
 		@Inject('queue:system') public systemQueue: SystemQueue,
 		@Inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
@@ -135,8 +138,10 @@ export class QueueModule implements OnApplicationShutdown {
 
 	public async dispose(): Promise<void> {
 		// Wait for all potential queue jobs
+		this.logger.info('Finalizing active promises...');
 		await allSettled();
 		// And then close all queues
+		this.logger.info('Closing BullMQ queues...');
 		await Promise.all([
 			this.systemQueue.close(),
 			this.endedPollNotificationQueue.close(),
@@ -149,6 +154,7 @@ export class QueueModule implements OnApplicationShutdown {
 			this.systemWebhookDeliverQueue.close(),
 			this.scheduleNotePostQueue.close(),
 		]);
+		this.logger.info('Queue module disposed.');
 	}
 
 	async onApplicationShutdown(signal: string): Promise<void> {

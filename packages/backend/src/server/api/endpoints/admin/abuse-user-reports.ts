@@ -69,6 +69,11 @@ export const meta = {
 					nullable: false, optional: false,
 					ref: 'UserDetailedNotMe',
 				},
+				targetInstance: {
+					type: 'object',
+					nullable: true, optional: false,
+					ref: 'FederationInstance',
+				},
 				assignee: {
 					type: 'object',
 					nullable: true, optional: false,
@@ -115,7 +120,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = this.queryService.makePaginationQuery(this.abuseUserReportsRepository.createQueryBuilder('report'), ps.sinceId, ps.untilId);
+			const query = this.queryService.makePaginationQuery(this.abuseUserReportsRepository.createQueryBuilder('report'), ps.sinceId, ps.untilId)
+				.leftJoinAndSelect('report.targetUser', 'targetUser')
+				.leftJoinAndSelect('targetUser.userProfile', 'targetUserProfile')
+				.leftJoinAndSelect('report.targetUserInstance', 'targetUserInstance')
+				.leftJoinAndSelect('report.reporter', 'reporter')
+				.leftJoinAndSelect('reporter.userProfile', 'reporterProfile')
+				.leftJoinAndSelect('report.assignee', 'assignee')
+				.leftJoinAndSelect('assignee.userProfile', 'assigneeProfile')
+			;
 
 			switch (ps.state) {
 				case 'resolved': query.andWhere('report.resolved = TRUE'); break;
@@ -134,7 +147,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const reports = await query.limit(ps.limit).getMany();
 
-			return await this.abuseUserReportEntityService.packMany(reports);
+			return await this.abuseUserReportEntityService.packMany(reports, me);
 		});
 	}
 }

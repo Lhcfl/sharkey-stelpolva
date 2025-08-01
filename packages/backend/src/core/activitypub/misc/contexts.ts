@@ -540,12 +540,20 @@ const extension_context_definition = {
 	quoteUrl: 'as:quoteUrl',
 	fedibird: 'http://fedibird.com/ns#',
 	quoteUri: 'fedibird:quoteUri',
+	quote: {
+		'@id': 'https://w3id.org/fep/044f#quote',
+		'@type': '@id',
+	},
 	// Mastodon
 	toot: 'http://joinmastodon.org/ns#',
 	Emoji: 'toot:Emoji',
 	featured: 'toot:featured',
 	discoverable: 'toot:discoverable',
 	indexable: 'toot:indexable',
+	attributionDomains: {
+		'@id': 'toot:attributionDomains',
+		'@type': '@id',
+	},
 	// schema
 	schema: 'http://schema.org#',
 	PropertyValue: 'schema:PropertyValue',

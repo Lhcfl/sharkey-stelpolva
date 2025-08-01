@@ -36,6 +36,6 @@ export class ResyncChartsProcessorService {
 		await this.notesChart.resync();
 		await this.usersChart.resync();
 
-		this.logger.succ('All charts successfully resynced.');
+		this.logger.info('All charts successfully resynced.');
 	}
 }

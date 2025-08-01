@@ -243,13 +243,13 @@ if (game.value.isStarted && !game.value.isEnded) {
 	useInterval(() => {
 		if (game.value.isEnded) return;
 		const crc32 = engine.value.calcCrc32();
-		if (_DEV_) console.log('crc32', crc32);
+		if (_DEV_) console.debug('crc32', crc32);
 		misskeyApi('reversi/verify', {
 			gameId: game.value.id,
 			crc32: crc32.toString(),
 		}).then((res) => {
 			if (res.desynced) {
-				if (_DEV_) console.log('resynced');
+				if (_DEV_) console.debug('resynced');
 				restoreGame(res.game!);
 			}
 		});

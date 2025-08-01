@@ -601,6 +601,7 @@ export class ClientServerService {
 				relations: ['user'],
 			});
 
+			// TODO pack with current user, or the frontend can get bad data
 			if (note && !note.user!.requireSigninToViewContents) {
 				const _note = await this.noteEntityService.pack(note);
 				const profile = await this.userProfilesRepository.findOneByOrFail({ userId: note.userId });

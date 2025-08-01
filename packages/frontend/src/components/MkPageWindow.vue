@@ -106,7 +106,7 @@ windowRouter.addListener('replace', ctx => {
 });
 
 windowRouter.addListener('change', ctx => {
-	if (_DEV_) console.log('windowRouter: change', ctx.fullPath);
+	if (_DEV_) console.debug('windowRouter: change', ctx.fullPath);
 	searchMarkerId.value = getSearchMarker(ctx.fullPath);
 });
 

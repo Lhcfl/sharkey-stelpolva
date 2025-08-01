@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Entity, MastodonEntity, MisskeyEntity } from 'megalodon';
-import mfm from '@transfem-org/sfm-js';
+import mfm from 'mfm-js';
 import { MastodonNotificationType } from 'megalodon/lib/src/mastodon/notification.js';
 import { NotificationType } from 'megalodon/lib/src/notification.js';
 import { DI } from '@/di-symbols.js';
@@ -252,10 +252,10 @@ export class MastodonConverters {
 		return await this.convertStatus(status, me);
 	}
 
-	public async convertStatus(status: Entity.Status, me: MiLocalUser | null): Promise<MastodonEntity.Status> {
+	public async convertStatus(status: Entity.Status, me: MiLocalUser | null, hints?: { note?: MiNote, user?: MiUser }): Promise<MastodonEntity.Status> {
 		const convertedAccount = this.convertAccount(status.account);
-		const note = await this.mastodonDataService.requireNote(status.id, me);
-		const noteUser = await this.getUser(status.account.id);
+		const note = hints?.note ?? await this.mastodonDataService.requireNote(status.id, me);
+		const noteUser = hints?.user ?? note.user ?? await this.getUser(status.account.id);
 		const mentionedRemoteUsers = JSON.parse(note.mentionedRemoteUsers);
 
 		const emojis = await this.customEmojiService.populateEmojis(note.emojis, noteUser.host ? noteUser.host : this.config.host);

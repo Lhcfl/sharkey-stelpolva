@@ -48,24 +48,38 @@ class GlobalTimelineChannel extends Channel {
 
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
+		const isMe = this.user?.id === note.userId;
+
 		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
 		if (!this.withBots && note.user.isBot) return;
 
 		if (note.visibility !== 'public') return;
 		if (note.channelId != null) return;
-		if (note.user.requireSigninToViewContents && this.user == null) return;
-		if (note.renote && note.renote.user.requireSigninToViewContents && this.user == null) return;
-		if (note.reply && note.reply.user.requireSigninToViewContents && this.user == null) return;
-
-		if (isRenotePacked(note) && !isQuotePacked(note) && !this.withRenotes) return;
-
-		if (note.user.isSilenced && !this.following[note.userId] && note.userId !== this.user!.id) return;
 
 		if (this.isNoteMutedOrBlocked(note)) return;
+		if (!this.isNoteVisibleToMe(note)) return;
 
-		const clonedNote = await this.assignMyReaction(note);
-		await this.hideNote(clonedNote);
+		if (note.reply) {
+			const reply = note.reply;
+			// 自分のフォローしていないユーザーの visibility: followers な投稿への返信は弾く
+			if (!this.isNoteVisibleToMe(reply)) return;
+			if (!this.following.get(note.userId)?.withReplies) {
+				// 「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
+				if (reply.userId !== this.user?.id && !isMe && reply.userId !== note.userId) return;
+			}
+		}
 
+		// 純粋なリノート（引用リノートでないリノート）の場合
+		if (isRenotePacked(note) && !isQuotePacked(note) && note.renote) {
+			if (!this.withRenotes) return;
+			if (note.renote.reply) {
+				const reply = note.renote.reply;
+				// 自分のフォローしていないユーザーの visibility: followers な投稿への返信のリノートは弾く
+				if (!this.isNoteVisibleToMe(reply)) return;
+			}
+		}
+
+		const clonedNote = await this.rePackNote(note);
 		this.send('note', clonedNote);
 	}
 

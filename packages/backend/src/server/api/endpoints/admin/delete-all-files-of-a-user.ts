@@ -50,7 +50,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			for (const file of files) {
-				this.driveService.deleteFile(file, false, me);
+				this.driveService.deleteFile(file);
 			}
 		});
 	}

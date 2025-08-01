@@ -44,17 +44,18 @@ export class ExportFollowingProcessorService {
 
 	@bindThis
 	public async process(job: Bull.Job<DbExportFollowingData>): Promise<void> {
-		this.logger.info(`Exporting following of ${job.data.user.id} ...`);
-
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
+			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
 			return;
 		}
+
+		this.logger.info(`Exporting following of ${job.data.user.id} ...`);
 
 		// Create temp file
 		const [path, cleanup] = await createTemp();
 
-		this.logger.info(`Temp file is ${path}`);
+		this.logger.debug(`Temp file is ${path}`);
 
 		try {
 			const stream = fs.createWriteStream(path, { flags: 'a' });
@@ -98,7 +99,7 @@ export class ExportFollowingProcessorService {
 					await new Promise<void>((res, rej) => {
 						stream.write(content + '\n', err => {
 							if (err) {
-								this.logger.error(err);
+								this.logger.error('Error exporting following:', err);
 								rej(err);
 							} else {
 								res();
@@ -109,12 +110,12 @@ export class ExportFollowingProcessorService {
 			}
 
 			stream.end();
-			this.logger.succ(`Exported to: ${path}`);
+			this.logger.debug(`Exported to: ${path}`);
 
 			const fileName = 'following-' + dateFormat(new Date(), 'yyyy-MM-dd-HH-mm-ss') + '.csv';
 			const driveFile = await this.driveService.addFile({ user, path, name: fileName, force: true, ext: 'csv' });
 
-			this.logger.succ(`Exported to: ${driveFile.id}`);
+			this.logger.debug(`Exported to: ${driveFile.id}`);
 
 			this.notificationService.createNotification(user.id, 'exportCompleted', {
 				exportedEntity: 'following',

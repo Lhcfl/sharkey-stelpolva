@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Displays a translated version of a note.
 -->
 
 <template>
@@ -33,7 +35,6 @@ if (_DEV_) {
 	watch(
 		[() => props.translation, () => props.translating],
 		([translation, translating]) => console.debug('Translation status changed: ', { translation, translating }),
-		{ immediate: true },
 	);
 }
 </script>

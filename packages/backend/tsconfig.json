@@ -23,6 +23,7 @@
 		"emitDecoratorMetadata": true,
 		"resolveJsonModule": true,
 		"isolatedModules": true,
+		"incremental": true,
 		"rootDir": "./src",
 		"baseUrl": "./",
 		"paths": {

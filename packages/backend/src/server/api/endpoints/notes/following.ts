@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
+import { IsNull, ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 import { SkLatestNote, MiFollowing } from '@/models/_.js';
 import type { NotesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -12,6 +12,7 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { QueryService } from '@/core/QueryService.js';
 import { ApiError } from '@/server/api/error.js';
+import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -76,8 +77,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		private noteEntityService: NoteEntityService,
-		private queryService: QueryService,
+		private readonly noteEntityService: NoteEntityService,
+		private readonly queryService: QueryService,
+		private readonly activeUsersChart: ActiveUsersChart,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.includeReplies && ps.filesOnly) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
@@ -85,7 +87,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const query = this.notesRepository
 				.createQueryBuilder('note')
-				.setParameter('me', me.id)
+				.setParameters({ meId: me.id })
 
 				// Limit to latest notes
 				.innerJoin(
@@ -130,7 +132,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('note.renote', 'renote')
 				.leftJoinAndSelect('reply.user', 'replyUser')
 				.leftJoinAndSelect('renote.user', 'renoteUser')
-				.leftJoinAndSelect('note.channel', 'channel')
+
+				// Exclude channel notes
+				.andWhere({ channelId: IsNull() })
 			;
 
 			// Limit to files, if requested
@@ -145,23 +149,26 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			// Hide blocked users / instances
 			query.andWhere('"user"."isSuspended" = false');
-			query.andWhere('("replyUser" IS NULL OR "replyUser"."isSuspended" = false)');
-			query.andWhere('("renoteUser" IS NULL OR "renoteUser"."isSuspended" = false)');
 			this.queryService.generateBlockedHostQueryForNote(query);
 
-			// Respect blocks and mutes
+			// Respect blocks, mutes, and privacy
+			this.queryService.generateVisibilityQuery(query, me);
 			this.queryService.generateBlockedUserQueryForNotes(query, me);
 			this.queryService.generateMutedUserQueryForNotes(query, me);
 
 			// Support pagination
 			this.queryService
 				.makePaginationQuery(query, ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
-				.orderBy('note.id', 'DESC')
 				.take(ps.limit);
 
 			// Query and return the next page
 			const notes = await query.getMany();
-			return await this.noteEntityService.packMany(notes, me);
+
+			process.nextTick(() => {
+				this.activeUsersChart.read(me);
+			});
+
+			return await this.noteEntityService.packMany(notes, me, { skipHide: true });
 		});
 	}
 }
@@ -170,14 +177,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
  * Limit to followers (they follow us)
  */
 function addFollower<T extends SelectQueryBuilder<ObjectLiteral>>(query: T): T {
-	return query.innerJoin(MiFollowing, 'follower', 'follower."followerId" = latest.user_id AND follower."followeeId" = :me');
+	return query.innerJoin(MiFollowing, 'follower', 'follower."followerId" = latest.user_id AND follower."followeeId" = :meId');
 }
 
 /**
  * Limit to followees (we follow them)
  */
 function addFollowee<T extends SelectQueryBuilder<ObjectLiteral>>(query: T): T {
-	return query.innerJoin(MiFollowing, 'followee', 'followee."followerId" = :me AND followee."followeeId" = latest.user_id');
+	return query.innerJoin(MiFollowing, 'followee', 'followee."followerId" = :meId AND followee."followeeId" = latest.user_id');
 }
 
 /**

@@ -5,7 +5,6 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { IsNull, Not } from 'typeorm';
-import { UnrecoverableError } from 'bullmq';
 import { DI } from '@/di-symbols.js';
 import type { FollowingsRepository } from '@/models/_.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
@@ -14,6 +13,7 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import type { IActivity } from '@/core/activitypub/type.js';
 import { ThinUser } from '@/queue/types.js';
+import { CacheService } from '@/core/CacheService.js';
 
 interface IRecipe {
 	type: string;
@@ -41,23 +41,21 @@ class DeliverManager {
 
 	/**
 	 * Constructor
-	 * @param userEntityService
-	 * @param followingsRepository
 	 * @param queueService
+	 * @param cacheService
 	 * @param actor Actor
 	 * @param activity Activity to deliver
 	 */
 	constructor(
-		private userEntityService: UserEntityService,
-		private followingsRepository: FollowingsRepository,
 		private queueService: QueueService,
+		private readonly cacheService: CacheService,
 
 		actor: { id: MiUser['id']; host: null; },
 		activity: IActivity | null,
 	) {
 		// 型で弾いてはいるが一応ローカルユーザーかチェック
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		if (actor.host != null) throw new Error('actor.host must be null');
+		if (actor.host != null) throw new Error(`deliver failed for ${actor.id}: host is not null`);
 
 		// パフォーマンス向上のためキューに突っ込むのはidのみに絞る
 		this.actor = {
@@ -114,23 +112,23 @@ class DeliverManager {
 		// Process follower recipes first to avoid duplication when processing direct recipes later.
 		if (this.recipes.some(r => isFollowers(r))) {
 			// followers deliver
-			// TODO: SELECT DISTINCT ON ("followerSharedInbox") "followerSharedInbox" みたいな問い合わせにすればよりパフォーマンス向上できそう
 			// ただ、sharedInboxがnullなリモートユーザーも稀におり、その対応ができなさそう？
-			const followers = await this.followingsRepository.find({
-				where: {
-					followeeId: this.actor.id,
-					followerHost: Not(IsNull()),
-				},
-				select: {
-					followerSharedInbox: true,
-					followerInbox: true,
-				},
-			});
+			const followers = await this.cacheService.userFollowersCache
+				.fetch(this.actor.id)
+				.then(f => Array
+					.from(f.values())
+					.filter(f => f.followerHost != null)
+					.map(f => ({
+						followerInbox: f.followerInbox,
+						followerSharedInbox: f.followerSharedInbox,
+					})));
 
 			for (const following of followers) {
-				const inbox = following.followerSharedInbox ?? following.followerInbox;
-				if (inbox === null) throw new UnrecoverableError(`inbox is null: following ${following.id}`);
-				inboxes.set(inbox, following.followerSharedInbox != null);
+				if (following.followerSharedInbox) {
+					inboxes.set(following.followerSharedInbox, true);
+				} else if (following.followerInbox) {
+					inboxes.set(following.followerInbox, false);
+				}
 			}
 		}
 
@@ -152,11 +150,8 @@ class DeliverManager {
 @Injectable()
 export class ApDeliverManagerService {
 	constructor(
-		@Inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,
-
-		private userEntityService: UserEntityService,
 		private queueService: QueueService,
+		private readonly cacheService: CacheService,
 	) {
 	}
 
@@ -168,9 +163,8 @@ export class ApDeliverManagerService {
 	@bindThis
 	public async deliverToFollowers(actor: { id: MiLocalUser['id']; host: null; }, activity: IActivity): Promise<void> {
 		const manager = new DeliverManager(
-			this.userEntityService,
-			this.followingsRepository,
 			this.queueService,
+			this.cacheService,
 			actor,
 			activity,
 		);
@@ -187,9 +181,8 @@ export class ApDeliverManagerService {
 	@bindThis
 	public async deliverToUser(actor: { id: MiLocalUser['id']; host: null; }, activity: IActivity, to: MiRemoteUser): Promise<void> {
 		const manager = new DeliverManager(
-			this.userEntityService,
-			this.followingsRepository,
 			this.queueService,
+			this.cacheService,
 			actor,
 			activity,
 		);
@@ -206,9 +199,8 @@ export class ApDeliverManagerService {
 	@bindThis
 	public async deliverToUsers(actor: { id: MiLocalUser['id']; host: null; }, activity: IActivity, targets: MiRemoteUser[]): Promise<void> {
 		const manager = new DeliverManager(
-			this.userEntityService,
-			this.followingsRepository,
 			this.queueService,
+			this.cacheService,
 			actor,
 			activity,
 		);
@@ -219,9 +211,8 @@ export class ApDeliverManagerService {
 	@bindThis
 	public createDeliverManager(actor: { id: MiUser['id']; host: null; }, activity: IActivity | null): DeliverManager {
 		return new DeliverManager(
-			this.userEntityService,
-			this.followingsRepository,
 			this.queueService,
+			this.cacheService,
 
 			actor,
 			activity,

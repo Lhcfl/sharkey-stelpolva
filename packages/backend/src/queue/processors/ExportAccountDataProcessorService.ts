@@ -22,6 +22,7 @@ import { Packed } from '@/misc/json-schema.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { EmailService } from '@/core/EmailService.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 
@@ -85,21 +86,23 @@ export class ExportAccountDataProcessorService {
 
 	@bindThis
 	public async process(job: Bull.Job): Promise<void> {
-		this.logger.info('Exporting Account Data...');
-
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
+			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
 			return;
 		}
 
 		const profile = await this.userProfilesRepository.findOneBy({ userId: job.data.user.id });
 		if (profile == null) {
+			this.logger.debug(`Skip: user ${job.data.user.id} has no profile`);
 			return;
 		}
 
+		this.logger.info(`Exporting account data for ${job.data.user.id} ...`);
+
 		const [path, cleanup] = await createTempDir();
 
-		this.logger.info(`Temp dir is ${path}`);
+		this.logger.debug(`Temp dir is ${path}`);
 
 		// User Export
 
@@ -113,7 +116,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				userStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing user:', err);
 						rej(err);
 					} else {
 						res();
@@ -145,7 +148,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				profileStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing profile:', err);
 						rej(err);
 					} else {
 						res();
@@ -179,7 +182,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				ipStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing IPs:', err);
 						rej(err);
 					} else {
 						res();
@@ -214,7 +217,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				notesStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing notes:', err);
 						rej(err);
 					} else {
 						res();
@@ -275,7 +278,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				followingStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing following:', err);
 						rej(err);
 					} else {
 						res();
@@ -345,7 +348,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				followerStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing followers:', err);
 						rej(err);
 					} else {
 						res();
@@ -406,7 +409,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				filesStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing drive:', err);
 						rej(err);
 					} else {
 						res();
@@ -432,7 +435,7 @@ export class ExportAccountDataProcessorService {
 				await this.downloadService.downloadUrl(file.url, filePath);
 				downloaded = true;
 			} catch (e) {
-				this.logger.error(e instanceof Error ? e : new Error(e as string));
+				this.logger.error(`Error writing drive file ${file.id} (${file.name}): ${renderInlineError(e)}`);
 			}
 
 			if (!downloaded) {
@@ -464,7 +467,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				mutingStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing mutings:', err);
 						rej(err);
 					} else {
 						res();
@@ -527,7 +530,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				blockingStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing blockings:', err);
 						rej(err);
 					} else {
 						res();
@@ -589,7 +592,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				favoriteStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing favorites:', err);
 						rej(err);
 					} else {
 						res();
@@ -650,7 +653,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				antennaStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing antennas:', err);
 						rej(err);
 					} else {
 						res();
@@ -708,7 +711,7 @@ export class ExportAccountDataProcessorService {
 			return new Promise<void>((res, rej) => {
 				listStream.write(text, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error writing lists:', err);
 						rej(err);
 					} else {
 						res();
@@ -744,12 +747,12 @@ export class ExportAccountDataProcessorService {
 				zlib: { level: 0 },
 			});
 			archiveStream.on('close', async () => {
-				this.logger.succ(`Exported to: ${archivePath}`);
+				this.logger.debug(`Exported to path: ${archivePath}`);
 
 				const fileName = 'data-request-' + dateFormat(new Date(), 'yyyy-MM-dd-HH-mm-ss') + '.zip';
 				const driveFile = await this.driveService.addFile({ user, path: archivePath, name: fileName, force: true });
 
-				this.logger.succ(`Exported to: ${driveFile.id}`);
+				this.logger.debug(`Exported to drive: ${driveFile.id}`);
 				cleanup();
 				archiveCleanup();
 				if (profile.email) {

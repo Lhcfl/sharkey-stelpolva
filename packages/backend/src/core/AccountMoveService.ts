@@ -26,6 +26,7 @@ import PerUserFollowingChart from '@/core/chart/charts/per-user-following.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { AntennaService } from '@/core/AntennaService.js';
+import { CacheService } from '@/core/CacheService.js';
 
 @Injectable()
 export class AccountMoveService {
@@ -68,6 +69,7 @@ export class AccountMoveService {
 		private systemAccountService: SystemAccountService,
 		private roleService: RoleService,
 		private antennaService: AntennaService,
+		private readonly cacheService: CacheService,
 	) {
 	}
 
@@ -107,12 +109,10 @@ export class AccountMoveService {
 		this.globalEventService.publishMainStream(src.id, 'meUpdated', iObj);
 
 		// Unfollow after 24 hours
-		const followings = await this.followingsRepository.findBy({
-			followerId: src.id,
-		});
-		this.queueService.createDelayedUnfollowJob(followings.map(following => ({
+		const followings = await this.cacheService.userFollowingsCache.fetch(src.id);
+		this.queueService.createDelayedUnfollowJob(Array.from(followings.keys()).map(followeeId => ({
 			from: { id: src.id },
-			to: { id: following.followeeId },
+			to: { id: followeeId },
 		})), process.env.NODE_ENV === 'test' ? 10000 : 1000 * 60 * 60 * 24);
 
 		await this.postMoveProcess(src, dst);
@@ -138,11 +138,9 @@ export class AccountMoveService {
 
 		// follow the new account
 		const proxy = await this.systemAccountService.fetch('proxy');
-		const followings = await this.followingsRepository.findBy({
-			followeeId: src.id,
-			followerHost: IsNull(), // follower is local
-			followerId: Not(proxy.id),
-		});
+		const followings = await this.cacheService.userFollowersCache.fetch(src.id)
+			.then(fs => Array.from(fs.values())
+				.filter(f => f.followerHost == null && f.followerId !== proxy.id));
 		const followJobs = followings.map(following => ({
 			from: { id: following.followerId },
 			to: { id: dst.id },
@@ -318,9 +316,9 @@ export class AccountMoveService {
 		await this.usersRepository.decrement({ id: In(localFollowerIds) }, 'followingCount', 1);
 
 		// Decrease follower counts of local followees by 1.
-		const oldFollowings = await this.followingsRepository.findBy({ followerId: oldAccount.id });
-		if (oldFollowings.length > 0) {
-			await this.usersRepository.decrement({ id: In(oldFollowings.map(following => following.followeeId)) }, 'followersCount', 1);
+		const oldFollowings = await this.cacheService.userFollowingsCache.fetch(oldAccount.id);
+		if (oldFollowings.size > 0) {
+			await this.usersRepository.decrement({ id: In(Array.from(oldFollowings.keys())) }, 'followersCount', 1);
 		}
 
 		// Update instance stats by decreasing remote followers count by the number of local followers who were following the old account.

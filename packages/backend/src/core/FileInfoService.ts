@@ -46,11 +46,13 @@ const TYPE_SVG = {
 @Injectable()
 export class FileInfoService {
 	private logger: Logger;
+	private ffprobeLogger: Logger;
 
 	constructor(
 		private loggerService: LoggerService,
 	) {
 		this.logger = this.loggerService.getLogger('file-info');
+		this.ffprobeLogger = this.logger.createSubLogger('ffprobe');
 	}
 
 	/**
@@ -162,20 +164,19 @@ export class FileInfoService {
 	 */
 	@bindThis
 	private hasVideoTrackOnVideoFile(path: string): Promise<boolean> {
-		const sublogger = this.logger.createSubLogger('ffprobe');
-		sublogger.info(`Checking the video file. File path: ${path}`);
+		this.ffprobeLogger.debug(`Checking the video file. File path: ${path}`);
 		return new Promise((resolve) => {
 			try {
 				FFmpeg.ffprobe(path, (err, metadata) => {
 					if (err) {
-						sublogger.warn(`Could not check the video file. Returns true. File path: ${path}`, err);
+						this.ffprobeLogger.warn(`Could not check the video file. Returns true. File path: ${path}`, err);
 						resolve(true);
 						return;
 					}
 					resolve(metadata.streams.some((stream) => stream.codec_type === 'video'));
 				});
 			} catch (err) {
-				sublogger.warn(`Could not check the video file. Returns true. File path: ${path}`, err as Error);
+				this.ffprobeLogger.warn(`Could not check the video file. Returns true. File path: ${path}`, err as Error);
 				resolve(true);
 			}
 		});

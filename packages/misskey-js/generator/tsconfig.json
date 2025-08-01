@@ -8,6 +8,7 @@
 		"strictFunctionTypes": true,
 		"strictNullChecks": true,
 		"esModuleInterop": true,
+		"incremental": true,
 		"lib": [
 			"esnext",
 		]

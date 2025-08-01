@@ -16,9 +16,9 @@ function checkForSub<T>(note: Misskey.entities.Note, fn: (n: Misskey.entities.No
 }
 
 export const checkStpvSoftMute = (note: Misskey.entities.Note) => {
-	if (checkForSub(note, n => store.r.stpvClientMutedNotes.value.includes(n.id))) { return 'noteMuted';}
-	if (checkForSub(note, n => store.r.stpvClientMutedUsers.value.includes(n.userId))) { return 'authorMuted'; }
+	if (checkForSub(note, n => store.r.stpvClientMutedNotes.value.includes(n.id))) { return ['noteMuted'];}
+	if (checkForSub(note, n => store.r.stpvClientMutedUsers.value.includes(n.userId))) { return ['authorMuted']; }
 	return checkForSub(note, n => (
-		n.user.host && store.r.stpvClientMutedDomains.value.includes(n.user.host)) ? `mutedByDomain:${n.user.host}` : false,
+		n.user.host && store.r.stpvClientMutedDomains.value.includes(n.user.host)) ? [`mutedByDomain:${n.user.host}`] : false,
 	);
 };

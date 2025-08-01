@@ -10,7 +10,7 @@ import { IdentifiableError } from '@/misc/identifiable-error.js';
 import type { MiRemoteUser, MiUser } from '@/models/User.js';
 import type { MiNote } from '@/models/Note.js';
 import { IdService } from '@/core/IdService.js';
-import type { MiNoteReaction } from '@/models/NoteReaction.js';
+import { MiNoteReaction } from '@/models/NoteReaction.js';
 import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { NotificationService } from '@/core/NotificationService.js';
@@ -31,6 +31,7 @@ import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
 import { PER_NOTE_REACTION_USER_PAIR_CACHE_MAX } from '@/const.js';
 import { CacheService } from '@/core/CacheService.js';
+import type { DataSource } from 'typeorm';
 
 const FALLBACK = '\u2764';
 
@@ -89,6 +90,9 @@ export class ReactionService {
 		@Inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
 
+		@Inject(DI.db)
+		private readonly db: DataSource,
+
 		private utilityService: UtilityService,
 		private customEmojiService: CustomEmojiService,
 		private roleService: RoleService,
@@ -113,12 +117,12 @@ export class ReactionService {
 		if (note.userId !== user.id) {
 			const blocked = await this.userBlockingService.checkBlocked(note.userId, user.id);
 			if (blocked) {
-				throw new IdentifiableError('e70412a4-7197-4726-8e74-f3e0deb92aa7');
+				throw new IdentifiableError('e70412a4-7197-4726-8e74-f3e0deb92aa7', 'Note not accessible for you.');
 			}
 		}
 
 		// check visibility
-		if (!await this.noteEntityService.isVisibleForMe(note, user.id)) {
+		if (!await this.noteEntityService.isVisibleForMe(note, user.id, { me: user })) {
 			throw new IdentifiableError('68e9d2d1-48bf-42c2-b90a-b20e09fd3d48', 'Note not accessible for you.');
 		}
 
@@ -176,26 +180,28 @@ export class ReactionService {
 			reaction,
 		};
 
-		try {
-			await this.noteReactionsRepository.insert(record);
-		} catch (e) {
-			if (isDuplicateKeyValueError(e)) {
-				const exists = await this.noteReactionsRepository.findOneByOrFail({
-					noteId: note.id,
-					userId: user.id,
-				});
+		const result = await this.db.transaction(async tem => {
+			await tem.createQueryBuilder(MiNoteReaction, 'noteReaction')
+				.insert()
+				.values(record)
+				.orIgnore()
+				.execute();
 
-				if (exists.reaction !== reaction) {
-					// 別のリアクションがすでにされていたら置き換える
-					await this.delete(user, note);
-					await this.noteReactionsRepository.insert(record);
-				} else {
-					// 同じリアクションがすでにされていたらエラー
-					throw new IdentifiableError('51c42bb4-931a-456b-bff7-e5a8a70dd298');
-				}
-			} else {
-				throw e;
+			return await tem.createQueryBuilder(MiNoteReaction, 'noteReaction')
+				.select()
+				.where({ noteId: note.id, userId: user.id })
+				.getOneOrFail();
+		});
+
+		if (result.id !== record.id) {
+			// Conflict with the same ID => nothing to do.
+			if (result.reaction === record.reaction) {
+				return;
 			}
+
+			// 別のリアクションがすでにされていたら置き換える
+			await this.delete(user, note);
+			await this.noteReactionsRepository.insert(record);
 		}
 
 		// Increment reactions count
@@ -269,12 +275,8 @@ export class ReactionService {
 
 		// リアクションされたユーザーがローカルユーザーなら通知を作成
 		if (note.userHost === null) {
-			const isThreadMuted = await this.noteThreadMutingsRepository.exists({
-				where: {
-					userId: note.userId,
-					threadId: note.threadId ?? note.id,
-				},
-			});
+			const threadId = note.threadId ?? note.id;
+			const isThreadMuted = await this.cacheService.threadMutingsCache.fetch(note.userId).then(ms => ms.has(threadId));
 
 			if (!isThreadMuted) {
 				this.notificationService.createNotification(note.userId, 'reaction', {
@@ -316,14 +318,14 @@ export class ReactionService {
 		});
 
 		if (exist == null) {
-			throw new IdentifiableError('60527ec9-b4cb-4a88-a6bd-32d3ad26817d', 'not reacted');
+			throw new IdentifiableError('60527ec9-b4cb-4a88-a6bd-32d3ad26817d', 'reaction does not exist');
 		}
 
 		// Delete reaction
 		const result = await this.noteReactionsRepository.delete(exist.id);
 
 		if (result.affected !== 1) {
-			throw new IdentifiableError('60527ec9-b4cb-4a88-a6bd-32d3ad26817d', 'not reacted');
+			throw new IdentifiableError('60527ec9-b4cb-4a88-a6bd-32d3ad26817d', 'reaction does not exist');
 		}
 
 		// Decrement reactions count

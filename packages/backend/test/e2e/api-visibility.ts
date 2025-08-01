@@ -6,7 +6,7 @@
 process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
-import { UserToken, api, post, signup } from '../utils.js';
+import { UserToken, api, post, signup, castAsError } from '../utils.js';
 import type * as misskey from 'misskey-js';
 
 describe('API visibility', () => {
@@ -149,12 +149,12 @@ describe('API visibility', () => {
 
 		test('[show] followers-postを非フォロワーが見れない', async () => {
 			const res = await show(fol.id, other);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		test('[show] followers-postを未認証が見れない', async () => {
 			const res = await show(fol.id);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		// specified
@@ -170,17 +170,17 @@ describe('API visibility', () => {
 
 		test('[show] specified-postをフォロワーが見れない', async () => {
 			const res = await show(spe.id, follower);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		test('[show] specified-postを非フォロワーが見れない', async () => {
 			const res = await show(spe.id, other);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		test('[show] specified-postを未認証が見れない', async () => {
 			const res = await show(spe.id);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 		//#endregion
 
@@ -255,12 +255,12 @@ describe('API visibility', () => {
 
 		test('[show] followers-replyを非フォロワーが見れない', async () => {
 			const res = await show(folR.id, other);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		test('[show] followers-replyを未認証が見れない', async () => {
 			const res = await show(folR.id);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		// specified
@@ -281,17 +281,17 @@ describe('API visibility', () => {
 
 		test('[show] specified-replyをフォロワーが見れない', async () => {
 			const res = await show(speR.id, follower);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		test('[show] specified-replyを非フォロワーが見れない', async () => {
 			const res = await show(speR.id, other);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		test('[show] specified-replyを未認証が見れない', async () => {
 			const res = await show(speR.id);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 		//#endregion
 
@@ -366,12 +366,12 @@ describe('API visibility', () => {
 
 		test('[show] followers-mentionを非フォロワーが見れない', async () => {
 			const res = await show(folM.id, other);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		test('[show] followers-mentionを未認証が見れない', async () => {
 			const res = await show(folM.id);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		// specified
@@ -387,22 +387,22 @@ describe('API visibility', () => {
 
 		test('[show] specified-mentionをされた人が指定されてなかったら見れない', async () => {
 			const res = await show(speM.id, target2);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		test('[show] specified-mentionをフォロワーが見れない', async () => {
 			const res = await show(speM.id, follower);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		test('[show] specified-mentionを非フォロワーが見れない', async () => {
 			const res = await show(speM.id, other);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 
 		test('[show] specified-mentionを未認証が見れない', async () => {
 			const res = await show(speM.id);
-			assert.strictEqual(res.body.isHidden, true);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_NOTE');
 		});
 		//#endregion
 
@@ -469,4 +469,3 @@ describe('API visibility', () => {
 		//#endregion
 	});
 });
-

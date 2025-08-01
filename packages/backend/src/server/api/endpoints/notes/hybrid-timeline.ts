@@ -66,9 +66,6 @@ export const paramDef = {
 		sinceDate: { type: 'integer' },
 		untilDate: { type: 'integer' },
 		allowPartial: { type: 'boolean', default: false }, // true is recommended but for compatibility false by default
-		includeMyRenotes: { type: 'boolean', default: true },
-		includeRenotedMyNotes: { type: 'boolean', default: true },
-		includeLocalRenotes: { type: 'boolean', default: true },
 		withFiles: { type: 'boolean', default: false },
 		withRenotes: { type: 'boolean', default: true },
 		withReplies: { type: 'boolean', default: false },
@@ -114,12 +111,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					untilId,
 					sinceId,
 					limit: ps.limit,
-					includeMyRenotes: ps.includeMyRenotes,
-					includeRenotedMyNotes: ps.includeRenotedMyNotes,
-					includeLocalRenotes: ps.includeLocalRenotes,
 					withFiles: ps.withFiles,
 					withReplies: ps.withReplies,
 					withBots: ps.withBots,
+					withRenotes: ps.withRenotes,
 				}, me);
 
 				process.nextTick(() => {
@@ -152,8 +147,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const [
 				followings,
+				mutedThreads,
 			] = await Promise.all([
 				this.cacheService.userFollowingsCache.fetch(me.id),
+				this.cacheService.threadMutingsCache.fetch(me.id),
 			]);
 
 			const redisTimeline = await this.fanoutTimelineEndpointService.timeline({
@@ -169,7 +166,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				excludeBots: !ps.withBots,
 				noteFilter: note => {
 					if (note.reply && note.reply.visibility === 'followers') {
-						if (!Object.hasOwn(followings, note.reply.userId) && note.reply.userId !== me.id) return false;
+						if (!followings.has(note.reply.userId) && note.reply.userId !== me.id) return false;
+					}
+
+					if (mutedThreads.has(note.threadId ?? note.id)) {
+						return false;
 					}
 
 					return true;
@@ -178,12 +179,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					untilId,
 					sinceId,
 					limit,
-					includeMyRenotes: ps.includeMyRenotes,
-					includeRenotedMyNotes: ps.includeRenotedMyNotes,
-					includeLocalRenotes: ps.includeLocalRenotes,
 					withFiles: ps.withFiles,
 					withReplies: ps.withReplies,
 					withBots: ps.withBots,
+					withRenotes: ps.withRenotes,
 				}, me),
 			});
 
@@ -199,108 +198,74 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		untilId: string | null,
 		sinceId: string | null,
 		limit: number,
-		includeMyRenotes: boolean,
-		includeRenotedMyNotes: boolean,
-		includeLocalRenotes: boolean,
 		withFiles: boolean,
 		withReplies: boolean,
 		withBots: boolean,
+		withRenotes: boolean,
 	}, me: MiLocalUser) {
-		const followees = await this.userFollowingService.getFollowees(me.id);
-		const followingChannels = await this.channelFollowingsRepository.find({
-			where: {
-				followerId: me.id,
-			},
-		});
-
 		const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
-			.andWhere(new Brackets(qb => {
-				if (followees.length > 0) {
-					const meOrFolloweeIds = [me.id, ...followees.map(f => f.followeeId)];
-					qb.where('note.userId IN (:...meOrFolloweeIds)', { meOrFolloweeIds: meOrFolloweeIds });
-					qb.orWhere('(note.visibility = \'public\') AND (note.userHost IS NULL)');
-				} else {
-					qb.where('note.userId = :meId', { meId: me.id });
-					qb.orWhere('(note.visibility = \'public\') AND (note.userHost IS NULL)');
-				}
-			}))
+			// 1. by a user I follow, 2. a public local post, 3. my own post
+			.andWhere(new Brackets(qb => this.queryService
+				.orFollowingUser(qb, ':meId', 'note.userId')
+				.orWhere(new Brackets(qbb => qbb
+					.andWhere('note.visibility = \'public\'')
+					.andWhere('note.userHost IS NULL')))
+				.orWhere(':meId = note.userId')))
+			// 1. in a channel I follow, 2. not in a channel
+			.andWhere(new Brackets(qb => this.queryService
+				.orFollowingChannel(qb, ':meId', 'note.channelId')
+				.orWhere('note.channelId IS NULL')))
+			.setParameters({ meId: me.id })
 			.innerJoinAndSelect('note.user', 'user')
 			.leftJoinAndSelect('note.reply', 'reply')
 			.leftJoinAndSelect('note.renote', 'renote')
 			.leftJoinAndSelect('reply.user', 'replyUser')
-			.leftJoinAndSelect('renote.user', 'renoteUser');
-
-		if (followingChannels.length > 0) {
-			const followingChannelIds = followingChannels.map(x => x.followeeId);
-
-			query.andWhere(new Brackets(qb => {
-				qb.where('note.channelId IN (:...followingChannelIds)', { followingChannelIds });
-				qb.orWhere('note.channelId IS NULL');
-			}));
-		} else {
-			query.andWhere('note.channelId IS NULL');
-		}
+			.leftJoinAndSelect('renote.user', 'renoteUser')
+			.limit(ps.limit);
 
 		if (!ps.withReplies) {
-			const shouldShowReplyUserIds = [me.id, ...followees.filter(x => x.withReplies).map(x => x.followeeId)];
-			query.andWhere(new Brackets(qb => {
-				qb
-					.where('note.replyId IS NULL') // 返信ではない
-					.orWhere('note.replyUserId = :meId', { meId: me.id }) // reply my note
-					.orWhere(new Brackets(qb => {
-						qb // 返信だけど投稿者自身への返信
-							.where('note.replyId IS NOT NULL')
-							.andWhere('note.replyUserId = note.userId');
-					}))
-					.orWhere('note.userId IN (:...shouldShowReplyUserIds)', {
-						shouldShowReplyUserIds,
-					});
-			}));
+			// const shouldShowReplyUserIds = [me.id, ...followees.filter(x => x.withReplies).map(x => x.followeeId)];
+			// query.andWhere(new Brackets(qb => {
+			// 	qb
+			// 		.where('note.replyId IS NULL') // 返信ではない
+			// 		.orWhere('note.replyUserId = :meId', { meId: me.id }) // reply my note
+			// 		.orWhere(new Brackets(qb => {
+			// 			qb // 返信だけど投稿者自身への返信
+			// 				.where('note.replyId IS NOT NULL')
+			// 				.andWhere('note.replyUserId = note.userId');
+			// 		}))
+			// 		.orWhere('note.userId IN (:...shouldShowReplyUserIds)', {
+			// 			shouldShowReplyUserIds,
+			// 		});
+			// }));
+			query
+				// 1. Not a reply, 2. a self-reply
+				.andWhere(new Brackets(qb => qb
+					.orWhere('note.replyId IS NULL') // 返信ではない
+					.orWhere('note.replyUserId = note.userId')));
 		}
 
 		this.queryService.generateVisibilityQuery(query, me);
 		this.queryService.generateBlockedHostQueryForNote(query);
+		this.queryService.generateSuspendedUserQueryForNote(query);
+		this.queryService.generateSilencedUserQueryForNotes(query, me);
 		this.queryService.generateMutedUserQueryForNotes(query, me);
 		this.queryService.generateBlockedUserQueryForNotes(query, me);
-		this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
-
-		if (ps.includeMyRenotes === false) {
-			query.andWhere(new Brackets(qb => {
-				qb.orWhere('note.userId != :meId', { meId: me.id });
-				qb.orWhere('note.renoteId IS NULL');
-				qb.orWhere('note.text IS NOT NULL');
-				qb.orWhere('note.fileIds != \'{}\'');
-				qb.orWhere('0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)');
-			}));
-		}
-
-		if (ps.includeRenotedMyNotes === false) {
-			query.andWhere(new Brackets(qb => {
-				qb.orWhere('note.renoteUserId != :meId', { meId: me.id });
-				qb.orWhere('note.renoteId IS NULL');
-				qb.orWhere('note.text IS NOT NULL');
-				qb.orWhere('note.fileIds != \'{}\'');
-				qb.orWhere('0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)');
-			}));
-		}
-
-		if (ps.includeLocalRenotes === false) {
-			query.andWhere(new Brackets(qb => {
-				qb.orWhere('note.renoteUserHost IS NOT NULL');
-				qb.orWhere('note.renoteId IS NULL');
-				qb.orWhere('note.text IS NOT NULL');
-				qb.orWhere('note.fileIds != \'{}\'');
-				qb.orWhere('0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)');
-			}));
-		}
+		this.queryService.generateMutedNoteThreadQuery(query, me);
 
 		if (ps.withFiles) {
 			query.andWhere('note.fileIds != \'{}\'');
 		}
 
 		if (!ps.withBots) query.andWhere('user.isBot = FALSE');
+
+		if (!ps.withRenotes) {
+			this.queryService.generateExcludedRenotesQueryForNotes(query);
+		} else {
+			this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+		}
 		//#endregion
 
-		return await query.limit(ps.limit).getMany();
+		return await query.getMany();
 	}
 }

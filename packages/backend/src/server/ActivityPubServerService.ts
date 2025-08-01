@@ -33,7 +33,7 @@ import type Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import { IActivity, IAnnounce, ICreate } from '@/core/activitypub/type.js';
-import { isQuote, isRenote } from '@/misc/is-renote.js';
+import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
 import * as Acct from '@/misc/acct.js';
 import { CacheService } from '@/core/CacheService.js';
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginOptions, FastifyBodyParser } from 'fastify';
@@ -571,7 +571,7 @@ export class ActivityPubServerService {
 
 		const pinnedNotes = (await Promise.all(pinings.map(pining =>
 			this.notesRepository.findOneByOrFail({ id: pining.noteId }))))
-			.filter(note => !note.localOnly && ['public', 'home'].includes(note.visibility));
+			.filter(note => !note.localOnly && ['public', 'home'].includes(note.visibility) && !isPureRenote(note));
 
 		const renderedNotes = await Promise.all(pinnedNotes.map(note => this.apRendererService.renderNote(note, user)));
 
@@ -791,6 +791,10 @@ export class ActivityPubServerService {
 			reply.header('Access-Control-Allow-Origin', '*');
 			reply.header('Access-Control-Expose-Headers', 'Vary');
 
+			// Tell crawlers not to index AP endpoints.
+			// https://developers.google.com/search/docs/crawling-indexing/block-indexing
+			reply.header('X-Robots-Tag', 'noindex');
+
 			/* tell any caching proxy that they should not cache these
 				 responses: we wouldn't want the proxy to return a 403 to
 				 someone presenting a valid signature, or return a cached
@@ -836,6 +840,11 @@ export class ActivityPubServerService {
 				}
 				reply.redirect(note.uri);
 				return;
+			}
+
+			// Boosts don't federate directly - they should only be referenced as an activity
+			if (isPureRenote(note)) {
+				return 404;
 			}
 
 			this.setResponseType(request, reply);

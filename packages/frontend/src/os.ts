@@ -101,13 +101,17 @@ export const apiWithDialog = (<
 });
 
 export function promiseDialog<T extends Promise<any>>(
-	promise: T,
+	promise: T | (() => T),
 	onSuccess?: ((res: Awaited<T>) => void) | null,
 	onFailure?: ((err: Misskey.api.APIError) => void) | null,
 	text?: string,
 ): T {
 	const showing = ref(true);
 	const success = ref(false);
+
+	if (typeof(promise) === 'function') {
+		promise = promise();
+	}
 
 	promise.then(res => {
 		if (onSuccess) {

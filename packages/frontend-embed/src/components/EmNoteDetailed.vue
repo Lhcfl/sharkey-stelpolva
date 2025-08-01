@@ -64,17 +64,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</p>
 			<div v-show="mergedCW == null || showContent">
 				<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
-				<EmA v-if="appearNote.replyId" :class="$style.noteReplyTarget" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></EmA>
-				<EmMfm
-					v-if="appearNote.text"
-					:parsedNodes="parsed"
-					:text="appearNote.text"
-					:author="appearNote.user"
-					:nyaize="'respect'"
-					:emojiUrls="appearNote.emojis"
-					:isBlock="true"
-				/>
-				<a v-if="appearNote.renote != null" :class="$style.rn">RN:</a>
+				<div>
+					<EmA v-if="appearNote.replyId" :class="$style.noteReplyTarget" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></EmA>
+					<EmMfm
+						v-if="appearNote.text"
+						:parsedNodes="parsed"
+						:text="appearNote.text"
+						:author="appearNote.user"
+						:nyaize="'respect'"
+						:emojiUrls="appearNote.emojis"
+					/>
+				</div>
 				<div v-if="appearNote.files && appearNote.files.length > 0">
 					<EmMediaList :mediaList="appearNote.files" :originalEntityUrl="`${url}/notes/${appearNote.id}`"/>
 				</div>
@@ -128,7 +128,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, inject, ref } from 'vue';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
 import { computeMergedCw } from '@@/js/compute-merged-cw.js';
 import I18n from '@/components/I18n.vue';

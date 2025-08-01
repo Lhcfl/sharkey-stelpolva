@@ -62,6 +62,6 @@ export class CleanChartsProcessorService {
 		await this.perUserDriveChart.clean();
 		await this.apRequestChart.clean();
 
-		this.logger.succ('All charts successfully cleaned.');
+		this.logger.info('All charts successfully cleaned.');
 	}
 }

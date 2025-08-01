@@ -7,14 +7,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 <PageWithHeader>
 	<div class="_spacer" style="--MI_SPACER-w: 800px;">
 		<MkPagination :pagination="pagination">
-			<template #empty>
-				<div class="_fullinfo">
-					<img :src="infoImageUrl" draggable="false"/>
-					<div>{{ i18n.ts.noNotes }}</div>
-				</div>
-			</template>
+			<template #empty><MkResult type="empty" :text="i18n.ts.noNotes"/></template>
 
 			<template #default="{ items }">
+				<!-- TODO replace with SkDateSeparatedList when merged -->
 				<MkDateSeparatedList v-slot="{ item }" :items="items" :direction="'down'" :noGap="false" :ad="false">
 					<DynamicNote :key="item.id" :note="item.note" :class="$style.note"/>
 				</MkDateSeparatedList>
@@ -30,7 +26,6 @@ import DynamicNote from '@/components/DynamicNote.vue';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
-import { infoImageUrl } from '@/instance.js';
 
 const pagination = {
 	endpoint: 'i/favorites' as const,

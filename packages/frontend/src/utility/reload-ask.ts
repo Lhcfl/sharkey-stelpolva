@@ -12,6 +12,10 @@ let isReloadConfirming = false;
 export async function reloadAsk(opts: {
 	unison?: boolean;
 	reason?: string;
+	type?: 'error' | 'info' | 'success' | 'warning' | 'waiting' | 'question';
+	title?: string;
+	okText?: string;
+	cancelText?: string;
 }) {
 	if (isReloadConfirming) {
 		return;
@@ -19,13 +23,12 @@ export async function reloadAsk(opts: {
 
 	isReloadConfirming = true;
 
-	const { canceled } = await os.confirm(opts.reason == null ? {
-		type: 'info',
-		text: i18n.ts.reloadConfirm,
-	} : {
-		type: 'info',
-		title: i18n.ts.reloadConfirm,
-		text: opts.reason,
+	const { canceled } = await os.confirm({
+		type: opts.type ?? 'question',
+		title: opts.title ?? i18n.ts.reloadConfirm,
+		text: opts.reason ?? undefined,
+		okText: opts.okText ?? i18n.ts.yes,
+		cancelText: opts.cancelText ?? i18n.ts.no,
 	}).finally(() => {
 		isReloadConfirming = false;
 	});

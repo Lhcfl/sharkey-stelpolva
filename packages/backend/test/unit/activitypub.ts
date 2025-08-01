@@ -9,8 +9,12 @@ import { generateKeyPair } from 'crypto';
 import { Test } from '@nestjs/testing';
 import { jest } from '@jest/globals';
 
+import { NoOpCacheService } from '../misc/noOpCaches.js';
+import { FakeInternalEventService } from '../misc/FakeInternalEventService.js';
 import type { Config } from '@/config.js';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { ApImageService } from '@/core/activitypub/models/ApImageService.js';
 import { ApNoteService } from '@/core/activitypub/models/ApNoteService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
@@ -30,7 +34,7 @@ import { genAidx } from '@/misc/id/aidx.js';
 import { IdService } from '@/core/IdService.js';
 import { MockResolver } from '../misc/mock-resolver.js';
 import { UserKeypairService } from '@/core/UserKeypairService.js';
-import { MemoryKVCache, RedisKVCache } from '@/misc/cache.js';
+import { MemoryKVCache } from '@/misc/cache.js';
 
 const host = 'https://host1.test';
 
@@ -103,6 +107,25 @@ describe('ActivityPub', () => {
 	let config: Config;
 
 	const metaInitial = {
+		id: 'x',
+		name: 'Test Instance',
+		shortName: 'Test Instance',
+		description: 'Test Instance',
+		langs: [] as string[],
+		pinnedUsers: [] as string[],
+		hiddenTags: [] as string[],
+		prohibitedWordsForNameOfUser: [] as string[],
+		silencedHosts: [] as string[],
+		mediaSilencedHosts: [] as string[],
+		policies: {},
+		serverRules: [] as string[],
+		bannedEmailDomains: [] as string[],
+		preservedUsernames: [] as string[],
+		bubbleInstances: [] as string[],
+		trustedLinkUrlPatterns: [] as string[],
+		federation: 'all',
+		federationHosts: [] as string[],
+		allowUnsignedFetch: 'always',
 		cacheRemoteFiles: true,
 		cacheRemoteSensitiveFiles: true,
 		enableFanoutTimeline: true,
@@ -135,6 +158,8 @@ describe('ActivityPub', () => {
 				},
 			})
 			.overrideProvider(DI.meta).useFactory({ factory: () => meta })
+			.overrideProvider(CacheService).useClass(NoOpCacheService)
+			.overrideProvider(InternalEventService).useClass(FakeInternalEventService)
 			.compile();
 
 		await app.init();
@@ -454,8 +479,6 @@ describe('ActivityPub', () => {
 
 	describe('JSON-LD', () => {
 		test('Compaction', async () => {
-			const jsonLd = jsonLdService.use();
-
 			const object = {
 				'@context': [
 					'https://www.w3.org/ns/activitystreams',
@@ -474,7 +497,7 @@ describe('ActivityPub', () => {
 				unknown: 'test test bar',
 				undefined: 'test test baz',
 			};
-			const compacted = await jsonLd.compact(object);
+			const compacted = await jsonLdService.compact(object);
 
 			assert.deepStrictEqual(compacted, {
 				'@context': CONTEXT,
@@ -537,7 +560,7 @@ describe('ActivityPub', () => {
 				publicKey,
 				privateKey,
 			});
-			((userKeypairService as unknown as { cache: RedisKVCache<MiUserKeypair> }).cache as unknown as { memoryCache: MemoryKVCache<MiUserKeypair> }).memoryCache.set(author.id, keypair);
+			(userKeypairService as unknown as { cache: MemoryKVCache<MiUserKeypair> }).cache.set(author.id, keypair);
 
 			note = new MiNote({
 				id: idService.gen(),
@@ -647,59 +670,6 @@ describe('ActivityPub', () => {
 					const rendered = await rendererService.renderNote(note, author, false);
 
 					expect(rendered.replies).not.toBeDefined();
-				});
-			});
-		});
-
-		describe('renderUpnote', () => {
-			describe('summary', () => {
-				// I actually don't know why it does this, but the logic was already there so I've preserved it.
-				it('should be zero-width space when CW is empty string', async () => {
-					note.cw = '';
-
-					const result = await rendererService.renderUpNote(note, author, false);
-
-					expect(result.summary).toBe(String.fromCharCode(0x200B));
-				});
-
-				it('should be undefined when CW is null', async () => {
-					const result = await rendererService.renderUpNote(note, author, false);
-
-					expect(result.summary).toBeUndefined();
-				});
-
-				it('should be CW when present without mandatoryCW', async () => {
-					note.cw = 'original';
-
-					const result = await rendererService.renderUpNote(note, author, false);
-
-					expect(result.summary).toBe('original');
-				});
-
-				it('should be mandatoryCW when present without CW', async () => {
-					author.mandatoryCW = 'mandatory';
-
-					const result = await rendererService.renderUpNote(note, author, false);
-
-					expect(result.summary).toBe('mandatory');
-				});
-
-				it('should be merged when CW and mandatoryCW are both present', async () => {
-					note.cw = 'original';
-					author.mandatoryCW = 'mandatory';
-
-					const result = await rendererService.renderUpNote(note, author, false);
-
-					expect(result.summary).toBe('original, mandatory');
-				});
-
-				it('should be CW when CW includes mandatoryCW', async () => {
-					note.cw = 'original and mandatory';
-					author.mandatoryCW = 'mandatory';
-
-					const result = await rendererService.renderUpNote(note, author, false);
-
-					expect(result.summary).toBe('original and mandatory');
 				});
 			});
 		});

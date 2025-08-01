@@ -24,7 +24,7 @@ export const meta = {
 		items: {
 			type: 'object',
 			nullable: false, optional: false,
-			ref: 'UserDetailed',
+			ref: 'User',
 		},
 	},
 } as const;
@@ -43,6 +43,11 @@ export const paramDef = {
 			nullable: true,
 			default: null,
 			description: 'The local host is represented with `null`.',
+		},
+		detail: {
+			type: 'boolean',
+			nullable: false,
+			default: true,
 		},
 	},
 	required: [],
@@ -115,7 +120,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const users = await query.getMany();
 
-			return await this.userEntityService.packMany(users, me, { schema: 'UserDetailed' });
+			return await this.userEntityService.packMany(users, me, { schema: ps.detail ? 'UserDetailed' : 'UserLite' });
 		});
 	}
 }

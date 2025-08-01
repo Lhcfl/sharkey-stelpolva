@@ -17,6 +17,7 @@ import { bindThis } from '@/decorators.js';
 import type { Antenna } from '@/server/api/endpoints/i/import-antennas.js';
 import { ApRequestCreator } from '@/core/activitypub/ApRequestService.js';
 import { type SystemWebhookPayload } from '@/core/SystemWebhookService.js';
+import { MiNote } from '@/models/Note.js';
 import { type UserWebhookPayload } from './UserWebhookService.js';
 import type {
 	DbJobData,
@@ -40,7 +41,6 @@ import type {
 } from './QueueModule.js';
 import type httpSignature from '@peertube/http-signature';
 import type * as Bull from 'bullmq';
-import { MiNote } from '@/models/Note.js';
 
 export const QUEUE_TYPES = [
 	'system',
@@ -231,6 +231,9 @@ export class QueueService {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
+			deduplication: activity.id ? {
+				id: activity.id,
+			} : undefined,
 		});
 	}
 
@@ -246,6 +249,9 @@ export class QueueService {
 			removeOnFail: {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
+			},
+			deduplication: {
+				id: user.id,
 			},
 		});
 	}
@@ -263,6 +269,9 @@ export class QueueService {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
+			deduplication: {
+				id: user.id,
+			},
 		});
 	}
 
@@ -273,6 +282,9 @@ export class QueueService {
 		}, {
 			removeOnComplete: true,
 			removeOnFail: true,
+			deduplication: {
+				id: user.id,
+			},
 		});
 	}
 
@@ -288,6 +300,9 @@ export class QueueService {
 			removeOnFail: {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
+			},
+			deduplication: {
+				id: user.id,
 			},
 		});
 	}
@@ -305,6 +320,9 @@ export class QueueService {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
+			deduplication: {
+				id: user.id,
+			},
 		});
 	}
 
@@ -320,6 +338,9 @@ export class QueueService {
 			removeOnFail: {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
+			},
+			deduplication: {
+				id: user.id,
 			},
 		});
 	}
@@ -339,6 +360,9 @@ export class QueueService {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
+			deduplication: {
+				id: user.id,
+			},
 		});
 	}
 
@@ -354,6 +378,9 @@ export class QueueService {
 			removeOnFail: {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
+			},
+			deduplication: {
+				id: user.id,
 			},
 		});
 	}
@@ -371,6 +398,9 @@ export class QueueService {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
+			deduplication: {
+				id: user.id,
+			},
 		});
 	}
 
@@ -387,6 +417,9 @@ export class QueueService {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
+			deduplication: {
+				id: user.id,
+			},
 		});
 	}
 
@@ -402,6 +435,9 @@ export class QueueService {
 			removeOnFail: {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
+			},
+			deduplication: {
+				id: user.id,
 			},
 		});
 	}
@@ -421,6 +457,9 @@ export class QueueService {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
+			deduplication: {
+				id: `${user.id}_${fileId}_${withReplies ?? false}`,
+			},
 		});
 	}
 
@@ -433,6 +472,9 @@ export class QueueService {
 		}, {
 			removeOnComplete: true,
 			removeOnFail: true,
+			deduplication: {
+				id: `${user.id}_${fileId}_${type ?? null}`,
+			},
 		});
 	}
 
@@ -492,6 +534,9 @@ export class QueueService {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
+			deduplication: {
+				id: `${user.id}_${fileId}`,
+			},
 		});
 	}
 
@@ -508,6 +553,9 @@ export class QueueService {
 			removeOnFail: {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
+			},
+			deduplication: {
+				id: `${user.id}_${fileId}`,
 			},
 		});
 	}
@@ -554,6 +602,9 @@ export class QueueService {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
+			deduplication: {
+				id: `${user.id}_${fileId}`,
+			},
 		});
 	}
 
@@ -571,14 +622,18 @@ export class QueueService {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
+			deduplication: {
+				id: `${user.id}_${fileId}`,
+			},
 		});
 	}
 
 	@bindThis
-	public createImportAntennasJob(user: ThinUser, antenna: Antenna) {
+	public createImportAntennasJob(user: ThinUser, antenna: Antenna, fileId: MiDriveFile['id']) {
 		return this.dbQueue.add('importAntennas', {
 			user: { id: user.id },
 			antenna,
+			fileId,
 		}, {
 			removeOnComplete: {
 				age: 3600 * 24 * 7, // keep up to 7 days
@@ -587,6 +642,9 @@ export class QueueService {
 			removeOnFail: {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
+			},
+			deduplication: {
+				id: `${user.id}_${fileId}`,
 			},
 		});
 	}
@@ -604,6 +662,9 @@ export class QueueService {
 			removeOnFail: {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
+			},
+			deduplication: {
+				id: user.id,
 			},
 		});
 	}
@@ -663,6 +724,9 @@ export class QueueService {
 					count: 100,
 				},
 				...opts,
+				deduplication: {
+					id: `${data.from.id}_${data.to.id}_${data.requestId ?? ''}_${data.silent ?? false}_${data.withReplies ?? false}`,
+				},
 			},
 		};
 	}
@@ -680,12 +744,18 @@ export class QueueService {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
+			deduplication: {
+				id: key,
+			},
 		});
 	}
 
 	@bindThis
-	public createCleanRemoteFilesJob() {
-		return this.objectStorageQueue.add('cleanRemoteFiles', {}, {
+	public createCleanRemoteFilesJob(olderThanSeconds: number = 0, keepFilesInUse: boolean = false) {
+		return this.objectStorageQueue.add('cleanRemoteFiles', {
+			keepFilesInUse,
+			olderThanSeconds,
+		}, {
 			removeOnComplete: {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 30,
@@ -693,6 +763,9 @@ export class QueueService {
 			removeOnFail: {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
+			},
+			deduplication: {
+				id: `${olderThanSeconds}_${keepFilesInUse}`,
 			},
 		});
 	}
@@ -876,7 +949,7 @@ export class QueueService {
 	public async queueGetJobs(queueType: typeof QUEUE_TYPES[number], jobTypes: JobType[], search?: string) {
 		const RETURN_LIMIT = 100;
 		const queue = this.getQueue(queueType);
-		let jobs: Bull.Job[];
+		let jobs: (Bull.Job | null)[];
 
 		if (search) {
 			jobs = await queue.getJobs(jobTypes, 0, 1000);
@@ -893,7 +966,9 @@ export class QueueService {
 			jobs = await queue.getJobs(jobTypes, 0, RETURN_LIMIT);
 		}
 
-		return jobs.map(job => this.packJobData(job));
+		return jobs
+			.filter(job => job != null) // not sure how this happens, but it does
+			.map(job => this.packJobData(job));
 	}
 
 	@bindThis

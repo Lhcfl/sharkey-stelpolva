@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1.4
 
-ARG NODE_VERSION=22.11.0-alpine3.20
+ARG NODE_VERSION=22.15.0-alpine3.20
 
 FROM node:${NODE_VERSION} as build
 
@@ -38,7 +38,7 @@ ARG UID="991"
 ARG GID="991"
 ENV COREPACK_DEFAULT_TO_LATEST=0
 
-RUN apk add ffmpeg tini jemalloc pixman pango cairo libpng \
+RUN apk add ffmpeg tini jemalloc pixman pango cairo libpng librsvg font-noto font-noto-cjk font-noto-thai \
 	&& corepack enable \
 	&& addgroup -g "${GID}" sharkey \
 	&& adduser -D -u "${UID}" -G sharkey -h /sharkey sharkey \

@@ -41,6 +41,7 @@ import { HttpRequestService } from './HttpRequestService.js';
 import { IdService } from './IdService.js';
 import { ImageProcessingService } from './ImageProcessingService.js';
 import { SystemAccountService } from './SystemAccountService.js';
+import { InternalEventService } from './InternalEventService.js';
 import { InternalStorageService } from './InternalStorageService.js';
 import { MetaService } from './MetaService.js';
 import { MfmService } from './MfmService.js';
@@ -186,6 +187,7 @@ const $HashtagService: Provider = { provide: 'HashtagService', useExisting: Hash
 const $HttpRequestService: Provider = { provide: 'HttpRequestService', useExisting: HttpRequestService };
 const $IdService: Provider = { provide: 'IdService', useExisting: IdService };
 const $ImageProcessingService: Provider = { provide: 'ImageProcessingService', useExisting: ImageProcessingService };
+const $InternalEventService: Provider = { provide: 'InternalEventService', useExisting: InternalEventService };
 const $InternalStorageService: Provider = { provide: 'InternalStorageService', useExisting: InternalStorageService };
 const $MetaService: Provider = { provide: 'MetaService', useExisting: MetaService };
 const $MfmService: Provider = { provide: 'MfmService', useExisting: MfmService };
@@ -345,6 +347,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		HttpRequestService,
 		IdService,
 		ImageProcessingService,
+		InternalEventService,
 		InternalStorageService,
 		MetaService,
 		MfmService,
@@ -500,6 +503,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		$HttpRequestService,
 		$IdService,
 		$ImageProcessingService,
+		$InternalEventService,
 		$InternalStorageService,
 		$MetaService,
 		$MfmService,
@@ -656,6 +660,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		HttpRequestService,
 		IdService,
 		ImageProcessingService,
+		InternalEventService,
 		InternalStorageService,
 		MetaService,
 		MfmService,
@@ -810,6 +815,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		$HttpRequestService,
 		$IdService,
 		$ImageProcessingService,
+		$InternalEventService,
 		$InternalStorageService,
 		$MetaService,
 		$MfmService,

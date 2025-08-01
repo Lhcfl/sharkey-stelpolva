@@ -44,20 +44,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// Skip if there's nothing to do
 			if (user.rejectQuotes === ps.rejectQuotes) return;
 
-			// Log event first.
-			// This ensures that we don't "lose" the log if an error occurs
-			await this.moderationLogService.log(me, ps.rejectQuotes ? 'rejectQuotesUser' : 'acceptQuotesUser', {
-				userId: user.id,
-				userUsername: user.username,
-				userHost: user.host,
-			});
-
 			await this.usersRepository.update(ps.userId, {
 				rejectQuotes: ps.rejectQuotes,
 			});
 
 			// Synchronize caches and other processes
 			this.globalEventService.publishInternalEvent('localUserUpdated', { id: ps.userId });
+
+			await this.moderationLogService.log(me, ps.rejectQuotes ? 'rejectQuotesUser' : 'acceptQuotesUser', {
+				userId: user.id,
+				userUsername: user.username,
+				userHost: user.host,
+			});
 		});
 	}
 }

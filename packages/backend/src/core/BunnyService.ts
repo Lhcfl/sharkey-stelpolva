@@ -80,15 +80,15 @@ export class BunnyService {
 		});
 
 		req.on('error', (error) => {
-			this.bunnyCdnLogger.error(error);
+			this.bunnyCdnLogger.error('Unhandled error', error);
 			data.destroy();
-			throw new IdentifiableError('689ee33f-f97c-479a-ac49-1b9f8140bf91', 'An error has occured during the connectiong to BunnyCDN');
+			throw new IdentifiableError('689ee33f-f97c-479a-ac49-1b9f8140bf91', 'An error has occurred while connecting to BunnyCDN', true, error);
 		});
 
 		data.pipe(req).on('finish', () => {
 			data.destroy();
 		});
-		
+
 		// wait till stream gets destroyed upon finish of piping to prevent the UI from showing the upload as success way too early
 		await finished(data);
 	}

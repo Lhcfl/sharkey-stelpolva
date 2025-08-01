@@ -64,7 +64,7 @@ function done(canceled: boolean, result?: Result): void { // eslint-disable-line
 async function ok() {
 	const result = true;
 	if (!prefer.s.trustedDomains.includes(domain.value) && trustThisDomain.value) {
-		prefer.r.trustedDomains.value = prefer.s.trustedDomains.concat(domain.value);
+		prefer.commit('trustedDomains', prefer.s.trustedDomains.concat(domain.value));
 	}
 	done(false, result);
 }

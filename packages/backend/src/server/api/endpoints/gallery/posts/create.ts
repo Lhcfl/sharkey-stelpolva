@@ -72,7 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			))).filter(x => x != null);
 
 			if (files.length === 0) {
-				throw new Error();
+				throw new Error('no files specified');
 			}
 
 			const post = await this.galleryPostsRepository.insertOne(new MiGalleryPost({

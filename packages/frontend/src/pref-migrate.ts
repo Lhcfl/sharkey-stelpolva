@@ -13,15 +13,18 @@ import { deckStore } from '@/ui/deck/deck-store.js';
 import { unisonReload } from '@/utility/unison-reload.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
+import { miLocalStorage } from '@/local-storage';
 
 // TODO: そのうち消す
 export function migrateOldSettings() {
 	os.waiting(i18n.ts.settingsMigrating);
 
 	store.loaded.then(async () => {
-		misskeyApi('i/registry/get', { scope: ['client'], key: 'themes' }).catch(() => []).then((themes: Theme[]) => {
-			if (themes.length > 0) {
-				prefer.commit('themes', themes);
+		prefer.suppressReload();
+
+		await misskeyApi('i/registry/get', { scope: ['client'], key: 'themes' }).catch(() => []).then(themes => {
+			if (Array.isArray(themes) && themes.length > 0) {
+				prefer.commit('themes', themes as Theme[]);
 			}
 		});
 
@@ -33,7 +36,7 @@ export function migrateOldSettings() {
 		})));
 
 		prefer.commit('deck.profile', deckStore.s.profile);
-		misskeyApi('i/registry/keys', {
+		await misskeyApi('i/registry/keys', {
 			scope: ['client', 'deck', 'profiles'],
 		}).then(async keys => {
 			const profiles: DeckProfile[] = [];
@@ -41,16 +44,18 @@ export function migrateOldSettings() {
 				const deck = await misskeyApi('i/registry/get', {
 					scope: ['client', 'deck', 'profiles'],
 					key: key,
-				});
-				profiles.push({
-					id: uuid(),
-					name: key,
-					columns: deck.columns,
-					layout: deck.layout,
-				});
+				}).catch(() => null);
+				if (deck) {
+					profiles.push({
+						id: uuid(),
+						name: key,
+						columns: (deck as DeckProfile).columns,
+						layout: (deck as DeckProfile).layout,
+					});
+				}
 			}
 			prefer.commit('deck.profiles', profiles);
-		});
+		}).catch(() => null);
 
 		prefer.commit('lightTheme', ColdDeviceStorage.get('lightTheme'));
 		prefer.commit('darkTheme', ColdDeviceStorage.get('darkTheme'));
@@ -164,8 +169,17 @@ export function migrateOldSettings() {
 		prefer.commit('warnMissingAltText', store.s.warnMissingAltText);
 		//#endregion
 
-		window.setTimeout(() => {
-			unisonReload();
-		}, 10000);
+		//#region Hybrid migrations
+		prefer.commit('fontSize', miLocalStorage.getItem('fontSize') ?? '0');
+		prefer.commit('useSystemFont', miLocalStorage.getItem('useSystemFont') != null);
+		prefer.commit('cornerRadius', miLocalStorage.getItem('cornerRadius') ?? 'sharkey');
+		prefer.commit('lang', miLocalStorage.getItem('lang') ?? 'en-US');
+		prefer.commit('customCss', miLocalStorage.getItem('customCss') ?? '');
+		prefer.commit('neverShowDonationInfo', miLocalStorage.getItem('neverShowDonationInfo') != null);
+		prefer.commit('neverShowLocalOnlyInfo', miLocalStorage.getItem('neverShowLocalOnlyInfo') != null);
+		//#endregion
+
+		prefer.allowReload();
+		unisonReload();
 	});
 }

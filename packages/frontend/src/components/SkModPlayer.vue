@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: puniko and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Media player for module files. Displays the pattern in real time as it plays.
 -->
 
 <template>

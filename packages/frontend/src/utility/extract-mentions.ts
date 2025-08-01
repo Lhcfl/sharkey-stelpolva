@@ -5,7 +5,7 @@
 
 // test is located in test/extract-mentions
 
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 
 export function extractMentions(nodes: mfm.MfmNode[]): mfm.MfmMention['props'][] {
 	// TODO: 重複を削除

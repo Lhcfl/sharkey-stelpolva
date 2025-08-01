@@ -11,8 +11,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import * as Misskey from 'misskey-js';
+import { retryOnThrottled } from '@@/js/retry-on-throttled.js';
 import MkNote from '@/components/MkNote.vue';
 import MkNoteDetailed from '@/components/MkNoteDetailed.vue';
 import { misskeyApi } from '@/utility/misskey-api.js';
@@ -20,16 +21,25 @@ import { misskeyApi } from '@/utility/misskey-api.js';
 const props = defineProps<{
 	block: Misskey.entities.PageBlock,
 	page: Misskey.entities.Page,
+	index: number;
 }>();
 
 const note = ref<Misskey.entities.Note | null>(null);
 
+// eslint-disable-next-line id-denylist
+let timeoutId: ReturnType<typeof window.setTimeout> | null = null;
+
 onMounted(() => {
 	if (props.block.note == null) return;
-	misskeyApi('notes/show', { noteId: props.block.note })
-		.then(result => {
-			note.value = result;
-		});
+	timeoutId = window.setTimeout(async () => {
+		note.value = await retryOnThrottled(() => misskeyApi('notes/show', { noteId: props.block.note }));
+	}, 500 * props.index); // rate limit is 2 reqs per sec
+});
+
+onUnmounted(() => {
+	if (timeoutId !== null) {
+		window.clearTimeout(timeoutId);
+	}
 });
 </script>
 

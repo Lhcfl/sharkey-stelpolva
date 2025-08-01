@@ -16,7 +16,8 @@ import Channel, { type MiChannelService } from '../channel.js';
 class UserListChannel extends Channel {
 	public readonly chName = 'userList';
 	public static shouldShare = false;
-	public static requireCredential = false as const;
+	public static requireCredential = true as const;
+	public static kind = 'read:account';
 	private listId: string;
 	private membershipsMap: Record<string, Pick<MiUserListMembership, 'withReplies'> | undefined> = {};
 	private listUsersClock: NodeJS.Timeout;
@@ -81,7 +82,7 @@ class UserListChannel extends Channel {
 
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
-		const isMe = this.user!.id === note.userId;
+		const isMe = this.user?.id === note.userId;
 
 		// チャンネル投稿は無視する
 		if (note.channelId) return;
@@ -90,30 +91,30 @@ class UserListChannel extends Channel {
 
 		if (!Object.hasOwn(this.membershipsMap, note.userId)) return;
 
-		if (note.visibility === 'followers') {
-			if (!isMe && !Object.hasOwn(this.following, note.userId)) return;
-		} else if (note.visibility === 'specified') {
-			if (!note.visibleUserIds!.includes(this.user!.id)) return;
-		}
+		if (this.isNoteMutedOrBlocked(note)) return;
+		if (!this.isNoteVisibleToMe(note)) return;
 
 		if (note.reply) {
 			const reply = note.reply;
-			if (this.membershipsMap[note.userId]?.withReplies) {
-				// 自分のフォローしていないユーザーの visibility: followers な投稿への返信は弾く
-				if (reply.visibility === 'followers' && !Object.hasOwn(this.following, reply.userId)) return;
-			} else {
+			// 自分のフォローしていないユーザーの visibility: followers な投稿への返信は弾く
+			if (!this.isNoteVisibleToMe(reply)) return;
+			if (!this.following.get(note.userId)?.withReplies) {
 				// 「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
 				if (reply.userId !== this.user!.id && !isMe && reply.userId !== note.userId) return;
 			}
 		}
 
-		if (isRenotePacked(note) && !isQuotePacked(note) && !this.withRenotes) return;
+		// 純粋なリノート（引用リノートでないリノート）の場合
+		if (isRenotePacked(note) && !isQuotePacked(note) && note.renote) {
+			if (!this.withRenotes) return;
+			if (note.renote.reply) {
+				const reply = note.renote.reply;
+				// 自分のフォローしていないユーザーの visibility: followers な投稿への返信のリノートは弾く
+				if (!this.isNoteVisibleToMe(reply)) return;
+			}
+		}
 
-		if (this.isNoteMutedOrBlocked(note)) return;
-
-		const clonedNote = await this.assignMyReaction(note);
-		await this.hideNote(clonedNote);
-
+		const clonedNote = await this.rePackNote(note);
 		this.send('note', clonedNote);
 	}
 
@@ -128,7 +129,7 @@ class UserListChannel extends Channel {
 }
 
 @Injectable()
-export class UserListChannelService implements MiChannelService<false> {
+export class UserListChannelService implements MiChannelService<true> {
 	public readonly shouldShare = UserListChannel.shouldShare;
 	public readonly requireCredential = UserListChannel.requireCredential;
 	public readonly kind = UserListChannel.kind;

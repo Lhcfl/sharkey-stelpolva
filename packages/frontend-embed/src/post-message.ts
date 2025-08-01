@@ -28,7 +28,7 @@ let defaultIframeId: string | null = null;
 export function setIframeId(id: string): void {
 	if (defaultIframeId != null) return;
 
-	if (_DEV_) console.log('setIframeId', id);
+	if (_DEV_) console.debug('setIframeId', id);
 	defaultIframeId = id;
 }
 
@@ -40,7 +40,7 @@ export function postMessageToParentWindow<T extends PostMessageEventType = PostM
 	if (_iframeId == null) {
 		_iframeId = defaultIframeId;
 	}
-	if (_DEV_) console.log('postMessageToParentWindow', type, _iframeId, payload);
+	if (_DEV_) console.debug('postMessageToParentWindow', type, _iframeId, payload);
 	window.parent.postMessage({
 		type,
 		iframeId: _iframeId,

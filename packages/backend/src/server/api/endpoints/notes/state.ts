@@ -7,6 +7,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { NotesRepository, NoteThreadMutingsRepository, NoteFavoritesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
+import { CacheService } from '@/core/CacheService.js';
+import { QueryService } from '@/core/QueryService.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -23,6 +25,14 @@ export const meta = {
 				optional: false, nullable: false,
 			},
 			isMutedThread: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			isMutedNote: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			isRenoted: {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
@@ -55,30 +65,39 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		@Inject(DI.noteFavoritesRepository)
 		private noteFavoritesRepository: NoteFavoritesRepository,
+
+		private readonly cacheService: CacheService,
+		private readonly queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const note = await this.notesRepository.findOneByOrFail({ id: ps.noteId });
 
-			const [favorite, threadMuting] = await Promise.all([
-				this.noteFavoritesRepository.count({
+			const [favorite, threadMuting, noteMuting, renoted] = await Promise.all([
+				// favorite
+				this.noteFavoritesRepository.exists({
 					where: {
 						userId: me.id,
 						noteId: note.id,
 					},
-					take: 1,
 				}),
-				this.noteThreadMutingsRepository.count({
-					where: {
-						userId: me.id,
-						threadId: note.threadId ?? note.id,
-					},
-					take: 1,
-				}),
+				// treadMuting
+				this.cacheService.threadMutingsCache.fetch(me.id).then(ms => ms.has(note.threadId ?? note.id)),
+				// noteMuting
+				this.cacheService.noteMutingsCache.fetch(me.id).then(ms => ms.has(note.id)),
+				// renoted
+				this.notesRepository
+					.createQueryBuilder('note')
+					.andWhere({ renoteId: note.id, userId: me.id })
+					.andWhere(qb => this.queryService
+						.andIsRenote(qb, 'note'))
+					.getExists(),
 			]);
 
 			return {
-				isFavorited: favorite !== 0,
-				isMutedThread: threadMuting !== 0,
+				isFavorited: favorite,
+				isMutedThread: threadMuting,
+				isMutedNote: noteMuting,
+				isRenoted: renoted,
 			};
 		});
 	}

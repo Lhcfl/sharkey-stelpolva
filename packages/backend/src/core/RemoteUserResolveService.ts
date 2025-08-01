@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { URL } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
 import chalk from 'chalk';
 import { IsNull } from 'typeorm';
@@ -18,6 +17,7 @@ import { RemoteLoggerService } from '@/core/RemoteLoggerService.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
 import { bindThis } from '@/decorators.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 
 @Injectable()
 export class RemoteUserResolveService {
@@ -44,27 +44,13 @@ export class RemoteUserResolveService {
 		const usernameLower = username.toLowerCase();
 
 		if (host == null) {
-			this.logger.info(`return local user: ${usernameLower}`);
-			return await this.usersRepository.findOneBy({ usernameLower, host: IsNull() }).then(u => {
-				if (u == null) {
-					throw new Error('user not found');
-				} else {
-					return u;
-				}
-			}) as MiLocalUser;
+			return await this.usersRepository.findOneByOrFail({ usernameLower, host: IsNull() }) as MiLocalUser;
 		}
 
 		host = this.utilityService.toPuny(host);
 
 		if (host === this.utilityService.toPuny(this.config.host)) {
-			this.logger.info(`return local user: ${usernameLower}`);
-			return await this.usersRepository.findOneBy({ usernameLower, host: IsNull() }).then(u => {
-				if (u == null) {
-					throw new Error('user not found');
-				} else {
-					return u;
-				}
-			}) as MiLocalUser;
+			return await this.usersRepository.findOneByOrFail({ usernameLower, host: IsNull() }) as MiLocalUser;
 		}
 
 		const user = await this.usersRepository.findOneBy({ usernameLower, host }) as MiRemoteUser | null;
@@ -82,7 +68,7 @@ export class RemoteUserResolveService {
 						.getUserFromApId(self.href)
 						.then((u) => {
 							if (u == null) {
-								throw new Error('local user not found');
+								throw new Error(`local user not found: ${self.href}`);
 							} else {
 								return u;
 							}
@@ -90,7 +76,7 @@ export class RemoteUserResolveService {
 				}
 			}
 
-			this.logger.succ(`return new remote user: ${chalk.magenta(acctLower)}`);
+			this.logger.info(`Fetching new remote user ${chalk.magenta(acctLower)} from ${self.href}`);
 			return await this.apPersonService.createPerson(self.href);
 		}
 
@@ -101,18 +87,16 @@ export class RemoteUserResolveService {
 				lastFetchedAt: new Date(),
 			});
 
-			this.logger.info(`try resync: ${acctLower}`);
 			const self = await this.resolveSelf(acctLower);
 
 			if (user.uri !== self.href) {
 				// if uri mismatch, Fix (user@host <=> AP's Person id(RemoteUser.uri)) mapping.
-				this.logger.info(`uri missmatch: ${acctLower}`);
-				this.logger.info(`recovery missmatch uri for (username=${username}, host=${host}) from ${user.uri} to ${self.href}`);
+				this.logger.warn(`Detected URI mismatch for ${acctLower}`);
 
 				// validate uri
-				const uri = new URL(self.href);
-				if (uri.hostname !== host) {
-					throw new Error('Invalid uri');
+				const uriHost = this.utilityService.extractDbHost(self.href);
+				if (uriHost !== host) {
+					throw new Error(`Failed to correct URI for ${acctLower}: new URI ${self.href} has different host from previous URI ${user.uri}`);
 				}
 
 				await this.usersRepository.update({
@@ -121,37 +105,28 @@ export class RemoteUserResolveService {
 				}, {
 					uri: self.href,
 				});
-			} else {
-				this.logger.info(`uri is fine: ${acctLower}`);
 			}
+
+			this.logger.info(`Corrected URI for ${acctLower} from ${user.uri} to ${self.href}`);
 
 			await this.apPersonService.updatePerson(self.href);
 
-			this.logger.info(`return resynced remote user: ${acctLower}`);
-			return await this.usersRepository.findOneBy({ uri: self.href }).then(u => {
-				if (u == null) {
-					throw new Error('user not found');
-				} else {
-					return u as MiLocalUser | MiRemoteUser;
-				}
-			});
+			return await this.usersRepository.findOneByOrFail({ uri: self.href }) as MiLocalUser | MiRemoteUser;
 		}
 
-		this.logger.info(`return existing remote user: ${acctLower}`);
 		return user;
 	}
 
 	@bindThis
 	private async resolveSelf(acctLower: string): Promise<ILink> {
-		this.logger.info(`WebFinger for ${chalk.yellow(acctLower)}`);
 		const finger = await this.webfingerService.webfinger(acctLower).catch(err => {
-			this.logger.error(`Failed to WebFinger for ${chalk.yellow(acctLower)}: ${ err.statusCode ?? err.message }`);
-			throw new Error(`Failed to WebFinger for ${acctLower}: ${ err.statusCode ?? err.message }`);
+			this.logger.error(`Failed to WebFinger for ${chalk.yellow(acctLower)}: ${renderInlineError(err)}`);
+			throw new Error(`Failed to WebFinger for ${acctLower}: error thrown`, { cause: err });
 		});
 		const self = finger.links.find(link => link.rel != null && link.rel.toLowerCase() === 'self');
 		if (!self) {
 			this.logger.error(`Failed to WebFinger for ${chalk.yellow(acctLower)}: self link not found`);
-			throw new Error('self link not found');
+			throw new Error(`Failed to WebFinger for ${acctLower}: self link not found`);
 		}
 		return self;
 	}

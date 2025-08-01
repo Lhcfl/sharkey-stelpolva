@@ -5,12 +5,25 @@
 
 import { Entity, Index, JoinColumn, Column, PrimaryColumn, ManyToOne } from 'typeorm';
 import { noteVisibilities } from '@/types.js';
+import { MiInstance } from '@/models/Instance.js';
 import { id } from './util/id.js';
 import { MiUser } from './User.js';
 import { MiChannel } from './Channel.js';
 import type { MiDriveFile } from './DriveFile.js';
 
+// Note: When you create a new index for existing column of this table,
+// it might be better to index concurrently under isConcurrentIndexMigrationEnabled flag
+// by editing generated migration file since this table is very large,
+// and it will make a long lock to create index in most cases.
+// Please note that `CREATE INDEX CONCURRENTLY` is not supported in transaction,
+// so you need to set `transaction = false` in migration if isConcurrentIndexMigrationEnabled() is true.
+// Please refer 1745378064470-composite-note-index.js for example.
+// You should not use `@Index({ concurrent: true })` decorator because database initialization for test will fail
+// because it will always run CREATE INDEX in transaction based on decorators.
+// Not appending `{ concurrent: true }` to `@Index` will not cause any problem in production,
 @Index('IDX_724b311e6f883751f261ebe378', ['userId', 'id'])
+@Index('IDX_note_userHost_id', { synchronize: false }) // (userHost, id desc)
+@Index('IDX_note_for_timelines', { synchronize: false }) // (id desc, channelId, visibility, userHost)
 @Entity('note')
 export class MiNote {
 	@PrimaryColumn(id())
@@ -132,6 +145,7 @@ export class MiNote {
 	})
 	public uri: string | null;
 
+	@Index('IDX_note_url')
 	@Column('varchar', {
 		length: 512, nullable: true,
 		comment: 'The human readable url of a note. it will be null when the note is local.',
@@ -217,12 +231,21 @@ export class MiNote {
 	public processErrors: string[] | null;
 
 	//#region Denormalized fields
-	@Index()
 	@Column('varchar', {
 		length: 128, nullable: true,
 		comment: '[Denormalized]',
 	})
 	public userHost: string | null;
+
+	@ManyToOne(() => MiInstance, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn({
+		name: 'userHost',
+		foreignKeyConstraintName: 'FK_note_userHost',
+		referencedColumnName: 'host',
+	})
+	public userInstance: MiInstance | null;
 
 	@Column({
 		...id(),
@@ -237,6 +260,16 @@ export class MiNote {
 	})
 	public replyUserHost: string | null;
 
+	@ManyToOne(() => MiInstance, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn({
+		name: 'replyUserHost',
+		foreignKeyConstraintName: 'FK_note_replyUserHost',
+		referencedColumnName: 'host',
+	})
+	public replyUserInstance: MiInstance | null;
+
 	@Column({
 		...id(),
 		nullable: true,
@@ -249,6 +282,16 @@ export class MiNote {
 		comment: '[Denormalized]',
 	})
 	public renoteUserHost: string | null;
+
+	@ManyToOne(() => MiInstance, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn({
+		name: 'renoteUserHost',
+		foreignKeyConstraintName: 'FK_note_renoteUserHost',
+		referencedColumnName: 'host',
+	})
+	public renoteUserInstance: MiInstance | null;
 	//#endregion
 
 	constructor(data: Partial<MiNote>) {

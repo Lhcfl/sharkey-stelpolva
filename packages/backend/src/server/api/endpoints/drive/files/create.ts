@@ -10,6 +10,8 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import { DriveService } from '@/core/DriveService.js';
 import type { Config } from '@/config.js';
+import { ApiLoggerService } from '@/server/api/ApiLoggerService.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { ApiError } from '../../../error.js';
 import { MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
@@ -95,6 +97,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private driveFileEntityService: DriveFileEntityService,
 		private driveService: DriveService,
+		private readonly apiLoggerService: ApiLoggerService,
 	) {
 		super(meta, paramDef, async (ps, me, _, file, cleanup, ip, headers) => {
 			// Get 'name' parameter
@@ -130,14 +133,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return await this.driveFileEntityService.pack(driveFile, { self: true });
 			} catch (err) {
 				if (err instanceof Error || typeof err === 'string') {
-					console.error(err);
+					this.apiLoggerService.logger.error(`Error saving drive file: ${renderInlineError(err)}`);
 				}
 				if (err instanceof IdentifiableError) {
 					if (err.id === '282f77bf-5816-4f72-9264-aa14d8261a21') throw new ApiError(meta.errors.inappropriate);
 					if (err.id === 'c6244ed2-a39a-4e1c-bf93-f0fbd7764fa6') throw new ApiError(meta.errors.noFreeSpace);
 					if (err.id === 'f9e4e5f3-4df4-40b5-b400-f236945f7073') throw new ApiError(meta.errors.maxFileSizeExceeded);
 				}
-				throw new ApiError();
+				throw err;
 			} finally {
 				cleanup!();
 			}

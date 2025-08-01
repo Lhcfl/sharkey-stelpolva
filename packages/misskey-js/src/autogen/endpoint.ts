@@ -42,6 +42,7 @@ import type {
 	AdminDeclineUserRequest,
 	AdminDeleteAccountRequest,
 	AdminDeleteAllFilesOfAUserRequest,
+	AdminDriveCleanRemoteFilesRequest,
 	AdminDriveFilesRequest,
 	AdminDriveFilesResponse,
 	AdminDriveShowFileRequest,
@@ -98,6 +99,8 @@ import type {
 	AdminResetPasswordResponse,
 	AdminResolveAbuseUserReportRequest,
 	AdminRolesAssignRequest,
+	AdminRolesCloneRequest,
+	AdminRolesCloneResponse,
 	AdminRolesCreateRequest,
 	AdminRolesCreateResponse,
 	AdminRolesDeleteRequest,
@@ -564,6 +567,7 @@ import type {
 	PagesUnlikeRequest,
 	PagesUpdateRequest,
 	PingResponse,
+	PinnedUsersRequest,
 	PinnedUsersResponse,
 	PromoReadRequest,
 	RenoteMuteCreateRequest,
@@ -695,7 +699,7 @@ export type Endpoints = {
 	'admin/decline-user': { req: AdminDeclineUserRequest; res: EmptyResponse };
 	'admin/delete-account': { req: AdminDeleteAccountRequest; res: EmptyResponse };
 	'admin/delete-all-files-of-a-user': { req: AdminDeleteAllFilesOfAUserRequest; res: EmptyResponse };
-	'admin/drive/clean-remote-files': { req: EmptyRequest; res: EmptyResponse };
+	'admin/drive/clean-remote-files': { req: AdminDriveCleanRemoteFilesRequest; res: EmptyResponse };
 	'admin/drive/cleanup': { req: EmptyRequest; res: EmptyResponse };
 	'admin/drive/files': { req: AdminDriveFilesRequest; res: AdminDriveFilesResponse };
 	'admin/drive/show-file': { req: AdminDriveShowFileRequest; res: AdminDriveShowFileResponse };
@@ -744,6 +748,7 @@ export type Endpoints = {
 	'admin/reset-password': { req: AdminResetPasswordRequest; res: AdminResetPasswordResponse };
 	'admin/resolve-abuse-user-report': { req: AdminResolveAbuseUserReportRequest; res: EmptyResponse };
 	'admin/roles/assign': { req: AdminRolesAssignRequest; res: EmptyResponse };
+	'admin/roles/clone': { req: AdminRolesCloneRequest; res: AdminRolesCloneResponse };
 	'admin/roles/create': { req: AdminRolesCreateRequest; res: AdminRolesCreateResponse };
 	'admin/roles/delete': { req: AdminRolesDeleteRequest; res: EmptyResponse };
 	'admin/roles/list': { req: EmptyRequest; res: AdminRolesListResponse };
@@ -1049,7 +1054,7 @@ export type Endpoints = {
 	'pages/unlike': { req: PagesUnlikeRequest; res: EmptyResponse };
 	'pages/update': { req: PagesUpdateRequest; res: EmptyResponse };
 	'ping': { req: EmptyRequest; res: PingResponse };
-	'pinned-users': { req: EmptyRequest; res: PinnedUsersResponse };
+	'pinned-users': { req: PinnedUsersRequest; res: PinnedUsersResponse };
 	'promo/read': { req: PromoReadRequest; res: EmptyResponse };
 	'renote-mute/create': { req: RenoteMuteCreateRequest; res: EmptyResponse };
 	'renote-mute/delete': { req: RenoteMuteDeleteRequest; res: EmptyResponse };

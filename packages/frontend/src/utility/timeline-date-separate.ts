@@ -4,7 +4,7 @@
  */
 
 import { computed } from 'vue';
-import type { Ref } from 'vue';
+import type { Ref, ComputedRef } from 'vue';
 
 export function getDateText(dateInstance: Date) {
 	const date = dateInstance.getDate();
@@ -25,7 +25,7 @@ export type DateSeparetedTimelineItem<T> = {
 	nextText: string;
 };
 
-export function makeDateSeparatedTimelineComputedRef<T extends { id: string; createdAt: string; }>(items: Ref<T[]>) {
+export function makeDateSeparatedTimelineComputedRef<T extends { id: string; createdAt: string; }>(items: Ref<T[]> | ComputedRef<T[]>) {
 	return computed<DateSeparetedTimelineItem<T>[]>(() => {
 		const tl: DateSeparetedTimelineItem<T>[] = [];
 		for (let i = 0; i < items.value.length; i++) {

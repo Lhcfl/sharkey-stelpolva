@@ -11,6 +11,7 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { DI } from '@/di-symbols.js';
 import { GetterService } from '@/server/api/GetterService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -71,6 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 		private getterService: GetterService,
 		private userFollowingService: UserFollowingService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const follower = me;
@@ -87,10 +89,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			// Check not following
-			const exist = await this.followingsRepository.findOneBy({
-				followerId: follower.id,
-				followeeId: followee.id,
-			});
+			const exist = await this.cacheService.userFollowingsCache.fetch(follower.id).then(f => f.get(followee.id));
 
 			if (exist == null) {
 				throw new ApiError(meta.errors.notFollowing);
@@ -102,6 +101,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				notify: ps.notify != null ? (ps.notify === 'none' ? null : ps.notify) : undefined,
 				withReplies: ps.withReplies != null ? ps.withReplies : undefined,
 			});
+
+			await this.cacheService.refreshFollowRelationsFor(follower.id);
 
 			return await this.userEntityService.pack(follower.id, me);
 		});

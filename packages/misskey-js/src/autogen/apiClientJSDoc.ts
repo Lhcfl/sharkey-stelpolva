@@ -861,6 +861,17 @@ declare module '../api.js' {
      * 
      * **Credential required**: *Yes* / **Permission**: *write:admin:roles*
      */
+    request<E extends 'admin/roles/clone', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Credential required**: *Yes* / **Permission**: *write:admin:roles*
+     */
     request<E extends 'admin/roles/create', P extends Endpoints[E]['req']>(
       endpoint: E,
       params: P,
@@ -3873,7 +3884,7 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
-     * **Credential required**: *Yes* / **Permission**: *read:account*
+     * **Credential required**: *No*
      */
     request<E extends 'notes/polls/recommendation', P extends Endpoints[E]['req']>(
       endpoint: E,

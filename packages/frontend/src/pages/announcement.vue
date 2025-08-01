@@ -57,6 +57,7 @@ import { definePage } from '@/page.js';
 import { $i } from '@/i.js';
 import { prefer } from '@/preferences.js';
 import { updateCurrentAccountPartial } from '@/accounts.js';
+import { confetti } from '@/utility/confetti.js';
 
 const props = defineProps<{
 	announcementId: string;
@@ -72,6 +73,11 @@ function fetch() {
 		announcementId: props.announcementId,
 	}).then(async _announcement => {
 		announcement.value = _announcement;
+		if (announcement.value.confetti && !announcement.value.isRead) {
+			confetti({
+				duration: 1000 * 3,
+			});
+		}
 	}).catch(err => {
 		error.value = err;
 	});

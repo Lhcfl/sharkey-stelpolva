@@ -81,7 +81,7 @@ The Atomic Leaky Bucket algorithm is described here, in pseudocode:
 # * Delta Timestamp - Difference between current and expected timestamp value 
 
 # 0 - Calculations
-dripRate = ceil(limit.dripRate ?? 1000);
+dripRate = ceil((limit.dripRate ?? 1000) * factor);
 dripSize = ceil(limit.dripSize ?? 1);
 bucketSize = max(ceil(limit.size / factor), 1);
 maxExpiration = max(ceil((dripRate * ceil(bucketSize / dripSize)) / 1000), 1);;

@@ -54,7 +54,7 @@ export async function getNoteVersionsMenu(props: { note: Misskey.entities.Note }
 	});
 
 	const cleanup = () => {
-		if (_DEV_) console.log('note menu cleanup', cleanups);
+		if (_DEV_) console.debug('note menu cleanup', cleanups);
 		for (const cl of cleanups) {
 			cl();
 		}

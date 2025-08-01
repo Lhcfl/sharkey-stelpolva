@@ -5,17 +5,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div ref="rootEl">
-	<div ref="headerEl" :class="$style.header">
+	<div ref="headerEl" :class="{ [$style.header]: sticky }">
 		<slot name="header"></slot>
 	</div>
 	<div
-		:class="$style.body"
+		:class="{ [$style.body]: sticky }"
 		:data-sticky-container-header-height="headerHeight"
 		:data-sticky-container-footer-height="footerHeight"
 	>
 		<slot></slot>
 	</div>
-	<div ref="footerEl" :class="$style.footer">
+	<div ref="footerEl" :class="{ [$style.footer]: sticky }">
 		<slot name="footer"></slot>
 	</div>
 </div>
@@ -24,6 +24,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { onMounted, onUnmounted, provide, inject, ref, watch, useTemplateRef } from 'vue';
 import { DI } from '@/di.js';
+
+withDefaults(defineProps<{
+	sticky?: boolean,
+}>(), {
+	sticky: true,
+});
 
 const rootEl = useTemplateRef('rootEl');
 const headerEl = useTemplateRef('headerEl');

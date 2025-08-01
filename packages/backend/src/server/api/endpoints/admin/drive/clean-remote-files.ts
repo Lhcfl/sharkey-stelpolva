@@ -18,7 +18,10 @@ export const meta = {
 
 export const paramDef = {
 	type: 'object',
-	properties: {},
+	properties: {
+		olderThanSeconds: { type: 'number' },
+		keepFilesInUse: { type: 'boolean' },
+	},
 	required: [],
 } as const;
 
@@ -30,7 +33,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.moderationLogService.log(me, 'clearRemoteFiles', {});
-			await this.queueService.createCleanRemoteFilesJob();
+			await this.queueService.createCleanRemoteFilesJob(
+				ps.olderThanSeconds ?? 0,
+				ps.keepFilesInUse ?? false,
+			);
 		});
 	}
 }

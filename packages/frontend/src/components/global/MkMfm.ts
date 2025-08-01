@@ -4,7 +4,7 @@
  */
 
 import { h, defineAsyncComponent } from 'vue';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
 import { host } from '@@/js/config.js';
 import CkFollowMouse from '../CkFollowMouse.vue';

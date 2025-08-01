@@ -11,6 +11,7 @@ import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { ChatService } from '@/core/ChatService.js';
 import type { DriveFilesRepository, MiUser } from '@/models/_.js';
+import type { Config } from '@/config.js';
 
 export const meta = {
 	tags: ['chat'],
@@ -21,9 +22,11 @@ export const meta = {
 
 	kind: 'write:chat',
 
+	// Up to 10 message burst, then 2/second
 	limit: {
-		duration: ms('1hour'),
-		max: 500,
+		type: 'bucket',
+		size: 10,
+		dripRate: 500,
 	},
 
 	res: {
@@ -50,13 +53,19 @@ export const meta = {
 			code: 'CONTENT_REQUIRED',
 			id: '340517b7-6d04-42c0-bac1-37ee804e3594',
 		},
+
+		maxLength: {
+			message: 'You tried posting a message which is too long.',
+			code: 'MAX_LENGTH',
+			id: '3ac74a84-8fd5-4bb0-870f-01804f82ce16',
+		},
 	},
 } as const;
 
 export const paramDef = {
 	type: 'object',
 	properties: {
-		text: { type: 'string', nullable: true, maxLength: 2000 },
+		text: { type: 'string', nullable: true, minLength: 1 },
 		fileId: { type: 'string', format: 'misskey:id' },
 		toRoomId: { type: 'string', format: 'misskey:id' },
 	},
@@ -69,11 +78,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
+		@Inject(DI.config)
+		private config: Config,
+
 		private getterService: GetterService,
 		private chatService: ChatService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.chatService.checkChatAvailability(me.id, 'write');
+
+			if (ps.text && ps.text.length > this.config.maxNoteLength) {
+				throw new ApiError(meta.errors.maxLength);
+			}
 
 			const room = await this.chatService.findRoomById(ps.toRoomId);
 			if (room == null) {

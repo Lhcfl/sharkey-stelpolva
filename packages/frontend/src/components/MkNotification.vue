@@ -7,11 +7,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div :class="$style.root">
 	<div :class="$style.head">
 		<MkAvatar v-if="['pollEnded', 'note', 'edited', 'scheduledNotePosted'].includes(notification.type) && 'note' in notification" :class="$style.icon" :user="notification.note.user" link preview/>
-		<MkAvatar v-else-if="['roleAssigned', 'achievementEarned', 'exportCompleted', 'login', 'createToken', 'scheduledNoteFailed'].includes(notification.type)" :class="$style.icon" :user="$i" link preview/>
+		<MkAvatar v-else-if="['roleAssigned', 'achievementEarned', 'exportCompleted', 'importCompleted', 'login', 'createToken', 'scheduledNoteFailed'].includes(notification.type)" :class="$style.icon" :user="$i" link preview/>
 		<div v-else-if="notification.type === 'reaction:grouped' && notification.note.reactionAcceptance === 'likeOnly'" :class="[$style.icon, $style.icon_reactionGroupHeart]"><i class="ph-smiley ph-bold ph-lg" style="line-height: 1;"></i></div>
 		<div v-else-if="notification.type === 'reaction:grouped'" :class="[$style.icon, $style.icon_reactionGroup]"><i class="ph-smiley ph-bold ph-lg" style="line-height: 1;"></i></div>
 		<div v-else-if="notification.type === 'renote:grouped'" :class="[$style.icon, $style.icon_renoteGroup]"><i class="ti ti-repeat" style="line-height: 1;"></i></div>
-		<img v-else-if="notification.type === 'test'" :class="$style.icon" :src="infoImageUrl"/>
 		<MkAvatar v-else-if="'user' in notification" :class="$style.icon" :user="notification.user" link preview/>
 		<img v-else-if="'icon' in notification && notification.icon != null" :class="[$style.icon, $style.icon_app]" :src="notification.icon" alt=""/>
 		<div
@@ -26,6 +25,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				[$style.t_pollEnded]: notification.type === 'pollEnded',
 				[$style.t_achievementEarned]: notification.type === 'achievementEarned',
 				[$style.t_exportCompleted]: notification.type === 'exportCompleted',
+				[$style.t_importCompleted]: notification.type === 'importCompleted',
 				[$style.t_login]: notification.type === 'login',
 				[$style.t_createToken]: notification.type === 'createToken',
 				[$style.t_chatRoomInvitationReceived]: notification.type === 'chatRoomInvitationReceived',
@@ -46,6 +46,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i v-else-if="notification.type === 'pollEnded'" class="ti ti-chart-arrows"></i>
 			<i v-else-if="notification.type === 'achievementEarned'" class="ti ti-medal"></i>
 			<i v-else-if="notification.type === 'exportCompleted'" class="ti ti-archive"></i>
+			<i v-else-if="notification.type === 'importCompleted'" class="ti ti-archive"></i>
 			<i v-else-if="notification.type === 'login'" class="ti ti-login-2"></i>
 			<i v-else-if="notification.type === 'createToken'" class="ti ti-key"></i>
 			<i v-else-if="notification.type === 'chatRoomInvitationReceived'" class="ti ti-messages"></i>
@@ -77,6 +78,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-else-if="notification.type === 'createToken'">{{ i18n.ts._notification.createToken }}</span>
 			<span v-else-if="notification.type === 'test'">{{ i18n.ts._notification.testNotification }}</span>
 			<span v-else-if="notification.type === 'exportCompleted'">{{ i18n.tsx._notification.exportOfXCompleted({ x: exportEntityName[notification.exportedEntity] }) }}</span>
+			<span v-else-if="notification.type === 'importCompleted'">{{ i18n.tsx._notification.importOfXCompleted({ x: importEntityName[notification.importedEntity] }) }}</span>
 			<MkA v-else-if="notification.type === 'follow' || notification.type === 'mention' || notification.type === 'reply' || notification.type === 'renote' || notification.type === 'quote' || notification.type === 'reaction' || notification.type === 'receiveFollowRequest' || notification.type === 'followRequestAccepted'" v-user-preview="notification.user.id" :class="$style.headerName" :to="userPage(notification.user)"><MkUserName :user="notification.user"/></MkA>
 			<span v-else-if="notification.type === 'reaction:grouped' && notification.note.reactionAcceptance === 'likeOnly'">{{ i18n.tsx._notification.likedBySomeUsers({ n: getActualReactedUsersCount(notification) }) }}</span>
 			<span v-else-if="notification.type === 'reaction:grouped'">{{ i18n.tsx._notification.reactedBySomeUsers({ n: getActualReactedUsersCount(notification) }) }}</span>
@@ -124,7 +126,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA v-else-if="notification.type === 'achievementEarned'" :class="$style.text" to="/my/achievements">
 				{{ i18n.ts._achievements._types['_' + notification.achievement].title }}
 			</MkA>
-			<MkA v-else-if="notification.type === 'exportCompleted'" :class="$style.text" :to="`/my/drive/file/${notification.fileId}`">
+			<MkA v-else-if="notification.type === 'exportCompleted' || (notification.type === 'importCompleted' && notification.fileId)" :class="$style.text" :to="`/my/drive/file/${notification.fileId}`">
 				{{ i18n.ts.showFile }}
 			</MkA>
 			<MkA v-else-if="notification.type === 'createToken'" :class="$style.text" to="/settings/apps">
@@ -207,7 +209,6 @@ import { userPage } from '@/filters/user.js';
 import { i18n } from '@/i18n.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { ensureSignin } from '@/i.js';
-import { infoImageUrl } from '@/instance.js';
 import MkFollowButton from '@/components/MkFollowButton.vue';
 
 const $i = ensureSignin();
@@ -222,18 +223,10 @@ const props = withDefaults(defineProps<{
 });
 
 type ExportCompletedNotification = Misskey.entities.Notification & { type: 'exportCompleted' };
+type ImportCompletedNotification = Misskey.entities.Notification & { type: 'importCompleted' };
 
-const exportEntityName = {
-	antenna: i18n.ts.antennas,
-	blocking: i18n.ts.blockedUsers,
-	clip: i18n.ts.clips,
-	customEmoji: i18n.ts.customEmojis,
-	favorite: i18n.ts.favorites,
-	following: i18n.ts.following,
-	muting: i18n.ts.mutedUsers,
-	note: i18n.ts.notes,
-	userList: i18n.ts.lists,
-} as const satisfies Record<ExportCompletedNotification['exportedEntity'], string>;
+const exportEntityName = Misskey.entities.exportEntityName(i18n);
+const importEntityName = Misskey.entities.importEntityName(i18n);
 
 const followRequestDone = ref(true);
 const userDetailed: Ref<Misskey.entities.UserDetailed | null> = ref(null);
@@ -401,7 +394,7 @@ function getActualReactedUsersCount(notification: Misskey.entities.Notification)
 	pointer-events: none;
 }
 
-.t_exportCompleted {
+.t_exportCompleted, .t_importCompleted {
 	background: var(--eventOther);
 	pointer-events: none;
 }

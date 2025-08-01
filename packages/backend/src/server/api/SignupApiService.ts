@@ -83,37 +83,37 @@ export class SignupApiService {
 		if (process.env.NODE_ENV !== 'test') {
 			if (this.meta.enableHcaptcha && this.meta.hcaptchaSecretKey) {
 				await this.captchaService.verifyHcaptcha(this.meta.hcaptchaSecretKey, body['hcaptcha-response']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 
 			if (this.meta.enableMcaptcha && this.meta.mcaptchaSecretKey && this.meta.mcaptchaSitekey && this.meta.mcaptchaInstanceUrl) {
 				await this.captchaService.verifyMcaptcha(this.meta.mcaptchaSecretKey, this.meta.mcaptchaSitekey, this.meta.mcaptchaInstanceUrl, body['m-captcha-response']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 
 			if (this.meta.enableRecaptcha && this.meta.recaptchaSecretKey) {
 				await this.captchaService.verifyRecaptcha(this.meta.recaptchaSecretKey, body['g-recaptcha-response']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 
 			if (this.meta.enableTurnstile && this.meta.turnstileSecretKey) {
 				await this.captchaService.verifyTurnstile(this.meta.turnstileSecretKey, body['turnstile-response']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 
 			if (this.meta.enableFC && this.meta.fcSecretKey) {
 				await this.captchaService.verifyFriendlyCaptcha(this.meta.fcSecretKey, body['frc-captcha-solution']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 
 			if (this.meta.enableTestcaptcha) {
 				await this.captchaService.verifyTestcaptcha(body['testcaptcha-response']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 		}
@@ -147,7 +147,7 @@ export class SignupApiService {
 
 		let ticket: MiRegistrationTicket | null = null;
 
-		if (this.meta.disableRegistration) {
+		if (this.meta.disableRegistration && process.env.NODE_ENV !== 'test') {
 			if (invitationCode == null || typeof invitationCode !== 'string') {
 				reply.code(400);
 				return;
@@ -287,7 +287,7 @@ export class SignupApiService {
 					token: secret,
 				};
 			} catch (err) {
-				throw new FastifyReplyError(400, typeof err === 'string' ? err : (err as Error).toString());
+				throw new FastifyReplyError(400, String(err), err);
 			}
 		}
 	}
@@ -356,7 +356,7 @@ export class SignupApiService {
 
 			return this.signinService.signin(request, reply, account as MiLocalUser);
 		} catch (err) {
-			throw new FastifyReplyError(400, typeof err === 'string' ? err : (err as Error).toString());
+			throw new FastifyReplyError(400, String(err), err);
 		}
 	}
 }

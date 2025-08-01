@@ -12,10 +12,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<div class="_gaps_s">
 			<SearchMarker
+				v-slot="slotProps"
 				:label="i18n.ts.wordMute"
 				:keywords="['note', 'word', 'soft', 'mute', 'hide']"
 			>
-				<MkFolder>
+				<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 					<template #icon><i class="ph-envelope ph-bold ph-lg"></i></template>
 					<template #label>{{ i18n.ts.wordMute }}</template>
 
@@ -37,10 +38,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</SearchMarker>
 
 			<SearchMarker
+				v-slot="slotProps"
 				:label="i18n.ts.hardWordMute"
 				:keywords="['note', 'word', 'hard', 'mute', 'hide']"
 			>
-				<MkFolder>
+				<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 					<template #icon><i class="ph-x-square ph-bold ph-lg"></i></template>
 					<template #label>{{ i18n.ts.hardWordMute }}</template>
 
@@ -55,10 +57,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</SearchMarker>
 
 			<SearchMarker
+				v-slot="slotProps"
 				:label="i18n.ts.instanceMute"
 				:keywords="['note', 'server', 'instance', 'host', 'federation', 'mute', 'hide']"
 			>
-				<MkFolder v-if="instance.federation !== 'none'">
+				<MkFolder v-if="instance.federation !== 'none'" :defaultOpen="slotProps.isParentOfTarget">
 					<template #icon><i class="ti ti-planet-off"></i></template>
 					<template #label>{{ i18n.ts.instanceMute }}</template>
 
@@ -67,19 +70,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</SearchMarker>
 
 			<SearchMarker
+				v-slot="slotProps"
 				:keywords="['renote', 'mute', 'hide', 'user']"
 			>
-				<MkFolder>
+				<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 					<template #icon><i class="ti ti-repeat-off"></i></template>
 					<template #label><SearchLabel>{{ i18n.ts.mutedUsers }} ({{ i18n.ts.renote }})</SearchLabel></template>
 
 					<MkPagination :pagination="renoteMutingPagination">
-						<template #empty>
-							<div class="_fullinfo">
-								<img :src="infoImageUrl" draggable="false"/>
-								<div>{{ i18n.ts.noUsers }}</div>
-							</div>
-						</template>
+						<template #empty><MkResult type="empty" :text="i18n.ts.noUsers"/></template>
 
 						<template #default="{ items }">
 							<div class="_gaps_s">
@@ -102,20 +101,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</SearchMarker>
 
 			<SearchMarker
+				v-slot="slotProps"
 				:label="i18n.ts.mutedUsers"
 				:keywords="['note', 'mute', 'hide', 'user']"
 			>
-				<MkFolder>
+				<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 					<template #icon><i class="ti ti-eye-off"></i></template>
 					<template #label>{{ i18n.ts.mutedUsers }}</template>
 
 					<MkPagination :pagination="mutingPagination">
-						<template #empty>
-							<div class="_fullinfo">
-								<img :src="infoImageUrl" draggable="false"/>
-								<div>{{ i18n.ts.noUsers }}</div>
-							</div>
-						</template>
+						<template #empty><MkResult type="empty" :text="i18n.ts.noUsers"/></template>
 
 						<template #default="{ items }">
 							<div class="_gaps_s">
@@ -140,20 +135,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</SearchMarker>
 
 			<SearchMarker
+				v-slot="slotProps"
 				:label="i18n.ts.blockedUsers"
 				:keywords="['block', 'user']"
 			>
-				<MkFolder>
+				<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 					<template #icon><i class="ti ti-ban"></i></template>
 					<template #label>{{ i18n.ts.blockedUsers }}</template>
 
 					<MkPagination :pagination="blockingPagination">
-						<template #empty>
-							<div class="_fullinfo">
-								<img :src="infoImageUrl" draggable="false"/>
-								<div>{{ i18n.ts.noUsers }}</div>
-							</div>
-						</template>
+						<template #empty><MkResult type="empty" :text="i18n.ts.noUsers"/></template>
 
 						<template #default="{ items }">
 							<div class="_gaps_s">
@@ -191,7 +182,7 @@ import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import * as os from '@/os.js';
-import { instance, infoImageUrl } from '@/instance.js';
+import { instance } from '@/instance.js';
 import { ensureSignin } from '@/i.js';
 import MkInfo from '@/components/MkInfo.vue';
 import MkFolder from '@/components/MkFolder.vue';
@@ -222,12 +213,6 @@ const expandedMuteItems = ref([]);
 const expandedBlockItems = ref([]);
 
 const showSoftWordMutedWord = prefer.model('showSoftWordMutedWord');
-
-watch([
-	showSoftWordMutedWord,
-], async () => {
-	await reloadAsk({ reason: i18n.ts.reloadToApplySetting, unison: true });
-});
 
 async function unrenoteMute(user, ev) {
 	os.popupMenu([{

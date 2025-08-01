@@ -1,4 +1,8 @@
-import ms from 'ms';
+/*
+ * SPDX-FileCopyrightText: marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { In } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import type { MiUser } from '@/models/User.js';
@@ -22,9 +26,11 @@ export const meta = {
 
 	prohibitMoved: true,
 
+	// Up to 10 post burst, then 2/second
 	limit: {
-		duration: ms('1hour'),
-		max: 300,
+		type: 'bucket',
+		size: 10,
+		dripRate: 500,
 	},
 
 	kind: 'write:notes',
@@ -402,7 +408,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					throw new ApiError(meta.errors.noSuchReplyTarget);
 				} else if (isRenote(reply) && !isQuote(reply)) {
 					throw new ApiError(meta.errors.cannotReplyToPureRenote);
-				} else if (!await this.noteEntityService.isVisibleForMe(reply, me.id)) {
+				} else if (!await this.noteEntityService.isVisibleForMe(reply, me.id, { me })) {
 					throw new ApiError(meta.errors.cannotReplyToInvisibleNote);
 				} else if (reply.visibility === 'specified' && ps.visibility !== 'specified') {
 					throw new ApiError(meta.errors.cannotReplyToSpecifiedVisibilityNoteWithExtendedVisibility);

@@ -27,25 +27,9 @@ export class RegistryApiService {
 	public async set(userId: MiUser['id'], domain: string | null, scope: string[], key: string, value: any) {
 		// TODO: 作成できるキーの数を制限する
 
-		const query = this.registryItemsRepository.createQueryBuilder('item');
-		if (domain) {
-			query.where('item.domain = :domain', { domain: domain });
-		} else {
-			query.where('item.domain IS NULL');
-		}
-		query.andWhere('item.userId = :userId', { userId: userId });
-		query.andWhere('item.key = :key', { key: key });
-		query.andWhere('item.scope = :scope', { scope: scope });
-
-		const existingItem = await query.getOne();
-
-		if (existingItem) {
-			await this.registryItemsRepository.update(existingItem.id, {
-				updatedAt: new Date(),
-				value: value,
-			});
-		} else {
-			await this.registryItemsRepository.insert({
+		await this.registryItemsRepository.createQueryBuilder('item')
+			.insert()
+			.values({
 				id: this.idService.gen(),
 				updatedAt: new Date(),
 				userId: userId,
@@ -53,8 +37,13 @@ export class RegistryApiService {
 				scope: scope,
 				key: key,
 				value: value,
-			});
-		}
+			})
+			.orUpdate(
+				['updatedAt', 'value'],
+				['userId', 'key', 'scope', 'domain'],
+				{ upsertType: 'on-conflict-do-update' }
+			)
+			.execute();
 
 		if (domain == null) {
 			// TODO: サードパーティアプリが傍受出来てしまうのでどうにかする

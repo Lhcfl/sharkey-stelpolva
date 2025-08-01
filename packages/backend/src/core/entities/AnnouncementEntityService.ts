@@ -55,6 +55,7 @@ export class AnnouncementEntityService {
 			forYou: announcement.userId === me?.id,
 			needConfirmationToRead: announcement.needConfirmationToRead,
 			silence: announcement.silence,
+			confetti: announcement.confetti,
 			isRead: announcement.isRead !== null ? announcement.isRead : undefined,
 		};
 	}

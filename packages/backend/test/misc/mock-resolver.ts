@@ -19,6 +19,7 @@ import type {
 	PollsRepository,
 	UsersRepository,
 } from '@/models/_.js';
+import type { CacheService } from '@/core/CacheService.js';
 import { ApLogService } from '@/core/ApLogService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
 import { fromTuple } from '@/misc/from-tuple.js';
@@ -53,6 +54,7 @@ export class MockResolver extends Resolver {
 			loggerService,
 			{} as ApLogService,
 			{} as ApUtilityService,
+			{} as CacheService,
 		);
 	}
 

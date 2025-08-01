@@ -173,6 +173,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					case '09d79f9e-64f1-4316-9cfa-e75c4d091574':
 						throw new ApiError(meta.errors.federationNotAllowed);
 					case '72180409-793c-4973-868e-5a118eb5519b':
+					case 'd09dc850-b76c-4f45-875a-7389339d78b8':
+					case 'dc110060-a5f2-461d-808b-39c62702ca64':
+					case '45793ab7-7648-4886-b503-429f8a0d0f73':
+					case '4bf8f36b-4d33-4ac9-ad76-63fa11f354e9':
 						throw new ApiError(meta.errors.responseInvalid);
 
 					// resolveLocal

@@ -8,6 +8,8 @@ deleteAndEditConfirm: "Are you sure you want to redraft this note? This means yo
 openRemoteProfile: "Open remote profile"
 trustedLinkUrlPatterns: "Link to external site warning exclusion list"
 trustedLinkUrlPatternsDescription: "Separate with spaces for an AND condition or with line breaks for an OR condition. Using surrounding keywords with slashes will turn them into a regular expression. If you write only the domain name, it will be a backward match."
+trustedDomainsList: "Link to external site warning exclusion list"
+trustedDomainsListDescription: "Following links to these domains will not show a warning. Write one domain per line."
 mutuals: "Mutuals"
 isLocked: "Private account"
 isAdmin: "Administrator"
@@ -29,6 +31,10 @@ muted: "Muted"
 renoteMute: "Mute Boosts"
 renoteMuted: "Boosts muted"
 renoteUnmute: "Unmute Boosts"
+muteNote: "Mute note"
+unmuteNote: "Unmute note"
+userSaysSomethingInMutedNote: "{name} said something in a muted post"
+userSaysSomethingInMutedThread: "{name} said something in a muted thread"
 markAsNSFW: "Mark all media from user as NSFW"
 markInstanceAsNSFW: "Mark as NSFW"
 nsfwConfirm: "Are you sure that you want to mark all media from this account as NSFW?"
@@ -125,6 +131,7 @@ collapseRenotes: "Collapse boosts you've already seen"
 collapseRenotesDescription: "Collapse boosts that you have boosted or reacted to"
 collapseNotesRepliedTo: "Collapse notes replied to"
 collapseFiles: "Collapse files"
+clone: "Clone"
 uncollapseCW: "Uncollapse CWs on notes"
 expandLongNote: "Always expand long notes"
 autoloadConversation: "Load conversation on replies"
@@ -211,6 +218,8 @@ _serverSettings:
   sidebarLogoUsageExample: "E.g. In the sidebar, to visitors and in the \"About\" page."
   inquiryUrl: "Contact URL"
   inquiryUrlDescription: "Specify the URL of a web page that contains a contact form or the instance operators' contact information."
+  aboutInstance: "About instance"
+  aboutInstanceDescription: "A longer description that will be displayed in the 'Instance Information' page, going in place of the regular instance description. Supports HTML."
 _accountMigration:
   moveAccountDescription: "This will migrate your account to a different one.\n　・Followers from this account will automatically be migrated to the new account\n　・This account will unfollow all users it is currently following\n　・You will be unable to create new notes etc. on this account\n\nWhile migration of followers is automatic, you must manually prepare some steps to migrate the list of users you are following. To do so, carry out a follows export that you will later import on the new account in the settings menu. The same procedure applies to your lists as well as your muted and blocked users.\n\n(This explanation applies to Sharkey v13.12.0 and later. Other ActivityPub software, such as Mastodon, might function differently.)"
 _achievements:
@@ -309,6 +318,7 @@ _notification:
   edited: "Note got edited"
   scheduledNoteFailed: "Posting scheduled note failed"
   scheduledNotePosted: "Scheduled Note was posted"
+  importOfXCompleted: "Import of {x} has been completed"
   _types:
     renote: "Boosts"
     edited: "Edits"
@@ -371,6 +381,8 @@ _mfm:
   smallDescription: "Displays content small and thin."
   center: "Center"
   centerDescription: "Displays content centered."
+  unixtime: "Unix Time"
+  unixtimeDescription: "Displays a timestamp in the viewer's current timezone."
   inlineCode: "Code (Inline)"
   inlineCodeDescription: "Displays inline syntax highlighting for (program) code."
   blockCode: "Code (Block)"
@@ -466,6 +478,8 @@ _auth:
   allowed: "Allowed"
 _announcement:
   new: "New"
+  confetti: "Throw confetti"
+  confettiDescription: "If enabled, the announcement will display a confetti effect when viewed."
 _deck:
   _columns:
     following: "Following"
@@ -528,6 +542,7 @@ translationFailed: "Failed to translate note. Please try again later or contact 
 
 _processErrors:
   quoteUnavailable: "Unable to process quote. This post may be missing context."
+  attachmentFailed: "One or more media attachments are unavailable and cannot be shown."
 
 authorizedFetchSection: "Authorized Fetch"
 authorizedFetchLabel: "Allow unsigned ActivityPub requests:"
@@ -572,6 +587,12 @@ bubbleTimelineMustBeEnabled: "Note: the bubble timeline is hidden by default, an
 popularUsersGlobal: "Users popular on the global network"
 popularUsersLocal: "Users popular on {name}"
 
+pollsOnLocal: "Polls trending on {name}"
+pollsOnRemote: "Polls trending on the global network"
+pollsExpired: "Polls that have ended recently"
+trendingPollsDisabled: "Trending polls are disabled on this instance."
+trendingPollsDisabledLogIn: "Please log in to view trending polls."
+
 silenced: "Silenced"
 totalFollowers: "Total followers"
 totalFollowing: "Total following"
@@ -589,3 +610,46 @@ roleAutomatic: "automatic"
 
 translationTimeoutLabel: "Translation timeout"
 translationTimeoutCaption: "Timeout in milliseconds for translation API requests."
+
+staffNotes: "Staff notes"
+instanceIconAlt: "Icon of {name}"
+
+attributionDomains: "Attribution Domains"
+attributionDomainsDescription: "A list of domains whose content can be attributed to you on link previews, separated by new-line. Any subdomain will also be valid. The following needs to be on the webpage:"
+writtenBy: "Written by {user}"
+
+followingPub: "Following (Pub)"
+followersSub: "Followers (Sub)"
+wellKnownResources: "Well-known resources"
+lastPosted: "Last posted: {at}"
+nsfw: "NSFW"
+raw: "Raw"
+cw: "CW"
+mediaSilenced: "Media Silenced"
+bubble: "Bubble"
+verified: "Verified"
+notVerified: "Not Verified"
+hibernated: "Hibernated"
+
+keepCwDescription: "When replying to a post with a Content Warning, automatically use the same CW for the reply."
+keepCwDisabled: "Disabled (do not copy CWs)"
+keepCwEnabled: "Enabled (copy CWs verbatim)"
+keepCwPrependRe: "Enabled (copy CW and prepend \"RE:\")"
+
+noteFooterLabel: "Note controls"
+
+rawUserDescription: "Packed user data in its raw form. Most of these fields are public and visible to all users."
+rawInfoDescription: "Extended user data in its raw form. These fields are private and can only be accessed by moderators."
+rawApDescription: "ActivityPub user data in its raw form. These fields are public and accessible to other instances."
+
+signupReason: "Signup Reason"
+
+clearCachedFilesOptions:
+  title: "Delete all cached remote files"
+  olderThan: "Only delete files older than:"
+  now: "now"
+  oneWeek: "one week"
+  oneMonth: "one month"
+  oneYear: "one year"
+  keepFilesInUse: "Don't delete files used as avatars&c"
+  keepFilesInUseDescription: "this option requires more complicated database queries, you may need to increase the value of db.extra.statement_timeout in the configuration file"

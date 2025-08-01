@@ -6,7 +6,7 @@
 process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
-import { channel, clip, galleryPost, page, play, post, signup, simpleGet, uploadFile } from '../utils.js';
+import { channel, clip, galleryPost, page, play, post, signup, simpleGet, uploadFile, api } from '../utils.js';
 import type { SimpleGetResponse } from '../utils.js';
 import type * as misskey from 'misskey-js';
 
@@ -73,11 +73,12 @@ describe('Webリソース', () => {
 	};
 
 	const metaTag = (res: SimpleGetResponse, key: string, superkey = 'name'): string => {
-		return res.body.window.document.querySelector('meta[' + superkey + '="' + key + '"]')?.content;
+		return res.body(`meta[${superkey}="${key}"][content]`).attr('content');
 	};
 
 	beforeAll(async () => {
 		alice = await signup({ username: 'alice' });
+		await api('i/update', { enableRss: true }, alice);
 		aliceUploadedFile = (await uploadFile(alice)).body;
 		alicesPost = await post(alice, {
 			text: 'test',
@@ -91,6 +92,7 @@ describe('Webリソース', () => {
 		aliceChannel = await channel(alice, {});
 
 		bob = await signup({ username: 'bob' });
+		await api('i/update', { enableRss: true }, bob);
 	}, 1000 * 60 * 2);
 
 	describe.each([

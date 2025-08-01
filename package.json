@@ -1,6 +1,6 @@
 {
 	"name": "sharkey",
-	"version": "2025.5.0-dev-stelpolva",
+	"version": "2025.5.2-dev-stelpolva",
 	"codename": "shonk",
 	"repository": {
 		"type": "git",
@@ -54,17 +54,7 @@
 		"lodash": "4.17.21"
 	},
 	"dependencies": {
-		"cssnano": "7.0.6",
-		"esbuild": "0.25.3",
-		"execa": "9.5.2",
-		"fast-glob": "3.3.3",
-		"glob": "11.0.2",
-		"ignore-walk": "7.0.0",
-		"js-yaml": "4.1.0",
-		"postcss": "8.5.3",
-		"tar": "7.4.3",
-		"terser": "5.39.0",
-		"typescript": "5.8.3"
+		"js-yaml": "4.1.0"
 	},
 	"optionalDependencies": {
 		"cypress": "14.3.2"
@@ -75,10 +65,20 @@
 		"@typescript-eslint/eslint-plugin": "8.31.0",
 		"@typescript-eslint/parser": "8.31.0",
 		"cross-env": "7.0.3",
+		"cssnano": "7.0.6",
+		"esbuild": "0.25.3",
 		"eslint": "9.25.1",
-		"globals": "16.0.0",
+		"execa": "9.5.2",
+		"fast-glob": "3.3.3",
+		"glob": "11.0.2",
+		"globals": "16.1.0",
 		"ncp": "2.0.0",
-		"pnpm": "10.10.0",
-		"start-server-and-test": "2.0.11"
+		"pnpm": "9.6.0",
+		"ignore-walk": "7.0.0",
+		"postcss": "8.5.3",
+		"start-server-and-test": "2.0.11",
+		"tar": "7.4.3",
+		"terser": "5.39.0",
+		"typescript": "5.8.3"
 	}
 }

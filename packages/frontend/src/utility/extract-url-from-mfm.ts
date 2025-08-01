@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 
 // unique without hash
 // [ http://a/#1, http://a/#2, http://b/#3 ] => [ http://a/#1, http://b/#3 ]

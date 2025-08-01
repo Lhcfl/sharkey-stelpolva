@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import { MfmService, Appender } from '@/core/MfmService.js';
 import type { MiNote } from '@/models/Note.js';
 import { bindThis } from '@/decorators.js';

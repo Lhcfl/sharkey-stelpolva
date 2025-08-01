@@ -14,6 +14,7 @@ import { createPostgresDataSource } from './postgres.js';
 import { RepositoryModule } from './models/RepositoryModule.js';
 import { allSettled } from './misc/promise-tracker.js';
 import { GlobalEvents } from './core/GlobalEventService.js';
+import Logger from './logger.js';
 import type { Provider, OnApplicationShutdown } from '@nestjs/common';
 
 const $config: Provider = {
@@ -24,8 +25,13 @@ const $config: Provider = {
 const $db: Provider = {
 	provide: DI.db,
 	useFactory: async (config) => {
-		const db = createPostgresDataSource(config);
-		return await db.initialize();
+		try {
+			const db = createPostgresDataSource(config);
+			return await db.initialize();
+		} catch (e) {
+			console.error('failed to initialize database connection', e);
+			throw e;
+		}
 	},
 	inject: [DI.config],
 };
@@ -164,6 +170,8 @@ const $meta: Provider = {
 	exports: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, RepositoryModule],
 })
 export class GlobalModule implements OnApplicationShutdown {
+	private readonly logger = new Logger('global');
+
 	constructor(
 		@Inject(DI.db) private db: DataSource,
 		@Inject(DI.redis) private redisClient: Redis.Redis,
@@ -176,8 +184,10 @@ export class GlobalModule implements OnApplicationShutdown {
 
 	public async dispose(): Promise<void> {
 		// Wait for all potential DB queries
+		this.logger.info('Finalizing active promises...');
 		await allSettled();
 		// And then disconnect from DB
+		this.logger.info('Disconnected from data sources...');
 		await this.db.destroy();
 		this.redisClient.disconnect();
 		this.redisForPub.disconnect();
@@ -185,6 +195,7 @@ export class GlobalModule implements OnApplicationShutdown {
 		this.redisForTimelines.disconnect();
 		this.redisForReactions.disconnect();
 		this.redisForRateLimit.disconnect();
+		this.logger.info('Global module disposed.');
 	}
 
 	async onApplicationShutdown(signal: string): Promise<void> {

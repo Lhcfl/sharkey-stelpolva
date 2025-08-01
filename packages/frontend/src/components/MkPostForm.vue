@@ -119,7 +119,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { inject, watch, nextTick, onMounted, defineAsyncComponent, provide, shallowRef, ref, computed, useTemplateRef, toRaw } from 'vue';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import autosize from 'autosize';
@@ -405,7 +405,9 @@ if (props.specified) {
 // keep cw when reply
 if (prefer.s.keepCw && props.reply && props.reply.cw) {
 	useCw.value = true;
-	cw.value = props.reply.cw;
+	cw.value = (prefer.s.keepCw === 'prepend-re' && !props.reply.cw.toLowerCase().startsWith('re:'))
+		? `RE: ${props.reply.cw}`
+		: props.reply.cw;
 }
 
 // apply default CW
@@ -589,6 +591,7 @@ async function toggleLocalOnly() {
 		if (confirm.result === 'no') return;
 
 		if (confirm.result === 'neverShow') {
+			prefer.commit('neverShowLocalOnlyInfo', 'true');
 			miLocalStorage.setItem('neverShowLocalOnlyInfo', 'true');
 		}
 	}
@@ -1464,7 +1467,7 @@ defineExpose({
 	}
 
 	&.danger {
-		color: #ff2a2a;
+		color: var(--MI_THEME-warn);
 	}
 }
 

@@ -6,6 +6,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
 import { UnrecoverableError } from 'bullmq';
+import promiseLimit from 'promise-limit';
 import { DI } from '@/di-symbols.js';
 import type { UsersRepository, PollsRepository, EmojisRepository, NotesRepository, MiMeta, ChannelsRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -26,7 +27,11 @@ import { bindThis } from '@/decorators.js';
 import { checkHttps } from '@/misc/check-https.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { isRetryableError } from '@/misc/is-retryable-error.js';
-import { getOneApId, getApId, validPost, isEmoji, getApType, isApObject, isDocument, IApDocument } from '../type.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
+import { extractMediaFromHtml } from '@/core/activitypub/misc/extract-media-from-html.js';
+import { extractMediaFromMfm } from '@/core/activitypub/misc/extract-media-from-mfm.js';
+import { getContentByType } from '@/core/activitypub/misc/get-content-by-type.js';
+import { getOneApId, getApId, validPost, isEmoji, getApType, isApObject, isDocument, IApDocument, isLink } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { ApMfmService } from '../ApMfmService.js';
 import { ApDbResolverService } from '../ApDbResolverService.js';
@@ -98,34 +103,34 @@ export class ApNoteService {
 		actor?: MiRemoteUser,
 		user?: MiRemoteUser,
 	): Error | null {
-		this.apUtilityService.assertApUrl(uri);
+		this.utilityService.assertUrl(uri);
 		const expectHost = this.utilityService.extractDbHost(uri);
 		const apType = getApType(object);
 
 		if (apType == null || !validPost.includes(apType)) {
-			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note: invalid object type ${apType ?? 'undefined'}`);
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: invalid object type ${apType ?? 'undefined'}`);
 		}
 
 		if (object.id && this.utilityService.extractDbHost(object.id) !== expectHost) {
-			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note: id has different host. expected: ${expectHost}, actual: ${this.utilityService.extractDbHost(object.id)}`);
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: id has different host. expected: ${expectHost}, actual: ${this.utilityService.extractDbHost(object.id)}`);
 		}
 
 		const actualHost = object.attributedTo && this.utilityService.extractDbHost(getOneApId(object.attributedTo));
 		if (object.attributedTo && actualHost !== expectHost) {
-			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note: attributedTo has different host. expected: ${expectHost}, actual: ${actualHost}`);
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: attributedTo has different host. expected: ${expectHost}, actual: ${actualHost}`);
 		}
 
 		if (object.published && !this.idService.isSafeT(new Date(object.published).valueOf())) {
-			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', 'invalid Note: published timestamp is malformed');
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', 'invalid Note from ${uri}: published timestamp is malformed');
 		}
 
 		if (actor) {
 			const attribution = (object.attributedTo) ? getOneApId(object.attributedTo) : actor.uri;
 			if (attribution !== actor.uri) {
-				return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note: attribution does not match the actor that send it. attribution: ${attribution}, actor: ${actor.uri}`);
+				return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: attribution does not match the actor that send it. attribution: ${attribution}, actor: ${actor.uri}`);
 			}
 			if (user && attribution !== user.uri) {
-				return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note: updated attribution does not match original attribution. updated attribution: ${user.uri}, original attribution: ${attribution}`);
+				return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: updated attribution does not match original attribution. updated attribution: ${user.uri}, original attribution: ${attribution}`);
 			}
 		}
 
@@ -164,7 +169,7 @@ export class ApNoteService {
 		const entryUri = getApId(value);
 		const err = this.validateNote(object, entryUri, actor);
 		if (err) {
-			this.logger.error(err.message, {
+			this.logger.error(`Error creating note: ${renderInlineError(err)}`, {
 				resolver: { history: resolver.getHistory() },
 				value,
 				object,
@@ -177,11 +182,11 @@ export class ApNoteService {
 		this.logger.debug(`Note fetched: ${JSON.stringify(note, null, 2)}`);
 
 		if (note.id == null) {
-			throw new UnrecoverableError(`Refusing to create note without id: ${entryUri}`);
+			throw new UnrecoverableError(`failed to create note ${entryUri}: missing ID`);
 		}
 
 		if (!checkHttps(note.id)) {
-			throw new UnrecoverableError(`unexpected schema of note.id ${note.id} in ${entryUri}`);
+			throw new UnrecoverableError(`failed to create note ${entryUri}: unexpected schema`);
 		}
 
 		const url = this.apUtilityService.findBestObjectUrl(note);
@@ -190,7 +195,7 @@ export class ApNoteService {
 
 		// 投稿者をフェッチ
 		if (note.attributedTo == null) {
-			throw new UnrecoverableError(`invalid note.attributedTo ${note.attributedTo} in ${entryUri}`);
+			throw new UnrecoverableError(`failed to create note: ${entryUri}: missing attributedTo`);
 		}
 
 		const uri = getOneApId(note.attributedTo);
@@ -199,7 +204,7 @@ export class ApNoteService {
 		// eslint-disable-next-line no-param-reassign
 		actor ??= await this.apPersonService.fetchPerson(uri) as MiRemoteUser | undefined;
 		if (actor && actor.isSuspended) {
-			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', `actor ${uri} has been suspended: ${entryUri}`);
+			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', `failed to create note ${entryUri}: actor ${uri} has been suspended`);
 		}
 
 		const apMentions = await this.apMentionService.extractApMentions(note.tag, resolver);
@@ -208,12 +213,10 @@ export class ApNoteService {
 		const cw = note.summary === '' ? null : note.summary;
 
 		// テキストのパース
-		let text: string | null = null;
-		if (note.source?.mediaType === 'text/x.misskeymarkdown' && typeof note.source.content === 'string') {
-			text = note.source.content;
-		} else if (typeof note._misskey_content !== 'undefined') {
-			text = note._misskey_content;
-		} else if (typeof note.content === 'string') {
+		let text =
+			getContentByType(note, 'text/x.misskeymarkdown') ??
+			getContentByType(note, 'text/markdown');
+		if (text == null && typeof note.content === 'string') {
 			text = this.apMfmService.htmlToMfm(note.content, note.tag);
 		}
 
@@ -226,7 +229,7 @@ export class ApNoteService {
 		 */
 		const hasProhibitedWords = this.noteCreateService.checkProhibitedWordsContain({ cw, text, pollChoices: poll?.choices });
 		if (hasProhibitedWords) {
-			throw new IdentifiableError('689ee33f-f97c-479a-ac49-1b9f8140af99', `Note contains prohibited words: ${entryUri}`);
+			throw new IdentifiableError('689ee33f-f97c-479a-ac49-1b9f8140af99', `failed to create note ${entryUri}: contains prohibited words`);
 		}
 		//#endregion
 
@@ -235,7 +238,7 @@ export class ApNoteService {
 
 		// 解決した投稿者が凍結されていたらスキップ
 		if (actor.isSuspended) {
-			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', `actor has been suspended: ${entryUri}`);
+			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', `failed to create note ${entryUri}: actor ${actor.id} has been suspended`);
 		}
 
 		const noteAudience = await this.apAudienceService.parseAudience(actor, note.to, note.cc, resolver);
@@ -250,57 +253,71 @@ export class ApNoteService {
 			}
 		}
 
+		const processErrors: string[] = [];
+
 		// 添付ファイル
-		const files: MiDriveFile[] = [];
-
-		for (const attach of toArray(note.attachment)) {
-			attach.sensitive ??= note.sensitive;
-			const file = await this.apImageService.resolveImage(actor, attach);
-			if (file) files.push(file);
-		}
-
-		// Some software (Peertube) attaches a thumbnail under "icon" instead of "attachment"
-		const icon = getBestIcon(note);
-		if (icon) {
-			icon.sensitive ??= note.sensitive;
-			const file = await this.apImageService.resolveImage(actor, icon);
-			if (file) files.push(file);
+		// Note: implementation moved to getAttachment function to avoid duplication.
+		// Please copy any upstream changes to that method! (It's in the bottom of this class)
+		const { files, hasFileError } = await this.getAttachments(note, actor);
+		if (hasFileError) {
+			processErrors.push('attachmentFailed');
 		}
 
 		// リプライ
-		const reply: MiNote | null = note.inReplyTo
+		const replyOrFailReason: MiNote | null | string = note.inReplyTo
 			? await this.resolveNote(note.inReplyTo, { resolver })
 				.then(x => {
 					if (x == null) {
-						this.logger.warn('Specified inReplyTo, but not found');
-						throw new Error(`could not fetch inReplyTo ${note.inReplyTo} for note ${entryUri}`);
+						this.logger.warn(`Specified inReplyTo "${note.inReplyTo}", but not found`);
+						throw new IdentifiableError('1ebf0a96-2769-4973-a6c2-3dcbad409dff', `failed to create note ${entryUri}: could not fetch inReplyTo ${note.inReplyTo}`, true);
 					}
 
 					return x;
 				})
 				.catch(async err => {
 					this.logger.warn(`error ${err.statusCode ?? err} fetching inReplyTo ${note.inReplyTo} for note ${entryUri}`);
-					this.logger.warn(`Error in inReplyTo ${note.inReplyTo} - ${err.statusCode ?? err}`);
-					if (visibility === 'followers') { throw err; } // private reply
-					if (err.message === 'Instance is blocked') { throw err; }
-					if (err.message === 'blocked host') { throw err; }
+					if (visibility === 'followers') { throw err; } // do not resolve private reply
 					if (err instanceof IdentifiableError) {
-						if (err.id === '85ab9bd7-3a41-4530-959d-f07073900109') { throw err; } // actor has been suspended
-						if (err.id === 'd592da9f-822f-4d91-83d7-4ceefabcf3d2') { return null; } // hit recursion limit:
+						switch (err.id) {
+							// when...
+							case '689ee33f-f97c-479a-ac49-1b9f8140af99': // prohibited words
+							case '04620a7e-044e-45ce-b72c-10e1bdc22e69': // host is blocked
+							case '09d79f9e-64f1-4316-9cfa-e75c4d091574': // instance is blocked
+							case '85ab9bd7-3a41-4530-959d-f07073900109': // actor is suspended
+								throw err; // do not resolve reply to them
+							case 'd592da9f-822f-4d91-83d7-4ceefabcf3d2': // hit recursion limit
+								return 'hit recursion limit'; // eat recursion limit
+						}
 					}
 					if (err instanceof StatusError) {
-						if (err.statusCode === 404) { return null; } // eat 404 error
+						if (err.statusCode === 404) { return '404'; } // eat 404 error
 					}
 					if (err instanceof UnrecoverableError) {
-						return null; // eat unrecoverableerror
+						return 'unrecoverable error'; // eat unrecoverableerror
 					}
-					throw err;
+					throw new IdentifiableError('1ebf0a96-2769-4973-a6c2-3dcbad409dff', `failed to create note ${entryUri}: could not fetch inReplyTo ${note.inReplyTo}`, true, err);
 				})
 			: null;
 
+		if (typeof replyOrFailReason === 'string') {
+			// 添加一条错误消息表示该帖子有回复，但是解析出错
+			text = `<small>(error: this note has a reply, but is an resolving error: ${replyOrFailReason})</small>\n\n` + text;
+		}
+
+		const reply = typeof replyOrFailReason === 'string' ? null : replyOrFailReason;
+
 		// 引用
 		const quote = await this.getQuote(note, entryUri, resolver);
-		const processErrors = quote === null ? ['quoteUnavailable'] : null;
+		if (quote === null) {
+			processErrors.push('quoteUnavailable');
+		}
+
+		if (reply && reply.userHost == null && reply.localOnly) {
+			throw new IdentifiableError('12e23cec-edd9-442b-aa48-9c21f0c3b215', 'Cannot reply to local-only note');
+		}
+		if (quote && quote.userHost == null && quote.localOnly) {
+			throw new IdentifiableError('12e23cec-edd9-442b-aa48-9c21f0c3b215', 'Cannot quote a local-only note');
+		}
 
 		// vote
 		if (reply && reply.hasPoll) {
@@ -349,7 +366,7 @@ export class ApNoteService {
 				files,
 				reply,
 				renote: quote ?? null,
-				processErrors,
+				processErrors: processErrors.length > 0 ? processErrors : null,
 				name: note.name,
 				cw,
 				text,
@@ -371,7 +388,7 @@ export class ApNoteService {
 			this.logger.info('The note is already inserted while creating itself, reading again');
 			const duplicate = await this.fetchNote(value);
 			if (!duplicate) {
-				throw new Error(`The note creation failed with duplication error even when there is no duplication: ${entryUri}`);
+				throw new IdentifiableError('39c328e1-e829-458b-bfc9-65dcd513d1f8', `failed to create note ${entryUri}: the note creation failed with duplication error even when there is no duplication. This is likely a bug.`);
 			}
 			return duplicate;
 		}
@@ -385,45 +402,39 @@ export class ApNoteService {
 		const noteUri = getApId(value);
 
 		// URIがこのサーバーを指しているならスキップ
-		if (noteUri.startsWith(this.config.url + '/')) throw new UnrecoverableError(`uri points local: ${noteUri}`);
+		if (this.utilityService.isUriLocal(noteUri)) {
+			throw new UnrecoverableError(`failed to update note ${noteUri}: uri is local`);
+		}
 
 		//#region このサーバーに既に登録されているか
 		const updatedNote = await this.notesRepository.findOneBy({ uri: noteUri });
-		if (updatedNote == null) throw new Error(`Note is not registered (no note): ${noteUri}`);
+		if (updatedNote == null) throw new UnrecoverableError(`failed to update note ${noteUri}: note does not exist`);
 
 		const user = await this.usersRepository.findOneBy({ id: updatedNote.userId }) as MiRemoteUser | null;
-		if (user == null) throw new Error(`Note is not registered (no user): ${noteUri}`);
+		if (user == null) throw new UnrecoverableError(`failed to update note ${noteUri}: user does not exist`);
 
-		// eslint-disable-next-line no-param-reassign
-		if (resolver == null) resolver = this.apResolverService.createResolver();
+		resolver ??= this.apResolverService.createResolver();
 
 		const object = await resolver.resolve(value);
 
 		const entryUri = getApId(value);
 		const err = this.validateNote(object, entryUri, actor, user);
 		if (err) {
-			this.logger.error(err.message, {
-				resolver: { history: resolver.getHistory() },
-				value,
-				object,
-			});
+			this.logger.error(`Failed to update note ${noteUri}: ${renderInlineError(err)}`);
 			throw err;
 		}
 
 		// `validateNote` checks that the actor and user are one and the same
-		// eslint-disable-next-line no-param-reassign
 		actor ??= user;
 
 		const note = object as IPost;
 
-		this.logger.debug(`Note fetched: ${JSON.stringify(note, null, 2)}`);
-
 		if (note.id == null) {
-			throw new UnrecoverableError(`Refusing to update note without id: ${noteUri}`);
+			throw new UnrecoverableError(`failed to update note ${entryUri}: missing ID`);
 		}
 
 		if (!checkHttps(note.id)) {
-			throw new UnrecoverableError(`unexpected schema of note.id ${note.id} in ${noteUri}`);
+			throw new UnrecoverableError(`failed to update note ${entryUri}: unexpected schema`);
 		}
 
 		const url = this.apUtilityService.findBestObjectUrl(note);
@@ -431,7 +442,7 @@ export class ApNoteService {
 		this.logger.info(`Creating the Note: ${note.id}`);
 
 		if (actor.isSuspended) {
-			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', `actor ${actor.id} has been suspended: ${noteUri}`);
+			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', `failed to update note ${entryUri}: actor ${actor.id} has been suspended`);
 		}
 
 		const apMentions = await this.apMentionService.extractApMentions(note.tag, resolver);
@@ -440,12 +451,10 @@ export class ApNoteService {
 		const cw = note.summary === '' ? null : note.summary;
 
 		// テキストのパース
-		let text: string | null = null;
-		if (note.source?.mediaType === 'text/x.misskeymarkdown' && typeof note.source.content === 'string') {
-			text = note.source.content;
-		} else if (typeof note._misskey_content !== 'undefined') {
-			text = note._misskey_content;
-		} else if (typeof note.content === 'string') {
+		let text =
+			getContentByType(note, 'text/x.misskeymarkdown') ??
+			getContentByType(note, 'text/markdown');
+		if (text == null && typeof note.content === 'string') {
 			text = this.apMfmService.htmlToMfm(note.content, note.tag);
 		}
 
@@ -458,7 +467,7 @@ export class ApNoteService {
 		 */
 		const hasProhibitedWords = this.noteCreateService.checkProhibitedWordsContain({ cw, text, pollChoices: poll?.choices });
 		if (hasProhibitedWords) {
-			throw new IdentifiableError('689ee33f-f97c-479a-ac49-1b9f8140af99', `Note contains prohibited words: ${noteUri}`);
+			throw new IdentifiableError('689ee33f-f97c-479a-ac49-1b9f8140af99', `failed to update note ${noteUri}: contains prohibited words`);
 		}
 		//#endregion
 
@@ -474,21 +483,12 @@ export class ApNoteService {
 			}
 		}
 
+		const processErrors: string[] = [];
+
 		// 添付ファイル
-		const files: MiDriveFile[] = [];
-
-		for (const attach of toArray(note.attachment)) {
-			attach.sensitive ??= note.sensitive;
-			const file = await this.apImageService.resolveImage(actor, attach);
-			if (file) files.push(file);
-		}
-
-		// Some software (Peertube) attaches a thumbnail under "icon" instead of "attachment"
-		const icon = getBestIcon(note);
-		if (icon) {
-			icon.sensitive ??= note.sensitive;
-			const file = await this.apImageService.resolveImage(actor, icon);
-			if (file) files.push(file);
+		const { files, hasFileError } = await this.getAttachments(note, actor);
+		if (hasFileError) {
+			processErrors.push('attachmentFailed');
 		}
 
 		// リプライ
@@ -496,21 +496,27 @@ export class ApNoteService {
 			? await this.resolveNote(note.inReplyTo, { resolver })
 				.then(x => {
 					if (x == null) {
-						this.logger.warn('Specified inReplyTo, but not found');
-						throw new Error(`could not fetch inReplyTo ${note.inReplyTo} for note ${entryUri}`);
+						this.logger.warn(`Specified inReplyTo "${note.inReplyTo}", but not found`);
+						throw new IdentifiableError('1ebf0a96-2769-4973-a6c2-3dcbad409dff', `failed to update note ${entryUri}: could not fetch inReplyTo ${note.inReplyTo}`, true);
 					}
 
 					return x;
 				})
 				.catch(async err => {
-					this.logger.warn(`error ${err.statusCode ?? err} fetching inReplyTo ${note.inReplyTo} for note ${entryUri}`);
-					throw err;
+					this.logger.warn(`error ${renderInlineError(err)} fetching inReplyTo ${note.inReplyTo} for note ${entryUri}`);
+					throw new IdentifiableError('1ebf0a96-2769-4973-a6c2-3dcbad409dff', `failed to update note ${entryUri}: could not fetch inReplyTo ${note.inReplyTo}`, true, err);
 				})
 			: null;
 
 		// 引用
 		const quote = await this.getQuote(note, entryUri, resolver);
-		const processErrors = quote === null ? ['quoteUnavailable'] : null;
+		if (quote === null) {
+			processErrors.push('quoteUnavailable');
+		}
+
+		if (quote && quote.userHost == null && quote.localOnly) {
+			throw new IdentifiableError('12e23cec-edd9-442b-aa48-9c21f0c3b215', 'Cannot quote a local-only note');
+		}
 
 		// vote
 		if (reply && reply.hasPoll) {
@@ -547,7 +553,7 @@ export class ApNoteService {
 				files,
 				reply,
 				renote: quote ?? null,
-				processErrors,
+				processErrors: processErrors.length > 0 ? processErrors : null,
 				name: note.name,
 				cw,
 				text,
@@ -568,7 +574,7 @@ export class ApNoteService {
 			this.logger.info('The note is already inserted while creating itself, reading again');
 			const duplicate = await this.fetchNote(value);
 			if (!duplicate) {
-				throw new Error(`The note creation failed with duplication error even when there is no duplication: ${noteUri}`);
+				throw new IdentifiableError('39c328e1-e829-458b-bfc9-65dcd513d1f8', `failed to update note ${entryUri}: the note update failed with duplication error even when there is no duplication. This is likely a bug.`);
 			}
 			return duplicate;
 		}
@@ -585,8 +591,7 @@ export class ApNoteService {
 		const uri = getApId(value);
 
 		if (!this.utilityService.isFederationAllowedUri(uri)) {
-			// TODO convert to identifiable error
-			throw new StatusError(`blocked host: ${uri}`, 451, 'blocked host');
+			throw new IdentifiableError('04620a7e-044e-45ce-b72c-10e1bdc22e69', `failed to resolve note ${uri}: host is blocked`);
 		}
 
 		//#region このサーバーに既に登録されていたらそれを返す
@@ -596,8 +601,7 @@ export class ApNoteService {
 
 		// Bail if local URI doesn't exist
 		if (this.utilityService.isUriLocal(uri)) {
-			// TODO convert to identifiable error
-			throw new StatusError(`cannot resolve local note: ${uri}`, 400, 'cannot resolve local note');
+			throw new IdentifiableError('cbac7358-23f2-4c70-833e-cffb4bf77913', `failed to resolve note ${uri}: URL is local and does not exist`);
 		}
 
 		const unlock = await this.appLockService.getApLock(uri);
@@ -683,9 +687,29 @@ export class ApNoteService {
 	 */
 	private async getQuote(note: IPost, entryUri: string, resolver: Resolver): Promise<MiNote | null | undefined> {
 		const quoteUris = new Set<string>();
-		if (note._misskey_quote) quoteUris.add(note._misskey_quote);
-		if (note.quoteUrl) quoteUris.add(note.quoteUrl);
-		if (note.quoteUri) quoteUris.add(note.quoteUri);
+		if (note._misskey_quote && typeof(note._misskey_quote as unknown) === 'string') quoteUris.add(note._misskey_quote);
+		if (note.quoteUrl && typeof(note.quoteUrl as unknown) === 'string') quoteUris.add(note.quoteUrl);
+		if (note.quoteUri && typeof(note.quoteUri as unknown) === 'string') quoteUris.add(note.quoteUri);
+
+		// https://codeberg.org/fediverse/fep/src/branch/main/fep/044f/fep-044f.md
+		if (note.quote && typeof(note.quote as unknown) === 'string') quoteUris.add(note.quote);
+
+		// https://codeberg.org/fediverse/fep/src/branch/main/fep/e232/fep-e232.md
+		const tags = toArray(note.tag).filter(tag => typeof(tag) === 'object' && isLink(tag));
+		for (const tag of tags) {
+			if (!tag.href || typeof (tag.href as unknown) !== 'string') continue;
+
+			const mediaTypes = toArray(tag.mediaType);
+			if (
+				!mediaTypes.includes('application/ld+json; profile="https://www.w3.org/ns/activitystreams"') &&
+				!mediaTypes.includes('application/activity+json')
+			) continue;
+
+			const rels = toArray(tag.rel);
+			if (!rels.includes('https://misskey-hub.net/ns#_misskey_quote')) continue;
+
+			quoteUris.add(tag.href);
+		}
 
 		// No quote, return undefined
 		if (quoteUris.size < 1) return undefined;
@@ -704,18 +728,13 @@ export class ApNoteService {
 				const quote = await this.resolveNote(uri, { resolver });
 
 				if (quote == null) {
-					this.logger.warn(`Failed to resolve quote "${uri}" for note "${entryUri}": request error`);
+					this.logger.warn(`Failed to resolve quote "${uri}" for note "${entryUri}": fetch failed`);
 					return false;
 				}
 
 				return quote;
 			} catch (e) {
-				if (e instanceof Error) {
-					this.logger.warn(`Failed to resolve quote "${uri}" for note "${entryUri}":`, e);
-				} else {
-					this.logger.warn(`Failed to resolve quote "${uri}" for note "${entryUri}": ${e}`);
-				}
-
+				this.logger.warn(`Failed to resolve quote "${uri}" for note "${entryUri}": ${renderInlineError(e)}`);
 				return isRetryableError(e);
 			}
 		};
@@ -733,10 +752,95 @@ export class ApNoteService {
 		// Permanent error - return null
 		return null;
 	}
+
+	/**
+	 * Extracts and saves all media attachments from the provided note.
+	 * Returns an array of all the created files.
+	 */
+	private async getAttachments(note: IPost, actor: MiRemoteUser): Promise<{ files: MiDriveFile[], hasFileError: boolean }> {
+		const attachments = new Map<string, IApDocument & { url: string }>();
+
+		// Extract inline media from HTML content.
+		// Don't use source.content, _misskey_content, or anything else because those aren't HTML.
+		const htmlContent = getContentByType(note, 'text/html', true);
+		if (htmlContent) {
+			for (const attach of extractMediaFromHtml(htmlContent)) {
+				if (hasUrl(attach)) {
+					attachments.set(attach.url, attach);
+				}
+			}
+		}
+
+		// Extract inline media from MFM / markdown content.
+		const mfmContent =
+			getContentByType(note, 'text/x.misskeymarkdown') ??
+			getContentByType(note, 'text/markdown');
+		if (mfmContent) {
+			for (const attach of extractMediaFromMfm(mfmContent)) {
+				if (hasUrl(attach)) {
+					attachments.set(attach.url, attach);
+				}
+			}
+		}
+
+		// Some software (Peertube) attaches a thumbnail under "icon" instead of "attachment"
+		const icon = getBestIcon(note);
+		if (icon) {
+			if (hasUrl(icon)) {
+				attachments.set(icon.url, icon);
+			}
+		}
+
+		// Populate AP attachments last, to overwrite any "fallback" elements that may have been inlined in HTML.
+		// AP attachments should be considered canonical.
+		for (const attach of toArray(note.attachment)) {
+			if (hasUrl(attach)) {
+				attachments.set(attach.url, attach);
+			}
+		}
+
+		// Resolve all files w/ concurrency 2.
+		// This prevents one big file from blocking the others.
+		const limiter = promiseLimit<MiDriveFile | null>(2);
+		const results = await Promise
+			.all(Array
+				.from(attachments.values())
+				.map(attach => limiter(async () => {
+					attach.sensitive ??= note.sensitive;
+					return await this.resolveImage(actor, attach);
+				})));
+
+		// Process results
+		let hasFileError = false;
+		const files: MiDriveFile[] = [];
+		for (const result of results) {
+			if (result != null) {
+				files.push(result);
+			} else {
+				hasFileError = true;
+			}
+		}
+
+		return { files, hasFileError };
+	}
+
+	private async resolveImage(actor: MiRemoteUser, attachment: IApDocument & { url: string }): Promise<MiDriveFile | null> {
+		try {
+			return await this.apImageService.resolveImage(actor, attachment);
+		} catch (err) {
+			if (isRetryableError(err)) {
+				this.logger.warn(`Temporary failure to resolve attachment at ${attachment.url}: ${renderInlineError(err)}`);
+				throw err;
+			} else {
+				this.logger.warn(`Permanent failure to resolve attachment at ${attachment.url}: ${renderInlineError(err)}`);
+				return null;
+			}
+		}
+	}
 }
 
-function getBestIcon(note: IObject): IObject | null {
-	const icons: IObject[] = toArray(note.icon);
+function getBestIcon(note: IObject): IApDocument | null {
+	const icons: IApDocument[] = toArray(note.icon);
 	if (icons.length < 2) {
 		return icons[0] ?? null;
 	}
@@ -751,4 +855,9 @@ function getBestIcon(note: IObject): IObject | null {
 		if (i.height > best.height) return i;
 		return best;
 	}, null as IApDocument | null) ?? null;
+}
+
+// Need this to make TypeScript happy...
+function hasUrl<T extends IObject>(object: T): object is T & { url: string } {
+	return typeof(object.url) === 'string';
 }

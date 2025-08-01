@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import Parser from 'rss-parser';
 import { Injectable } from '@nestjs/common';
+import { parseFeed } from 'htmlparser2';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
-
-const rssParser = new Parser();
+import { ApiError } from '../error.js';
+import type { FeedItem } from 'domutils';
 
 export const meta = {
 	tags: ['meta'],
@@ -17,52 +17,32 @@ export const meta = {
 	allowGet: true,
 	cacheSec: 60 * 3,
 
+	errors: {
+		fetchFailed: {
+			id: '88f4356f-719d-4715-b4fc-703a10a812d2',
+			code: 'FETCH_FAILED',
+			message: 'Failed to fetch RSS feed',
+		},
+	},
+
 	res: {
 		type: 'object',
 		properties: {
-			image: {
-				type: 'object',
-				optional: true,
-				properties: {
-					link: {
-						type: 'string',
-						optional: true,
-					},
-					url: {
-						type: 'string',
-						optional: false,
-					},
-					title: {
-						type: 'string',
-						optional: true,
-					},
-				},
+			type: {
+				type: 'string',
+				optional: false,
 			},
-			paginationLinks: {
-				type: 'object',
+			id: {
+				type: 'string',
 				optional: true,
-				properties: {
-					self: {
-						type: 'string',
-						optional: true,
-					},
-					first: {
-						type: 'string',
-						optional: true,
-					},
-					next: {
-						type: 'string',
-						optional: true,
-					},
-					last: {
-						type: 'string',
-						optional: true,
-					},
-					prev: {
-						type: 'string',
-						optional: true,
-					},
-				},
+			},
+			updated: {
+				type: 'string',
+				optional: true,
+			},
+			author: {
+				type: 'string',
+				optional: true,
 			},
 			link: {
 				type: 'string',
@@ -94,112 +74,41 @@ export const meta = {
 							type: 'string',
 							optional: true,
 						},
-						creator: {
+						description: {
 							type: 'string',
 							optional: true,
 						},
-						summary: {
-							type: 'string',
-							optional: true,
-						},
-						content: {
-							type: 'string',
-							optional: true,
-						},
-						isoDate: {
-							type: 'string',
-							optional: true,
-						},
-						categories: {
+						media: {
 							type: 'array',
-							optional: true,
+							optional: false,
 							items: {
-								type: 'string',
-							},
-						},
-						contentSnippet: {
-							type: 'string',
-							optional: true,
-						},
-						enclosure: {
-							type: 'object',
-							optional: true,
-							properties: {
-								url: {
-									type: 'string',
-									optional: false,
-								},
-								length: {
-									type: 'number',
-									optional: true,
-								},
-								type: {
-									type: 'string',
-									optional: true,
+								type: 'object',
+								properties: {
+									medium: {
+										type: 'string',
+										optional: true,
+									},
+									url: {
+										type: 'string',
+										optional: true,
+									},
+									type: {
+										type: 'string',
+										optional: true,
+									},
+									lang: {
+										type: 'string',
+										optional: true,
+									},
 								},
 							},
 						},
 					},
 				},
-			},
-			feedUrl: {
-				type: 'string',
-				optional: true,
 			},
 			description: {
 				type: 'string',
 				optional: true,
-			},
-			itunes: {
-				type: 'object',
-				optional: true,
-				additionalProperties: true,
-				properties: {
-					image: {
-						type: 'string',
-						optional: true,
-					},
-					owner: {
-						type: 'object',
-						optional: true,
-						properties: {
-							name: {
-								type: 'string',
-								optional: true,
-							},
-							email: {
-								type: 'string',
-								optional: true,
-							},
-						},
-					},
-					author: {
-						type: 'string',
-						optional: true,
-					},
-					summary: {
-						type: 'string',
-						optional: true,
-					},
-					explicit: {
-						type: 'string',
-						optional: true,
-					},
-					categories: {
-						type: 'array',
-						optional: true,
-						items: {
-							type: 'string',
-						},
-					},
-					keywords: {
-						type: 'array',
-						optional: true,
-						items: {
-							type: 'string',
-						},
-					},
-				},
 			},
 		},
 	},
@@ -224,7 +133,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		private httpRequestService: HttpRequestService,
 	) {
-		super(meta, paramDef, async (ps, me) => {
+		super(meta, paramDef, async (ps) => {
 			const res = await this.httpRequestService.send(ps.url, {
 				method: 'GET',
 				headers: {
@@ -234,8 +143,38 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			const text = await res.text();
+			const feed = parseFeed(text, {
+				xmlMode: true,
+			});
 
-			return rssParser.parseString(text);
+			if (!feed) {
+				throw new ApiError(meta.errors.fetchFailed);
+			}
+
+			return {
+				type: feed.type,
+				id: feed.id,
+				title: feed.title,
+				link: feed.link,
+				description: feed.description,
+				updated: feed.updated?.toISOString(),
+				author: feed.author,
+				items: feed.items
+					.filter((item): item is FeedItem & { link: string, title: string } => !!item.link && !!item.title)
+					.map(item => ({
+						guid: item.id,
+						title: item.title,
+						link: item.link,
+						description: item.description,
+						pubDate: item.pubDate?.toISOString(),
+						media: item.media.map(media => ({
+							medium: media.medium,
+							url: media.url,
+							type: media.type,
+							lang: media.lang,
+						})),
+					})),
+			};
 		});
 	}
 }

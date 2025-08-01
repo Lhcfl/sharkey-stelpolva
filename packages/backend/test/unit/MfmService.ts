@@ -4,7 +4,7 @@
  */
 
 import * as assert from 'assert';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import { Test } from '@nestjs/testing';
 
 import { CoreModule } from '@/core/CoreModule.js';
@@ -63,6 +63,12 @@ describe('MfmService', () => {
 			const output = '<p><ruby><span><i>some</i> text</span><rp>(</rp><rt>ignore me</rt><rp>)</rp></ruby></p>';
 			assert.equal(mfmService.toHtml(mfm.parse(input)), output);
 		});
+
+		test('inline', () => {
+			const input = 'https://example.com';
+			const output = '<a href="https://example.com">https://example.com</a>';
+			assert.equal(mfmService.toHtml(mfm.parse(input), [], [], true), output);
+		});
 	});
 
 	describe('toMastoApiHtml', () => {
@@ -86,7 +92,7 @@ describe('MfmService', () => {
 
 		test('ruby', async () => {
 			const input = '$[ruby $[group *some* text] ignore me]';
-			const output = '<p><ruby><span><span>*some*</span><span> text</span></span><rp>(</rp><rt>ignore me</rt><rp>)</rp></ruby></p>';
+			const output = '<p><ruby><span><span>*some*</span> text</span><rp>(</rp><rt>ignore me</rt><rp>)</rp></ruby></p>';
 			assert.equal(await mfmService.toMastoApiHtml(mfm.parse(input)), output);
 		});
 	});

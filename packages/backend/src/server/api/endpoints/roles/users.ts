@@ -37,7 +37,7 @@ export const meta = {
 				},
 				user: {
 					type: 'object',
-					ref: 'UserDetailed',
+					ref: 'User',
 				},
 			},
 			required: ['id', 'user'],
@@ -58,6 +58,11 @@ export const paramDef = {
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+		detail: {
+			type: 'boolean',
+			nullable: false,
+			default: true,
+		},
 	},
 	required: ['roleId'],
 } as const;
@@ -99,11 +104,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.getMany();
 
 			const _users = assigns.map(({ user, userId }) => user ?? userId);
-			const _userMap = await this.userEntityService.packMany(_users, me, { schema: 'UserDetailed' })
+			const _userMap = await this.userEntityService.packMany(_users, me, { schema: ps.detail ? 'UserDetailed' : 'UserLite' })
 				.then(users => new Map(users.map(u => [u.id, u])));
 			return await Promise.all(assigns.map(async assign => ({
 				id: assign.id,
-				user: _userMap.get(assign.userId) ?? await this.userEntityService.pack(assign.user!, me, { schema: 'UserDetailed' }),
+				user: _userMap.get(assign.userId) ?? await this.userEntityService.pack(assign.user!, me, { schema: ps.detail ? 'UserDetailed' : 'UserLite' }),
 			})));
 		});
 	}

@@ -122,6 +122,10 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			isAdministrator: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 			isSystem: {
 				type: 'boolean',
 				optional: false, nullable: false,
@@ -217,6 +221,10 @@ export const meta = {
 					},
 				},
 			},
+			signupReason: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 		},
 	},
 } as const;
@@ -257,6 +265,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			const isModerator = await this.roleService.isModerator(user);
+			const isAdministrator = await this.roleService.isAdministrator(user);
 			const isSilenced = user.isSilenced || !(await this.roleService.getUserPolicies(user.id)).canPublicNote;
 
 			const _me = await this.usersRepository.findOneByOrFail({ id: me.id });
@@ -289,6 +298,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				mutedInstances: profile.mutedInstances,
 				notificationRecieveConfig: profile.notificationRecieveConfig,
 				isModerator: isModerator,
+				isAdministrator: isAdministrator,
 				isSystem: isSystemAccount(user),
 				isSilenced: isSilenced,
 				isSuspended: user.isSuspended,

@@ -25,6 +25,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 /* eslint-disable vue/no-mutating-props */
 import { watch, ref } from 'vue';
 import * as Misskey from 'misskey-js';
+import { retryOnThrottled } from '@@/js/retry-on-throttled.js';
 import XContainer from '../page-editor.container.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
@@ -35,6 +36,7 @@ import { i18n } from '@/i18n.js';
 
 const props = defineProps<{
 	modelValue: Misskey.entities.PageBlock & { type: 'note' };
+	index: number;
 }>();
 
 const emit = defineEmits<{
@@ -58,7 +60,13 @@ watch(id, async () => {
 		...props.modelValue,
 		note: id.value,
 	});
-	note.value = await misskeyApi('notes/show', { noteId: id.value });
+	const timeoutId = window.setTimeout(async () => {
+		note.value = await retryOnThrottled(() => misskeyApi('notes/show', { noteId: id.value }));
+	}, 500 * props.index); // rate limit is 2 reqs per sec
+
+	return () => {
+		window.clearTimeout(timeoutId);
+	};
 }, {
 	immediate: true,
 });

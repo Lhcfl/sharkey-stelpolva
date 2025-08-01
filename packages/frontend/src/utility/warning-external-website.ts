@@ -36,8 +36,8 @@ export async function warningExternalWebsite(url: string) {
 		}
 	});
 
-	const isTrustedByUser = prefer.r.trustedDomains.value.includes(hostname);
-	const isDisabledByUser = !prefer.r.warnExternalUrl.value;
+	const isTrustedByUser = prefer.s.trustedDomains.includes(hostname);
+	const isDisabledByUser = !prefer.s.warnExternalUrl;
 
 	if (!isTrustedByInstance && !isTrustedByUser && !isDisabledByUser) {
 		const confirm = await new Promise<{ canceled: boolean }>(resolve => {

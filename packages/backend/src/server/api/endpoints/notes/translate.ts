@@ -20,11 +20,9 @@ import { ApiError } from '../../error.js';
 export const meta = {
 	tags: ['notes'],
 
-	// TODO allow unauthenticated if default template allows?
-	//   Maybe a value 'optional' that allows unauthenticated OR a token w/ appropriate role.
-	//   This will allow unauthenticated requests without leaking post data to restricted clients.
-	requireCredential: true,
+	requireCredential: 'optional',
 	kind: 'read:account',
+	requiredRolePolicy: 'canUseTranslator',
 
 	res: {
 		type: 'object',
@@ -88,17 +86,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly loggerService: ApiLoggerService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const policies = await this.roleService.getUserPolicies(me.id);
-			if (!policies.canUseTranslator) {
-				throw new ApiError(meta.errors.unavailable);
-			}
-
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {
 				if (err.id === '9725d0ce-ba28-4dde-95a7-2cbb2c15de24') throw new ApiError(meta.errors.noSuchNote);
 				throw err;
 			});
 
-			if (!(await this.noteEntityService.isVisibleForMe(note, me.id))) {
+			if (!(await this.noteEntityService.isVisibleForMe(note, me?.id ?? null, { me }))) {
 				throw new ApiError(meta.errors.cannotTranslateInvisibleNote);
 			}
 
@@ -140,7 +133,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				if (this.serverSettings.deeplAuthKey) params.append('auth_key', this.serverSettings.deeplAuthKey);
 				params.append('text', note.text);
 				params.append('target_lang', targetLang);
-				const endpoint = deeplFreeInstance ?? this.serverSettings.deeplIsPro ? 'https://api.deepl.com/v2/translate' : 'https://api-free.deepl.com/v2/translate';
+				const endpoint = deeplFreeInstance ?? ( this.serverSettings.deeplIsPro ? 'https://api.deepl.com/v2/translate' : 'https://api-free.deepl.com/v2/translate' );
 
 				const res = await this.httpRequestService.send(endpoint, {
 					method: 'POST',

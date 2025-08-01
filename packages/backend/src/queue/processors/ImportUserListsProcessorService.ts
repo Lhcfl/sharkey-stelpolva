@@ -15,7 +15,9 @@ import { UserListService } from '@/core/UserListService.js';
 import { IdService } from '@/core/IdService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
+import { NotificationService } from '@/core/NotificationService.js';
 import type * as Bull from 'bullmq';
 import type { DbUserImportJobData } from '../types.js';
 
@@ -42,16 +44,16 @@ export class ImportUserListsProcessorService {
 		private remoteUserResolveService: RemoteUserResolveService,
 		private downloadService: DownloadService,
 		private queueLoggerService: QueueLoggerService,
+		private notificationService: NotificationService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-user-lists');
 	}
 
 	@bindThis
 	public async process(job: Bull.Job<DbUserImportJobData>): Promise<void> {
-		this.logger.info(`Importing user lists of ${job.data.user.id} ...`);
-
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
+			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
 			return;
 		}
 
@@ -59,8 +61,11 @@ export class ImportUserListsProcessorService {
 			id: job.data.fileId,
 		});
 		if (file == null) {
+			this.logger.debug(`Skip: file ${job.data.fileId} does not exist`);
 			return;
 		}
+
+		this.logger.info(`Importing user lists of ${job.data.user.id} ...`);
 
 		const csv = await this.downloadService.downloadTextFile(file.url);
 
@@ -102,10 +107,15 @@ export class ImportUserListsProcessorService {
 
 				this.userListService.addMember(target, list!, user);
 			} catch (e) {
-				this.logger.warn(`Error in line:${linenum} ${e}`);
+				this.logger.warn(`Error in line:${linenum} ${renderInlineError(e)}`);
 			}
 		}
 
-		this.logger.succ('Imported');
+		this.notificationService.createNotification(job.data.user.id, 'importCompleted', {
+			importedEntity: 'userList',
+			fileId: file.id,
+		});
+
+		this.logger.debug('Imported');
 	}
 }

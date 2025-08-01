@@ -21,6 +21,7 @@ import { RedisKVCache } from '@/misc/cache.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import type { MiAccessToken, NotesRepository } from '@/models/_.js';
+import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
 import { ApRequestService } from '@/core/activitypub/ApRequestService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
@@ -31,14 +32,20 @@ import { BucketRateLimit, Keyed, sendRateLimitHeaders } from '@/misc/rate-limit-
 import type { MiLocalUser } from '@/models/User.js';
 import { getIpHash } from '@/misc/get-ip-hash.js';
 import { isRetryableError } from '@/misc/is-retryable-error.js';
+import * as Acct from '@/misc/acct.js';
+import { isNote } from '@/core/activitypub/type.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
 export type LocalSummalyResult = SummalyResult & {
 	haveNoteLocally?: boolean;
+	linkAttribution?: {
+		userId: string,
+	}
 };
 
 // Increment this to invalidate cached previews after a major change.
-const cacheFormatVersion = 3;
+const cacheFormatVersion = 4;
 
 type PreviewRoute = {
 	Querystring: {
@@ -83,6 +90,7 @@ export class UrlPreviewService {
 		private readonly utilityService: UtilityService,
 		private readonly apUtilityService: ApUtilityService,
 		private readonly apDbResolverService: ApDbResolverService,
+		private readonly remoteUserResolveService: RemoteUserResolveService,
 		private readonly apRequestService: ApRequestService,
 		private readonly systemAccountService: SystemAccountService,
 		private readonly apNoteService: ApNoteService,
@@ -118,8 +126,29 @@ export class UrlPreviewService {
 		request: FastifyRequest<PreviewRoute>,
 		reply: FastifyReply,
 	): Promise<void> {
+		if (!this.meta.urlPreviewEnabled) {
+			// Tell crawlers not to index URL previews.
+			// https://developers.google.com/search/docs/crawling-indexing/block-indexing
+			reply.header('X-Robots-Tag', 'noindex');
+
+			return reply.code(403).send({
+				error: {
+					message: 'URL preview is disabled',
+					code: 'URL_PREVIEW_DISABLED',
+					id: '58b36e13-d2f5-0323-b0c6-76aa9dabefb8',
+				},
+			});
+		}
+
 		const url = request.query.url;
 		if (typeof url !== 'string' || !URL.canParse(url)) {
+			reply.code(400);
+			return;
+		}
+
+		// Enforce HTTP(S) for input URLs
+		const urlScheme = this.utilityService.getUrlScheme(url);
+		if (urlScheme !== 'http:' && urlScheme !== 'https:') {
 			reply.code(400);
 			return;
 		}
@@ -130,14 +159,16 @@ export class UrlPreviewService {
 			return;
 		}
 
-		if (!this.meta.urlPreviewEnabled) {
-			return reply.code(403).send({
-				error: {
-					message: 'URL preview is disabled',
-					code: 'URL_PREVIEW_DISABLED',
-					id: '58b36e13-d2f5-0323-b0c6-76aa9dabefb8',
-				},
-			});
+		// Strip out hash (anchor)
+		const urlObj = new URL(url);
+		if (urlObj.hash) {
+			urlObj.hash = '';
+			const params = new URLSearchParams({ url: urlObj.href });
+			if (lang) params.set('lang', lang);
+			const newUrl = `/url?${params.toString()}`;
+
+			reply.redirect(newUrl, 301);
+			return;
 		}
 
 		// Check rate limit
@@ -146,7 +177,7 @@ export class UrlPreviewService {
 			return;
 		}
 
-		if (this.utilityService.isBlockedHost(this.meta.blockedHosts, new URL(url).host)) {
+		if (this.utilityService.isBlockedHost(this.meta.blockedHosts, urlObj.host)) {
 			return reply.code(403).send({
 				error: {
 					message: 'URL is blocked',
@@ -161,7 +192,7 @@ export class UrlPreviewService {
 			return;
 		}
 
-		const cacheKey = `${url}@${lang}@${cacheFormatVersion}`;
+		const cacheKey = getCacheKey(url, lang);
 		if (await this.sendCachedPreview(cacheKey, reply, fetch)) {
 			return;
 		}
@@ -207,8 +238,22 @@ export class UrlPreviewService {
 				}
 			}
 
+			await this.validateLinkAttribution(summary);
+
 			// Await this to avoid hammering redis when a bunch of URLs are fetched at once
 			await this.previewCache.set(cacheKey, summary);
+
+			// Also cache the response URL in case of redirects
+			if (summary.url !== url) {
+				const responseCacheKey = getCacheKey(summary.url, lang);
+				await this.previewCache.set(responseCacheKey, summary);
+			}
+
+			// Also cache the ActivityPub URL, if different from the others
+			if (summary.activityPub && summary.activityPub !== summary.url) {
+				const apCacheKey = getCacheKey(summary.activityPub, lang);
+				await this.previewCache.set(apCacheKey, summary);
+			}
 
 			// Cache 1 day (matching redis), but only once we finalize the result
 			if (!summary.activityPub || summary.haveNoteLocally) {
@@ -217,7 +262,7 @@ export class UrlPreviewService {
 
 			return reply.code(200).send(summary);
 		} catch (err) {
-			this.logger.warn(`Failed to get preview of ${url} for ${lang}: ${err}`);
+			this.logger.warn(`Failed to get preview of ${url} for ${lang}: ${renderInlineError(err)}`);
 
 			reply.header('Cache-Control', 'max-age=3600');
 			return reply.code(422).send({
@@ -462,7 +507,7 @@ export class UrlPreviewService {
 		// Finally, attempt a signed GET in case it's a direct link to an instance with authorized fetch.
 		const instanceActor = await this.systemAccountService.getInstanceActor();
 		const remoteObject = await this.apRequestService.signedGet(summary.url, instanceActor).catch(() => null);
-		if (remoteObject && this.apUtilityService.haveSameAuthority(remoteObject.id, summary.url)) {
+		if (remoteObject && isNote(remoteObject) && this.apUtilityService.haveSameAuthority(remoteObject.id, summary.url)) {
 			summary.activityPub = remoteObject.id;
 			return;
 		}
@@ -515,6 +560,30 @@ export class UrlPreviewService {
 			} else {
 				throw err;
 			}
+		}
+	}
+
+	private async validateLinkAttribution(summary: LocalSummalyResult) {
+		if (!summary.fediverseCreator) return;
+		if (!URL.canParse(summary.url)) return;
+
+		const url = URL.parse(summary.url);
+
+		const acct = Acct.parse(summary.fediverseCreator);
+		if (acct.host?.toLowerCase() === this.config.host) {
+			acct.host = null;
+		}
+		try {
+			const user = await this.remoteUserResolveService.resolveUser(acct.username, acct.host);
+
+			const attributionDomains = user.attributionDomains;
+			if (attributionDomains.some(x => `.${url?.host.toLowerCase()}`.endsWith(`.${x}`))) {
+				summary.linkAttribution = {
+					userId: user.id,
+				};
+			}
+		} catch {
+			this.logger.debug('User not found: ' + summary.fediverseCreator);
 		}
 	}
 
@@ -592,4 +661,8 @@ export class UrlPreviewService {
 
 		return true;
 	}
+}
+
+function getCacheKey(url: string, lang = 'none') {
+	return `${url}@${lang}@${cacheFormatVersion}`;
 }

@@ -18,6 +18,8 @@ import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 
 import { bindThis } from '@/decorators.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
+import { UtilityService } from '@/core/UtilityService.js';
 
 @Injectable()
 export class DownloadService {
@@ -29,6 +31,7 @@ export class DownloadService {
 
 		private httpRequestService: HttpRequestService,
 		private loggerService: LoggerService,
+		private readonly utilityService: UtilityService,
 	) {
 		this.logger = this.loggerService.getLogger('download');
 	}
@@ -37,7 +40,9 @@ export class DownloadService {
 	public async downloadUrl(url: string, path: string, options: { timeout?: number, operationTimeout?: number, maxSize?: number } = {} ): Promise<{
 		filename: string;
 	}> {
-		this.logger.info(`Downloading ${chalk.cyan(url)} to ${chalk.cyanBright(path)} ...`);
+		this.utilityService.assertUrl(url);
+
+		this.logger.debug(`Downloading ${chalk.cyan(url)} to ${chalk.cyanBright(path)} ...`);
 
 		const timeout = options.timeout ?? 30 * 1000;
 		const operationTimeout = options.operationTimeout ?? 60 * 1000;
@@ -86,7 +91,7 @@ export class DownloadService {
 						filename = parsed.parameters.filename;
 					}
 				} catch (e) {
-					this.logger.warn(`Failed to parse content-disposition: ${contentDisposition}`, { stack: e });
+					this.logger.warn(`Failed to parse content-disposition ${contentDisposition}: ${renderInlineError(e)}`);
 				}
 			}
 		}).on('downloadProgress', (progress: Got.Progress) => {
@@ -100,13 +105,17 @@ export class DownloadService {
 			await stream.pipeline(req, fs.createWriteStream(path));
 		} catch (e) {
 			if (e instanceof Got.HTTPError) {
-				throw new StatusError(`${e.response.statusCode} ${e.response.statusMessage}`, e.response.statusCode, e.response.statusMessage);
-			} else {
+				throw new StatusError(`download error from ${url}`, e.response.statusCode, e.response.statusMessage, e);
+			} else if (e instanceof Got.RequestError || e instanceof Got.AbortError) {
+				throw new Error(String(e), { cause: e });
+			} else if (e instanceof Error) {
 				throw e;
+			} else {
+				throw new Error(String(e), { cause: e });
 			}
 		}
 
-		this.logger.succ(`Download finished: ${chalk.cyan(url)}`);
+		this.logger.info(`Download finished: ${chalk.cyan(url)}`);
 
 		return {
 			filename,
@@ -118,7 +127,7 @@ export class DownloadService {
 		// Create temp file
 		const [path, cleanup] = await createTemp();
 
-		this.logger.info(`text file: Temp file is ${path}`);
+		this.logger.debug(`text file: Temp file is ${path}`);
 
 		try {
 			// write content at URL to temp file

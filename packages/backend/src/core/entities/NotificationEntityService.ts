@@ -187,6 +187,10 @@ export class NotificationEntityService implements OnModuleInit {
 				exportedEntity: notification.exportedEntity,
 				fileId: notification.fileId,
 			} : {}),
+			...(notification.type === 'importCompleted' ? {
+				importedEntity: notification.importedEntity,
+				fileId: notification.fileId,
+			} : {}),
 			...(notification.type === 'scheduledNoteFailed' ? {
 				reason: notification.reason,
 			} : {}),

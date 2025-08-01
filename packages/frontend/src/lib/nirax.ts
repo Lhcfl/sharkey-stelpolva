@@ -274,7 +274,7 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 				} else {
 					redirectPath = current.route.redirect + (current._parsedRoute.queryString ? '?' + current._parsedRoute.queryString : '') + (current._parsedRoute.hash ? '#' + current._parsedRoute.hash : '');
 				}
-				if (_DEV_) console.log('Redirecting to: ', redirectPath);
+				if (_DEV_) console.debug('Redirecting to: ', redirectPath);
 				if (_redirected && this.redirectCount++ > 10) {
 					throw new Error('redirect loop detected');
 				}

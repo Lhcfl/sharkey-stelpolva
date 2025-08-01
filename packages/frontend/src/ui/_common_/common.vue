@@ -67,8 +67,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <XUpload v-if="uploads.length > 0"/>
 
-<component
-	:is="prefer.s.animation ? TransitionGroup : 'div'"
+<SkTransitionGroup
 	tag="div"
 	:class="[$style.notifications, {
 		[$style.notificationsPosition_leftTop]: prefer.s.notificationPosition === 'leftTop',
@@ -87,7 +86,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div v-for="notification in notifications" :key="notification.id" :class="$style.notification" :style="{ pointerEvents: getPointerEvents() }">
 		<XNotification :notification="notification"/>
 	</div>
-</component>
+</SkTransitionGroup>
 
 <XStreamIndicator/>
 
@@ -115,6 +114,7 @@ import { i18n } from '@/i18n.js';
 import { prefer } from '@/preferences.js';
 import { globalEvents } from '@/events.js';
 import XDrawerMenu from '@/ui/_common_/navbar-for-mobile.vue';
+import SkTransitionGroup from '@/components/SkTransitionGroup.vue';
 
 const XStreamIndicator = defineAsyncComponent(() => import('./stream-indicator.vue'));
 const XUpload = defineAsyncComponent(() => import('./upload.vue'));

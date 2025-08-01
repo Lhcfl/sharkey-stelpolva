@@ -78,6 +78,7 @@ export class AnnouncementService {
 			forExistingUsers: values.forExistingUsers,
 			silence: values.silence,
 			needConfirmationToRead: values.needConfirmationToRead,
+			confetti: values.confetti,
 			userId: values.userId,
 		});
 
@@ -130,6 +131,7 @@ export class AnnouncementService {
 			forExistingUsers: values.forExistingUsers,
 			silence: values.silence,
 			needConfirmationToRead: values.needConfirmationToRead,
+			confetti: values.confetti,
 			isActive: values.isActive,
 		});
 

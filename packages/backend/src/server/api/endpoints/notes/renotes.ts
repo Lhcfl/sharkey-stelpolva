@@ -47,7 +47,7 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		noteId: { type: 'string', format: 'misskey:id' },
-		userId: { type: "string", format: "misskey:id" },
+		userId: { type: 'string', format: 'misskey:id' },
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
@@ -81,19 +81,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('renote.user', 'renoteUser');
 
 			if (ps.userId) {
-				query.andWhere("user.id = :userId", { userId: ps.userId });
+				query.andWhere('user.id = :userId', { userId: ps.userId });
 			}
 
 			if (ps.quote) {
-				query.andWhere("note.text IS NOT NULL");
+				this.queryService.andIsQuote(query, 'note');
 			} else {
-				query.andWhere("note.text IS NULL");
+				this.queryService.andIsRenote(query, 'note');
 			}
 
 			this.queryService.generateVisibilityQuery(query, me);
 			this.queryService.generateBlockedHostQueryForNote(query);
-			if (me) this.queryService.generateMutedUserQueryForNotes(query, me);
-			if (me) this.queryService.generateBlockedUserQueryForNotes(query, me);
+			this.queryService.generateSuspendedUserQueryForNote(query);
+			if (me) {
+				this.queryService.generateMutedUserQueryForNotes(query, me);
+				this.queryService.generateBlockedUserQueryForNotes(query, me);
+			}
 
 			const renotes = await query.limit(ps.limit).getMany();
 

@@ -8,6 +8,7 @@ process.env.NODE_ENV = 'test';
 import * as assert from 'assert';
 import { WebSocket } from 'ws';
 import { MiFollowing } from '@/models/Following.js';
+import { MiInstance } from '@/models/Instance.js';
 import { api, createAppToken, initTestDb, port, post, signup, waitFire } from '../utils.js';
 import type * as misskey from 'misskey-js';
 
@@ -49,6 +50,12 @@ describe('Streaming', () => {
 		beforeAll(async () => {
 			const connection = await initTestDb(true);
 			Followings = connection.getRepository(MiFollowing);
+			const instances = connection.getRepository(MiInstance);
+			await instances.insert({
+				id: 'aaaaaa',
+				host: 'example.com',
+				firstRetrievedAt: new Date(),
+			});
 
 			ayano = await signup({ username: 'ayano' });
 			kyoko = await signup({ username: 'kyoko' });
@@ -172,7 +179,7 @@ describe('Streaming', () => {
 				const fired = await waitFire(
 					ayano, 'homeTimeline', // ayano:home
 					() => api('notes/create', { text: 'bar', visibility: 'followers', replyId: note.id }, kyoko),	// kyoko posts
-					msg => msg.type === 'note' && msg.body.userId === kyoko.id && msg.body.reply.text === 'foo',
+					msg => msg.type === 'note' && msg.body.userId === kyoko.id && msg.body.reply?.text === 'foo',
 				);
 
 				assert.strictEqual(fired, true);
@@ -572,14 +579,14 @@ describe('Streaming', () => {
 				assert.strictEqual(fired, false);
 			});
 
-			test('withReplies = falseでフォローしてる人によるリプライが流れてくる', async () => {
+			test('withReplies = falseでフォローしてる人によるリプライが流れてくない', async () => {
 				const fired = await waitFire(
 					ayano, 'globalTimeline', // ayano:Global
 					() => api('notes/create', { text: 'foo', replyId: kanakoNote.id }, kyoko),	// kyoko posts
 					msg => msg.type === 'note' && msg.body.userId === kyoko.id,	// wait kyoko
 				);
 
-				assert.strictEqual(fired, true);
+				assert.strictEqual(fired, false);
 			});
 		});
 

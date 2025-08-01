@@ -4,7 +4,6 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueueService } from '@/core/QueueService.js';
 import type { AntennasRepository, DriveFilesRepository, UsersRepository, MiAntenna as _Antenna } from '@/models/_.js';
@@ -19,9 +18,11 @@ export const meta = {
 	requiredRolePolicy: 'canImportAntennas',
 	prohibitMoved: true,
 
+	// 1 per minute
 	limit: {
-		duration: ms('1hour'),
-		max: 1,
+		type: 'bucket',
+		size: 1,
+		dripRate: 1000 * 60,
 	},
 	errors: {
 		noSuchFile: {
@@ -82,7 +83,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			if (currentAntennasCount + antennas.length >= (await this.roleService.getUserPolicies(me.id)).antennaLimit) {
 				throw new ApiError(meta.errors.tooManyAntennas);
 			}
-			this.queueService.createImportAntennasJob(me, antennas);
+			await this.queueService.createImportAntennasJob(me, antennas, file.id);
 		});
 	}
 }

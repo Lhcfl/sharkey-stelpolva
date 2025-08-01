@@ -4,6 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
+import { In } from 'typeorm';
 import type { Packed } from '@/misc/json-schema.js';
 import type { MiInstance } from '@/models/Instance.js';
 import { bindThis } from '@/decorators.js';
@@ -11,13 +12,16 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { MiUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
-import { MiMeta } from '@/models/_.js';
+import type { InstancesRepository, MiMeta } from '@/models/_.js';
 
 @Injectable()
 export class InstanceEntityService {
 	constructor(
 		@Inject(DI.meta)
 		private meta: MiMeta,
+
+		@Inject(DI.instancesRepository)
+		private readonly instancesRepository: InstancesRepository,
 
 		private roleService: RoleService,
 
@@ -31,6 +35,7 @@ export class InstanceEntityService {
 		me?: { id: MiUser['id']; } | null | undefined,
 	): Promise<Packed<'FederationInstance'>> {
 		const iAmModerator = me ? await this.roleService.isModerator(me as MiUser) : false;
+		const softwareSuspended = this.utilityService.isDeliverSuspendedSoftware(instance);
 
 		return {
 			id: instance.id,
@@ -41,9 +46,9 @@ export class InstanceEntityService {
 			followingCount: instance.followingCount,
 			followersCount: instance.followersCount,
 			isNotResponding: instance.isNotResponding,
-			isSuspended: instance.suspensionState !== 'none',
-			suspensionState: instance.suspensionState,
-			isBlocked: this.utilityService.isBlockedHost(this.meta.blockedHosts, instance.host),
+			isSuspended: instance.suspensionState !== 'none' || Boolean(softwareSuspended),
+			suspensionState: instance.suspensionState === 'none' && softwareSuspended ? 'softwareSuspended' : instance.suspensionState,
+			isBlocked: instance.isBlocked,
 			softwareName: instance.softwareName,
 			softwareVersion: instance.softwareVersion,
 			openRegistrations: instance.openRegistrations,
@@ -51,8 +56,8 @@ export class InstanceEntityService {
 			description: instance.description,
 			maintainerName: instance.maintainerName,
 			maintainerEmail: instance.maintainerEmail,
-			isSilenced: this.utilityService.isSilencedHost(this.meta.silencedHosts, instance.host),
-			isMediaSilenced: this.utilityService.isMediaSilencedHost(this.meta.mediaSilencedHosts, instance.host),
+			isSilenced: instance.isSilenced,
+			isMediaSilenced: instance.isMediaSilenced,
 			iconUrl: instance.iconUrl,
 			faviconUrl: instance.faviconUrl,
 			themeColor: instance.themeColor,
@@ -62,6 +67,7 @@ export class InstanceEntityService {
 			rejectReports: instance.rejectReports,
 			rejectQuotes: instance.rejectQuotes,
 			moderationNote: iAmModerator ? instance.moderationNote : null,
+			isBubbled: this.utilityService.isBubbledHost(instance.host),
 		};
 	}
 
@@ -71,6 +77,29 @@ export class InstanceEntityService {
 		me?: { id: MiUser['id']; } | null | undefined,
 	) {
 		return Promise.all(instances.map(x => this.pack(x, me)));
+	}
+
+	@bindThis
+	public async fetchInstancesByHost(instances: (MiInstance | MiInstance['host'])[]): Promise<MiInstance[]> {
+		const result: MiInstance[] = [];
+
+		const toFetch: string[] = [];
+		for (const instance of instances) {
+			if (typeof(instance) === 'string') {
+				toFetch.push(instance);
+			} else {
+				result.push(instance);
+			}
+		}
+
+		if (toFetch.length > 0) {
+			const fetched = await this.instancesRepository.findBy({
+				host: In(toFetch),
+			});
+			result.push(...fetched);
+		}
+
+		return result;
 	}
 }
 

@@ -41,6 +41,6 @@ export class CheckExpiredMutingsProcessorService {
 			await this.userMutingService.unmute(expired);
 		}
 
-		this.logger.succ('All expired mutings checked.');
+		this.logger.info('All expired mutings checked.');
 	}
 }

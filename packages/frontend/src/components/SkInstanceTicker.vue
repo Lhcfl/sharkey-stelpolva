@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: syuilo and other misskey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Small label that displays the name and icon of an instance.
 -->
 
 <template>

@@ -6,30 +6,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div class="_gaps" :class="$style.textRoot">
 	<Mfm :text="block.text ?? ''" :isBlock="true" :isNote="false"/>
-	<div v-if="isEnabledUrlPreview" class="_gaps_s">
-		<MkUrlPreview v-for="url in urls" :key="url" :url="url" :showAsQuote="!page.user.rejectQuotes"/>
+	<div v-if="isEnabledUrlPreview" class="_gaps_s" @click.stop>
+		<SkUrlPreviewGroup :sourceText="block.text" :showAsQuote="!page.user.rejectQuotes"/>
 	</div>
 </div>
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, computed } from 'vue';
-import * as mfm from '@transfem-org/sfm-js';
 import * as Misskey from 'misskey-js';
-import { extractUrlFromMfm } from '@/utility/extract-url-from-mfm.js';
 import { isEnabledUrlPreview } from '@/instance.js';
+import SkUrlPreviewGroup from '@/components/SkUrlPreviewGroup.vue';
 
-const MkUrlPreview = defineAsyncComponent(() => import('@/components/MkUrlPreview.vue'));
-
-const props = defineProps<{
+defineProps<{
 	block: Misskey.entities.PageBlock,
 	page: Misskey.entities.Page,
 }>();
-
-const urls = computed(() => {
-	if (!props.block.text) return [];
-	return extractUrlFromMfm(mfm.parse(props.block.text));
-});
 </script>
 
 <style lang="scss" module>

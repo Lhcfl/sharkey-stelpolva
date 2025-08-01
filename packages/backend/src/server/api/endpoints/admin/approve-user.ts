@@ -42,6 +42,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const profile = await this.userProfilesRepository.findOneBy({ userId: ps.userId });
 
+			if (user.approved) return;
+
 			await this.usersRepository.update(user.id, {
 				approved: true,
 			});

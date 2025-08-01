@@ -1,14 +1,18 @@
+/*
+ * SPDX-FileCopyrightText: Marie and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
-import { Brackets } from 'typeorm';
-import type { NotesRepository, MiMeta } from '@/models/_.js';
+import type { NotesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
-import { CacheService } from '@/core/CacheService.js';
-import { UserFollowingService } from '@/core/UserFollowingService.js';
+import type { CacheService } from '@/core/CacheService.js';
+import type { UserFollowingService } from '@/core/UserFollowingService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -64,9 +68,6 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.meta)
-		private serverSettings: MiMeta,
-
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
@@ -83,36 +84,34 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.btlDisabled);
 			}
 
-			const [
-				followings,
-			] = me ? await Promise.all([
-				this.cacheService.userFollowingsCache.fetch(me.id),
-			]) : [undefined];
-
-			if (ps.withReplies && ps.withFiles) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
-
 			//#region Construct query
 			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'),
 				ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('note.visibility = \'public\'')
 				.andWhere('note.channelId IS NULL')
-				.andWhere(new Brackets(qb => {
-					qb.where('note.userHost IN (:...hosts)', { hosts: this.serverSettings.bubbleInstances });
-					if (this.serverSettings.bubbleInstances.includes('#local')) {
-						qb.orWhere('note.userHost IS NULL');
-					}
-				}))
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('note.reply', 'reply')
 				.leftJoinAndSelect('note.renote', 'renote')
 				.leftJoinAndSelect('reply.user', 'replyUser')
-				.leftJoinAndSelect('renote.user', 'renoteUser');
+				.leftJoinAndSelect('renote.user', 'renoteUser')
+				.limit(ps.limit);
 
-			this.queryService.generateVisibilityQuery(query, me);
+			// This subquery mess teaches postgres how to use the right indexes.
+			// Using WHERE or ON conditions causes a fallback to full sequence scan, which times out.
+			// Important: don't use a query builder here or TypeORM will get confused and stop quoting column names! (known, unfixed bug apparently)
+			query
+				.leftJoin('(select "host" from "instance" where "isBubbled" = true)', 'bubbleInstance', '"bubbleInstance"."host" = "note"."userHost"')
+				.andWhere('"bubbleInstance" IS NOT NULL');
+			this.queryService
+				.leftJoinInstance(query, 'note.userInstance', 'userInstance', '"userInstance"."host" = "bubbleInstance"."host"');
+
 			this.queryService.generateBlockedHostQueryForNote(query);
-			if (me) this.queryService.generateMutedUserQueryForNotes(query, me);
-			if (me) this.queryService.generateBlockedUserQueryForNotes(query, me);
-			if (me) this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+			this.queryService.generateSilencedUserQueryForNotes(query, me);
+			if (me) {
+				this.queryService.generateMutedUserQueryForNotes(query, me);
+				this.queryService.generateBlockedUserQueryForNotes(query, me);
+				this.queryService.generateMutedNoteThreadQuery(query, me);
+			}
 
 			if (ps.withFiles) {
 				query.andWhere('note.fileIds != \'{}\'');
@@ -120,60 +119,51 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (!ps.withBots) query.andWhere('user.isBot = FALSE');
 
-			if (ps.withRenotes === false) {
-				query.andWhere(new Brackets(qb => {
-					qb.where('note.renoteId IS NULL');
-					qb.orWhere(new Brackets(qb => {
-						qb.where('note.text IS NOT NULL');
-						qb.orWhere('note.fileIds != \'{}\'');
-					}));
-				}));
+			if (!ps.withRenotes) {
+				this.queryService.generateExcludedRenotesQueryForNotes(query);
+			} else if (me) {
+				this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
 			}
 
-			if (!ps.withReplies) {
-				if (me) {
-					const followees = await this.userFollowingService.getFollowees(me.id);
-					const shouldShowReplyUserIds = [me.id, ...followees.filter(x => x.withReplies).map(x => x.followeeId)];
-					query.andWhere(new Brackets(qb => {
-						qb
-							.where('note.replyId IS NULL') // 返信ではない
-							.orWhere('note.replyUserId = :meId', { meId: me.id }) // reply my note
-							.orWhere(new Brackets(qb => {
-								qb // 返信だけど投稿者自身への返信
-									.where('note.replyId IS NOT NULL')
-									.andWhere('note.replyUserId = note.userId');
-							}))
-							.orWhere('note.userId IN (:...shouldShowReplyUserIds)', {
-								shouldShowReplyUserIds,
-							});
-					}));
-				} else {
-					query.andWhere(new Brackets(qb => {
-						qb
-							.where('note.replyId IS NULL') // 返信ではない
-							.orWhere(new Brackets(qb => {
-								qb // 返信だけど投稿者自身への返信
-									.where('note.replyId IS NOT NULL')
-									.andWhere('note.replyUserId = note.userId');
-							}));
-					}));
-				}
-			}
+			// if (!ps.withReplies) {
+			// 	if (me) {
+			// 		const followees = await this.userFollowingService.getFollowees(me.id);
+			// 		const shouldShowReplyUserIds = [me.id, ...followees.filter(x => x.withReplies).map(x => x.followeeId)];
+			// 		query.andWhere(new Brackets(qb => {
+			// 			qb
+			// 				.where('note.replyId IS NULL') // 返信ではない
+			// 				.orWhere('note.replyUserId = :meId', { meId: me.id }) // reply my note
+			// 				.orWhere(new Brackets(qb => {
+			// 					qb // 返信だけど投稿者自身への返信
+			// 						.where('note.replyId IS NOT NULL')
+			// 						.andWhere('note.replyUserId = note.userId');
+			// 				}))
+			// 				.orWhere('note.userId IN (:...shouldShowReplyUserIds)', {
+			// 					shouldShowReplyUserIds,
+			// 				});
+			// 		}));
+			// 	} else {
+			// 		query.andWhere(new Brackets(qb => {
+			// 			qb
+			// 				.where('note.replyId IS NULL') // 返信ではない
+			// 				.orWhere(new Brackets(qb => {
+			// 					qb // 返信だけど投稿者自身への返信
+			// 						.where('note.replyId IS NOT NULL')
+			// 						.andWhere('note.replyUserId = note.userId');
+			// 				}));
+			// 		}));
+			// 	}
+			// }
 
 			//#endregion
 
-			let timeline = await query.limit(ps.limit).getMany();
+			const timeline = await query.getMany();
 
-			timeline = timeline.filter(note => {
-				if (note.user?.isSilenced && me && followings && note.userId !== me.id && !followings[note.userId]) return false;
-				return true;
-			});
-
-			process.nextTick(() => {
-				if (me) {
+			if (me) {
+				process.nextTick(() => {
 					this.activeUsersChart.read(me);
-				}
-			});
+				});
+			}
 
 			return await this.noteEntityService.packMany(timeline, me);
 		});

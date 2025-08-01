@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Selectable entry on the "Following" feed, displaying a user with their most recent note.
 -->
 
 <template>
@@ -18,8 +20,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkA>
 		</header>
 		<div>
-			<div v-if="muted" :class="[$style.text, $style.muted]">
-				<SkMutedNote :muted="muted" :note="note"></SkMutedNote>
+			<div v-if="muted || threadMuted || noteMuted" :class="[$style.text, $style.muted]">
+				<SkMutedNote :muted="muted" :threadMuted="threadMuted" :noteMuted="noteMuted" :note="note"></SkMutedNote>
 			</div>
 			<Mfm v-else :class="$style.text" :text="getNoteSummary(note)" :isBlock="true" :plain="true" :nowrap="false" :isNote="true" nyaize="respect" :author="note.user"/>
 		</div>
@@ -35,6 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import * as Misskey from 'misskey-js';
+import { computed } from 'vue';
 import { getNoteSummary } from '@/utility/get-note-summary.js';
 import { userPage } from '@/filters/user.js';
 import { notePage } from '@/filters/note.js';
@@ -49,8 +52,7 @@ defineEmits<{
 	(event: 'select', user: Misskey.entities.UserLite): void
 }>();
 
-// eslint-disable-next-line vue/no-setup-props-reactivity-loss
-const { muted, hardMuted } = checkMutes(props.note);
+const { muted, hardMuted, threadMuted, noteMuted } = checkMutes(computed(() => props.note));
 </script>
 
 <style lang="scss" module>

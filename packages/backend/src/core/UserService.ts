@@ -10,6 +10,7 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { CacheService } from '@/core/CacheService.js';
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,7 @@ export class UserService {
 		private followingsRepository: FollowingsRepository,
 		private systemWebhookService: SystemWebhookService,
 		private userEntityService: UserEntityService,
+		private readonly cacheService: CacheService,
 	) {
 	}
 
@@ -38,14 +40,17 @@ export class UserService {
 				});
 			const wokeUp = result.isHibernated;
 			if (wokeUp) {
-				this.usersRepository.update(user.id, {
-					isHibernated: false,
-				});
-				this.followingsRepository.update({
-					followerId: user.id,
-				}, {
-					isFollowerHibernated: false,
-				});
+				await Promise.all([
+					this.usersRepository.update(user.id, {
+						isHibernated: false,
+					}),
+					this.followingsRepository.update({
+						followerId: user.id,
+					}, {
+						isFollowerHibernated: false,
+					}),
+					this.cacheService.hibernatedUserCache.set(user.id, false),
+				]);
 			}
 		} else {
 			this.usersRepository.update(user.id, {

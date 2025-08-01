@@ -18,6 +18,7 @@
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
+		"incremental": true,
 		"jsx": "react",
 		"jsxFactory": "h"
 	},

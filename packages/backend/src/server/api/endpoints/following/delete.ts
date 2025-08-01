@@ -12,6 +12,7 @@ import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { DI } from '@/di-symbols.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { ApiError } from '../../error.js';
+import { CacheService } from '@/core/CacheService.js';
 
 export const meta = {
 	tags: ['following', 'users'],
@@ -69,6 +70,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 		private getterService: GetterService,
 		private userFollowingService: UserFollowingService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const follower = me;
@@ -85,12 +87,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			// Check not following
-			const exist = await this.followingsRepository.exists({
-				where: {
-					followerId: follower.id,
-					followeeId: followee.id,
-				},
-			});
+			const exist = await this.cacheService.userFollowingsCache.fetch(follower.id).then(f => f.has(followee.id));
 
 			if (!exist) {
 				throw new ApiError(meta.errors.notFollowing);

@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: syuilo and other misskey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Simple view of a note in the Sharkey style. Used in quote renotes, link previews, etc.
 -->
 
 <template>

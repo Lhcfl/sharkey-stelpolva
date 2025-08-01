@@ -68,15 +68,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 		private roleService: RoleService,
 		private activeUsersChart: ActiveUsersChart,
-		private cacheService: CacheService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me ? me.id : null);
 			if (!policies.gtlAvailable) {
 				throw new ApiError(meta.errors.gtlDisabled);
 			}
-
-			const followings = me ? await this.cacheService.userFollowingsCache.fetch(me.id) : {};
 
 			//#region Construct query
 			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'),
@@ -90,11 +88,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('renote.user', 'renoteUser');
 
 			this.queryService.generateBlockedHostQueryForNote(query);
-
+			this.queryService.generateSilencedUserQueryForNotes(query, me);
 			if (me) {
 				this.queryService.generateMutedUserQueryForNotes(query, me);
 				this.queryService.generateBlockedUserQueryForNotes(query, me);
-				this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+				this.queryService.generateMutedNoteThreadQuery(query, me);
 			}
 
 			if (ps.withFiles) {
@@ -103,29 +101,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (!ps.withBots) query.andWhere('user.isBot = FALSE');
 
-			if (ps.withRenotes === false) {
-				query.andWhere(new Brackets(qb => {
-					qb.where('note.renoteId IS NULL');
-					qb.orWhere(new Brackets(qb => {
-						qb.where('note.text IS NOT NULL');
-						qb.orWhere('note.fileIds != \'{}\'');
-					}));
-				}));
+			if (!ps.withRenotes) {
+				this.queryService.generateExcludedRenotesQueryForNotes(query);
+			} else if (me) {
+				this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
 			}
 			//#endregion
 
-			let timeline = await query.limit(ps.limit).getMany();
+			const timeline = await query.limit(ps.limit).getMany();
 
-			timeline = timeline.filter(note => {
-				if (note.user?.isSilenced && me && followings && note.userId !== me.id && !followings[note.userId]) return false;
-				return true;
-			});
-
-			process.nextTick(() => {
-				if (me) {
+			if (me) {
+				process.nextTick(() => {
 					this.activeUsersChart.read(me);
-				}
-			});
+				});
+			}
 
 			return await this.noteEntityService.packMany(timeline, me);
 		});

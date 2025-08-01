@@ -173,8 +173,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkLazy>
 						<div v-if="noteview === 'pinned'" class="_gaps">
 							<div v-if="user.pinnedNotes.length < 1" class="_fullinfo">
-								<img :src="infoImageUrl" draggable="false" aria-hidden="true" :alt="i18n.ts.noNotes"/>
-								<div>{{ i18n.ts.noNotes }}</div>
+								<MkResult type="empty" :text="i18n.ts.noNotes"/>
 							</div>
 							<div v-else class="_panel">
 								<DynamicNote v-for="note of user.pinnedNotes" :key="note.id" class="note" :class="$style.pinnedNote" :note="note" :pinned="true"/>
@@ -220,7 +219,6 @@ import { misskeyApi } from '@/utility/misskey-api.js';
 import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/utility/isFfVisibleForMe.js';
 import { useRouter } from '@/router.js';
 import { getStaticImageUrl } from '@/utility/media-proxy.js';
-import { infoImageUrl } from '@/instance.js';
 import MkSparkle from '@/components/MkSparkle.vue';
 import { prefer } from '@/preferences.js';
 import DynamicNote from '@/components/DynamicNote.vue';

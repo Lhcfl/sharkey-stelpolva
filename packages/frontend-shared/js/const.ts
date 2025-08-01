@@ -129,6 +129,7 @@ export const notificationTypes = [
 	'chatRoomInvitationReceived',
 	'achievementEarned',
 	'exportCompleted',
+	'importCompleted',
 	'login',
 	'createToken',
 	'test',
@@ -178,10 +179,6 @@ export const ROLE_POLICIES = [
 	'chatAvailability',
 	'canTrend',
 ] as const;
-
-export const DEFAULT_SERVER_ERROR_IMAGE_URL = '/client-assets/status/error.png';
-export const DEFAULT_NOT_FOUND_IMAGE_URL = '/client-assets/status/missingpage.webp';
-export const DEFAULT_INFO_IMAGE_URL = '/client-assets/status/nothinghere.png';
 
 export const MFM_TAGS = ['tada', 'jelly', 'twitch', 'shake', 'spin', 'jump', 'bounce', 'flip', 'x2', 'x3', 'x4', 'scale', 'position', 'fg', 'bg', 'border', 'font', 'blur', 'rainbow', 'sparkle', 'rotate', 'ruby', 'unixtime', 'crop', 'fade', 'followmouse'];
 export const MFM_PARAMS: Record<typeof MFM_TAGS[number], string[]> = {

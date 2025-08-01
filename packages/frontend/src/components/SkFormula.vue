@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: dakkar, MoshiBar, and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Renders a KaTeX formula.
 -->
 
 <template>

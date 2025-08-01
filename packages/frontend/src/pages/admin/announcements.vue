@@ -70,6 +70,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkSwitch v-model="announcement.needConfirmationToRead" :helpText="i18n.ts._announcement.needConfirmationToReadDescription">
 							{{ i18n.ts._announcement.needConfirmationToRead }}
 						</MkSwitch>
+						<MkDisableSection :disabled="announcement.display === 'banner'">
+							<MkSwitch v-model="announcement.confetti" :helpText="i18n.ts._announcement.confettiDescription">
+								{{ i18n.ts._announcement.confetti }}
+							</MkSwitch>
+						</MkDisableSection>
 						<p v-if="announcement.reads">{{ i18n.tsx.nUsersRead({ n: announcement.reads }) }}</p>
 					</div>
 				</MkFolder>
@@ -97,6 +102,7 @@ import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import MkFolder from '@/components/MkFolder.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
+import MkDisableSection from '@/components/MkDisableSection.vue';
 
 const announcementsStatus = ref<'active' | 'archived'>('active');
 
@@ -127,6 +133,7 @@ function add() {
 		forExistingUsers: false,
 		silence: false,
 		needConfirmationToRead: false,
+		confetti: false,
 	});
 }
 

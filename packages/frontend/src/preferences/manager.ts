@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { v4 as uuid } from 'uuid';
 import { host, version } from '@@/js/config.js';
 import { PREF_DEF } from './def.js';
@@ -14,6 +14,7 @@ import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
 import { deepEqual } from '@/utility/deep-equal.js';
+import { reloadAsk } from '@/utility/reload-ask';
 
 // NOTE: 明示的な設定値のひとつとして null もあり得るため、設定が存在しないかどうかを判定する目的で null で比較したり ?? を使ってはいけない
 
@@ -84,16 +85,29 @@ export type StorageProvider = {
 	cloudSet: <K extends keyof PREF>(ctx: { key: K; scope: Scope; value: ValueOf<K>; }) => Promise<void>;
 };
 
-export type PreferencesDefinition = Record<string, {
-	default: any;
+export type Pref<T> = {
+	default: T;
 	accountDependent?: boolean;
 	serverDependent?: boolean;
-}>;
+	needsReload?: boolean;
+	onSet?: (value: T) => void;
+};
+
+export type PreferencesDefinition = Record<string, Pref<any> | undefined>;
 
 export class PreferencesManager {
 	private storageProvider: StorageProvider;
 	public profile: PreferencesProfile;
 	public cloudReady: Promise<void>;
+	private enableReload = true;
+
+	public suppressReload() {
+		this.enableReload = false;
+	}
+
+	public allowReload() {
+		this.enableReload = true;
+	}
 
 	/**
 	 * static / state の略 (static が予約語のため)
@@ -126,11 +140,11 @@ export class PreferencesManager {
 	}
 
 	private isAccountDependentKey<K extends keyof PREF>(key: K): boolean {
-		return (PREF_DEF as PreferencesDefinition)[key].accountDependent === true;
+		return (PREF_DEF as PreferencesDefinition)[key]?.accountDependent === true;
 	}
 
 	private isServerDependentKey<K extends keyof PREF>(key: K): boolean {
-		return (PREF_DEF as PreferencesDefinition)[key].serverDependent === true;
+		return (PREF_DEF as PreferencesDefinition)[key]?.serverDependent === true;
 	}
 
 	private rewriteRawState<K extends keyof PREF>(key: K, value: ValueOf<K>) {
@@ -142,13 +156,27 @@ export class PreferencesManager {
 		const v = JSON.parse(JSON.stringify(value)); // deep copy 兼 vueのプロキシ解除
 
 		if (deepEqual(this.s[key], v)) {
-			if (_DEV_) console.log('(skip) prefer:commit', key, v);
+			if (_DEV_) console.debug('(skip) prefer:commit', key, v);
 			return;
 		}
 
-		if (_DEV_) console.log('prefer:commit', key, v);
+		if (_DEV_) console.debug('prefer:commit', key, v);
 
 		this.rewriteRawState(key, v);
+
+		const pref = (PREF_DEF as PreferencesDefinition)[key];
+		if (pref) {
+			// Call custom setter
+			if (pref.onSet) {
+				pref.onSet(v);
+			}
+
+			// Prompt to reload the frontend
+			if (pref.needsReload && this.enableReload) {
+				// noinspection JSIgnoredPromiseFromCall
+				nextTick(() => reloadAsk({ unison: true }));
+			}
+		}
 
 		const record = this.getMatchedRecordOf(key);
 
@@ -250,13 +278,13 @@ export class PreferencesManager {
 				if (!deepEqual(cloudValue, record[1])) {
 					this.rewriteRawState(key, cloudValue);
 					record[1] = cloudValue;
-					if (_DEV_) console.log('cloud fetched', key, cloudValue);
+					if (_DEV_) console.debug('cloud fetched', key, cloudValue);
 				}
 			}
 		}
 
 		this.save();
-		if (_DEV_) console.log('cloud fetch completed');
+		if (_DEV_) console.debug('cloud fetch completed');
 	}
 
 	public static newProfile(): PreferencesProfile {

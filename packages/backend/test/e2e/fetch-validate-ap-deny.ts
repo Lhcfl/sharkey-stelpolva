@@ -25,7 +25,7 @@ describe('validateContentTypeSetAsActivityPub/JsonLD (deny case)', () => {
 			validateContentTypeSetAsActivityPub(res);
 		}
 
-		expect(doValidate).toThrow('Content type is not');
+		expect(doValidate).toThrow(/content type .+ is not/);
 	});
 
 	test('JSON-LD: ファイルはエラーになる', async () => {
@@ -35,6 +35,6 @@ describe('validateContentTypeSetAsActivityPub/JsonLD (deny case)', () => {
 			validateContentTypeSetAsJsonLD(res);
 		}
 
-		expect(doValidate).toThrow('Content type is not');
+		expect(doValidate).toThrow(/content type .+ is not/);
 	});
 });

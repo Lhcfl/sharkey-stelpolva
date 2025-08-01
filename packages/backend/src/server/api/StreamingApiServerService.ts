@@ -4,15 +4,15 @@
  */
 
 import { EventEmitter } from 'events';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import * as WebSocket from 'ws';
 import proxyAddr from 'proxy-addr';
-import ms from 'ms';
 import { DI } from '@/di-symbols.js';
-import type { UsersRepository, MiAccessToken, MiUser } from '@/models/_.js';
+import type { UsersRepository, MiAccessToken, MiUser, NoteReactionsRepository, NotesRepository, NoteFavoritesRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import type { Keyed, RateLimit } from '@/misc/rate-limit-utils.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { bindThis } from '@/decorators.js';
 import { CacheService } from '@/core/CacheService.js';
@@ -21,7 +21,9 @@ import { UserService } from '@/core/UserService.js';
 import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
 import { getIpHash } from '@/misc/get-ip-hash.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import type Logger from '@/logger.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
+import { QueryService } from '@/core/QueryService.js';
 import { AuthenticateService, AuthenticationError } from './AuthenticateService.js';
 import MainStreamConnection from './stream/Connection.js';
 import { ChannelsService } from './stream/ChannelsService.js';
@@ -32,11 +34,13 @@ import type * as http from 'node:http';
 const MAX_CONNECTIONS_PER_CLIENT = 32;
 
 @Injectable()
-export class StreamingApiServerService {
+export class StreamingApiServerService implements OnApplicationShutdown {
 	#wss: WebSocket.WebSocketServer;
 	#connections = new Map<WebSocket.WebSocket, number>();
 	#connectionsByClient = new Map<string, Set<WebSocket.WebSocket>>(); // key: IP / user ID -> value: connection
 	#cleanConnectionsIntervalId: NodeJS.Timeout | null = null;
+	readonly #globalEv = new EventEmitter();
+	#logger: Logger;
 
 	constructor(
 		@Inject(DI.redisForSub)
@@ -45,6 +49,16 @@ export class StreamingApiServerService {
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
+		@Inject(DI.noteReactionsRepository)
+		private readonly noteReactionsRepository: NoteReactionsRepository,
+
+		@Inject(DI.notesRepository)
+		private readonly notesRepository: NotesRepository,
+
+		@Inject(DI.noteFavoritesRepository)
+		private readonly noteFavoritesRepository: NoteFavoritesRepository,
+
+		private readonly queryService: QueryService,
 		private cacheService: CacheService,
 		private authenticateService: AuthenticateService,
 		private channelsService: ChannelsService,
@@ -57,6 +71,15 @@ export class StreamingApiServerService {
 		@Inject(DI.config)
 		private config: Config,
 	) {
+		this.redisForSub.on('message', this.onRedis);
+		this.#logger = loggerService.getLogger('streaming', 'coral');
+	}
+
+	@bindThis
+	onApplicationShutdown() {
+		this.redisForSub.off('message', this.onRedis);
+		this.#globalEv.removeAllListeners();
+		// Other shutdown logic is handled by detach(), which gets called by ServerServer's own shutdown handler.
 	}
 
 	@bindThis
@@ -67,6 +90,12 @@ export class StreamingApiServerService {
 		// Rate limit
 		const rateLimit = await this.rateLimiterService.limit(limit, limitActor);
 		return rateLimit.blocked;
+	}
+
+	@bindThis
+	private onRedis(_: string, data: string) {
+		const parsed = JSON.parse(data);
+		this.#globalEv.emit('message', parsed);
 	}
 
 	@bindThis
@@ -168,6 +197,10 @@ export class StreamingApiServerService {
 			};
 
 			const stream = new MainStreamConnection(
+				this.noteReactionsRepository,
+				this.notesRepository,
+				this.noteFavoritesRepository,
+				this.queryService,
 				this.channelsService,
 				this.notificationService,
 				this.cacheService,
@@ -193,17 +226,15 @@ export class StreamingApiServerService {
 					}
 				});
 
+				ws.once('error', (e) => {
+					this.#logger.error(`Unhandled error in Streaming Api: ${renderInlineError(e)}`);
+					ws.terminate();
+				});
+
 				this.#wss.emit('connection', ws, request, {
 					stream, user, app,
 				});
 			});
-		});
-
-		const globalEv = new EventEmitter();
-
-		this.redisForSub.on('message', (_: string, data: string) => {
-			const parsed = JSON.parse(data);
-			globalEv.emit('message', parsed);
 		});
 
 		this.#wss.on('connection', async (connection: WebSocket.WebSocket, request: http.IncomingMessage, ctx: {
@@ -219,12 +250,13 @@ export class StreamingApiServerService {
 				ev.emit(data.channel, data.message);
 			}
 
-			globalEv.on('message', onRedisMessage);
+			this.#globalEv.on('message', onRedisMessage);
 
 			await stream.listen(ev, connection);
 
 			this.#connections.set(connection, Date.now());
 
+			// TODO use collapsed queue
 			const userUpdateIntervalId = user ? setInterval(() => {
 				this.usersService.updateLastActiveDate(user);
 			}, 1000 * 60 * 5) : null;
@@ -235,7 +267,7 @@ export class StreamingApiServerService {
 			connection.once('close', () => {
 				ev.removeAllListeners();
 				stream.dispose();
-				globalEv.off('message', onRedisMessage);
+				this.#globalEv.off('message', onRedisMessage);
 				this.#connections.delete(connection);
 				if (userUpdateIntervalId) clearInterval(userUpdateIntervalId);
 			});
@@ -260,13 +292,24 @@ export class StreamingApiServerService {
 	}
 
 	@bindThis
-	public detach(): Promise<void> {
+	public async detach(): Promise<void> {
 		if (this.#cleanConnectionsIntervalId) {
 			clearInterval(this.#cleanConnectionsIntervalId);
 			this.#cleanConnectionsIntervalId = null;
 		}
-		return new Promise((resolve) => {
-			this.#wss.close(() => resolve());
+
+		for (const connection of this.#connections.keys()) {
+			connection.close();
+		}
+
+		this.#connections.clear();
+		this.#connectionsByClient.clear();
+
+		await new Promise<void>((resolve, reject) => {
+			this.#wss.close(err => {
+				if (err) reject(err);
+				else resolve();
+			});
 		});
 	}
 }

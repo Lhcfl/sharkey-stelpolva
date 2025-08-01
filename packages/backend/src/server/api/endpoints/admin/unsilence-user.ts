@@ -39,11 +39,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.cacheService.findUserById(ps.userId);
 
-			await this.moderationLogService.log(me, 'unSilenceUser', {
-				userId: ps.userId,
-				userUsername: user.username,
-				userHost: user.host,
-			});
+			if (!user.isSilenced) return;
 
 			await this.usersRepository.update(user.id, {
 				isSilenced: false,
@@ -51,6 +47,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			this.globalEventService.publishInternalEvent(user.host == null ? 'localUserUpdated' : 'remoteUserUpdated', {
 				id: user.id,
+			});
+
+			await this.moderationLogService.log(me, 'unSilenceUser', {
+				userId: ps.userId,
+				userUsername: user.username,
+				userHost: user.host,
 			});
 		});
 	}

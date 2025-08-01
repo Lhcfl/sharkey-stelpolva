@@ -1,19 +1,17 @@
 <!--
 SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+List that displays the most recent note from each followed user, in order, with date separators.
 -->
 
 <template>
 <MkPullToRefresh :refresher="() => reload()">
 	<MkPagination ref="latestNotesPaging" :pagination="latestNotesPagination" @init="onListReady">
-		<template #empty>
-			<div class="_fullinfo">
-				<img :src="infoImageUrl" draggable="false" :alt="i18n.ts.noNotes" aria-hidden="true"/>
-				<div>{{ i18n.ts.noNotes }}</div>
-			</div>
-		</template>
+		<template #empty><MkResult type="empty" :text="i18n.ts.noNotes"/></template>
 
 		<template #default="{ items: notes }">
+			<!-- TODO replace with SkDateSeparatedList when merged -->
 			<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.panel" :noGap="true">
 				<SkFollowingFeedEntry :note="note" :class="props.selectedUserId == note.userId && $style.selected" @select="u => selectUser(u.id)"/>
 			</MkDateSeparatedList>
@@ -26,7 +24,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { computed, shallowRef } from 'vue';
 import type { Paging } from '@/components/MkPagination.vue';
 import type { FollowingFeedTab } from '@/types/following-feed.js';
-import { infoImageUrl } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 import MkPagination from '@/components/MkPagination.vue';

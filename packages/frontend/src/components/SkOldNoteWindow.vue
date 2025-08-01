@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: marie and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Displays an old version of an edited note.
 -->
 
 <template>
@@ -40,19 +42,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div v-show="appearNote.cw == null || showContent">
 					<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 					<MkA v-if="appearNote.replyId" :class="$style.noteReplyTarget" :to="`/notes/${appearNote.replyId}`"><i class="ph-arrow-bend-left-up ph-bold ph-lg"></i></MkA>
-					<Mfm v-if="appearNote.text" :text="appearNote.text" :isBlock="true" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis"/>
+					<Mfm v-if="appearNote.text" :text="appearNote.text" :parsedNodes="parsed" :isBlock="true" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis"/>
 					<a v-if="appearNote.renote != null" :class="$style.rn">RN:</a>
 					<SkNoteTranslation :note="note" :translation="translation" :translating="translating"></SkNoteTranslation>
 					<div v-if="appearNote.files && appearNote.files.length > 0">
 						<MkMediaList :mediaList="appearNote.files"/>
 					</div>
 					<MkPoll v-if="appearNote.poll" :noteId="appearNote.id" :poll="appearNote.poll" :local="!appearNote.user.host" :author="appearNote.user" :emojiUrls="appearNote.emojis" :class="$style.poll"/>
-					<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="true" :showAsQuote="!appearNote.user.rejectQuotes" :skipNoteIds="selfNoteIds" style="margin-top: 6px;"/>
+					<div class="_gaps_s" style="margin-top: 6px;" @click.stop>
+						<SkUrlPreviewGroup :sourceNodes="parsed" :sourceNote="appearNote" :compact="true" :detail="true" :showAsQuote="!appearNote.user.rejectQuotes" :skipNoteIds="selfNoteIds"/>
+					</div>
 					<div v-if="appearNote.renote" :class="$style.quote"><MkNoteSimple :note="appearNote.renote" :class="$style.quoteNote"/></div>
 				</div>
 				<MkA v-if="appearNote.channel && !inChannel" :class="$style.channel" :to="`/channels/${appearNote.channel.id}`"><i class="ph-television ph-bold ph-lg"></i> {{ appearNote.channel.name }}</MkA>
 			</div>
-			<footer :class="$style.footer">
+			<footer :class="$style.footer" class="_gaps _h_gaps" tabindex="0" role="group" :aria-label="i18n.ts.noteFooterLabel">
 				<div :class="$style.noteFooterInfo">
 					<MkTime :time="appearNote.createdAt" mode="detail"/>
 				</div>
@@ -76,14 +80,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { inject, onMounted, ref, shallowRef, computed } from 'vue';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import MkMediaList from '@/components/MkMediaList.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
 import MkWindow from '@/components/MkWindow.vue';
 import MkPoll from '@/components/MkPoll.vue';
-import MkUrlPreview from '@/components/MkUrlPreview.vue';
 import MkInstanceTicker from '@/components/MkInstanceTicker.vue';
 import { userPage } from '@/filters/user.js';
 import { i18n } from '@/i18n.js';
@@ -94,7 +97,8 @@ import { getPluginHandlers } from '@/plugin.js';
 import { spacingNote } from '@/utility/autospacing';
 import SkNoteTranslation from '@/components/SkNoteTranslation.vue';
 import { getSelfNoteIds } from '@/utility/get-self-note-ids';
-import { extractPreviewUrls } from '@/utility/extract-preview-urls.js';
+import SkUrlPreviewGroup from '@/components/SkUrlPreviewGroup.vue';
+import { getAppearNote } from '@/utility/get-appear-note';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -143,13 +147,12 @@ const isRenote = (
 );
 
 const el = shallowRef<HTMLElement>();
-const appearNote = computed(() => spacingNote(isRenote ? note.value.renote as Misskey.entities.Note : note.value));
-const parsed = computed(() => appearNote.value.text ? mfm.parse(appearNote.value.text) : null);
+const appearNote = computed(() => spacingNote(getAppearNote(note.value)));
+const parsed = computed(() => appearNote.value.text ? mfm.parse(appearNote.value.text) : []);
 
 const showContent = ref(false);
 const translation = ref<Misskey.entities.NotesTranslateResponse | false | null>(null);
 const translating = ref(false);
-const urls = computed(() => parsed.value ? extractPreviewUrls(props.note, parsed.value) : null);
 const selfNoteIds = computed(() => getSelfNoteIds(props.note));
 const showTicker = (prefer.s.instanceTicker === 'always') || (prefer.s.instanceTicker === 'remote' && appearNote.value.user.instance);
 
@@ -164,11 +167,12 @@ const showTicker = (prefer.s.instanceTicker === 'always') || (prefer.s.instanceT
 }
 
 .footer {
-		position: relative;
-		z-index: 1;
-		margin-top: 0.4em;
-		width: max-content;
-		min-width: max-content;
+	position: relative;
+	z-index: 1;
+	margin-top: 0.4em;
+	width: max-content;
+	min-width: max-content;
+	overflow-x: auto;
 }
 
 .note {
@@ -281,20 +285,8 @@ const showTicker = (prefer.s.instanceTicker === 'always') || (prefer.s.instanceT
 	padding: 8px;
 	opacity: 0.7;
 
-	&:not(:last-child) {
-		margin-right: 1.5em;
-	}
-
 	&:hover {
 		color: var(--MI_THEME-fgHighlighted);
-	}
-}
-
-@container (max-width: 350px) {
-	.noteFooterButton {
-		&:not(:last-child) {
-			margin-right: 0.1em;
-		}
 	}
 }
 
@@ -323,12 +315,6 @@ const showTicker = (prefer.s.instanceTicker === 'always') || (prefer.s.instanceT
 	.noteHeaderAvatar {
 		width: 50px;
 		height: 50px;
-	}
-
-	.noteFooterButton {
-		&:not(:last-child) {
-			margin-right: 0.1em;
-		}
 	}
 }
 </style>

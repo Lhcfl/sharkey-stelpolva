@@ -20,9 +20,7 @@ export const meta = {
 		},
 	},
 
-	res: {
-		type: 'object',
-	},
+	res: {},
 
 	// 10 calls per 5 seconds
 	limit: {

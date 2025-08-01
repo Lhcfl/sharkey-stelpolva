@@ -64,6 +64,30 @@ export const packedUserLiteSchema = {
 			example: 'misskey.example.com',
 			description: 'The local host is represented with `null`.',
 		},
+		createdAt: {
+			type: 'string',
+			nullable: false, optional: false,
+			format: 'date-time',
+		},
+		updatedAt: {
+			type: 'string',
+			nullable: true, optional: false,
+			format: 'date-time',
+		},
+		lastFetchedAt: {
+			type: 'string',
+			nullable: true, optional: false,
+			format: 'date-time',
+		},
+		approved: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
+		description: {
+			type: 'string',
+			nullable: true, optional: false,
+			example: 'Hi masters, I am Ai!',
+		},
 		avatarUrl: {
 			type: 'string',
 			format: 'url',
@@ -200,7 +224,23 @@ export const packedUserLiteSchema = {
 					type: 'string',
 					nullable: true, optional: false,
 				},
+				isSilenced: {
+					type: 'boolean',
+					nullable: false, optional: false,
+				},
 			},
+		},
+		followersCount: {
+			type: 'number',
+			nullable: false, optional: false,
+		},
+		followingCount: {
+			type: 'number',
+			nullable: false, optional: false,
+		},
+		notesCount: {
+			type: 'number',
+			nullable: false, optional: false,
 		},
 		emojis: {
 			type: 'object',
@@ -236,6 +276,14 @@ export const packedUserLiteSchema = {
 				},
 			},
 		},
+		attributionDomains: {
+			type: 'array',
+			nullable: false, optional: false,
+			items: {
+				type: 'string',
+				nullable: false, optional: false,
+			},
+		},
 	},
 } as const;
 
@@ -265,21 +313,6 @@ export const packedUserDetailedNotMeOnlySchema = {
 				format: 'id',
 				nullable: false, optional: false,
 			},
-		},
-		createdAt: {
-			type: 'string',
-			nullable: false, optional: false,
-			format: 'date-time',
-		},
-		updatedAt: {
-			type: 'string',
-			nullable: true, optional: false,
-			format: 'date-time',
-		},
-		lastFetchedAt: {
-			type: 'string',
-			nullable: true, optional: false,
-			format: 'date-time',
 		},
 		bannerUrl: {
 			type: 'string',
@@ -311,11 +344,6 @@ export const packedUserDetailedNotMeOnlySchema = {
 			type: 'boolean',
 			nullable: false, optional: false,
 			example: false,
-		},
-		description: {
-			type: 'string',
-			nullable: true, optional: false,
-			example: 'Hi masters, I am Ai!',
 		},
 		location: {
 			type: 'string',
@@ -364,18 +392,6 @@ export const packedUserDetailedNotMeOnlySchema = {
 				nullable: false, optional: false,
 				format: 'url',
 			},
-		},
-		followersCount: {
-			type: 'number',
-			nullable: false, optional: false,
-		},
-		followingCount: {
-			type: 'number',
-			nullable: false, optional: false,
-		},
-		notesCount: {
-			type: 'number',
-			nullable: false, optional: false,
 		},
 		pinnedNoteIds: {
 			type: 'array',
@@ -703,18 +719,7 @@ export const packedMeDetailedOnlySchema = {
 			type: 'array',
 			nullable: false, optional: false,
 			items: {
-				type: 'object',
-				nullable: false, optional: false,
-				properties: {
-					name: {
-						type: 'string',
-						nullable: false, optional: false,
-					},
-					unlockedAt: {
-						type: 'number',
-						nullable: false, optional: false,
-					},
-				},
+				ref: 'Achievement',
 			},
 		},
 		loggedInDays: {
@@ -748,6 +753,10 @@ export const packedMeDetailedOnlySchema = {
 		},
 		emailVerified: {
 			type: 'boolean',
+			nullable: true, optional: true,
+		},
+		signupReason: {
+			type: 'string',
 			nullable: true, optional: true,
 		},
 		securityKeysList: {

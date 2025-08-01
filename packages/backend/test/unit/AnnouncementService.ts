@@ -8,9 +8,12 @@ process.env.NODE_ENV = 'test';
 import { jest } from '@jest/globals';
 import { ModuleMocker } from 'jest-mock';
 import { Test } from '@nestjs/testing';
+import { NoOpCacheService } from '../misc/noOpCaches.js';
+import { FakeInternalEventService } from '../misc/FakeInternalEventService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
 import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntityService.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 import type {
 	AnnouncementReadsRepository,
 	AnnouncementsRepository,
@@ -71,24 +74,27 @@ describe('AnnouncementService', () => {
 				AnnouncementEntityService,
 				CacheService,
 				IdService,
+				InternalEventService,
+				GlobalEventService,
+				ModerationLogService,
 			],
 		})
 			.useMocker((token) => {
-				if (token === GlobalEventService) {
-					return {
-						publishMainStream: jest.fn(),
-						publishBroadcastStream: jest.fn(),
-					};
-				} else if (token === ModerationLogService) {
-					return {
-						log: jest.fn(),
-					};
-				} else if (typeof token === 'function') {
+				if (typeof token === 'function') {
 					const mockMetadata = moduleMocker.getMetadata(token) as MockFunctionMetadata<any, any>;
 					const Mock = moduleMocker.generateFromMetadata(mockMetadata);
 					return new Mock();
 				}
 			})
+			.overrideProvider(GlobalEventService).useValue({
+				publishMainStream: jest.fn(),
+				publishBroadcastStream: jest.fn(),
+			} as unknown as GlobalEventService)
+			.overrideProvider(ModerationLogService).useValue({
+				log: jest.fn(),
+			})
+			.overrideProvider(InternalEventService).useClass(FakeInternalEventService)
+			.overrideProvider(CacheService).useClass(NoOpCacheService)
 			.compile();
 
 		app.enableShutdownHooks();

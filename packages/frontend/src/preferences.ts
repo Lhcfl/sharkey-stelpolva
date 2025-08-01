@@ -130,7 +130,7 @@ function syncBetweenTabs() {
 
 	latestSyncedAt = Date.now();
 
-	if (_DEV_) console.log('prefer:synced');
+	if (_DEV_) console.debug('prefer:synced');
 }
 
 window.setInterval(syncBetweenTabs, 5000);

@@ -308,7 +308,7 @@ async function onSubmit(): Promise<void> {
 			emit('approvalPending');
 		} else {
 			const resJson = (await res.json()) as Misskey.entities.SignupResponse;
-			if (_DEV_) console.log(resJson);
+			if (_DEV_) console.debug(resJson);
 
 			emit('signup', resJson);
 

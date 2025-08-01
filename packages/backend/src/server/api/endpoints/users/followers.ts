@@ -12,6 +12,7 @@ import { FollowingEntityService } from '@/core/entities/FollowingEntityService.j
 import { UtilityService } from '@/core/UtilityService.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -89,6 +90,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private followingEntityService: FollowingEntityService,
 		private queryService: QueryService,
 		private roleService: RoleService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy(ps.userId != null
@@ -110,12 +112,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					if (me == null) {
 						throw new ApiError(meta.errors.forbidden);
 					} else if (me.id !== user.id) {
-						const isFollowing = await this.followingsRepository.exists({
-							where: {
-								followeeId: user.id,
-								followerId: me.id,
-							},
-						});
+						const isFollowing = await this.cacheService.userFollowingsCache.fetch(me.id).then(f => f.has(user.id));
 						if (!isFollowing) {
 							throw new ApiError(meta.errors.forbidden);
 						}

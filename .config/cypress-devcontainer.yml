@@ -57,8 +57,14 @@ db:
   user: postgres
   pass: postgres
 
-  # Whether disable Caching queries
-  #disableCache: true
+  ## Log a warning to the server console if any query takes longer than this to complete.
+  ## Measured in milliseconds; set to 0 to disable. (default: 300)
+  #slowQueryThreshold: 300
+
+  # If false, then query results will be cached in redis.
+  # If true (default), then queries will not be cached.
+  # This will reduce database load at the cost of increased Redis traffic and risk of bugs and unpredictable behavior.
+  #disableCache: false
 
   # Extra Connection options
   #extra:

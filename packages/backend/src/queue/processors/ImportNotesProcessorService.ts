@@ -159,10 +159,9 @@ export class ImportNotesProcessorService {
 
 	@bindThis
 	public async process(job: Bull.Job<DbNoteImportJobData>): Promise<void> {
-		this.logger.info(`Starting note import of ${job.data.user.id} ...`);
-
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
+			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
 			return;
 		}
 
@@ -170,8 +169,11 @@ export class ImportNotesProcessorService {
 			id: job.data.fileId,
 		});
 		if (file == null) {
+			this.logger.debug(`Skip: file ${job.data.fileId} does not exist`);
 			return;
 		}
+
+		this.logger.info(`Starting note import of ${job.data.user.id} ...`);
 
 		let folder = await this.driveFoldersRepository.findOneBy({ name: 'Imports', userId: job.data.user.id });
 		if (folder == null) {
@@ -184,7 +186,7 @@ export class ImportNotesProcessorService {
 		if (type === 'Twitter' || file.name.startsWith('twitter') && file.name.endsWith('.zip')) {
 			const [path, cleanup] = await createTempDir();
 
-			this.logger.info(`Temp dir is ${path}`);
+			this.logger.debug(`Temp dir is ${path}`);
 
 			const destPath = path + '/twitter.zip';
 
@@ -192,15 +194,13 @@ export class ImportNotesProcessorService {
 				await fsp.writeFile(destPath, '', 'binary');
 				await this.downloadUrl(file.url, destPath);
 			} catch (e) { // TODO: 何度か再試行
-				if (e instanceof Error || typeof e === 'string') {
-					this.logger.error(e);
-				}
+				this.logger.error('Error importing notes:', e as Error);
 				throw e;
 			}
 
 			const outputPath = path + '/twitter';
 			try {
-				this.logger.succ(`Unzipping to ${outputPath}`);
+				this.logger.debug(`Unzipping to ${outputPath}`);
 				ZipReader.withDestinationPath(outputPath).viaBuffer(await fsp.readFile(destPath));
 
 				const unprocessedTweets = this.parseTwitterFile(await fsp.readFile(outputPath + '/data/tweets.js', 'utf-8'));
@@ -214,7 +214,7 @@ export class ImportNotesProcessorService {
 		} else if (type === 'Facebook' || file.name.startsWith('facebook-') && file.name.endsWith('.zip')) {
 			const [path, cleanup] = await createTempDir();
 
-			this.logger.info(`Temp dir is ${path}`);
+			this.logger.debug(`Temp dir is ${path}`);
 
 			const destPath = path + '/facebook.zip';
 
@@ -222,15 +222,13 @@ export class ImportNotesProcessorService {
 				await fsp.writeFile(destPath, '', 'binary');
 				await this.downloadUrl(file.url, destPath);
 			} catch (e) { // TODO: 何度か再試行
-				if (e instanceof Error || typeof e === 'string') {
-					this.logger.error(e);
-				}
+				this.logger.error('Error importing notes:', e as Error);
 				throw e;
 			}
 
 			const outputPath = path + '/facebook';
 			try {
-				this.logger.succ(`Unzipping to ${outputPath}`);
+				this.logger.debug(`Unzipping to ${outputPath}`);
 				ZipReader.withDestinationPath(outputPath).viaBuffer(await fsp.readFile(destPath));
 				const postsJson = await fsp.readFile(outputPath + '/your_activity_across_facebook/posts/your_posts__check_ins__photos_and_videos_1.json', 'utf-8');
 				const posts = JSON.parse(postsJson);
@@ -247,7 +245,7 @@ export class ImportNotesProcessorService {
 		} else if (file.name.endsWith('.zip')) {
 			const [path, cleanup] = await createTempDir();
 
-			this.logger.info(`Temp dir is ${path}`);
+			this.logger.debug(`Temp dir is ${path}`);
 
 			const destPath = path + '/unknown.zip';
 
@@ -255,15 +253,13 @@ export class ImportNotesProcessorService {
 				await fsp.writeFile(destPath, '', 'binary');
 				await this.downloadUrl(file.url, destPath);
 			} catch (e) { // TODO: 何度か再試行
-				if (e instanceof Error || typeof e === 'string') {
-					this.logger.error(e);
-				}
+				this.logger.error('Error importing notes:', e as Error);
 				throw e;
 			}
 
 			const outputPath = path + '/unknown';
 			try {
-				this.logger.succ(`Unzipping to ${outputPath}`);
+				this.logger.debug(`Unzipping to ${outputPath}`);
 				ZipReader.withDestinationPath(outputPath).viaBuffer(await fsp.readFile(destPath));
 				const isInstagram = type === 'Instagram' || fs.existsSync(outputPath + '/instagram_live') || fs.existsSync(outputPath + '/instagram_ads_and_businesses');
 				const isOutbox = type === 'Mastodon' || fs.existsSync(outputPath + '/outbox.json');
@@ -307,15 +303,13 @@ export class ImportNotesProcessorService {
 		} else if (job.data.type === 'Misskey' || file.name.startsWith('notes-') && file.name.endsWith('.json')) {
 			const [path, cleanup] = await createTemp();
 
-			this.logger.info(`Temp dir is ${path}`);
+			this.logger.debug(`Temp dir is ${path}`);
 
 			try {
 				await fsp.writeFile(path, '', 'utf-8');
 				await this.downloadUrl(file.url, path);
 			} catch (e) { // TODO: 何度か再試行
-				if (e instanceof Error || typeof e === 'string') {
-					this.logger.error(e);
-				}
+				this.logger.error('Error importing notes:', e as Error);
 				throw e;
 			}
 
@@ -326,7 +320,7 @@ export class ImportNotesProcessorService {
 			cleanup();
 		}
 
-		this.logger.succ('Import jobs created');
+		this.logger.debug('Import jobs created');
 	}
 
 	@bindThis
@@ -365,7 +359,7 @@ export class ImportNotesProcessorService {
 					try {
 						await this.downloadUrl(file.url, filePath);
 					} catch (e) { // TODO: 何度か再試行
-						this.logger.error(e instanceof Error ? e : new Error(e as string));
+						this.logger.error('Error importing notes:', e as Error);
 					}
 					const driveFile = await this.driveService.addFile({
 						user: user,
@@ -504,7 +498,7 @@ export class ImportNotesProcessorService {
 					try {
 						await this.downloadUrl(file.url, filePath);
 					} catch (e) { // TODO: 何度か再試行
-						this.logger.error(e instanceof Error ? e : new Error(e as string));
+						this.logger.error('Error importing notes:', e as Error);
 					}
 					const driveFile = await this.driveService.addFile({
 						user: user,
@@ -628,7 +622,7 @@ export class ImportNotesProcessorService {
 							try {
 								await this.downloadUrl(videos[0].url, filePath);
 							} catch (e) { // TODO: 何度か再試行
-								this.logger.error(e instanceof Error ? e : new Error(e as string));
+								this.logger.error('Error importing notes:', e as Error);
 							}
 							const driveFile = await this.driveService.addFile({
 								user: user,
@@ -653,7 +647,7 @@ export class ImportNotesProcessorService {
 							try {
 								await this.downloadUrl(file.media_url_https, filePath);
 							} catch (e) { // TODO: 何度か再試行
-								this.logger.error(e instanceof Error ? e : new Error(e as string));
+								this.logger.error('Error importing notes:', e as Error);
 							}
 
 							const driveFile = await this.driveService.addFile({
@@ -673,7 +667,7 @@ export class ImportNotesProcessorService {
 			const createdNote = await this.noteCreateService.import(user, { createdAt: date, reply: parentNote, text: text, files: files });
 			if (tweet.childNotes) this.queueService.createImportTweetsToDbJob(user, tweet.childNotes, createdNote.id);
 		} catch (e) {
-			this.logger.warn(`Error: ${e}`);
+			this.logger.error('Error importing notes:', e as Error);
 		}
 	}
 

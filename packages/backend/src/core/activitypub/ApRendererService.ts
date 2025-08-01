@@ -6,8 +6,9 @@
 import { createPublicKey, randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import { UnrecoverableError } from 'bullmq';
+import { Element, Text } from 'domhandler';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import type { MiPartialLocalUser, MiLocalUser, MiPartialRemoteUser, MiRemoteUser, MiUser } from '@/models/User.js';
@@ -31,10 +32,12 @@ import { IdService } from '@/core/IdService.js';
 import { appendContentWarning } from '@/misc/append-content-warning.js';
 import { QueryService } from '@/core/QueryService.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { CacheService } from '@/core/CacheService.js';
+import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
 import { JsonLdService } from './JsonLdService.js';
 import { ApMfmService } from './ApMfmService.js';
 import { CONTEXT } from './misc/contexts.js';
-import { getApId, IOrderedCollection, IOrderedCollectionPage } from './type.js';
+import { getApId, ILink, IOrderedCollection, IOrderedCollectionPage } from './type.js';
 import type { IAccept, IActivity, IAdd, IAnnounce, IApDocument, IApEmoji, IApHashtag, IApImage, IApMention, IBlock, ICreate, IDelete, IFlag, IFollow, IKey, ILike, IMove, IObject, IPost, IQuestion, IReject, IRemove, ITombstone, IUndo, IUpdate } from './type.js';
 
 @Injectable()
@@ -74,6 +77,7 @@ export class ApRendererService {
 		private idService: IdService,
 		private readonly queryService: QueryService,
 		private utilityService: UtilityService,
+		private readonly cacheService: CacheService,
 	) {
 	}
 
@@ -231,7 +235,7 @@ export class ApRendererService {
 	 */
 	@bindThis
 	public async renderFollowUser(id: MiUser['id']): Promise<string> {
-		const user = await this.usersRepository.findOneByOrFail({ id: id }) as MiPartialLocalUser | MiPartialRemoteUser;
+		const user = await this.cacheService.findUserById(id) as MiPartialLocalUser | MiPartialRemoteUser;
 		return this.userEntityService.getUserUri(user);
 	}
 
@@ -402,7 +406,7 @@ export class ApRendererService {
 			inReplyToNote = await this.notesRepository.findOneBy({ id: note.replyId });
 
 			if (inReplyToNote != null) {
-				const inReplyToUser = await this.usersRepository.findOneBy({ id: inReplyToNote.userId });
+				const inReplyToUser = await this.cacheService.findUserById(inReplyToNote.userId);
 
 				if (inReplyToUser) {
 					if (inReplyToNote.uri) {
@@ -420,9 +424,9 @@ export class ApRendererService {
 			inReplyTo = null;
 		}
 
-		let quote;
+		let quote: string | undefined = undefined;
 
-		if (note.renoteId) {
+		if (isRenote(note) && isQuote(note)) {
 			const renote = await this.notesRepository.findOneBy({ id: note.renoteId });
 
 			if (renote) {
@@ -480,16 +484,18 @@ export class ApRendererService {
 			// the claas name `quote-inline` is used in non-misskey clients for styling quote notes.
 			// For compatibility, the span part should be kept as possible.
 			apAppend.push((doc, body) => {
-				body.appendChild(doc.createElement('br'));
-				body.appendChild(doc.createElement('br'));
-				const span = doc.createElement('span');
-				span.className = 'quote-inline';
-				span.appendChild(doc.createTextNode('RE: '));
-				const link = doc.createElement('a');
-				link.setAttribute('href', quote);
-				link.textContent = quote;
-				span.appendChild(link);
-				body.appendChild(span);
+				body.childNodes.push(new Element('br', {}));
+				body.childNodes.push(new Element('br', {}));
+				const span = new Element('span', {
+					class: 'quote-inline',
+				});
+				span.childNodes.push(new Text('RE: '));
+				const link = new Element('a', {
+					href: quote,
+				});
+				link.childNodes.push(new Text(quote));
+				span.childNodes.push(link);
+				body.childNodes.push(span);
 			});
 		}
 
@@ -505,11 +511,21 @@ export class ApRendererService {
 		const emojis = await this.getEmojis(note.emojis);
 		const apemojis = emojis.filter(emoji => !emoji.localOnly).map(emoji => this.renderEmoji(emoji));
 
-		const tag = [
+		const tag: IObject[] = [
 			...hashtagTags,
 			...mentionTags,
 			...apemojis,
 		];
+
+		// https://codeberg.org/fediverse/fep/src/branch/main/fep/e232/fep-e232.md
+		if (quote) {
+			tag.push({
+				type: 'Link',
+				mediaType: 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+				rel: 'https://misskey-hub.net/ns#_misskey_quote',
+				href: quote,
+			} satisfies ILink);
+		}
 
 		const asPoll = poll ? {
 			type: 'Question',
@@ -534,6 +550,7 @@ export class ApRendererService {
 			attributedTo,
 			summary: summary ?? undefined,
 			content: content ?? undefined,
+			updated: note.updatedAt?.toISOString() ?? undefined,
 			_misskey_content: text,
 			source: {
 				content: text,
@@ -542,6 +559,9 @@ export class ApRendererService {
 			_misskey_quote: quote,
 			quoteUrl: quote,
 			quoteUri: quote,
+			// https://codeberg.org/fediverse/fep/src/branch/main/fep/044f/fep-044f.md
+			// Disabled since Mastodon hides the fallback link when this is set
+			// quote: quote,
 			published: this.idService.parse(note.id).date.toISOString(),
 			to,
 			cc,
@@ -570,7 +590,7 @@ export class ApRendererService {
 		const attachment = profile.fields.map(field => ({
 			type: 'PropertyValue',
 			name: field.name,
-			value: this.mfmService.toHtml(mfm.parse(field.value)),
+			value: this.mfmService.toHtml(mfm.parse(field.value), [], [], true),
 		}));
 
 		const emojis = await this.getEmojis(user.emojis);
@@ -618,6 +638,7 @@ export class ApRendererService {
 			enableRss: user.enableRss,
 			speakAsCat: user.speakAsCat,
 			attachment: attachment.length ? attachment : undefined,
+			attributionDomains: user.attributionDomains,
 		};
 
 		if (user.movedToUri) {
@@ -734,170 +755,16 @@ export class ApRendererService {
 	}
 
 	@bindThis
-	public renderUpdate(object: string | IObject, user: { id: MiUser['id'] }): IUpdate {
+	public renderUpdate(object: IObject, user: { id: MiUser['id'] }): IUpdate {
+		// Deterministic activity IDs to allow de-duplication by remote instances
+		const updatedAt = object.updated ? new Date(object.updated).getTime() : Date.now();
 		return {
-			id: `${this.config.url}/users/${user.id}#updates/${new Date().getTime()}`,
+			id: `${this.config.url}/users/${user.id}#updates/${updatedAt}`,
 			actor: this.userEntityService.genLocalUserUri(user.id),
 			type: 'Update',
 			to: ['https://www.w3.org/ns/activitystreams#Public'],
 			object,
 			published: new Date().toISOString(),
-		};
-	}
-
-	@bindThis
-	public async renderUpNote(note: MiNote, author: MiUser, dive = true): Promise<IPost> {
-		const getPromisedFiles = async (ids: string[]): Promise<MiDriveFile[]> => {
-			if (ids.length === 0) return [];
-			const items = await this.driveFilesRepository.findBy({ id: In(ids) });
-			return ids.map(id => items.find(item => item.id === id)).filter((item): item is MiDriveFile => item != null);
-		};
-
-		let inReplyTo;
-		let inReplyToNote: MiNote | null;
-
-		if (note.replyId) {
-			inReplyToNote = await this.notesRepository.findOneBy({ id: note.replyId });
-
-			if (inReplyToNote != null) {
-				const inReplyToUser = await this.usersRepository.findOneBy({ id: inReplyToNote.userId });
-
-				if (inReplyToUser) {
-					if (inReplyToNote.uri) {
-						inReplyTo = inReplyToNote.uri;
-					} else {
-						if (dive) {
-							inReplyTo = await this.renderUpNote(inReplyToNote, inReplyToUser, false);
-						} else {
-							inReplyTo = `${this.config.url}/notes/${inReplyToNote.id}`;
-						}
-					}
-				}
-			}
-		} else {
-			inReplyTo = null;
-		}
-
-		let quote;
-
-		if (note.renoteId) {
-			const renote = await this.notesRepository.findOneBy({ id: note.renoteId });
-
-			if (renote) {
-				quote = renote.uri ? renote.uri : `${this.config.url}/notes/${renote.id}`;
-			}
-		}
-
-		const attributedTo = this.userEntityService.genLocalUserUri(note.userId);
-
-		const mentions = note.mentionedRemoteUsers ? (JSON.parse(note.mentionedRemoteUsers) as IMentionedRemoteUsers).map(x => x.uri) : [];
-
-		let to: string[] = [];
-		let cc: string[] = [];
-
-		if (note.visibility === 'public') {
-			to = ['https://www.w3.org/ns/activitystreams#Public'];
-			cc = [`${attributedTo}/followers`].concat(mentions);
-		} else if (note.visibility === 'home') {
-			to = [`${attributedTo}/followers`];
-			cc = ['https://www.w3.org/ns/activitystreams#Public'].concat(mentions);
-		} else if (note.visibility === 'followers') {
-			to = [`${attributedTo}/followers`];
-			cc = mentions;
-		} else {
-			to = mentions;
-		}
-
-		const mentionedUsers = note.mentions && note.mentions.length > 0 ? await this.usersRepository.findBy({
-			id: In(note.mentions),
-		}) : [];
-
-		const hashtagTags = note.tags.map(tag => this.renderHashtag(tag));
-		const mentionTags = mentionedUsers.map(u => this.renderMention(u as MiLocalUser | MiRemoteUser));
-
-		const files = await getPromisedFiles(note.fileIds);
-
-		const text = note.text ?? '';
-		let poll: MiPoll | null = null;
-
-		if (note.hasPoll) {
-			poll = await this.pollsRepository.findOneBy({ noteId: note.id });
-		}
-
-		const apAppend: Appender[] = [];
-
-		if (quote) {
-			// Append quote link as `<br><br><span class="quote-inline">RE: <a href="...">...</a></span>`
-			// the claas name `quote-inline` is used in non-misskey clients for styling quote notes.
-			// For compatibility, the span part should be kept as possible.
-			apAppend.push((doc, body) => {
-				body.appendChild(doc.createElement('br'));
-				body.appendChild(doc.createElement('br'));
-				const span = doc.createElement('span');
-				span.className = 'quote-inline';
-				span.appendChild(doc.createTextNode('RE: '));
-				const link = doc.createElement('a');
-				link.setAttribute('href', quote);
-				link.textContent = quote;
-				span.appendChild(link);
-				body.appendChild(span);
-			});
-		}
-
-		let summary = note.cw === '' ? String.fromCharCode(0x200B) : note.cw;
-
-		// Apply mandatory CW, if applicable
-		if (author.mandatoryCW) {
-			summary = appendContentWarning(summary, author.mandatoryCW);
-		}
-
-		const { content } = this.apMfmService.getNoteHtml(note, apAppend);
-
-		const emojis = await this.getEmojis(note.emojis);
-		const apemojis = emojis.filter(emoji => !emoji.localOnly).map(emoji => this.renderEmoji(emoji));
-
-		const tag = [
-			...hashtagTags,
-			...mentionTags,
-			...apemojis,
-		];
-
-		const asPoll = poll ? {
-			type: 'Question',
-			[poll.expiresAt && poll.expiresAt < new Date() ? 'closed' : 'endTime']: poll.expiresAt,
-			[poll.multiple ? 'anyOf' : 'oneOf']: poll.choices.map((text, i) => ({
-				type: 'Note',
-				name: text,
-				replies: {
-					type: 'Collection',
-					totalItems: poll!.votes[i],
-				},
-			})),
-		} as const : {};
-
-		return {
-			id: `${this.config.url}/notes/${note.id}`,
-			type: 'Note',
-			attributedTo,
-			summary: summary ?? undefined,
-			content: content ?? undefined,
-			updated: note.updatedAt?.toISOString(),
-			_misskey_content: text,
-			source: {
-				content: text,
-				mediaType: 'text/x.misskeymarkdown',
-			},
-			_misskey_quote: quote,
-			quoteUrl: quote,
-			quoteUri: quote,
-			published: this.idService.parse(note.id).date.toISOString(),
-			to,
-			cc,
-			inReplyTo,
-			attachment: files.map(x => this.renderDocument(x)),
-			sensitive: note.cw != null || files.some(file => file.isSensitive),
-			tag,
-			...asPoll,
 		};
 	}
 
@@ -940,9 +807,7 @@ export class ApRendererService {
 
 		const keypair = await this.userKeypairService.getUserKeypair(user.id);
 
-		const jsonLd = this.jsonLdService.use();
-		jsonLd.debug = false;
-		activity = await jsonLd.signRsaSignature2017(activity, keypair.privateKey, `${this.config.url}/users/${user.id}#main-key`);
+		activity = await this.jsonLdService.signRsaSignature2017(activity, keypair.privateKey, `${this.config.url}/users/${user.id}#main-key`);
 
 		return activity;
 	}
@@ -1054,6 +919,27 @@ export class ApRendererService {
 				return r.note_uri ?? `${this.config.url}/notes/${r.note_id}`;
 			}),
 		};
+	}
+
+	@bindThis
+	public async renderNoteOrRenoteActivity(note: MiNote, user: MiUser, hint?: { renote?: MiNote | null }) {
+		if (note.localOnly) return null;
+
+		if (isPureRenote(note)) {
+			const renote = hint?.renote ?? note.renote ?? await this.notesRepository.findOneByOrFail({ id: note.renoteId });
+			const apAnnounce = this.renderAnnounce(renote.uri ?? `${this.config.url}/notes/${renote.id}`, note);
+			return this.addContext(apAnnounce);
+		}
+
+		const apNote = await this.renderNote(note, user, false);
+
+		if (note.updatedAt != null) {
+			const apUpdate = this.renderUpdate(apNote, user);
+			return this.addContext(apUpdate);
+		} else {
+			const apCreate = this.renderCreate(apNote, note);
+			return this.addContext(apCreate);
+		}
 	}
 
 	@bindThis

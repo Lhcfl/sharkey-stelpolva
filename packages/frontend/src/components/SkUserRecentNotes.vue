@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Displays a user's recent notes for the "Following" feed.
 -->
 
 <template>

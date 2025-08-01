@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: CenTdemeern1 and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Displays a Flash Player window via Ruffle.
 -->
 
 <template>

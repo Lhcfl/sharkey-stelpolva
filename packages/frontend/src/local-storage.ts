@@ -53,23 +53,23 @@ export type Keys = (
 //const safeSessionStorage = new Map<Keys, string>();
 
 export const miLocalStorage = {
-	getItem: (key: Keys): string | null => {
-		return window.localStorage.getItem(key);
+	getItem: <T extends string = string>(key: Keys): T | null => {
+		return window.localStorage.getItem(key) as T | null;
 	},
-	setItem: (key: Keys, value: string): void => {
+	setItem: <T extends string = string>(key: Keys, value: T): void => {
 		window.localStorage.setItem(key, value);
 	},
 	removeItem: (key: Keys): void => {
 		window.localStorage.removeItem(key);
 	},
-	getItemAsJson: (key: Keys): any | undefined => {
+	getItemAsJson: <T = any>(key: Keys): T | undefined => {
 		const item = miLocalStorage.getItem(key);
 		if (item === null) {
 			return undefined;
 		}
 		return JSON.parse(item);
 	},
-	setItemAsJson: (key: Keys, value: any): void => {
+	setItemAsJson: <T = any>(key: Keys, value: T): void => {
 		miLocalStorage.setItem(key, JSON.stringify(value));
 	},
 };

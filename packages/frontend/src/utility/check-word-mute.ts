@@ -3,16 +3,41 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 import * as Misskey from 'misskey-js';
-import { inject, ref } from 'vue';
-import type { Ref } from 'vue';
+import { computed, inject, ref } from 'vue';
+import type { Ref, ComputedRef } from 'vue';
 import { $i } from '@/i';
 import { checkStpvSoftMute } from './check-stpv-soft-mute';
 
-export function checkMutes(noteToCheck: Misskey.entities.Note, withHardMute = false) {
-	const stpvMuted = checkStpvSoftMute(noteToCheck);
-	const muted = ref(stpvMuted || checkMute(noteToCheck, $i?.mutedWords));
-	const hardMuted = ref(withHardMute && checkMute(noteToCheck, $i?.hardMutedWords, true));
-	return { muted, hardMuted };
+export function checkMutes(noteToCheck: ComputedRef<Misskey.entities.Note>, withHardMute?: ComputedRef<boolean>) {
+	const muteEnable = ref(true);
+
+	const muted = computed<false | string[], boolean>({
+		get() {
+			if (!muteEnable.value) return false;
+			const patch = checkStpvSoftMute(noteToCheck.value);
+			return checkMute(noteToCheck.value, $i?.mutedWords) || patch;
+		},
+		set(value: boolean) {
+			muteEnable.value = value;
+		},
+	});
+
+	const threadMuted = computed(() => {
+		if (!muteEnable.value) return false;
+		return noteToCheck.value.isMutingThread;
+	});
+
+	const noteMuted = computed(() => {
+		if (!muteEnable.value) return false;
+		return noteToCheck.value.isMutingNote;
+	});
+
+	const hardMuted = computed(() => {
+		if (!withHardMute?.value) return false;
+		return checkMute(noteToCheck.value, $i?.hardMutedWords, true);
+	});
+
+	return { muted, hardMuted, threadMuted, noteMuted };
 }
 
 export function checkMute(note: Misskey.entities.Note, mutes: undefined | null): false;

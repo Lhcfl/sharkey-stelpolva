@@ -36,7 +36,7 @@ export class GetterService {
 		const note = await this.notesRepository.findOneBy({ id: noteId });
 
 		if (note == null) {
-			throw new IdentifiableError('9725d0ce-ba28-4dde-95a7-2cbb2c15de24', 'No such note.');
+			throw new IdentifiableError('9725d0ce-ba28-4dde-95a7-2cbb2c15de24', `Note ${noteId} does not exist`);
 		}
 
 		return note;
@@ -47,7 +47,7 @@ export class GetterService {
 		const note = await this.notesRepository.findOne({ where: { id: noteId }, relations: ['user'] });
 
 		if (note == null) {
-			throw new IdentifiableError('9725d0ce-ba28-4dde-95a7-2cbb2c15de24', 'No such note.');
+			throw new IdentifiableError('9725d0ce-ba28-4dde-95a7-2cbb2c15de24', `Note ${noteId} does not exist`);
 		}
 
 		return note;
@@ -59,7 +59,7 @@ export class GetterService {
 	@bindThis
 	public async getEdits(noteId: MiNote['id']) {
 		const edits = await this.noteEditRepository.findBy({ noteId: noteId }).catch(() => {
-			throw new IdentifiableError('9725d0ce-ba28-4dde-95a7-2cbb2c15de24', 'No such note.');
+			throw new IdentifiableError('9725d0ce-ba28-4dde-95a7-2cbb2c15de24', `Note ${noteId} does not exist`);
 		});
 
 		return edits;
@@ -73,7 +73,7 @@ export class GetterService {
 		const user = await this.usersRepository.findOneBy({ id: userId });
 
 		if (user == null) {
-			throw new IdentifiableError('15348ddd-432d-49c2-8a5a-8069753becff', 'No such user.');
+			throw new IdentifiableError('15348ddd-432d-49c2-8a5a-8069753becff', `User ${userId} does not exist`);
 		}
 
 		return user as MiLocalUser | MiRemoteUser;

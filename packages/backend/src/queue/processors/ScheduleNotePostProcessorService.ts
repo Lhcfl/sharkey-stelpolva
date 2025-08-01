@@ -12,6 +12,7 @@ import { DI } from '@/di-symbols.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import type { MiScheduleNoteType } from '@/models/NoteSchedule.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 import type { ScheduleNotePostJobData } from '../types.js';
@@ -129,10 +130,11 @@ export class ScheduleNotePostProcessorService {
 					channel,
 				}).catch(async (err: IdentifiableError) => {
 					this.notificationService.createNotification(me.id, 'scheduledNoteFailed', {
-						reason: err.message,
+						reason: renderInlineError(err),
 					});
 					await this.noteScheduleRepository.remove(data);
-					throw this.logger.error(`Schedule Note Failed Reason: ${err.message}`);
+					this.logger.error(`Scheduled note failed: ${renderInlineError(err)}`);
+					throw err;
 				});
 				await this.noteScheduleRepository.remove(data);
 				this.notificationService.createNotification(me.id, 'scheduledNotePosted', {

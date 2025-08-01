@@ -622,6 +622,35 @@ marginはそのコンポーネントを使う側が設定する
 ### indexというファイル名を使うな
 ESMではディレクトリインポートは廃止されているのと、ディレクトリインポートせずともファイル名が index だと何故か一部のライブラリ？でディレクトリインポートだと見做されてエラーになる
 
+### Memory Caches
+
+Sharkey offers multiple memory cache implementations, each meant for a different use case.
+The following table compares the available options:
+
+| Cache               | Type      | Consistency | Persistence | Data Source | Cardinality | Eviction | Description                                                                                                                                                                                                                                                                |
+|---------------------|-----------|-------------|-------------|-------------|-------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `MemoryKVCache`     | Key-Value | None        | None        | Caller      | Single      | Lifetime | Implements a basic in-memory Key-Value store. The implementation is entirely synchronous, except for user-provided data sources.                                                                                                                                           |
+| `MemorySingleCache` | Single    | None        | None        | Caller      | Single      | Lifetime | Implements a basic in-memory Single Value store. The implementation is entirely synchronous, except for user-provided data sources.                                                                                                                                        |
+| `RedisKVCache`      | Key-Value | Eventual    | Redis       | Callback    | Single      | Lifetime | Extends `MemoryKVCache` with Redis-backed persistence and a pre-defined callback data source. This provides eventual consistency guarantees based on the memory cache lifetime.                                                                                            |
+| `RedisSingleCache`  | Single    | Eventual    | Redis       | Callback    | Single      | Lifetime | Extends `MemorySingleCache` with Redis-backed persistence and a pre-defined callback data source. This provides eventual consistency guarantees based on the memory cache lifetime.                                                                                        |
+| `QuantumKVCache`    | Key-Value | Immediate   | None        | Callback    | Multiple    | Lifetime | Combines `MemoryKVCache` with a pre-defined callback data source and immediate consistency via Redis sync events. The implementation offers multi-item batch overloads for efficient bulk operations. **This is the recommended cache implementation for most use cases.** |
+
+Key-Value caches store multiple entries per cache, while Single caches store a single value that can be accessed directly.
+Consistency refers to the consistency of cached data between different processes in the instance cluster: "None" means no consistency guarantees, "Eventual" caches will gradually become consistent after some unknown time, and "Immediate" consistency ensures accurate data ASAP after the update.
+Caches with persistence can retain their data after a reboot through an external service such as Redis.
+If a data source is supported, then this allows the cache to directly load missing data in response to a fetch.
+"Caller" data sources are passed into the fetch method(s) directly, while "Callback" sources are passed in as a function when the cache is first initialized.
+The cardinality of a cache refers to the number of items that can be updated in a single operation, and eviction, finally, is the method that the cache uses to evict stale data.
+
+#### Selecting a cache implementation
+
+For most cache uses, `QuantumKVCache` should be considered first.
+It offers strong consistency guarantees, multiple cardinality, and a cleaner API surface than the older caches.
+An alternate cache implementation should be considered if any of the following apply:
+* The data is particularly slow to calculate or difficult to access. In these cases, either `RedisKVCache` or `RedisSingleCache` should be considered.
+* If stale data is acceptable, then consider `MemoryKVCache` or `MemorySingleCache`. These synchronous implementations have much less overhead than the other options.
+* There is only one data item, or all data items must be fetched together. Using `MemorySingleCache` or `RedisSingleCache` could provide a cleaner implementation without resorting to hacks like a fixed key.
+
 ## CSS Recipe
 
 ### Lighten CSS vars
@@ -690,13 +719,18 @@ seems to do a decent job)
 * re-generate locales (`pnpm run build-assets`) and commit
 * build the frontend: `rm -rf built/; NODE_ENV=development pnpm --filter=frontend --filter=frontend-embed --filter=frontend-shared build` (the `development` tells it to keep some of the original filenames in the built files)
 * make sure there aren't any new `ti-*` classes (Tabler Icons), and replace them with appropriate `ph-*` ones (Phosphor Icons) in [`vite.replaceicons.ts`](packages/frontend/vite.replaceIcons.ts).
-    * This command should show you want to change: `grep -ohrP '(?<=["'\'']ti )(ti-(?!fw)[\w\-]+)' --exclude \*.map -- built/ | sort -u`.
+    * This command should show you want to change: `grep -ohrP '(?<=["'\''](ti )?)(ti-(?!fw)[\w\-]+)' --exclude \*.map -- built/ | sort -u`.
     * NOTE: `ti-fw` is a special class that's defined by Misskey, leave it alone.
     * After every change, re-build the frontend and check again, until there are no more `ti-*` classes in the built files.
     * Commit!
 * double-check the new migration, that they won't conflict with our db changes: `git diff develop -- packages/backend/migration/`
 * `pnpm clean; pnpm build`
-* run tests `pnpm test; pnpm --filter backend test:e2e` (requires a test database, [see above](#testing)) and fix as much as you can.
-* run lint `pnpm --filter=backend --filter=frontend-shared lint` + `pnpm --filter=frontend --filter=frontend-embed eslint` and fix as much as you can.
+* run tests `pnpm test; pnpm --filter backend test:e2e` (requires a
+  test database, [see above](#testing)) and fix them all (the e2e
+  tests randomly fail with weird errors like `relation "users" does
+  not exist`, run them again if that happens)
+* run lint `pnpm --filter=backend --filter=frontend-shared lint` +
+  `pnpm --filter=frontend --filter=frontend-embed eslint` and fix all
+  the problems
 
 Then push and open a Merge Request.

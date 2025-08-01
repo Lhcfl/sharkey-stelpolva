@@ -92,7 +92,7 @@ export type IEndpointMeta = (Omit<IEndpointMetaBase, 'requireCrential' | 'requir
 }) | (Omit<IEndpointMetaBase, 'secure'> & {
 	secure: true,
 }) | (Omit<IEndpointMetaBase, 'requireCredential' | 'kind'> & {
-	requireCredential: true,
+	requireCredential: true | 'optional',
 	kind: (typeof permissions)[number],
 }) | (Omit<IEndpointMetaBase, 'requireModerator' | 'kind'> & {
 	requireModerator: true,

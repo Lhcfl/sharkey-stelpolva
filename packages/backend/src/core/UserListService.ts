@@ -12,21 +12,22 @@ import type { MiUser } from '@/models/User.js';
 import type { MiUserList } from '@/models/UserList.js';
 import type { MiUserListMembership } from '@/models/UserListMembership.js';
 import { IdService } from '@/core/IdService.js';
-import type { GlobalEvents } from '@/core/GlobalEventService.js';
+import type { GlobalEvents, InternalEventTypes } from '@/core/GlobalEventService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueService } from '@/core/QueueService.js';
-import { RedisKVCache } from '@/misc/cache.js';
+import { QuantumKVCache } from '@/misc/QuantumKVCache.js';
 import { RoleService } from '@/core/RoleService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 
 @Injectable()
 export class UserListService implements OnApplicationShutdown, OnModuleInit {
 	public static TooManyUsersError = class extends Error {};
 
-	public membersCache: RedisKVCache<Set<string>>;
+	public membersCache: QuantumKVCache<Set<string>>;
 	private roleService: RoleService;
 
 	constructor(
@@ -52,16 +53,15 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 		private globalEventService: GlobalEventService,
 		private queueService: QueueService,
 		private systemAccountService: SystemAccountService,
+		private readonly internalEventService: InternalEventService,
 	) {
-		this.membersCache = new RedisKVCache<Set<string>>(this.redisClient, 'userListMembers', {
+		this.membersCache = new QuantumKVCache<Set<string>>(this.internalEventService, 'userListMembers', {
 			lifetime: 1000 * 60 * 30, // 30m
-			memoryCacheLifetime: 1000 * 60, // 1m
 			fetcher: (key) => this.userListMembershipsRepository.find({ where: { userListId: key }, select: ['userId'] }).then(xs => new Set(xs.map(x => x.userId))),
-			toRedisConverter: (value) => JSON.stringify(Array.from(value)),
-			fromRedisConverter: (value) => new Set(JSON.parse(value)),
 		});
 
-		this.redisForSub.on('message', this.onMessage);
+		this.internalEventService.on('userListMemberAdded', this.onMessage);
+		this.internalEventService.on('userListMemberRemoved', this.onMessage);
 	}
 
 	async onModuleInit() {
@@ -69,15 +69,12 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 	}
 
 	@bindThis
-	private async onMessage(_: string, data: string): Promise<void> {
-		const obj = JSON.parse(data);
-
-		if (obj.channel === 'internal') {
-			const { type, body } = obj.message as GlobalEvents['internal']['payload'];
+	private async onMessage<E extends 'userListMemberAdded' | 'userListMemberRemoved'>(body: InternalEventTypes[E], type: E): Promise<void> {
+		{
 			switch (type) {
 				case 'userListMemberAdded': {
 					const { userListId, memberId } = body;
-					const members = await this.membersCache.get(userListId);
+					const members = this.membersCache.get(userListId);
 					if (members) {
 						members.add(memberId);
 					}
@@ -85,7 +82,7 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 				}
 				case 'userListMemberRemoved': {
 					const { userListId, memberId } = body;
-					const members = await this.membersCache.get(userListId);
+					const members = this.membersCache.get(userListId);
 					if (members) {
 						members.delete(memberId);
 					}
@@ -154,7 +151,8 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 
 	@bindThis
 	public dispose(): void {
-		this.redisForSub.off('message', this.onMessage);
+		this.internalEventService.off('userListMemberAdded', this.onMessage);
+		this.internalEventService.off('userListMemberRemoved', this.onMessage);
 		this.membersCache.dispose();
 	}
 

@@ -48,7 +48,7 @@ export const packedFederationInstanceSchema = {
 		suspensionState: {
 			type: 'string',
 			nullable: false, optional: false,
-			enum: ['none', 'manuallySuspended', 'goneSuspended', 'autoSuspendedForNotResponding'],
+			enum: ['none', 'manuallySuspended', 'goneSuspended', 'autoSuspendedForNotResponding', 'softwareSuspended'],
 		},
 		isBlocked: {
 			type: 'boolean',
@@ -134,6 +134,10 @@ export const packedFederationInstanceSchema = {
 		moderationNote: {
 			type: 'string',
 			optional: true, nullable: true,
+		},
+		isBubbled: {
+			type: 'boolean',
+			optional: false, nullable: false,
 		},
 	},
 } as const;

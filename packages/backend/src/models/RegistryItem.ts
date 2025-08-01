@@ -7,8 +7,8 @@ import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typ
 import { id } from './util/id.js';
 import { MiUser } from './User.js';
 
-// TODO: 同じdomain、同じscope、同じkeyのレコードは二つ以上存在しないように制約付けたい
 @Entity('registry_item')
+@Index(['userId', 'key', 'scope', 'domain'], { unique: true })
 export class MiRegistryItem {
 	@PrimaryColumn(id())
 	public id: string;

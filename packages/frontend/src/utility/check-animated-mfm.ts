@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 
 export function checkAnimationFromMfm(nodes: mfm.MfmNode[]): boolean {
 	const animatedNodes = mfm.extract(nodes, (node) => {

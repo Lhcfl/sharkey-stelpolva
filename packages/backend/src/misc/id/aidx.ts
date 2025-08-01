@@ -10,6 +10,7 @@
 
 import { customAlphabet } from 'nanoid';
 import { parseBigInt36 } from '@/misc/bigint.js';
+import { IdentifiableError } from '../identifiable-error.js';
 
 export const aidxRegExp = /^[0-9a-z]{16}$/;
 
@@ -34,7 +35,7 @@ function getNoise(): string {
 }
 
 export function genAidx(t: number): string {
-	if (isNaN(t)) throw new Error('Failed to create AIDX: Invalid Date');
+	if (isNaN(t)) throw new IdentifiableError('6b73b7d5-9d2b-48b4-821c-ef955efe80ad', 'Failed to create AIDX: Invalid Date');
 	counter++;
 	return getTime(t) + nodeId + getNoise();
 }

@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: marie and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Header for a note in the Sharkey style, displaying info such as username and creation timestamp.
 -->
 
 <template>

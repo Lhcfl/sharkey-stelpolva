@@ -86,10 +86,10 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	canManageCustomEmojis: false,
 	canManageAvatarDecorations: false,
 	canSearchNotes: false,
-	canUseTranslator: true,
+	canUseTranslator: false,
 	canHideAds: false,
 	driveCapacityMb: 100,
-	maxFileSizeMb: 10,
+	maxFileSizeMb: 25,
 	alwaysMarkNsfw: false,
 	canUpdateBioMedia: true,
 	pinLimit: 5,
@@ -735,6 +735,17 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 				after: updated,
 			});
 		}
+	}
+
+	@bindThis
+	public async clone(role: MiRole, moderator?: MiUser): Promise<MiRole> {
+		const suffix = ' (cloned)';
+		const newName = role.name.slice(0, 256 - suffix.length) + suffix;
+
+		return this.create({
+			...role,
+			name: newName,
+		}, moderator);
 	}
 
 	@bindThis

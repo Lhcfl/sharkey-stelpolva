@@ -221,13 +221,15 @@ parseAndMergeCategories('', customEmojiFolderRoot);
 watch(q, () => {
 	if (emojisEl.value) emojisEl.value.scrollTop = 0;
 
-	if (q.value === '') {
+	const query = q.value.trim();
+
+	if (query === '') {
 		searchResultCustom.value = [];
 		searchResultUnicode.value = [];
 		return;
 	}
 
-	const newQ = q.value.replace(/:/g, '').normalize('NFC').toLowerCase();
+	const newQ = query.replace(/:/g, '').normalize('NFC').toLowerCase();
 
 	const searchCustom = () => {
 		const max = 100;
@@ -445,7 +447,7 @@ function input(): void {
 	// Using custom input event instead of v-model to respond immediately on
 	// Android, where composition happens on all languages
 	// (v-model does not update during composition)
-	q.value = searchEl.value?.value.trim() ?? '';
+	q.value = searchEl.value?.value ?? '';
 }
 
 function paste(event: ClipboardEvent): void {
@@ -470,7 +472,7 @@ function onKeydown(ev: KeyboardEvent) {
 }
 
 function done(query?: string): boolean | void {
-	if (query == null) query = q.value;
+	if (query == null) query = q.value.trim();
 	if (query == null || typeof query !== 'string') return;
 
 	const q2 = query.replace(/:/g, '');

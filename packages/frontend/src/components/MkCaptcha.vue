@@ -142,7 +142,7 @@ function reset() {
 function remove() {
 	if (captcha.value.remove && captchaWidgetId.value) {
 		try {
-			if (_DEV_) console.log('remove', props.provider, captchaWidgetId.value);
+			if (_DEV_) console.debug('remove', props.provider, captchaWidgetId.value);
 			captcha.value.remove(captchaWidgetId.value);
 		} catch (error: unknown) {
 			// ignore

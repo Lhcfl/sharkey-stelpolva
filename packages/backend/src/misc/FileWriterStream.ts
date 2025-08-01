@@ -21,7 +21,7 @@ export class FileWriterStream extends WritableStream<Uint8Array> {
 			write: async (chunk, controller) => {
 				if (file === null) {
 					controller.error();
-					throw new Error();
+					throw new Error('file is null');
 				}
 
 				await file.write(chunk);

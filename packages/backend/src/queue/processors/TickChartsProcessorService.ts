@@ -62,6 +62,6 @@ export class TickChartsProcessorService {
 		await this.perUserDriveChart.tick(false);
 		await this.apRequestChart.tick(false);
 
-		this.logger.succ('All charts successfully ticked.');
+		this.logger.info('All charts successfully ticked.');
 	}
 }

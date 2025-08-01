@@ -71,6 +71,13 @@ export class MastodonApiServerService {
 			done();
 		});
 
+		// Tell crawlers not to index API endpoints.
+		// https://developers.google.com/search/docs/crawling-indexing/block-indexing
+		fastify.addHook('onRequest', (request, reply, done) => {
+			reply.header('X-Robots-Tag', 'noindex');
+			done();
+		});
+
 		// External endpoints
 		this.apiAccountMastodon.register(fastify);
 		this.apiAppsMastodon.register(fastify);

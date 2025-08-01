@@ -134,7 +134,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.withReplies) redisTimelines.push(`userTimelineWithReplies:${ps.userId}`);
 			if (ps.withChannelNotes) redisTimelines.push(`userTimelineWithChannel:${ps.userId}`);
 
-			const isFollowing = me && Object.hasOwn(await this.cacheService.userFollowingsCache.fetch(me.id), ps.userId);
+			const isFollowing = me && (await this.cacheService.userFollowingsCache.fetch(me.id)).has(ps.userId);
 
 			const timeline = await this.fanoutTimelineEndpointService.timeline({
 				untilId,
@@ -146,6 +146,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				useDbFallback: true,
 				ignoreAuthorFromMute: true,
 				ignoreAuthorFromInstanceBlock: true,
+				ignoreAuthorFromUserSuspension: true,
 				excludeReplies: ps.withChannelNotes && !ps.withReplies, // userTimelineWithChannel may include replies
 				excludeNoFiles: ps.withChannelNotes && ps.withFiles, // userTimelineWithChannel may include notes without files
 				excludePureRenotes: !ps.withRenotes,
@@ -205,7 +206,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			.leftJoinAndSelect('note.renote', 'renote')
 			.leftJoinAndSelect('note.channel', 'channel')
 			.leftJoinAndSelect('reply.user', 'replyUser')
-			.leftJoinAndSelect('renote.user', 'renoteUser');
+			.leftJoinAndSelect('renote.user', 'renoteUser')
+			.limit(ps.limit);
 
 		if (ps.withChannelNotes) {
 			if (!isSelf) query.andWhere(new Brackets(qb => {
@@ -222,6 +224,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		this.queryService.generateVisibilityQuery(query, me);
 		this.queryService.generateBlockedHostQueryForNote(query, true);
+		this.queryService.generateSuspendedUserQueryForNote(query, true);
 		if (me) {
 			this.queryService.generateMutedUserQueryForNotes(query, me, { id: ps.userId });
 			this.queryService.generateBlockedUserQueryForNotes(query, me);
@@ -234,26 +237,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		if (!ps.withRenotes && !ps.withQuotes) {
 			query.andWhere('note.renoteId IS NULL');
 		} else if (!ps.withRenotes) {
-			query.andWhere(new Brackets(qb => {
-				qb.orWhere('note.userId != :userId', { userId: ps.userId });
-				qb.orWhere('note.renoteId IS NULL');
-				qb.orWhere('note.text IS NOT NULL');
-				qb.orWhere('note.fileIds != \'{}\'');
-				qb.orWhere('0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)');
-			}));
+			this.queryService.andIsNotRenote(query, 'note');
 		} else if (!ps.withQuotes) {
-			query.andWhere(`
-				(
-					note."renoteId" IS NULL
-					OR (
-						note.text IS NULL
-						AND note.cw IS NULL
-						AND note."replyId" IS NULL
-						AND note."hasPoll" IS FALSE
-						AND note."fileIds" = '{}'
-					)
-				)
-			`);
+			this.queryService.andIsNotQuote(query, 'note');
 		}
 
 		if (!ps.withRepliesToOthers && !ps.withRepliesToSelf) {
@@ -272,6 +258,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			query.andWhere('"user"."isBot" = false');
 		}
 
-		return await query.limit(ps.limit).getMany();
+		return await query.getMany();
 	}
 }

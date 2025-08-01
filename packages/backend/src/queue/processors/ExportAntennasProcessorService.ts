@@ -45,15 +45,19 @@ export class ExportAntennasProcessorService {
 	public async process(job: Bull.Job<DBExportAntennasData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
+			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
 			return;
 		}
+
+		this.logger.info(`Exporting antennas of ${job.data.user.id} ...`);
+
 		const [path, cleanup] = await createTemp();
 		const stream = fs.createWriteStream(path, { flags: 'a' });
 		const write = (input: string): Promise<void> => {
 			return new Promise((resolve, reject) => {
 				stream.write(input, err => {
 					if (err) {
-						this.logger.error(err);
+						this.logger.error('Error exporting antennas:', err);
 						reject();
 					} else {
 						resolve();
@@ -96,7 +100,7 @@ export class ExportAntennasProcessorService {
 
 			const fileName = 'antennas-' + DateFormat(new Date(), 'yyyy-MM-dd-HH-mm-ss') + '.json';
 			const driveFile = await this.driveService.addFile({ user, path, name: fileName, force: true, ext: 'json' });
-			this.logger.succ('Exported to: ' + driveFile.id);
+			this.logger.debug('Exported to: ' + driveFile.id);
 
 			this.notificationService.createNotification(user.id, 'exportCompleted', {
 				exportedEntity: 'antenna',

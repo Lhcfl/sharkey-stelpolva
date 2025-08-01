@@ -43,7 +43,7 @@ import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 import { uploadFile } from '@/utility/upload.js';
 import { miLocalStorage } from '@/local-storage.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
+import { misskeyApi, printError } from '@/utility/misskey-api.js';
 import { prefer } from '@/preferences.js';
 import { Autocomplete } from '@/utility/autocomplete.js';
 import { emojiPicker } from '@/utility/emoji-picker.js';
@@ -194,8 +194,13 @@ function send() {
 		}).then(message => {
 			clear();
 		}).catch(err => {
-			console.error(err);
-		}).then(() => {
+			console.error('Error in chat:', err);
+			return os.alert({
+				type: 'error',
+				title: i18n.ts.error,
+				text: printError(err),
+			});
+		}).finally(() => {
 			sending.value = false;
 		});
 	} else if (props.room) {
@@ -206,8 +211,13 @@ function send() {
 		}).then(message => {
 			clear();
 		}).catch(err => {
-			console.error(err);
-		}).then(() => {
+			console.error('Error in chat:', err);
+			return os.alert({
+				type: 'error',
+				title: i18n.ts.error,
+				text: printError(err),
+			});
+		}).finally(() => {
 			sending.value = false;
 		});
 	}

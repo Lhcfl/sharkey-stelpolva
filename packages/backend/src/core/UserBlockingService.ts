@@ -77,8 +77,10 @@ export class UserBlockingService implements OnModuleInit {
 
 		await this.blockingsRepository.insert(blocking);
 
-		this.cacheService.userBlockingCache.refresh(blocker.id);
-		this.cacheService.userBlockedCache.refresh(blockee.id);
+		await Promise.all([
+			this.cacheService.userBlockingCache.delete(blocker.id),
+			this.cacheService.userBlockedCache.delete(blockee.id),
+		]);
 
 		this.globalEventService.publishInternalEvent('blockingCreated', {
 			blockerId: blocker.id,
@@ -168,8 +170,10 @@ export class UserBlockingService implements OnModuleInit {
 
 		await this.blockingsRepository.delete(blocking.id);
 
-		this.cacheService.userBlockingCache.refresh(blocker.id);
-		this.cacheService.userBlockedCache.refresh(blockee.id);
+		await Promise.all([
+			this.cacheService.userBlockingCache.delete(blocker.id),
+			this.cacheService.userBlockedCache.delete(blockee.id),
+		]);
 
 		this.globalEventService.publishInternalEvent('blockingDeleted', {
 			blockerId: blocker.id,

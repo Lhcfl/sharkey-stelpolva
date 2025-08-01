@@ -9,6 +9,7 @@ import { GetterService } from '@/server/api/GetterService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { AbuseReportService } from '@/core/AbuseReportService.js';
 import { ApiError } from '../../error.js';
+import { CacheService } from '@/core/CacheService.js';
 
 export const meta = {
 	tags: ['users'],
@@ -60,13 +61,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private getterService: GetterService,
 		private roleService: RoleService,
 		private abuseReportService: AbuseReportService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup user
-			const targetUser = await this.getterService.getUser(ps.userId).catch(err => {
-				if (err.id === '15348ddd-432d-49c2-8a5a-8069753becff') throw new ApiError(meta.errors.noSuchUser);
-				throw err;
-			});
+			const targetUser = await this.cacheService.findOptionalUserById(ps.userId);
+			if (!targetUser) {
+				throw new ApiError(meta.errors.noSuchUser);
+			}
 
 			if (targetUser.id === me.id) {
 				throw new ApiError(meta.errors.cannotReportYourself);

@@ -45,11 +45,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new Error('cannot silence moderator account');
 			}
 
-			await this.moderationLogService.log(me, 'silenceUser', {
-				userId: ps.userId,
-				userUsername: user.username,
-				userHost: user.host,
-			});
+			if (user.isSilenced) return;
 
 			await this.usersRepository.update(user.id, {
 				isSilenced: true,
@@ -57,6 +53,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			this.globalEventService.publishInternalEvent(user.host == null ? 'localUserUpdated' : 'remoteUserUpdated', {
 				id: user.id,
+			});
+
+			await this.moderationLogService.log(me, 'silenceUser', {
+				userId: ps.userId,
+				userUsername: user.username,
+				userHost: user.host,
 			});
 		});
 	}

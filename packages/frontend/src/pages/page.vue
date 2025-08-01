@@ -347,7 +347,7 @@ definePage(() => ({
 	text-align: center;
 	border-radius: 99rem;
 
-	& :global(.ti) {
+	& :global(.ti), & :global(.ph-lg) {
 		line-height: 2.5rem;
 	}
 

@@ -9,11 +9,20 @@
 import * as assert from 'assert';
 import { setTimeout } from 'node:timers/promises';
 import { Redis } from 'ioredis';
-import { api, post, randomString, sendEnvUpdateRequest, signup, uploadUrl } from '../utils.js';
+import { api, post, randomString, sendEnvUpdateRequest, signup, uploadUrl, withNotesCount, initTestDb } from '../utils.js';
 import { loadConfig } from '@/config.js';
+import { MiInstance } from '@/models/Instance.js';
 
-function genHost() {
-	return randomString() + '.example.com';
+async function genHost() {
+	const hostname = randomString() + '.example.com';
+	const connection = await initTestDb(true);
+	const instances = connection.getRepository(MiInstance);
+	await instances.upsert({
+		id: hostname,
+		host: hostname,
+		firstRetrievedAt: new Date(),
+	}, ['id']);
+	return hostname;
 }
 
 function waitForPushToTl() {
@@ -23,7 +32,7 @@ function waitForPushToTl() {
 let redisForTimelines: Redis;
 
 describe('Timelines', () => {
-	beforeAll(() => {
+	beforeAll(async () => {
 		redisForTimelines = new Redis(loadConfig().redisForTimelines);
 	});
 
@@ -346,7 +355,7 @@ describe('Timelines', () => {
 		});
 
 		test.concurrent('フォローしているリモートユーザーのノートが含まれる', async () => {
-			const [alice, bob] = await Promise.all([signup(), signup({ host: genHost() })]);
+			const [alice, bob] = await Promise.all([signup(), signup({ host: await genHost() })]);
 
 			await sendEnvUpdateRequest({ key: 'FORCE_FOLLOW_REMOTE_USER_FOR_TESTING', value: 'true' });
 			await api('following/create', { userId: bob.id }, alice);
@@ -361,7 +370,7 @@ describe('Timelines', () => {
 		});
 
 		test.concurrent('フォローしているリモートユーザーの visibility: home なノートが含まれる', async () => {
-			const [alice, bob] = await Promise.all([signup(), signup({ host: genHost() })]);
+			const [alice, bob] = await Promise.all([signup(), signup({ host: await genHost() })]);
 
 			await sendEnvUpdateRequest({ key: 'FORCE_FOLLOW_REMOTE_USER_FOR_TESTING', value: 'true' });
 			await api('following/create', { userId: bob.id }, alice);
@@ -535,7 +544,7 @@ describe('Timelines', () => {
 		});
 
 		test.concurrent('FTT: リモートユーザーの HTL にはプッシュされない', async () => {
-			const [alice, bob] = await Promise.all([signup(), signup({ host: genHost() })]);
+			const [alice, bob] = await Promise.all([signup(), signup({ host: await genHost() })]);
 
 			await api('following/create', {
 				userId: alice.id,
@@ -608,7 +617,7 @@ describe('Timelines', () => {
 		});
 
 		test.concurrent('リモートユーザーのノートが含まれない', async () => {
-			const [alice, bob] = await Promise.all([signup(), signup({ host: genHost() })]);
+			const [alice, bob] = await Promise.all([signup(), signup({ host: await genHost() })]);
 
 			const bobNote = await post(bob, { text: 'hi' });
 
@@ -873,7 +882,7 @@ describe('Timelines', () => {
 		});
 
 		test.concurrent('リモートユーザーのノートが含まれない', async () => {
-			const [alice, bob] = await Promise.all([signup(), signup({ host: genHost() })]);
+			const [alice, bob] = await Promise.all([signup(), signup({ host: await genHost() })]);
 
 			const bobNote = await post(bob, { text: 'hi' });
 
@@ -885,7 +894,7 @@ describe('Timelines', () => {
 		});
 
 		test.concurrent('フォローしているリモートユーザーのノートが含まれる', async () => {
-			const [alice, bob] = await Promise.all([signup(), signup({ host: genHost() })]);
+			const [alice, bob] = await Promise.all([signup(), signup({ host: await genHost() })]);
 
 			await sendEnvUpdateRequest({ key: 'FORCE_FOLLOW_REMOTE_USER_FOR_TESTING', value: 'true' });
 			await api('following/create', { userId: bob.id }, alice);
@@ -900,7 +909,7 @@ describe('Timelines', () => {
 		});
 
 		test.concurrent('フォローしているリモートユーザーの visibility: home なノートが含まれる', async () => {
-			const [alice, bob] = await Promise.all([signup(), signup({ host: genHost() })]);
+			const [alice, bob] = await Promise.all([signup(), signup({ host: await genHost() })]);
 
 			await sendEnvUpdateRequest({ key: 'FORCE_FOLLOW_REMOTE_USER_FOR_TESTING', value: 'true' });
 			await api('following/create', { userId: bob.id }, alice);
@@ -1435,7 +1444,7 @@ describe('Timelines', () => {
 			const note3 = await post(alice, { text: '3' });
 
 			const res = await api('users/notes', { userId: alice.id, sinceId: noteSince.id });
-			assert.deepStrictEqual(res.body, [note1, note2, note3]);
+			assert.deepStrictEqual(res.body, withNotesCount([note1, note2, note3], 4));
 		});
 
 		test.concurrent('FTT: sinceId にキャッシュより古いノートを指定しても、sinceId と untilId による絞り込みが正しく動作する', async () => {
@@ -1449,7 +1458,7 @@ describe('Timelines', () => {
 			await post(alice, { text: '4' });
 
 			const res = await api('users/notes', { userId: alice.id, sinceId: noteSince.id, untilId: noteUntil.id });
-			assert.deepStrictEqual(res.body, [note3, note2, note1]);
+			assert.deepStrictEqual(res.body, withNotesCount([note3, note2, note1], 6));
 		});
 	});
 

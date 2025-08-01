@@ -8,25 +8,61 @@ import { Injectable } from '@nestjs/common';
 import { UnrecoverableError } from 'bullmq';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
+import Logger from '@/logger.js';
+import { LoggerService } from '@/core/LoggerService.js';
+import { StatusError } from '@/misc/status-error.js';
 import { CONTEXT, PRELOADED_CONTEXTS } from './misc/contexts.js';
 import { validateContentTypeSetAsJsonLD } from './misc/validator.js';
-import type { JsonLdDocument } from 'jsonld';
+import type { ContextDefinition, JsonLdDocument } from 'jsonld';
 import type { JsonLd as JsonLdObject, RemoteDocument } from 'jsonld/jsonld-spec.js';
+
+// https://stackoverflow.com/a/66252656
+type RemoveIndex<T> = {
+	[ K in keyof T as string extends K
+		? never
+		: number extends K
+			? never
+			: symbol extends K
+				? never
+				: K
+	] : T[K];
+};
+
+export type Document = RemoveIndex<JsonLdDocument>;
+
+export type Signature = {
+	id?: string;
+	type: string;
+	creator: string;
+	domain?: string;
+	nonce: string;
+	created: string;
+	signatureValue: string;
+};
+
+export type Signed<T extends Document> = T & {
+	signature: Signature;
+};
+
+export function isSigned<T extends Document>(doc: T): doc is Signed<T> {
+	return 'signature' in doc && typeof(doc.signature) === 'object';
+}
 
 // RsaSignature2017 implementation is based on https://github.com/transmute-industries/RsaSignature2017
 
-class JsonLd {
-	public debug = false;
-	public preLoad = true;
-	public loderTimeout = 5000;
+@Injectable()
+export class JsonLdService {
+	private readonly logger: Logger;
 
 	constructor(
 		private httpRequestService: HttpRequestService,
+		loggerService: LoggerService,
 	) {
+		this.logger = loggerService.getLogger('json-ld');
 	}
 
 	@bindThis
-	public async signRsaSignature2017(data: any, privateKey: string, creator: string, domain?: string, created?: Date): Promise<any> {
+	public async signRsaSignature2017<T extends Document>(data: T, privateKey: string, creator: string, domain?: string, created?: Date): Promise<Signed<T>> {
 		const options: {
 			type: string;
 			creator: string;
@@ -62,7 +98,7 @@ class JsonLd {
 	}
 
 	@bindThis
-	public async verifyRsaSignature2017(data: any, publicKey: string): Promise<boolean> {
+	public async verifyRsaSignature2017(data: Signed<Document>, publicKey: string): Promise<boolean> {
 		const toBeSigned = await this.createVerifyData(data, data.signature);
 		const verifier = crypto.createVerify('sha256');
 		verifier.update(toBeSigned);
@@ -70,7 +106,7 @@ class JsonLd {
 	}
 
 	@bindThis
-	public async createVerifyData(data: any, options: any): Promise<string> {
+	public async createVerifyData<T extends Document>(data: T, options: Partial<Signature>): Promise<string> {
 		const transformedOptions = {
 			...options,
 			'@context': 'https://w3id.org/identity/v1',
@@ -80,17 +116,18 @@ class JsonLd {
 		delete transformedOptions['signatureValue'];
 		const canonizedOptions = await this.normalize(transformedOptions);
 		const optionsHash = this.sha256(canonizedOptions.toString());
-		const transformedData = { ...data };
+		const transformedData = { ...data } as T & { signature?: unknown };
 		delete transformedData['signature'];
 		const cannonidedData = await this.normalize(transformedData);
-		if (this.debug) console.debug(`cannonidedData: ${cannonidedData}`);
+		this.logger.debug('cannonidedData', cannonidedData);
 		const documentHash = this.sha256(cannonidedData.toString());
 		const verifyData = `${optionsHash}${documentHash}`;
 		return verifyData;
 	}
 
 	@bindThis
-	public async compact(data: any, context: any = CONTEXT): Promise<JsonLdDocument> {
+	// TODO our default CONTEXT isn't valid for the library, is this a bug?
+	public async compact(data: Document, context: ContextDefinition = CONTEXT as unknown as ContextDefinition): Promise<Document> {
 		const customLoader = this.getLoader();
 		// XXX: Importing jsonld dynamically since Jest frequently fails to import it statically
 		// https://github.com/misskey-dev/misskey/pull/9894#discussion_r1103753595
@@ -100,7 +137,7 @@ class JsonLd {
 	}
 
 	@bindThis
-	public async normalize(data: JsonLdDocument): Promise<string> {
+	public async normalize(data: Document): Promise<string> {
 		const customLoader = this.getLoader();
 		return (await import('jsonld')).default.normalize(data, {
 			documentLoader: customLoader,
@@ -112,9 +149,9 @@ class JsonLd {
 		return async (url: string): Promise<RemoteDocument> => {
 			if (!/^https?:\/\//.test(url)) throw new UnrecoverableError(`Invalid URL: ${url}`);
 
-			if (this.preLoad) {
+			{
 				if (url in PRELOADED_CONTEXTS) {
-					if (this.debug) console.debug(`HIT: ${url}`);
+					this.logger.debug(`Preload HIT: ${url}`);
 					return {
 						contextUrl: undefined,
 						document: PRELOADED_CONTEXTS[url],
@@ -123,7 +160,7 @@ class JsonLd {
 				}
 			}
 
-			if (this.debug) console.debug(`MISS: ${url}`);
+			this.logger.debug(`Preload MISS: ${url}`);
 			const document = await this.fetchDocument(url);
 			return {
 				contextUrl: undefined,
@@ -141,7 +178,6 @@ class JsonLd {
 				headers: {
 					Accept: 'application/ld+json, application/json',
 				},
-				timeout: this.loderTimeout,
 			},
 			{
 				throwErrorWhenResponseNotOk: false,
@@ -149,7 +185,7 @@ class JsonLd {
 			},
 		).then(res => {
 			if (!res.ok) {
-				throw new Error(`JSON-LD fetch failed with ${res.status} ${res.statusText}: ${url}`);
+				throw new StatusError(`failed to fetch JSON-LD from ${url}`, res.status, res.statusText);
 			} else {
 				return res.json();
 			}
@@ -163,18 +199,5 @@ class JsonLd {
 		const hash = crypto.createHash('sha256');
 		hash.update(data);
 		return hash.digest('hex');
-	}
-}
-
-@Injectable()
-export class JsonLdService {
-	constructor(
-		private httpRequestService: HttpRequestService,
-	) {
-	}
-
-	@bindThis
-	public use(): JsonLd {
-		return new JsonLd(this.httpRequestService);
 	}
 }

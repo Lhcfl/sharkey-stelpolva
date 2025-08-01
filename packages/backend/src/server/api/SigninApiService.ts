@@ -205,37 +205,37 @@ export class SigninApiService {
 			if (process.env.NODE_ENV !== 'test') {
 				if (this.meta.enableHcaptcha && this.meta.hcaptchaSecretKey) {
 					await this.captchaService.verifyHcaptcha(this.meta.hcaptchaSecretKey, body['hcaptcha-response']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 
 				if (this.meta.enableMcaptcha && this.meta.mcaptchaSecretKey && this.meta.mcaptchaSitekey && this.meta.mcaptchaInstanceUrl) {
 					await this.captchaService.verifyMcaptcha(this.meta.mcaptchaSecretKey, this.meta.mcaptchaSitekey, this.meta.mcaptchaInstanceUrl, body['m-captcha-response']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 
 				if (this.meta.enableFC && this.meta.fcSecretKey) {
 					await this.captchaService.verifyFriendlyCaptcha(this.meta.fcSecretKey, body['frc-captcha-solution']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 
 				if (this.meta.enableRecaptcha && this.meta.recaptchaSecretKey) {
 					await this.captchaService.verifyRecaptcha(this.meta.recaptchaSecretKey, body['g-recaptcha-response']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 
 				if (this.meta.enableTurnstile && this.meta.turnstileSecretKey) {
 					await this.captchaService.verifyTurnstile(this.meta.turnstileSecretKey, body['turnstile-response']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 
 				if (this.meta.enableTestcaptcha) {
 					await this.captchaService.verifyTestcaptcha(body['testcaptcha-response']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 			}

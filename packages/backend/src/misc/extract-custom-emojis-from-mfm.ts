@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import { unique } from '@/misc/prelude/array.js';
 
 export function extractCustomEmojisFromMfm(nodes: mfm.MfmNode[]): string[] {

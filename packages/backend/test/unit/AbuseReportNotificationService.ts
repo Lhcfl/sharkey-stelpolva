@@ -11,6 +11,7 @@ import {
 	AbuseReportNotificationRecipientRepository,
 	MiAbuseReportNotificationRecipient,
 	MiAbuseUserReport,
+	MiMeta,
 	MiSystemWebhook,
 	MiUser,
 	SystemWebhooksRepository,
@@ -56,6 +57,15 @@ describe('AbuseReportNotificationService', () => {
 
 	// --------------------------------------------------------------------------------------
 
+	const meta = {} as MiMeta;
+
+	function updateMeta(newMeta: Partial<MiMeta>): void {
+		for (const key in meta) {
+			delete (meta as any)[key];
+		}
+		Object.assign(meta, newMeta);
+	}
+
 	async function createUser(data: Partial<MiUser> = {}) {
 		const user = await usersRepository
 			.insert({
@@ -66,6 +76,8 @@ describe('AbuseReportNotificationService', () => {
 
 		await userProfilesRepository.insert({
 			userId: user.id,
+			email: user.username + '@example.com',
+			emailVerified: true,
 		});
 
 		return user;
@@ -130,6 +142,9 @@ describe('AbuseReportNotificationService', () => {
 					{
 						provide: GlobalEventService, useFactory: () => ({ publishAdminStream: jest.fn() }),
 					},
+					{
+						provide: DI.meta, useFactory: () => meta,
+					},
 				],
 			})
 			.compile();
@@ -156,6 +171,8 @@ describe('AbuseReportNotificationService', () => {
 		systemWebhook2 = await createWebhook();
 
 		roleService.getModeratorIds.mockResolvedValue([root.id, alice.id, bob.id]);
+
+		updateMeta({} as MiMeta);
 	});
 
 	afterEach(async () => {
@@ -367,8 +384,10 @@ describe('AbuseReportNotificationService', () => {
 					id: idService.gen(),
 					targetUserId: alice.id,
 					targetUser: alice,
+					targetUserInstance: null,
 					reporterId: bob.id,
 					reporter: bob,
+					reporterInstance: null,
 					assigneeId: null,
 					assignee: null,
 					resolved: false,
@@ -388,6 +407,61 @@ describe('AbuseReportNotificationService', () => {
 			expect(webhookService.enqueueSystemWebhook).toHaveBeenCalledTimes(1);
 			expect(webhookService.enqueueSystemWebhook.mock.calls[0][0]).toBe('abuseReport');
 			expect(webhookService.enqueueSystemWebhook.mock.calls[0][2]).toEqual({ excludes: [systemWebhook2.id] });
+		});
+	});
+
+	describe('collection of recipient-mails', () => {
+		async function create() {
+			const recipient = await createRecipient({
+				method: 'email',
+				userId: alice.id,
+			});
+
+			return recipient;
+		}
+
+		test('with nothing set', async () => {
+			const mails = await service.getRecipientEMailAddresses();
+			expect(mails).toEqual([]);
+		});
+
+		test('with maintainer mail set', async () => {
+			updateMeta({ maintainerEmail: 'maintainer_mail' });
+			const mails = await service.getRecipientEMailAddresses();
+			expect(mails).toEqual(['maintainer_mail']);
+		});
+
+		test('with smtp mail set', async () => {
+			updateMeta({ email: 'smtp_mail' });
+			const mails = await service.getRecipientEMailAddresses();
+			expect(mails).toEqual(['smtp_mail']);
+		});
+
+		test('with maintainer mail and smtp mail set', async () => {
+			updateMeta({ email: 'smtp_mail', maintainerEmail: 'maintainer_mail' });
+			const mails = await service.getRecipientEMailAddresses();
+			expect(mails).toEqual(['smtp_mail', 'maintainer_mail']);
+		});
+
+		test('with recipients', async () => {
+			await create();
+
+			const mails = await service.getRecipientEMailAddresses();
+			expect(mails).toEqual([
+				'alice@example.com',
+			]);
+		});
+
+		test('with recipients and maintainer mail set and smtp mail set', async () => {
+			await create();
+			updateMeta({ maintainerEmail: 'maintainer_mail', email: 'smtp_mail' });
+
+			const mails = await service.getRecipientEMailAddresses();
+			expect(mails).toEqual([
+				'alice@example.com',
+				'smtp_mail',
+				'maintainer_mail',
+			]);
 		});
 	});
 });

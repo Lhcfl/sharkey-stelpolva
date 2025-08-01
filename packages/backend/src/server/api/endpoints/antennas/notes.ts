@@ -14,6 +14,7 @@ import { IdService } from '@/core/IdService.js';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
+import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -75,6 +76,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 		private fanoutTimelineService: FanoutTimelineService,
 		private globalEventService: GlobalEventService,
+		private readonly activeUsersChart: ActiveUsersChart,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
@@ -106,7 +108,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return [];
 			}
 
-			const query = this.notesRepository.createQueryBuilder('note')
+			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'),
+				ps.sinceId, ps.untilId)
 				.where('note.id IN (:...noteIds)', { noteIds: noteIds })
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('note.reply', 'reply')
@@ -118,16 +121,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// https://github.com/misskey-dev/misskey/pull/15346#discussion_r1929950255
 
 			this.queryService.generateBlockedHostQueryForNote(query);
+			this.queryService.generateSuspendedUserQueryForNote(query);
 			this.queryService.generateVisibilityQuery(query, me);
 			this.queryService.generateMutedUserQueryForNotes(query, me);
 			this.queryService.generateBlockedUserQueryForNotes(query, me);
+			this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
 
 			const notes = await query.getMany();
-			if (sinceId != null && untilId == null) {
-				notes.sort((a, b) => a.id < b.id ? -1 : 1);
-			} else {
-				notes.sort((a, b) => a.id > b.id ? -1 : 1);
-			}
+
+			process.nextTick(() => {
+				this.activeUsersChart.read(me);
+			});
 
 			return await this.noteEntityService.packMany(notes, me);
 		});

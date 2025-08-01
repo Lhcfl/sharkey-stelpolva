@@ -6,9 +6,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div ref="rootEl" :class="[$style.root, reversed ? '_pageScrollableReversed' : '_pageScrollable']">
 	<MkStickyContainer>
-		<template #header><MkPageHeader v-model:tab="tab" v-bind="pageHeaderProps"/></template>
-		<div :class="$style.body">
-			<MkSwiper v-if="swipable && (props.tabs?.length ?? 1) > 1" v-model:tab="tab" :class="$style.swiper" :tabs="props.tabs" :page="props.page">
+		<template #header><MkPageHeader v-model:tab="tab" v-bind="pageHeaderProps" :class="{ _spacer: spacer }"/></template>
+		<div :class="[ $style.body, { _spacer: spacer } ]">
+			<MkSwiper v-if="prefer.s.enableHorizontalSwipe && swipable && (props.tabs?.length ?? 1) > 1" v-model:tab="tab" :class="$style.swiper" :tabs="props.tabs" :page="props.page">
 				<slot></slot>
 			</MkSwiper>
 			<slot v-else></slot>
@@ -25,18 +25,22 @@ import type { PageHeaderProps } from './MkPageHeader.vue';
 import { useScrollPositionKeeper } from '@/use/use-scroll-position-keeper.js';
 import MkSwiper from '@/components/MkSwiper.vue';
 import { useRouter } from '@/router.js';
+import { prefer } from '@/preferences.js';
 
 const props = withDefaults(defineProps<PageHeaderProps & {
 	reversed?: boolean;
 	swipable?: boolean;
 	page?: string;
+	spacer?: boolean;
 }>(), {
 	reversed: false,
 	swipable: true,
+	page: undefined,
+	spacer: false,
 });
 
 const pageHeaderProps = computed(() => {
-	const { reversed, ...rest } = props;
+	const { reversed, spacer, ...rest } = props;
 	return rest;
 });
 

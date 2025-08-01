@@ -23,7 +23,7 @@ export const meta = {
 		items: {
 			type: 'object',
 			optional: false, nullable: false,
-			ref: 'UserDetailed',
+			ref: 'User',
 		},
 	},
 
@@ -43,6 +43,11 @@ export const paramDef = {
 		state: { type: 'string', enum: ['all', 'alive'], default: 'all' },
 		origin: { type: 'string', enum: ['combined', 'local', 'remote'], default: 'local' },
 		trending: { type: 'boolean', default: false },
+		detail: {
+			type: 'boolean',
+			nullable: false,
+			default: true,
+		},
 	},
 	required: ['tag', 'sort'],
 } as const;
@@ -96,7 +101,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					.map(([u]) => u);
 			}
 
-			return await this.userEntityService.packMany(users, me, { schema: 'UserDetailed' });
+			return await this.userEntityService.packMany(users, me, { schema: ps.detail ? 'UserDetailed' : 'UserLite' });
 		});
 	}
 }

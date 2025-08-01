@@ -206,7 +206,7 @@ export class SkRateLimiterService {
 		// 0 - Calculate
 		const now = this.timeService.now;
 		const bucketSize = Math.max(Math.ceil(limit.size / factor), 1);
-		const dripRate = Math.ceil(limit.dripRate ?? 1000);
+		const dripRate = Math.ceil((limit.dripRate ?? 1000) * factor);
 		const dripSize = Math.ceil(limit.dripSize ?? 1);
 		const fullResetMs = dripRate * Math.ceil(bucketSize / dripSize);
 		const fullResetSec = Math.max(Math.ceil(fullResetMs / 1000), 1);
@@ -389,7 +389,7 @@ function createLimitKey(limit: ParsedLimit, actor: string, value: string): strin
 	return `rl_${actor}_${limit.key}_${value}`;
 }
 
-class ConflictError extends Error {}
+export class ConflictError extends Error {}
 
 interface LimitCounter {
 	timestamp: number;

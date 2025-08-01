@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Displays a note in the simple view with either Misskey or Sharkey style, based on user preference.
 -->
 
 <template>

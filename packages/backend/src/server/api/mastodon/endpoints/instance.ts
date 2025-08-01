@@ -41,7 +41,8 @@ export class ApiInstanceMastodon {
 			const response: MastodonEntity.Instance = {
 				uri: this.config.host,
 				title: this.meta.name || 'Sharkey',
-				description: this.meta.description || 'This is a vanilla Sharkey Instance. It doesn\'t seem to have a description.',
+				shortDescription: this.meta.description || 'This is a vanilla Sharkey Instance. It doesn\'t seem to have a description.',
+				description: this.meta.about || 'This is a vanilla Sharkey Instance.',
 				email: instance.email || '',
 				version: `3.0.0 (compatible; Sharkey ${this.config.version}; like Akkoma)`,
 				urls: instance.urls,

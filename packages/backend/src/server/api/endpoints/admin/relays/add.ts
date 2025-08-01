@@ -68,11 +68,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly moderationLogService: ModerationLogService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			try {
-				if (new URL(ps.inbox).protocol !== 'https:') throw new Error('https only');
-			} catch {
-				throw new ApiError(meta.errors.invalidUrl);
-			}
+			if (!URL.canParse(ps.inbox)) throw new ApiError(meta.errors.invalidUrl);
+			if (new URL(ps.inbox).protocol !== 'https:') throw new ApiError(meta.errors.invalidUrl);
 
 			await this.moderationLogService.log(me, 'addRelay', {
 				inbox: ps.inbox,

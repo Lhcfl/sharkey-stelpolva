@@ -8,6 +8,10 @@ import { Injectable } from '@nestjs/common';
 import { emojiRegexAtStartToEnd } from '@/misc/emoji-regex.js';
 import { parseTimelineArgs, TimelineArgs, toBoolean, toInt } from '@/server/api/mastodon/argsUtils.js';
 import { MastodonClientService } from '@/server/api/mastodon/MastodonClientService.js';
+import { MastodonDataService } from '@/server/api/mastodon/MastodonDataService.js';
+import { getNoteSummary } from '@/misc/get-note-summary.js';
+import type { Packed } from '@/misc/json-schema.js';
+import { isPureRenote } from '@/misc/is-renote.js';
 import { convertAttachment, convertPoll, MastodonConverters } from '../MastodonConverters.js';
 import type { Entity } from 'megalodon';
 import type { FastifyInstance } from 'fastify';
@@ -22,6 +26,7 @@ export class ApiStatusMastodon {
 	constructor(
 		private readonly mastoConverters: MastodonConverters,
 		private readonly clientService: MastodonClientService,
+		private readonly mastodonDataService: MastodonDataService,
 	) {}
 
 	public register(fastify: FastifyInstance): void {
@@ -29,13 +34,24 @@ export class ApiStatusMastodon {
 			if (!_request.params.id) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required parameter "id"' });
 
 			const { client, me } = await this.clientService.getAuthClient(_request);
-			const data = await client.getStatus(_request.params.id);
-			const response = await this.mastoConverters.convertStatus(data.data, me);
+			const note = await this.mastodonDataService.requireNote(_request.params.id, me, { user: true, renote: { user: true } });
+
+			// Unpack renote for Discord, otherwise the preview breaks
+			const appearNote = (isPureRenote(note) && _request.headers['user-agent']?.match(/\bDiscordbot\//))
+				? note.renote as NonNullable<typeof note.renote>
+				: note;
+
+			const data = await client.getStatus(appearNote.id);
+			const response = await this.mastoConverters.convertStatus(data.data, me, { note: appearNote, user: appearNote.user });
 
 			// Fixup - Discord ignores CWs and renders the entire post.
 			if (response.sensitive && _request.headers['user-agent']?.match(/\bDiscordbot\//)) {
-				response.content = '(preview disabled for sensitive content)';
+				response.content = getNoteSummary(data.data satisfies Packed<'Note'>);
 				response.media_attachments = [];
+				response.in_reply_to_id = null;
+				response.in_reply_to_account_id = null;
+				response.reblog = null;
+				response.quote = null;
 			}
 
 			return reply.send(response);
@@ -170,7 +186,7 @@ export class ApiStatusMastodon {
 				const data = await client.deleteEmojiReaction(id, react);
 				return reply.send(data.data);
 			}
-			if (!body.media_ids) body.media_ids = undefined;
+			body.media_ids ??= undefined;
 			if (body.media_ids && !body.media_ids.length) body.media_ids = undefined;
 
 			if (body.poll && !body.poll.options) {

@@ -16,6 +16,7 @@ import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { IdService } from '@/core/IdService.js';
+import { EnvService } from '@/core/EnvService.js';
 import { DI } from '@/di-symbols.js';
 
 function mockRedis() {
@@ -46,6 +47,7 @@ describe('FetchInstanceMetadataService', () => {
 					LoggerService,
 					UtilityService,
 					IdService,
+					EnvService,
 				],
 			})
 			.useMocker((token) => {

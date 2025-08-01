@@ -37,7 +37,7 @@ export async function workerMain() {
 			maxBreadcrumbs: 0,
 
 			// Set release version
-			release: "Sharkey@" + meta.version,
+			release: "Sharkey@" + (meta.gitVersion ?? meta.version),
 
 			...config.sentryForBackend.options,
 		});

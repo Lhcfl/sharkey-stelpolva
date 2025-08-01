@@ -3,30 +3,52 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { UtilityService } from '@/core/UtilityService.js';
 import type { IObject } from '@/core/activitypub/type.js';
 import type { EnvService } from '@/core/EnvService.js';
+import type { MiMeta } from '@/models/Meta.js';
+import type { Config } from '@/config.js';
+import type { LoggerService } from '@/core/LoggerService.js';
+import Logger from '@/logger.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
+import { UtilityService } from '@/core/UtilityService.js';
 
 describe(ApUtilityService, () => {
 	let serviceUnderTest: ApUtilityService;
 	let env: Record<string, string>;
 
 	beforeEach(() => {
-		const utilityService = {
-			punyHostPSLDomain(input: string) {
-				const host = new URL(input).host;
-				const parts = host.split('.');
-				return `${parts[parts.length - 2]}.${parts[parts.length - 1]}`;
-			},
-		} as unknown as UtilityService;
-
 		env = {};
 		const envService = {
 			env,
 		} as unknown as EnvService;
 
-		serviceUnderTest = new ApUtilityService(utilityService, envService);
+		const config = {
+			host: 'example.com',
+			blockedHosts: [],
+			silencedHosts: [],
+			mediaSilencedHosts: [],
+			federationHosts: [],
+			bubbleInstances: [],
+			deliverSuspendedSoftware: [],
+			federation: 'all',
+		} as unknown as Config;
+		const meta = {
+
+		} as MiMeta;
+
+		const utilityService = new UtilityService(config, meta, envService);
+
+		const loggerService = {
+			getLogger(domain: string) {
+				const logger = new Logger(domain);
+				Object.defineProperty(logger, 'log', {
+					value: () => {},
+				});
+				return logger;
+			},
+		} as unknown as LoggerService;
+
+		serviceUnderTest = new ApUtilityService(utilityService, loggerService);
 	});
 
 	describe('assertIdMatchesUrlAuthority', () => {
@@ -349,6 +371,104 @@ describe(ApUtilityService, () => {
 
 			// noinspection HttpUrlsUsage
 			expect(result).toBe('http://example.com/1');
+		});
+	});
+
+	describe('sanitizeInlineObject', () => {
+		it('should exclude nested arrays', () => {
+			const input = {
+				test: [[]] as unknown as string[],
+			};
+
+			const result = serviceUnderTest.sanitizeInlineObject(input, 'test', 'https://example.com/actor', 'example.com');
+
+			expect(result).toBe(false);
+		});
+
+		it('should exclude incorrect type', () => {
+			const input = {
+				test: 0 as unknown as string,
+			};
+
+			const result = serviceUnderTest.sanitizeInlineObject(input, 'test', 'https://example.com/actor', 'example.com');
+
+			expect(result).toBe(false);
+		});
+
+		it('should exclude missing ID', () => {
+			const input = {
+				test: {
+					id: undefined,
+				},
+			};
+
+			const result = serviceUnderTest.sanitizeInlineObject(input, 'test', 'https://example.com/actor', 'example.com');
+
+			expect(result).toBe(false);
+		});
+
+		it('should exclude wrong host', () => {
+			const input = {
+				test: 'https://wrong.com/object',
+			};
+
+			const result = serviceUnderTest.sanitizeInlineObject(input, 'test', 'https://example.com/actor', 'example.com');
+
+			expect(result).toBe(false);
+		});
+
+		it('should exclude invalid URLs', () => {
+			const input = {
+				test: 'https://user@example.com/object',
+			};
+
+			const result = serviceUnderTest.sanitizeInlineObject(input, 'test', 'https://example.com/actor', 'example.com');
+
+			expect(result).toBe(false);
+		});
+
+		it('should accept string', () => {
+			const input = {
+				test: 'https://example.com/object',
+			};
+
+			const result = serviceUnderTest.sanitizeInlineObject(input, 'test', 'https://example.com/actor', 'example.com');
+
+			expect(result).toBe(true);
+		});
+
+		it('should accept array of string', () => {
+			const input = {
+				test: ['https://example.com/object'],
+			};
+
+			const result = serviceUnderTest.sanitizeInlineObject(input, 'test', 'https://example.com/actor', 'example.com');
+
+			expect(result).toBe(true);
+		});
+
+		it('should accept object', () => {
+			const input = {
+				test: {
+					id: 'https://example.com/object',
+				},
+			};
+
+			const result = serviceUnderTest.sanitizeInlineObject(input, 'test', 'https://example.com/actor', 'example.com');
+
+			expect(result).toBe(true);
+		});
+
+		it('should accept array of object', () => {
+			const input = {
+				test: [{
+					id: 'https://example.com/object',
+				}],
+			};
+
+			const result = serviceUnderTest.sanitizeInlineObject(input, 'test', 'https://example.com/actor', 'example.com');
+
+			expect(result).toBe(true);
 		});
 	});
 });
