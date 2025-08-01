@@ -96,7 +96,7 @@ export class UtilityService {
 
 	@bindThis
 	public isBubbledHost(host: string | null): boolean {
-		if (host == null) return false;
+		if (host == null) return this.meta.bubbleInstances.includes('#local');
 		return this.meta.bubbleInstances.some(x => `.${host.toLowerCase()}`.endsWith(`.${x}`));
 	}
 

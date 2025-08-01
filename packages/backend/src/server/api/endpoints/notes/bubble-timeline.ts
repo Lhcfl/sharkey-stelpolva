@@ -11,9 +11,9 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
-import type { CacheService } from '@/core/CacheService.js';
-import type { UserFollowingService } from '@/core/UserFollowingService.js';
+import { UtilityService } from '@/core/UtilityService.js';
 import { ApiError } from '../../error.js';
+import { Brackets } from 'typeorm';
 
 export const meta = {
 	tags: ['notes'],
@@ -75,8 +75,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 		private roleService: RoleService,
 		private activeUsersChart: ActiveUsersChart,
-		// private cacheService: CacheService,
-		// private userFollowingService: UserFollowingService,
+		private utilityService: UtilityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me ? me.id : null);
@@ -100,8 +99,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// Using WHERE or ON conditions causes a fallback to full sequence scan, which times out.
 			// Important: don't use a query builder here or TypeORM will get confused and stop quoting column names! (known, unfixed bug apparently)
 			query
-				.leftJoin('(select "host" from "instance" where "isBubbled" = true)', 'bubbleInstance', '"bubbleInstance"."host" = "note"."userHost"')
-				.andWhere('"bubbleInstance" IS NOT NULL');
+				.leftJoin('(select "host" from "instance" where "isBubbled" = true)', 'bubbleInstance', '"bubbleInstance"."host" = "note"."userHost"');
+
+			if (this.utilityService.isBubbledHost(null)) {
+				query.andWhere(new Brackets(qb => qb
+					.orWhere('"bubbleInstance" IS NOT NULL')
+					.orWhere('"note"."userHost" IS NULL')));
+			} else {
+				query.andWhere('"bubbleInstance" IS NOT NULL');
+			}
 			this.queryService
 				.leftJoinInstance(query, 'note.userInstance', 'userInstance', '"userInstance"."host" = "bubbleInstance"."host"');
 
