@@ -400,6 +400,25 @@ export class QueryService {
 	};
 
 	/**
+	 * Adds AND condition that followerProp (user ID) is following followeeProp (user ID).
+	 * Both props should be expressions, not raw values.
+	 */
+	@bindThis
+	public andFollowingWithReply<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string): Q {
+		return this.addFollowingWithReply(q, followerProp, followeeProp, 'andWhere');
+	}
+
+	private addFollowingWithReply<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string, join: 'andWhere' | 'orWhere'): Q {
+		const followingQuery = this.followingsRepository.createQueryBuilder('following')
+			.select('1')
+			.andWhere(`following.followerId = ${followerProp}`)
+			.andWhere(`following.followeeId = ${followeeProp}`)
+			.andWhere('following.withReplies = true');
+
+		return q[join](`EXISTS (${followingQuery.getQuery()})`, followingQuery.getParameters());
+	};
+
+	/**
 	 * Adds OR condition that followerProp (user ID) is following followeeProp (channel ID).
 	 * Both props should be expressions, not raw values.
 	 */

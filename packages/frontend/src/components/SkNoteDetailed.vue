@@ -132,7 +132,7 @@ Detailed view of a note in the Sharkey style. Used when opening a note onto its 
 				<MkTime :time="appearNote.createdAt" mode="detail" colored/>
 			</MkA>
 		</div>
-		<MkReactionsViewer v-if="appearNote.reactionAcceptance !== 'likeOnly' && !stpvDisableReactions" ref="reactionsViewer" style="margin-top: 6px;"  :note="appearNote"/>
+		<MkReactionsViewer v-if="appearNote.reactionAcceptance !== 'likeOnly' && !stpvDisableReactions" ref="reactionsViewer" style="margin-top: 6px;" :note="appearNote"/>
 		<footer :class="$style.footer" class="_gaps _h_gaps" tabindex="0" role="group" :aria-label="i18n.ts.noteFooterLabel">
 			<button class="_button" :class="$style.noteFooterButton" @click="reply()">
 				<i class="ti ti-arrow-back-up"></i>

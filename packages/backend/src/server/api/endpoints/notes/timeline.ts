@@ -165,13 +165,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		withBots: boolean;
 		withReplies: boolean;
 	}, me: MiLocalUser) {
-		const followees = await this.userFollowingService.getFollowees(me.id);
-		const followingChannels = await this.channelFollowingsRepository.find({
-			where: {
-				followerId: me.id,
-			},
-		});
-
 		//#region Construct query
 		const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
 			// 1. in a channel I follow, 2. my own post, 3. by a user I follow
@@ -182,16 +175,27 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					.andFollowingUser(qb2, ':meId', 'note.userId')
 					.andWhere('note.channelId IS NULL'))),
 			))
-			// 1. Not a reply, 2. a self-reply
-			.andWhere(new Brackets(qb => qb
-				.orWhere('note.replyId IS NULL') // 返信ではない
-				.orWhere('note.replyUserId = note.userId')))
 			.setParameters({ meId: me.id })
 			.innerJoinAndSelect('note.user', 'user')
 			.leftJoinAndSelect('note.reply', 'reply')
 			.leftJoinAndSelect('note.renote', 'renote')
 			.leftJoinAndSelect('reply.user', 'replyUser')
 			.leftJoinAndSelect('renote.user', 'renoteUser')
+			.andWhere(new Brackets(qb => {
+				qb
+					// 1. Not a reply
+					.orWhere('note.replyId IS NULL')
+					// 2. a self-reply
+					.orWhere('note.replyUserId = note.userId')
+					// 3. a reply to me
+					.orWhere('note.replyUserId = :meId')
+					// 4. my reply
+					.orWhere('note.userId = :meId');
+
+				if (ps.withReplies) {
+					qb.orWhere(new Brackets(qb2 => this.queryService.andFollowingWithReply(qb2, ':meId', 'note.userId')));
+				}
+			}))
 			.limit(ps.limit);
 
 		// if (followees.length > 0 && followingChannels.length > 0) {

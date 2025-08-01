@@ -41,7 +41,7 @@ class HomeTimelineChannel extends Channel {
 
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
-		const isMe = this.user!.id === note.userId;
+		const isMe = this.user?.id === note.userId;
 
 		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
 
@@ -59,10 +59,11 @@ class HomeTimelineChannel extends Channel {
 			const reply = note.reply;
 			// 自分のフォローしていないユーザーの visibility: followers な投稿への返信は弾く
 			if (!this.isNoteVisibleToMe(reply)) return;
-			if (!this.following.get(note.userId)?.withReplies) {
-				// 「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
-				if (reply.userId !== this.user!.id && !isMe && reply.userId !== note.userId) return;
-			}
+
+			const fail = reply.userId !== this.user?.id && !isMe && reply.userId !== note.userId;
+
+			if (fail && !this.withReplies) return;
+			if (!this.following.get(note.userId)?.withReplies) return;
 		}
 
 		// 純粋なリノート（引用リノートでないリノート）の場合
