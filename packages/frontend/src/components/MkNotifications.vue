@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				:moveClass=" $style.transition_x_move"
 				tag="div"
 			>
-				<div v-for="(notification, i) in notifications" :key="notification.id">
+				<div v-for="(notification, i) in sortedByTime(notifications)" :key="notification.id">
 					<DynamicNote v-if="['reply', 'quote', 'mention'].includes(notification.type)" :class="$style.item" :note="notification.note" :withHardMute="true" :data-scroll-anchor="notification.id"/>
 					<XNotification v-else :class="$style.item" :notification="notification" :withTime="true" :full="true" :data-scroll-anchor="notification.id"/>
 				</div>
@@ -61,6 +61,20 @@ const pagination = computed(() => prefer.r.useGroupedNotifications.value ? {
 		excludeTypes: props.excludeTypes ?? undefined,
 	})),
 });
+
+// for pagination reasons, each notification group needs to have the
+// id of the oldest notification inside it, but we want to show the
+// groups sorted by the time of the *newest* notification; so we re-sort
+// them here
+function sortedByTime(notifications) {
+	return notifications.toSorted(
+		(a, b) => {
+			if (a.createdAt < b.createdAt) return 1;
+			if (a.createdAt > b.createdAt) return -1;
+			return 0;
+		}
+	);
+}
 
 function onNotification(notification) {
 	const isMuted = props.excludeTypes ? props.excludeTypes.includes(notification.type) : false;

@@ -154,8 +154,8 @@ export class DriveService {
 	@bindThis
 	private async save(file: MiDriveFile, path: string, name: string, info: FileInfo): Promise<MiDriveFile> {
 		const type = info.type.mime;
-		const hash = info.md5;
-		const size = info.size;
+		let hash = info.md5;
+		let size = info.size;
 
 		// thunbnail, webpublic を必要なら生成
 		const alts = await this.generateAlts(path, type, !file.uri);
@@ -163,6 +163,9 @@ export class DriveService {
 		if (type && type.startsWith('video/')) {
 			try {
 				await this.videoProcessingService.webOptimizeVideo(path, type);
+				const newInfo = await this.fileInfoService.getFileInfo(path);
+				hash = newInfo.md5;
+				size = newInfo.size;
 			} catch (err) {
 				this.registerLogger.warn(`Video optimization failed: ${renderInlineError(err)}`);
 			}

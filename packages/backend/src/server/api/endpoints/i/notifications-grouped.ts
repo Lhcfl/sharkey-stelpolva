@@ -116,7 +116,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// user has many notifications, the pagination will break the
 			// groups
 
-			// scan `notifications` newest-to-oldest
+			// scan `notifications` newest-to-oldest (unless we have sinceId && !untilId, in which case it's oldest-to-newest)
 			for (let i = 0; i < notifications.length; i++) {
 				const notification = notifications[i];
 
@@ -135,7 +135,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					if (prevReaction.type !== 'reaction:grouped') {
 						prevReaction = groupedNotifications[reactionIdx] = {
 							type: 'reaction:grouped',
-							id: prevReaction.id, // this will be the newest id in this group
+							id: '',
 							createdAt: prevReaction.createdAt,
 							noteId: prevReaction.noteId!,
 							reactions: [{
@@ -149,6 +149,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						userId: notification.notifierId!,
 						reaction: notification.reaction!,
 					});
+					prevReaction.id = notification.id; // this will be the *oldest* id in this group (newest if sinceId && !untilId)
 					continue;
 				}
 
@@ -167,7 +168,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					if (prevRenote.type !== 'renote:grouped') {
 						prevRenote = groupedNotifications[renoteIdx] = {
 							type: 'renote:grouped',
-							id: prevRenote.id, // this will be the newest id in this group
+							id: '',
 							createdAt: prevRenote.createdAt,
 							noteId: prevRenote.noteId!,
 							userIds: [prevRenote.notifierId!],
@@ -175,6 +176,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					}
 					// add this new renote to the existing group
 					(prevRenote as FilterUnionByProperty<MiGroupedNotification, 'type', 'renote:grouped'>).userIds.push(notification.notifierId!);
+					prevRenote.id = notification.id; // this will be the *oldest* id in this group (newest if sinceId && !untilId)
 					continue;
 				}
 
@@ -182,10 +184,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				groupedNotifications.push(notification);
 			}
 
-			// sort the groups by their id, newest first
+			// sort the groups by their id
 			groupedNotifications.sort(
 				(a, b) => a.id < b.id ? 1 : a.id > b.id ? -1 : 0,
 			);
+			// this matches the logic in NotificationService and it's what MkPagination expects
+			if (ps.sinceId && !ps.untilId) groupedNotifications.reverse();
 
 			return await this.notificationEntityService.packGroupedMany(groupedNotifications, me.id);
 		});
