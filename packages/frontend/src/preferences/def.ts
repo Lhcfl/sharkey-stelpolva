@@ -497,7 +497,18 @@ export const PREF_DEF = {
 				miLocalStorage.removeItem('fontSize');
 			}
 		},
-	} as Pref<'0' | '1' | '2' | '3'>,
+	} as Pref<'0' | '1' | '2' | '3' | 'custom'>,
+	customFontSize: {
+		default: 14,
+		needsReload: true,
+		onSet: customFontSize => {
+			if (customFontSize) {
+				miLocalStorage.setItem('customFontSize', customFontSize.toString());
+			} else {
+				miLocalStorage.removeItem('customFontSize');
+			}
+		},
+	} as Pref<number>,
 	useSystemFont: {
 		default: false,
 		needsReload: true,

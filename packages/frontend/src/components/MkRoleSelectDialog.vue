@@ -100,7 +100,7 @@ async function fetchRoles() {
 
 async function addRole() {
 	const items = roles.value
-		.filter(r => r.isPublic)
+		.filter(r => publicOnly.value ? r.isPublic : true)
 		.filter(r => !selectedRoleIds.value.includes(r.id))
 		.map(r => ({ text: r.name, value: r }));
 

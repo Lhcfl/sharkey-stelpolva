@@ -14,6 +14,7 @@ import { IdService } from '@/core/IdService.js';
 import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntityService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { RoleService } from '@/core/RoleService.js';
 
 @Injectable()
 export class AnnouncementService {
@@ -31,6 +32,7 @@ export class AnnouncementService {
 		private globalEventService: GlobalEventService,
 		private moderationLogService: ModerationLogService,
 		private announcementEntityService: AnnouncementEntityService,
+		private roleService: RoleService,
 	) {
 	}
 
@@ -46,6 +48,7 @@ export class AnnouncementService {
 		const readsQuery = this.announcementReadsRepository.createQueryBuilder('read')
 			.select('read.announcementId')
 			.where('read.userId = :userId', { userId: user.id });
+		const roles = await this.roleService.getUserRoles(user);
 
 		const q = this.announcementsRepository.createQueryBuilder('announcement')
 			.where('announcement.isActive = true')
@@ -57,6 +60,10 @@ export class AnnouncementService {
 			.andWhere(new Brackets(qb => {
 				qb.orWhere('announcement.forExistingUsers = false');
 				qb.orWhere('announcement.id > :userId', { userId: user.id });
+			}))
+			.andWhere(new Brackets(qb => {
+				qb.orWhere('announcement.forRoles && :roles', { roles: roles.map((r) => r.id) });
+				qb.orWhere('announcement.forRoles = \'{}\'');
 			}))
 			.andWhere(`announcement.id NOT IN (${ readsQuery.getQuery() })`);
 
@@ -76,6 +83,7 @@ export class AnnouncementService {
 			icon: values.icon,
 			display: values.display,
 			forExistingUsers: values.forExistingUsers,
+			forRoles: values.forRoles,
 			silence: values.silence,
 			needConfirmationToRead: values.needConfirmationToRead,
 			confetti: values.confetti,
@@ -129,6 +137,7 @@ export class AnnouncementService {
 			display: values.display,
 			icon: values.icon,
 			forExistingUsers: values.forExistingUsers,
+			forRoles: values.forRoles,
 			silence: values.silence,
 			needConfirmationToRead: values.needConfirmationToRead,
 			confetti: values.confetti,

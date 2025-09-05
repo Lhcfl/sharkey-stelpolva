@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { RegistrationTicketsRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket, MiMeta } from '@/models/_.js';
+import type { RegistrationTicketsRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket, MiMeta, UserIpsRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import { CaptchaService } from '@/core/CaptchaService.js';
 import { IdService } from '@/core/IdService.js';
@@ -19,11 +19,14 @@ import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
 import { bindThis } from '@/decorators.js';
 import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 import { RoleService } from '@/core/RoleService.js';
+import Logger from '@/logger.js';
+import { LoggerService } from '@/core/LoggerService.js';
 import { SigninService } from './SigninService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
 @Injectable()
 export class SignupApiService {
+	private logger: Logger;
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
@@ -46,6 +49,9 @@ export class SignupApiService {
 		@Inject(DI.registrationTicketsRepository)
 		private registrationTicketsRepository: RegistrationTicketsRepository,
 
+		@Inject(DI.userIpsRepository)
+		private userIpsRepository: UserIpsRepository,
+
 		private userEntityService: UserEntityService,
 		private idService: IdService,
 		private captchaService: CaptchaService,
@@ -53,7 +59,9 @@ export class SignupApiService {
 		private signinService: SigninService,
 		private emailService: EmailService,
 		private roleService: RoleService,
+		private loggerService: LoggerService,
 	) {
+		this.logger = this.loggerService.getLogger('Signup');
 	}
 
 	@bindThis
@@ -213,6 +221,7 @@ export class SignupApiService {
 				username: username,
 				password: hash,
 				reason: reason,
+				requestOriginIp: this.meta.enableIpLogging ? request.ip : null,
 			});
 
 			const link = `${this.config.url}/signup-complete/${code}`;
@@ -249,6 +258,10 @@ export class SignupApiService {
 				});
 			}
 
+			if (this.meta.enableIpLogging) {
+				this.logIp(request.ip, null, account.id);
+			}
+
 			const moderators = await this.roleService.getModerators();
 
 			for (const moderator of moderators) {
@@ -280,6 +293,10 @@ export class SignupApiService {
 						usedBy: account,
 						usedById: account.id,
 					});
+				}
+
+				if (this.meta.enableIpLogging) {
+					this.logIp(request.ip, null, account.id);
 				}
 
 				return {
@@ -332,6 +349,15 @@ export class SignupApiService {
 				});
 			}
 
+			if (pendingUser.requestOriginIp) {
+				this.logIp(pendingUser.requestOriginIp, this.idService.parse(pendingUser.id).date, account.id);
+			}
+
+			// The sign-up request and the confirmation may've come from different addresses: log both
+			if (this.meta.enableIpLogging) {
+				this.logIp(request.ip, null, account.id);
+			}
+
 			if (this.meta.approvalRequiredForSignup) {
 				if (pendingUser.email) {
 					this.emailService.sendEmail(pendingUser.email, 'Approval pending',
@@ -357,6 +383,19 @@ export class SignupApiService {
 			return this.signinService.signin(request, reply, account as MiLocalUser);
 		} catch (err) {
 			throw new FastifyReplyError(400, String(err), err);
+		}
+	}
+
+	@bindThis
+	private logIp(ip: string, ipDate: Date | null, userId: MiLocalUser['id']) {
+		try {
+			this.userIpsRepository.createQueryBuilder().insert().values({
+				createdAt: ipDate ?? new Date(),
+				userId,
+				ip,
+			}).orIgnore(true).execute();
+		} catch (err) {
+			this.logger.error(err as Error);
 		}
 	}
 }

@@ -1606,7 +1606,7 @@ defineExpose({
 	max-width: 100%;
 	min-width: 100%;
 	width: 100%;
-	min-height: 90px;
+	min-height: 5.85em;
 	height: 100%;
 }
 

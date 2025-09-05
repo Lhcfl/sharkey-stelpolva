@@ -73,6 +73,14 @@
 		codeBoolean: '#62b70c',
 		deckBg: ':darken<3<@bg',
 		htmlThemeColor: '@bg',
+		modPlayerDefault: '#ffffff',
+		modPlayerQuarter: '#ffff00',
+		modPlayerInstr: '#80e0ff',
+		modPlayerVolume: '#80ff80',
+		modPlayerFx: '#ff80e0',
+		modPlayerOperant: '#ffe080',
+		modPlayerShadow: 'rgba(0, 0, 0, 0.5)',
+		modPlayerSliderKnob: ':darken<10<@indicator',
 	},
 
 	codeHighlighter: {

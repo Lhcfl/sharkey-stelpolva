@@ -633,8 +633,7 @@ export class MiMeta {
 	})
 	public policies: Record<string, any>;
 
-	@Column('varchar', {
-		length: 280,
+	@Column('text', {
 		array: true,
 		default: '{}',
 	})

@@ -220,6 +220,7 @@ _serverSettings:
   inquiryUrlDescription: "Specify the URL of a web page that contains a contact form or the instance operators' contact information."
   aboutInstance: "About instance"
   aboutInstanceDescription: "A longer description that will be displayed in the 'Instance Information' page, going in place of the regular instance description. Supports HTML."
+  deliverSuspendedSoftwareDescription: "You can specify a range of names and versions of the server's software to stop delivery for vulnerability or other reasons. This version information is provided by the server and is not guaranteed to be reliable. A semver range specification can be used to specify the version, but specifying >= 2024.3.1 will not include custom versions such as 2024.3.1-custom.0, so it is recommended that a prerelease specification be used, such as >= 2024.3.1-0. Specifying * will match any name or version, even when the server doesn't provide one. You can also provide a regular expression like /^sharkey-/i or /^1-/"
 _accountMigration:
   moveAccountDescription: "This will migrate your account to a different one.\n　・Followers from this account will automatically be migrated to the new account\n　・This account will unfollow all users it is currently following\n　・You will be unable to create new notes etc. on this account\n\nWhile migration of followers is automatic, you must manually prepare some steps to migrate the list of users you are following. To do so, carry out a follows export that you will later import on the new account in the settings menu. The same procedure applies to your lists as well as your muted and blocked users.\n\n(This explanation applies to Sharkey v13.12.0 and later. Other ActivityPub software, such as Mastodon, might function differently.)"
 _achievements:
@@ -478,6 +479,10 @@ _auth:
   allowed: "Allowed"
 _announcement:
   new: "New"
+  onlyForRoles: "Restrict to roles"
+  onlyForRolesChange: "Change role restrictions"
+  onlyForRolesUnrestricted: "Shown to everyone"
+  onlyForRolesRestricted: "Shown to members of {roles} roles"
   confetti: "Throw confetti"
   confettiDescription: "If enabled, the announcement will display a confetti effect when viewed."
 _deck:
@@ -653,3 +658,5 @@ clearCachedFilesOptions:
   oneYear: "one year"
   keepFilesInUse: "Don't delete files used as avatars&c"
   keepFilesInUseDescription: "this option requires more complicated database queries, you may need to increase the value of db.extra.statement_timeout in the configuration file"
+
+customFontSize: "Custom font size"

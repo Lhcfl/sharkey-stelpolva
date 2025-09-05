@@ -700,7 +700,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<option value="1"><span style="font-size: 15px;">Aa</span></option>
 								<option value="2"><span style="font-size: 16px;">Aa</span></option>
 								<option value="3"><span style="font-size: 17px;">Aa</span></option>
+								<option value="custom"><span style="font-size: 14px;">Custom</span></option>
 							</MkRadios>
+						</SearchMarker>
+
+						<SearchMarker :keywords="['font', 'size']">
+							<MkInput v-model="customFontSize" :min="12" :max="48" type="number" :step="1" :manualSave="true" :disabled="fontSize !== 'custom'">
+								<template #label><SearchLabel>{{ i18n.ts.customFontSize }}</SearchLabel></template>
+							</MkInput>
 						</SearchMarker>
 
 						<SearchMarker :keywords="['font', 'system', 'native']">
@@ -1081,6 +1088,7 @@ const defaultCW = ref($i.defaultCW);
 const defaultCWPriority = ref($i.defaultCWPriority);
 const lang = prefer.model('lang');
 const fontSize = prefer.model('fontSize');
+const customFontSize = prefer.model('customFontSize');
 const useSystemFont = prefer.model('useSystemFont');
 const cornerRadius = prefer.model('cornerRadius');
 const trustedDomains = prefer.model(

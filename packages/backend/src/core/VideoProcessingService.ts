@@ -102,6 +102,7 @@ export class VideoProcessingService {
 					.format(outputFormat) // Specify output format
 					.addOutputOptions('-c copy') // Copy streams without re-encoding
 					.addOutputOptions('-movflags +faststart')
+					.addOutputOptions('-map 0')
 					.on('error', reject)
 					.on('end', async () => {
 						try {

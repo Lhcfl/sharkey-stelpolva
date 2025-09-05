@@ -222,18 +222,37 @@ export class UtilityService {
 
 	@bindThis
 	public isDeliverSuspendedSoftware(software: Pick<MiInstance, 'softwareName' | 'softwareVersion'>): SoftwareSuspension | undefined {
-		if (software.softwareName == null) return undefined;
-		if (software.softwareVersion == null) {
-			// software version is null; suspend iff versionRange is *
-			return this.meta.deliverSuspendedSoftware.find(x =>
-				x.software === software.softwareName
-				&& x.versionRange.trim() === '*');
-		} else {
-			const softwareVersion = software.softwareVersion;
-			return this.meta.deliverSuspendedSoftware.find(x =>
-				x.software === software.softwareName
-				&& semver.satisfies(softwareVersion, x.versionRange, { includePrerelease: true }));
+		// a missing name or version is treated as the empty string
+		const softwareName = software.softwareName ?? '';
+		const softwareVersion = software.softwareVersion ?? '';
+
+		function maybeRegexpMatch(test: string, target: string): boolean {
+			const regexpStrPair = test.trim().match(/^\/(.+)\/(.*)$/);
+			if (!regexpStrPair) return false; // not a regexp, can't match
+
+			try {
+				return new RE2(regexpStrPair[1], regexpStrPair[2]).test(target);
+			} catch (err) {
+				return false; // not a well-formed regexp, can't match
+			}
 		}
+
+		// each element of `meta.deliverSuspendedSoftware` can have a
+		// normal string, a `*`, or a `/regexp/` for software or
+		// versionRange
+		return this.meta.deliverSuspendedSoftware.find(
+			x => (
+				(
+					x.software.trim() === '*' ||
+						x.software === softwareName ||
+						maybeRegexpMatch(x.software, softwareName)
+				) && (
+					x.versionRange.trim() === '*' ||
+						semver.satisfies(softwareVersion, x.versionRange, { includePrerelease: true }) ||
+						maybeRegexpMatch(x.versionRange, softwareVersion)
+				)
+			)
+		);
 	}
 
 	/**

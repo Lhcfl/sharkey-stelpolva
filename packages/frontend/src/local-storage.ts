@@ -25,6 +25,7 @@ export type Keys = (
 	'colorScheme' |
 	'useSystemFont' |
 	'fontSize' |
+	'customFontSize' |
 	'cornerRadius' |
 	'ui' |
 	'ui_temp' |

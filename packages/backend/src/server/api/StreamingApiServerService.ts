@@ -116,6 +116,7 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 
 			let user: MiLocalUser | null = null;
 			let app: MiAccessToken | null = null;
+			let dieInstantly: [number, string] | null = null;
 
 			// https://datatracker.ietf.org/doc/html/rfc6750.html#section-2.1
 			// Note that the standard WHATWG WebSocket API does not support setting any headers,
@@ -132,21 +133,16 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 				}
 			} catch (e) {
 				if (e instanceof AuthenticationError) {
-					socket.write([
-						'HTTP/1.1 401 Unauthorized',
-						'WWW-Authenticate: Bearer realm="Misskey", error="invalid_token", error_description="Failed to authenticate"',
-					].join('\r\n') + '\r\n\r\n');
+					dieInstantly = [4000, 'Failed to authenticate'];
 				} else {
 					socket.write('HTTP/1.1 500 Internal Server Error\r\n\r\n');
+					socket.destroy();
+					return;
 				}
-				socket.destroy();
-				return;
 			}
 
 			if (user?.isSuspended) {
-				socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
-				socket.destroy();
-				return;
+				dieInstantly = [4001, 'User suspended'];
 			}
 
 			// ServerServices sets `trustProxy: true`, which inside fastify/request.js ends up calling `proxyAddr` in this way, so we do the same.
@@ -224,12 +220,19 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 					if (connectionsForClient.size < 1) {
 						this.#connectionsByClient.delete(limitActor);
 					}
+
+					stream.dispose();
 				});
 
 				ws.once('error', (e) => {
 					this.#logger.error(`Unhandled error in Streaming Api: ${renderInlineError(e)}`);
 					ws.terminate();
 				});
+
+				if (dieInstantly !== null) {
+					ws.close(...dieInstantly);
+					return;
+				}
 
 				this.#wss.emit('connection', ws, request, {
 					stream, user, app,

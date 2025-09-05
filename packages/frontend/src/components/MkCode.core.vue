@@ -142,7 +142,7 @@ watch(() => props.lang, (to) => {
 		margin: 0;
 		border-radius: var(--MI-radius-sm);
 		border: none;
-		min-height: 130px;
+		min-height: 9.29em;
 		pointer-events: none;
 		min-width: calc(100% - 24px);
 		height: 100%;

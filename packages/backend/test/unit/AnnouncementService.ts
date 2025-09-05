@@ -27,6 +27,7 @@ import { CacheService } from '@/core/CacheService.js';
 import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import type { TestingModule } from '@nestjs/testing';
 import type { MockFunctionMetadata } from 'jest-mock';
@@ -41,6 +42,7 @@ describe('AnnouncementService', () => {
 	let announcementReadsRepository: AnnouncementReadsRepository;
 	let globalEventService: jest.Mocked<GlobalEventService>;
 	let moderationLogService: jest.Mocked<ModerationLogService>;
+	let roleService: jest.Mocked<RoleService>;
 
 	function createUser(data: Partial<MiUser> = {}) {
 		const un = secureRndstr(16);
@@ -77,6 +79,7 @@ describe('AnnouncementService', () => {
 				InternalEventService,
 				GlobalEventService,
 				ModerationLogService,
+				RoleService,
 			],
 		})
 			.useMocker((token) => {
@@ -93,6 +96,9 @@ describe('AnnouncementService', () => {
 			.overrideProvider(ModerationLogService).useValue({
 				log: jest.fn(),
 			})
+			.overrideProvider(RoleService).useValue({
+				getUserRoles: jest.fn((_) => []),
+			})
 			.overrideProvider(InternalEventService).useClass(FakeInternalEventService)
 			.overrideProvider(CacheService).useClass(NoOpCacheService)
 			.compile();
@@ -105,6 +111,7 @@ describe('AnnouncementService', () => {
 		announcementReadsRepository = app.get<AnnouncementReadsRepository>(DI.announcementReadsRepository);
 		globalEventService = app.get<GlobalEventService>(GlobalEventService) as jest.Mocked<GlobalEventService>;
 		moderationLogService = app.get<ModerationLogService>(ModerationLogService) as jest.Mocked<ModerationLogService>;
+		roleService = app.get<RoleService>(RoleService) as jest.Mocked<RoleService>;
 	});
 
 	afterEach(async () => {

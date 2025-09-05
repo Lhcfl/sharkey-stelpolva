@@ -57,6 +57,15 @@ export const meta = {
 					type: 'number',
 					optional: false, nullable: false,
 				},
+				forRoles: {
+					type: 'array',
+					optional: false, nullable: false,
+					items: {
+						type: 'string',
+						optional: false, nullable: false,
+						format: 'misskey:id'
+					}
+				},
 			},
 		},
 	},
@@ -122,6 +131,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				display: announcement.display,
 				isActive: announcement.isActive,
 				forExistingUsers: announcement.forExistingUsers,
+				forRoles: announcement.forRoles,
 				silence: announcement.silence,
 				needConfirmationToRead: announcement.needConfirmationToRead,
 				confetti: announcement.confetti,

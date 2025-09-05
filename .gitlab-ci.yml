@@ -2,28 +2,21 @@ stages:
   - test
   - deploy
 
-testCommit:
+.test_common: &test_common
   stage: test
-  image: node:jod
-  services:
-    - postgres:15
-    - redis
+  image: docker.io/node:22
   variables:
     POSTGRES_PASSWORD: ci
     COREPACK_DEFAULT_TO_LATEST: 0
-  script:
-    - apt-get update && apt-get install -y git wget curl build-essential python3 ffmpeg
+  before_script:
+    - apt-get update && apt-get install -y git wget curl build-essential python3 ffmpeg libcairo2-dev libpango1.0-dev libpangocairo-1.0
+    - 'echo "clusterLimit: $(nproc)" >> .config/ci.yml'
     - cp .config/ci.yml .config/default.yml
     - cp .config/ci.yml .config/test.yml
     - corepack enable
     - corepack install
     - git submodule update --init
     - pnpm install --frozen-lockfile
-    - pnpm run build
-    - pnpm run migrate
-    - pnpm run test
-    - pnpm run --filter=backend --filter=misskey-js --filter=frontend-shared lint
-    - pnpm run --filter=frontend --filter=frontend-embed eslint
   cache:
     key: test
     policy: pull-push
@@ -36,11 +29,43 @@ testCommit:
     - merge_requests
     - stable
 
-getImageTag:
-  stage: deploy
-  image: ubuntu:latest
+lint:
+  <<: *test_common
   script:
-    - apt-get update && apt-get install -y jq
+    - pnpm run build
+    - pnpm run eslint
+
+backend_tests:
+  <<: *test_common
+  services:
+    - postgres:15
+    - redis
+  script:
+    - >-
+      pnpm run build \
+        --filter=backend \
+        --filter=megalodon \
+        --filter=misskey-js
+    - pnpm run migrate
+    - pnpm run test --filter=backend
+
+frontend_tests:
+  <<: *test_common
+  script:
+    - >-
+      pnpm run build \
+        --filter=frontend \
+        --filter=frontend-embed \
+        --filter=frontend-shared \
+        --filter=megalogon \
+        --filter=misskey-js
+    - pnpm run test --filter=frontend --filter=misskey-js
+
+get_image_tag:
+  stage: deploy
+  image: docker.io/alpine:latest
+  script:
+    - apk add jq
     - |
       if test -n "$CI_COMMIT_TAG"; then
         tag="$CI_COMMIT_TAG"
@@ -62,10 +87,10 @@ getImageTag:
     - develop
     - tags
 
-buildDocker:
+build_image:
   stage: deploy
   needs:
-    - job: getImageTag
+    - job: get_image_tag
       artifacts: true
   parallel:
     matrix:
@@ -78,37 +103,36 @@ buildDocker:
     entrypoint: [""]
   script:
     - >-
-      /kaniko/executor
-      --context "${CI_PROJECT_DIR}"
-      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_VERSION}-${ARCH}"
+      /kaniko/executor \
+        --context "${CI_PROJECT_DIR}" \
+        --dockerfile "${CI_PROJECT_DIR}/Dockerfile" \
+        --single-snapshot \
+        --destination "${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_VERSION}-${ARCH}"
   only:
     - stable
     - develop
     - tags
 
-mergeManifests:
+merge_image_manifests:
   stage: deploy
   needs:
-    - job: buildDocker
+    - job: build_image
       artifacts: false
-    - job: getImageTag
+    - job: get_image_tag
       artifacts: true
-  tags:
-    - docker
   image:
-      name: mplatform/manifest-tool:alpine
-      entrypoint: [""]
+    name: mplatform/manifest-tool:alpine
+    entrypoint: [""]
   script:
     - >-
-      manifest-tool
-      --username=${CI_REGISTRY_USER}
-      --password=${CI_REGISTRY_PASSWORD}
-      push from-args
-      --platforms linux/amd64,linux/arm64
-      --tags ${REGISTRY_PUSH_VERSION}
-      --template ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_VERSION}-ARCH
-      --target ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_TAG}
+      manifest-tool \
+        --username=${CI_REGISTRY_USER} \
+        --password=${CI_REGISTRY_PASSWORD} \
+        push from-args \
+        --platforms linux/amd64,linux/arm64 \
+        --tags ${REGISTRY_PUSH_VERSION} \
+        --template ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_VERSION}-ARCH \
+        --target ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_TAG}
   only:
     - stable
     - develop
