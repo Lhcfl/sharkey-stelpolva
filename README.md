@@ -120,8 +120,7 @@
 > Take your risk!
 > We follow the develop branch of Sharkey, not the stable branch. So you may encounter features that are not so "stable".
 
-> [!NOTE]
-> Sharkey Stelpolva Edition 不提供 Docker 安装方式。如果需要 Docker 安装你可以自己编辑 Docker Compose 并添加下面的额外依赖。
+### Manual Installation
 
 Sharkey Stelpolva 和 Sharkey 是完全兼容的，并且跟随 Sharkey 的最新 develop 分支，对于已有的 Sharkey 迁移到 Sharkey Stelpolva 你只需要额外安装一些依赖即可：
 
@@ -129,6 +128,18 @@ Sharkey Stelpolva 和 Sharkey 是完全兼容的，并且跟随 Sharkey 的最�
 ```SQL
 CREATE EXTENSION pgroonga;
 ```
+
+### Docker Installation
+
+Sharkey 的最近版本 Docker Compose 文件补全了 Sharkey Stelpolva 需要的依赖。因此，检查 `docker_compose.yml` 中的 `db` 服务是否使用了 `pgroonga` 的 image 即可：
+
+```yml
+  db:
+    restart: always
+    image: groonga/pgroonga:4.0.1-alpine-17
+```
+
+如果有类似的内容，恭喜你！Sharkey Stelpolva 可以与 Sharkey 官方版本完全兼容地安装。如果没有，请将 `image` 一行替换为上面的内容，然后重新 build `db`。
 
 ## 从 Sharkey Stelpolva 迁移回 Sharkey？
 
