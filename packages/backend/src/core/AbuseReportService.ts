@@ -5,6 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
+import { acct } from 'misskey-js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import type { AbuseUserReportsRepository, MiAbuseUserReport, MiUser, UsersRepository } from '@/models/_.js';
@@ -15,6 +16,7 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
+import { NotificationService } from '@/core/NotificationService.js';
 import { IdService } from './IdService.js';
 
 @Injectable()
@@ -32,6 +34,7 @@ export class AbuseReportService {
 		private systemAccountService: SystemAccountService,
 		private apRendererService: ApRendererService,
 		private moderationLogService: ModerationLogService,
+		private notificationService: NotificationService,
 	) {
 	}
 
@@ -93,9 +96,11 @@ export class AbuseReportService {
 		moderator: MiUser,
 	) {
 		const paramsMap = new Map(params.map(it => [it.reportId, it]));
-		const reports = await this.abuseUserReportsRepository.findBy({
-			id: In(params.map(it => it.reportId)),
-		});
+		const reports = await this.abuseUserReportsRepository
+			.createQueryBuilder('report')
+			.where('report.id IN (:...ids)', { ids: params.map(it => it.reportId) })
+			.leftJoinAndSelect('report.targetUser', 'targetUser')
+			.getMany();
 
 		for (const report of reports) {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -113,6 +118,20 @@ export class AbuseReportService {
 					report: report,
 					resolvedAs: ps.resolvedAs,
 				});
+
+			if (ps.resolvedAs === 'accept' && report.reporterHost == null) {
+				const target = report.targetUser ?
+					`@${acct.toString(report.targetUser)}`
+					: null;
+
+				this.notificationService.createNotification(
+					report.reporterId,
+					'reportAccepted',
+					{
+						target,
+					},
+				);
+			}
 		}
 
 		return this.abuseUserReportsRepository.findBy({ id: In(reports.map(it => it.id)) })

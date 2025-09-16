@@ -46,6 +46,7 @@ export const notificationTypes = [
 	'scheduledNotePosted',
 	'app',
 	'test',
+	'reportAccepted',
 ] as const;
 
 export const groupedNotificationTypes = [

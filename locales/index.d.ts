@@ -10414,6 +10414,10 @@ export interface Locale extends ILocale {
          * Import of {x} has been completed
          */
         "importOfXCompleted": ParameterizedString<"x">;
+        /**
+         * 举报被接受
+         */
+        "reportAccepted": string;
     };
     "_deck": {
         /**
@@ -13646,6 +13650,10 @@ export interface Locale extends ILocale {
      * 表情符号大小
      */
     "stpvEmojiPickerItemSize": string;
+    /**
+     * 您对 {target} 的举报已被接受。感谢您的帮助！管理人员已经采取了适当的措施。
+     */
+    "reportAcceptedBody": ParameterizedString<"target">;
 }
 declare const locales: {
     [lang: string]: Locale;

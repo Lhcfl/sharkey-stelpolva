@@ -152,6 +152,11 @@ export type MiNotification = {
 	id: string;
 	createdAt: string;
 	noteId: MiNote['id'];
+} | {
+	type: 'reportAccepted';
+	id: string;
+	createdAt: string;
+	target: string | null;
 };
 
 export type MiGroupedNotification = MiNotification | {

@@ -403,6 +403,20 @@ export const packedNotificationSchema = {
 			type: {
 				type: 'string',
 				optional: false, nullable: false,
+				enum: ['reportAccepted'],
+			},
+			target: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+		},
+	}, {
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
 				enum: ['edited'],
 			},
 			user: {

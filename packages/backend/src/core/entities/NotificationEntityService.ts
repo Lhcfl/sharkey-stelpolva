@@ -199,6 +199,9 @@ export class NotificationEntityService implements OnModuleInit {
 				header: notification.customHeader,
 				icon: notification.customIcon,
 			} : {}),
+			...(notification.type === 'reportAccepted' ? {
+				target: notification.target,
+			} : {}),
 		});
 	}
 

@@ -70,3 +70,8 @@ stpvPFprefix: "prefix..."
 stpvPFsuffix: "...suffix"
 stpvWarnNoQueryLocalFonts: Oops! Your browser doesn't support the queryLocalFonts method, so please fill in the font name manually in the text box.
 stpvEmojiPickerItemSize: "Emoji size"
+
+_notification:
+  reportAccepted: "Report Accepted"
+
+reportAcceptedBody: "Your report against {target} has been accepted. Thank you for your help! The administrators have taken appropriate action."
