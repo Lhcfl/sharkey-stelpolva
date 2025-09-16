@@ -223,6 +223,7 @@ export type ModerationLogPayloads = {
 		userId: string;
 		userUsername: string;
 		userHost: string | null;
+		reason?: string | null;
 	};
 	decline: {
 		userId: string;

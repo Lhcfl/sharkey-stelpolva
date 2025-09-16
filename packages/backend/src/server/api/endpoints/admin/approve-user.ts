@@ -58,6 +58,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				userId: user.id,
 				userUsername: user.username,
 				userHost: user.host,
+				reason: user.signupReason,
 			});
 		});
 	}

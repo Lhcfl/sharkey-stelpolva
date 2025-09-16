@@ -201,6 +201,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</template>
 		<template v-else-if="log.type === 'approve'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
+			<div v-if="log.info.reason">
+				{{ i18n.ts.signupReason }}: <br>
+				<blockquote
+					style="display: block;
+					margin: 8px;
+					padding: 6px 0 6px 12px;
+					color: var(--MI_THEME-fg);
+					border-left: solid 3px var(--MI_THEME-fg);
+					opacity: 0.7;"
+				>
+					{{ log.info.reason }}
+				</blockquote>
+			</div>
 		</template>
 		<template v-else-if="log.type === 'setMandatoryCW'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
