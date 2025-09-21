@@ -329,9 +329,7 @@ export async function common(createVue: () => Promise<App<Element>>) {
 	//#region Load default font
 	const def_arr = miLocalStorage.getItem('defaultFontFace')?.split('_');
 	const fontId = def_arr?.[0];
-	if (fontId) {
-		loadFontStyle(fontId);
-	}
+	loadFontStyle(fontId || 'maokentangyuan');
 	//#region Self-XSS 対策メッセージ
 	if (!_DEV_) {
 		console.log(

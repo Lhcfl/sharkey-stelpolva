@@ -62,14 +62,14 @@ export function getDefaultFontSettings() {
 	const availableTypes = computed(() => getFontOptionsList(fontFace.value));
 
 	async function setDefaultFont() {
-		for (const klass of [...document.documentElement.classList.values()]) {
+		for (const klass of [...window.document.documentElement.classList.values()]) {
 			if (klass.startsWith('default-font-')) {
-				document.documentElement.classList.remove(klass);
+				window.document.documentElement.classList.remove(klass);
 			}
 		}
 		const newFontId = getFontId(fontFace.value, fontFaceType.value);
 		miLocalStorage.setItem('defaultFontFace', newFontId);
-		document.documentElement.classList.add(`default-font-${newFontId}`);
+		window.document.documentElement.classList.add(`default-font-${newFontId}`);
 
 		await loadFontStyle(fontFace.value);
 	}
