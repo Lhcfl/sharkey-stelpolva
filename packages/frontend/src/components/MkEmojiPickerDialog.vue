@@ -37,14 +37,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import * as Misskey from 'misskey-js';
-import { computed, useTemplateRef } from 'vue';
-import type { Ref } from 'vue';
+import { useTemplateRef } from 'vue';
 import MkModal from '@/components/MkModal.vue';
 import MkEmojiPicker from '@/components/MkEmojiPicker.vue';
 import { prefer } from '@/preferences.js';
 
 const props = withDefaults(defineProps<{
-	manualShowing?: boolean | null | (() => Ref<boolean>);
+	manualShowing?: boolean | null;
 	src?: HTMLElement;
 	showPinned?: boolean;
 	pinnedEmojis?: string[],
@@ -57,14 +56,6 @@ const props = withDefaults(defineProps<{
 	pinnedEmojis: undefined,
 	asReactionPicker: false,
 	choseAndClose: true,
-});
-
-const manualShowing = computed(() => {
-	if (props.manualShowing == null) return false;
-	if (typeof props.manualShowing === 'function') {
-		return props.manualShowing().value;
-	}
-	return props.manualShowing;
 });
 
 const emit = defineEmits<{
