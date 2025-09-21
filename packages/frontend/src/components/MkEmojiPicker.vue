@@ -139,6 +139,7 @@ import { customEmojiCategories, customEmojis, customEmojisMap } from '@/custom-e
 import { $i } from '@/i.js';
 import { checkReactionPermissions } from '@/utility/check-reaction-permissions.js';
 import { prefer } from '@/preferences.js';
+import { isSafari } from '@/utility/browser-checker.js';
 
 const props = withDefaults(defineProps<{
 	showPinned?: boolean;
@@ -386,6 +387,7 @@ function filterCategory(emoji: Misskey.entities.EmojiSimple, category: string): 
 }
 
 function focus() {
+	if (isSafari()) { return; }
 	if (!['smartphone', 'tablet'].includes(deviceKind) && !isTouchUsing) {
 		searchEl.value?.focus({
 			preventScroll: true,
