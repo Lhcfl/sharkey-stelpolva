@@ -148,9 +148,11 @@
 	}
 
 	function stpvCustomLoader() {
-		const defaultFontFace = localStorage.getItem('defaultFontFace') || 'maokentangyuan';
+		const defaultFontFace = localStorage.getItem('defaultFontFace');
 		if (defaultFontFace) {
 			document.documentElement.classList.add(`default-font-${defaultFontFace}`);
+		} else if (navigator.language.includes('zh')) {
+			document.documentElement.classList.add('default-font-maokentangyuan');
 		}
 	}
 
