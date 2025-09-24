@@ -73,14 +73,14 @@ export async function mainBoot() {
 		return createApp(rootComponent);
 	});
 
-	const initEmojiPickers = async () => {
-		await emojiPicker.init();
-		await reactionPicker.init();
-	};
+	const initEmojiPickers = () => Promise.all([
+		reactionPicker.init(),
+		emojiPicker.init(),
+	]);
 
 	const sleep = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms));
 
-	initEmojiPickers()
+	sleep(500).then(() => initEmojiPickers())
 		.catch(() => sleep(1000).then(() => initEmojiPickers()))
 		.catch(() => sleep(1000).then(() => initEmojiPickers()));
 

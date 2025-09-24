@@ -31,7 +31,7 @@ class ReactionPicker {
 			immediate: true,
 		});
 
-		await popup(defineAsyncComponent(() => import('@/components/MkEmojiPickerDialog.vue')), {
+		await popup(defineAsyncComponent(() => import('@/components/MkEmojiPickerDialog2.vue')), {
 			src: this.src,
 			pinnedEmojis: reactionsRef,
 			asReactionPicker: true,
