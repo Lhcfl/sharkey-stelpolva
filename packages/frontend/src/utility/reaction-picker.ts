@@ -15,12 +15,14 @@ class ReactionPicker {
 	private targetNote: Ref<Misskey.entities.Note | null> = ref(null);
 	private onChosen?: (reaction: string) => void;
 	private onClosed?: () => void;
+	private isInited = false;
 
 	constructor() {
 		// nop
 	}
 
 	public async init() {
+		if (this.isInited) return;
 		const reactionsRef = ref<string[]>([]);
 
 		watch([prefer.r.emojiPaletteForReaction, prefer.r.emojiPalettes], () => {
@@ -47,6 +49,8 @@ class ReactionPicker {
 				if (this.onClosed) this.onClosed();
 			},
 		});
+
+		this.isInited = true;
 	}
 
 	public show(src: HTMLElement | null, targetNote: Misskey.entities.Note | null, onChosen?: ReactionPicker['onChosen'], onClosed?: ReactionPicker['onClosed']) {

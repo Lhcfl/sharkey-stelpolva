@@ -19,12 +19,15 @@ class EmojiPicker {
 	private manualShowing = ref(false);
 	private onChosen?: (emoji: string) => void;
 	private onClosed?: () => void;
+	private isInited = false;
 
 	constructor() {
 		// nop
 	}
 
 	public async init() {
+		if (this.isInited) return;
+
 		const emojisRef = ref<string[]>([]);
 
 		watch([prefer.r.emojiPaletteForMain, prefer.r.emojiPalettes], () => {
@@ -51,6 +54,8 @@ class EmojiPicker {
 				if (this.onClosed) this.onClosed();
 			},
 		});
+
+		this.isInited = true;
 	}
 
 	public show(

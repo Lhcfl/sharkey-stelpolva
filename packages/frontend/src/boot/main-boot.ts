@@ -73,8 +73,16 @@ export async function mainBoot() {
 		return createApp(rootComponent);
 	});
 
-	reactionPicker.init();
-	emojiPicker.init();
+	const initEmojiPickers = async () => {
+		await emojiPicker.init();
+		await reactionPicker.init();
+	};
+
+	const sleep = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms));
+
+	initEmojiPickers()
+		.catch(() => sleep(1000).then(() => initEmojiPickers()))
+		.catch(() => sleep(1000).then(() => initEmojiPickers()));
 
 	if (isClientUpdated && $i) {
 		const { dispose } = popup(defineAsyncComponent(() => import('@/components/MkUpdated.vue')), {}, {
