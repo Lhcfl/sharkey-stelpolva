@@ -25,6 +25,7 @@
 		"@sentry/vue": "9.14.0",
 		"@syuilo/aiscript": "0.19.0",
 		"autosize": "^6.0.1",
+		"aiscript-vscode": "github:aiscript-dev/aiscript-vscode#v0.1.15",
 		"broadcast-channel": "7.1.0",
 		"buraha": "0.0.1",
 		"canvas-confetti": "1.9.3",
