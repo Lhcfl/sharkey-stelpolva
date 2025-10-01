@@ -7667,6 +7667,10 @@ export interface Locale extends ILocale {
              * Can appear in trending notes / users
              */
             "canTrend": string;
+            /**
+             * Can view federation stats and details of remote instances
+             */
+            "canViewFederation": string;
         };
         "_condition": {
             /**
@@ -7798,6 +7802,10 @@ export interface Locale extends ILocale {
          * This condition may be incorrect for remote users.
          */
         "remoteDataWarning": string;
+        /**
+         * Select a user to test the condition.
+         */
+        "selectTestUser": string;
     };
     "_sensitiveMediaDetection": {
         /**
@@ -9209,6 +9217,14 @@ export interface Locale extends ILocale {
          */
         "write:admin:cw-user": string;
         /**
+         * Apply mandatory CW on notes
+         */
+        "write:admin:cw-note": string;
+        /**
+         * Apply mandatory CW on instances
+         */
+        "write:admin:cw-instance": string;
+        /**
          * Silence users
          */
         "write:admin:silence-user": string;
@@ -10383,6 +10399,10 @@ export interface Locale extends ILocale {
              * Scheduled note was posted
              */
             "scheduledNotePosted": string;
+            /**
+             * The import has been completed
+             */
+            "importCompleted": string;
         };
         "_actions": {
             /**
@@ -10949,13 +10969,13 @@ export interface Locale extends ILocale {
          */
         "setMandatoryCW": string;
         /**
-         * Set remote instance as NSFW
+         * Set content warning for note
          */
-        "setRemoteInstanceNSFW": string;
+        "setMandatoryCWForNote": string;
         /**
-         * Unset remote instance as NSFW
+         * Set content warning for instance
          */
-        "unsetRemoteInstanceNSFW": string;
+        "setMandatoryCWForInstance": string;
         /**
          * Rejected reports from remote instance
          */
@@ -12085,6 +12105,26 @@ export interface Locale extends ILocale {
      */
     "userSaysSomethingInMutedThread": ParameterizedString<"name">;
     /**
+     * {name} has been silenced by {host} staff
+     */
+    "silencedUserSaysSomething": ParameterizedString<"name" | "host">;
+    /**
+     * {name} has been silenced by {host} staff
+     */
+    "silencedInstanceSaysSomething": ParameterizedString<"name" | "host">;
+    /**
+     * {name} is flagged: "{cw}"
+     */
+    "userIsFlaggedAs": ParameterizedString<"name" | "cw">;
+    /**
+     * Note is flagged: "{cw}"
+     */
+    "noteIsFlaggedAs": ParameterizedString<"cw">;
+    /**
+     * {name} is flagged: "{cw}"
+     */
+    "instanceIsFlaggedAs": ParameterizedString<"name" | "cw">;
+    /**
      * Mark all media from user as NSFW
      */
     "markAsNSFW": string;
@@ -12489,6 +12529,14 @@ export interface Locale extends ILocale {
      * Failed to load note
      */
     "cannotLoadNote": string;
+    /**
+     * Please click [OK] to unsubscribe from announcement e-mails.
+     */
+    "clickToUnsubscribe": string;
+    /**
+     * There was a problem unsubscribing.
+     */
+    "unsubscribeError": string;
     "_flash": {
         /**
          * Flash Content Hidden
@@ -13034,9 +13082,25 @@ export interface Locale extends ILocale {
      */
     "mandatoryCW": string;
     /**
-     * Applies a content warning to all posts created by this user. If the post already has a CW, then this is appended to the end.
+     * Applies a content warning to all posts created by this user. The forced warnings will appear like a word mute to distinguish them from the author's own content warnings.
      */
     "mandatoryCWDescription": string;
+    /**
+     * Force content warning
+     */
+    "mandatoryCWForNote": string;
+    /**
+     * Applies an additional content warning to this post. The new warning will appear like a word mute to distinguish it from the author's own content warning.
+     */
+    "mandatoryCWForNoteDescription": string;
+    /**
+     * Force content warning
+     */
+    "mandatoryCWForInstance": string;
+    /**
+     * Applies a content warning to all posts originating from this instance. The forced warnings will appear like a word mute to distinguish them from the notes' own content warnings.
+     */
+    "mandatoryCWForInstanceDescription": string;
     /**
      * Fetch linked note
      */
@@ -13403,6 +13467,10 @@ export interface Locale extends ILocale {
      * Custom font size
      */
     "customFontSize": string;
+    /**
+     * Hide ads
+     */
+    "hideAds": string;
     /**
      * Sharkey Stelpolva Edition 为天线的设置添加了额外的关键词语法。
      * 具体而言， `domain:example.com` 这个特殊关键词会匹配所有来自 `example.com` 的帖子。这个关键词同样能使用在 OR 语法中。

@@ -41,10 +41,18 @@ export const packedNoteSchema = {
 			type: 'string',
 			optional: true, nullable: true,
 		},
+		mandatoryCW: {
+			type: 'string',
+			optional: true, nullable: true,
+		},
 		userId: {
 			type: 'string',
 			optional: false, nullable: false,
 			format: 'id',
+		},
+		userHost: {
+			type: 'string',
+			optional: false, nullable: true,
 		},
 		user: {
 			type: 'object',
@@ -190,6 +198,10 @@ export const packedNoteSchema = {
 			optional: false, nullable: false,
 		},
 		isRenoted: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		bypassSilence: {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},

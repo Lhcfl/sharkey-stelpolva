@@ -10,14 +10,16 @@ Displays a note in the simple view with either Misskey or Sharkey style, based o
 	ref="rootEl"
 	:note="note"
 	:expandAllCws="expandAllCws"
+	:skipMute="skipMute"
 	:hideFiles="hideFiles"
 	@editScheduledNote="() => emit('editScheduleNote')"
+	@expandMute="n => emit('expandMute', n)"
 />
 </template>
 
 <script setup lang="ts">
 import * as Misskey from 'misskey-js';
-import { computed, defineAsyncComponent, useTemplateRef } from 'vue';
+import { defineAsyncComponent, useTemplateRef } from 'vue';
 import type { ComponentExposed } from 'vue-component-type-helpers';
 import type MkNoteSimple from '@/components/MkNoteSimple.vue';
 import type SkNoteSimple from '@/components/SkNoteSimple.vue';
@@ -25,9 +27,8 @@ import { prefer } from '@/preferences';
 
 const XNoteSimple = defineAsyncComponent(() =>
 	prefer.s.noteDesign === 'misskey'
-	? import('@/components/MkNoteSimple.vue')
-	: import('@/components/SkNoteSimple.vue'),
-);
+		? import('@/components/MkNoteSimple.vue')
+		: import('@/components/SkNoteSimple.vue'));
 
 const rootEl = useTemplateRef<ComponentExposed<typeof MkNoteSimple | typeof SkNoteSimple>>('rootEl');
 
@@ -39,10 +40,12 @@ defineProps<{
 		scheduledNoteId?: string
 	};
 	expandAllCws?: boolean;
+	skipMute?: boolean;
 	hideFiles?: boolean;
 }>();
 
 const emit = defineEmits<{
 	(ev: 'editScheduleNote'): void;
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
 }>();
 </script>

@@ -38,7 +38,12 @@ import type {
 	AdminAvatarDecorationsUpdateRequest,
 	AdminCaptchaCurrentResponse,
 	AdminCaptchaSaveRequest,
+	AdminCwInstanceRequest,
+	AdminCwInstanceResponse,
+	AdminCwNoteRequest,
+	AdminCwNoteResponse,
 	AdminCwUserRequest,
+	AdminCwUserResponse,
 	AdminDeclineUserRequest,
 	AdminDeleteAccountRequest,
 	AdminDeleteAllFilesOfAUserRequest,
@@ -695,7 +700,9 @@ export type Endpoints = {
 	'admin/avatar-decorations/update': { req: AdminAvatarDecorationsUpdateRequest; res: EmptyResponse };
 	'admin/captcha/current': { req: EmptyRequest; res: AdminCaptchaCurrentResponse };
 	'admin/captcha/save': { req: AdminCaptchaSaveRequest; res: EmptyResponse };
-	'admin/cw-user': { req: AdminCwUserRequest; res: EmptyResponse };
+	'admin/cw-instance': { req: AdminCwInstanceRequest; res: AdminCwInstanceResponse };
+	'admin/cw-note': { req: AdminCwNoteRequest; res: AdminCwNoteResponse };
+	'admin/cw-user': { req: AdminCwUserRequest; res: AdminCwUserResponse };
 	'admin/decline-user': { req: AdminDeclineUserRequest; res: EmptyResponse };
 	'admin/delete-account': { req: AdminDeleteAccountRequest; res: EmptyResponse };
 	'admin/delete-all-files-of-a-user': { req: AdminDeleteAllFilesOfAUserRequest; res: EmptyResponse };

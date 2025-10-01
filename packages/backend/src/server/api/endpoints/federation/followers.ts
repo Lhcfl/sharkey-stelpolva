@@ -10,6 +10,7 @@ import { FollowingEntityService } from '@/core/entities/FollowingEntityService.j
 export const meta = {
 	tags: ['federation'],
 
+	requiredRolePolicy: 'canViewFederation',
 	requireCredential: true,
 	kind: 'read:account',
 

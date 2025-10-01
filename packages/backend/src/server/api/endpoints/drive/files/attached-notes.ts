@@ -71,10 +71,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			const isModerator = await this.roleService.isModerator(me);
+
 			// Fetch file
 			const file = await this.driveFilesRepository.findOneBy({
 				id: ps.fileId,
-				userId: await this.roleService.isModerator(me) ? undefined : me.id,
+				userId: isModerator ? undefined : me.id,
 			});
 
 			if (file == null) {
@@ -90,16 +92,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('renote.user', 'renoteUser')
 				.limit(ps.limit);
 
-			this.queryService.generateVisibilityQuery(query, me);
-			this.queryService.generateBlockedHostQueryForNote(query);
-			this.queryService.generateSilencedUserQueryForNotes(query, me);
-			this.queryService.generateMutedUserQueryForNotes(query, me);
-			this.queryService.generateBlockedUserQueryForNotes(query, me);
+			if (!isModerator) {
+				this.queryService.generateVisibilityQuery(query, me);
+				this.queryService.generateBlockedHostQueryForNote(query);
+				this.queryService.generateSilencedUserQueryForNotes(query, me);
+				this.queryService.generateMutedUserQueryForNotes(query, me);
+				this.queryService.generateMutedNoteThreadQuery(query, me);
+				this.queryService.generateBlockedUserQueryForNotes(query, me);
+			}
 
 			const notes = await query.getMany();
 
 			return await this.noteEntityService.packMany(notes, me, {
 				detail: true,
+				skipHide: isModerator,
 			});
 		});
 	}

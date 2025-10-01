@@ -134,11 +134,11 @@ export type ModerationLog = {
 	type: 'setMandatoryCW';
 	info: ModerationLogPayloads['setMandatoryCW'];
 } | {
-	type: 'setRemoteInstanceNSFW';
-	info: ModerationLogPayloads['setRemoteInstanceNSFW'];
+	type: 'setMandatoryCWForNote';
+	info: ModerationLogPayloads['setMandatoryCWForNote'];
 } | {
-	type: 'unsetRemoteInstanceNSFW';
-	info: ModerationLogPayloads['unsetRemoteInstanceNSFW'];
+	type: 'setMandatoryCWForInstance';
+	info: ModerationLogPayloads['setMandatoryCWForInstance'];
 } | {
 	type: 'resetPassword';
 	info: ModerationLogPayloads['resetPassword'];

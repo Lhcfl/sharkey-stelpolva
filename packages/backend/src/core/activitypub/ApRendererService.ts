@@ -34,6 +34,7 @@ import { QueryService } from '@/core/QueryService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
+import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { JsonLdService } from './JsonLdService.js';
 import { ApMfmService } from './ApMfmService.js';
 import { CONTEXT } from './misc/contexts.js';
@@ -75,9 +76,10 @@ export class ApRendererService {
 		private apMfmService: ApMfmService,
 		private mfmService: MfmService,
 		private idService: IdService,
-		private readonly queryService: QueryService,
 		private utilityService: UtilityService,
+		private readonly queryService: QueryService,
 		private readonly cacheService: CacheService,
+		private readonly federatedInstanceService: FederatedInstanceService,
 	) {
 	}
 
@@ -399,6 +401,8 @@ export class ApRendererService {
 			return ids.map(id => items.find(item => item.id === id)).filter(x => x != null);
 		};
 
+		const instance = author.instance ?? (author.host ? await this.federatedInstanceService.fetch(author.host) : null);
+
 		let inReplyTo;
 		let inReplyToNote: MiNote | null;
 
@@ -502,8 +506,14 @@ export class ApRendererService {
 		let summary = note.cw === '' ? String.fromCharCode(0x200B) : note.cw;
 
 		// Apply mandatory CW, if applicable
+		if (note.mandatoryCW) {
+			summary = appendContentWarning(summary, note.mandatoryCW);
+		}
 		if (author.mandatoryCW) {
 			summary = appendContentWarning(summary, author.mandatoryCW);
+		}
+		if (instance?.mandatoryCW) {
+			summary = appendContentWarning(summary, instance.mandatoryCW);
 		}
 
 		const { content } = this.apMfmService.getNoteHtml(note, apAppend);

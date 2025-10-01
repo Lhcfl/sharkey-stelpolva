@@ -128,10 +128,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkInfo v-if="isBaseBlocked" warn>{{ i18n.ts.blockedByBase }}</MkInfo>
 						<MkSwitch v-model="isBlocked" :disabled="!meta || !instance || isBaseBlocked" @update:modelValue="toggleBlock">{{ i18n.ts.blockThisInstance }}</MkSwitch>
 						<MkSwitch v-model="rejectQuotes" :disabled="!instance" @update:modelValue="toggleRejectQuotes">{{ i18n.ts.rejectQuotesInstance }}</MkSwitch>
-						<MkSwitch v-model="isNSFW" :disabled="!instance" @update:modelValue="toggleNSFW">{{ i18n.ts.markInstanceAsNSFW }}</MkSwitch>
 						<MkSwitch v-model="rejectReports" :disabled="!instance" @update:modelValue="toggleRejectReports">{{ i18n.ts.rejectReports }}</MkSwitch>
 						<MkInfo v-if="isBaseMediaSilenced" warn>{{ i18n.ts.mediaSilencedByBase }}</MkInfo>
 						<MkSwitch v-model="isMediaSilenced" :disabled="!meta || !instance || isBaseMediaSilenced" @update:modelValue="toggleMediaSilenced">{{ i18n.ts.mediaSilenceThisInstance }}</MkSwitch>
+
+						<MkInput v-model="mandatoryCW" type="text" manualSave @update:modelValue="onMandatoryCWChanged">
+							<template #label>{{ i18n.ts.mandatoryCW }}</template>
+							<template #caption>{{ i18n.ts.mandatoryCWDescription }}</template>
+						</MkInput>
 
 						<div :class="$style.buttonStrip">
 							<MkButton inline :disabled="!instance" @click="refreshMetadata"><i class="ph-cloud-arrow-down ph-bold ph-lg"></i> {{ i18n.ts.updateRemoteUser }}</MkButton>
@@ -246,6 +250,7 @@ import { copyToClipboard } from '@/utility/copy-to-clipboard';
 import MkFolder from '@/components/MkFolder.vue';
 import MkNumber from '@/components/MkNumber.vue';
 import SkBadgeStrip from '@/components/SkBadgeStrip.vue';
+import MkInput from '@/components/MkInput.vue';
 
 const props = withDefaults(defineProps<{
 	host: string;
@@ -265,7 +270,6 @@ const suspensionState = ref<'none' | 'manuallySuspended' | 'goneSuspended' | 'au
 const isSuspended = ref(false);
 const isBlocked = ref(false);
 const isSilenced = ref(false);
-const isNSFW = ref(false);
 const rejectQuotes = ref(false);
 const rejectReports = ref(false);
 const isMediaSilenced = ref(false);
@@ -274,6 +278,7 @@ const moderationNote = ref('');
 const enableHTMLDesctiption = ref(false);
 
 const hasDescriptionHtml = computed(() => instance.value?.description?.includes('</') && instance.value.description.includes('>'));
+const mandatoryCW = ref<string | null>(null);
 
 const baseDomains = computed(() => {
 	const domains: string[] = [];
@@ -335,10 +340,10 @@ const badges = computed(() => {
 				style: 'warning',
 			});
 		}
-		if (instance.value.isNSFW) {
+		if (instance.value.mandatoryCW) {
 			arr.push({
-				key: 'nsfw',
-				label: i18n.ts.nsfw,
+				key: 'cw',
+				label: i18n.ts.cw,
 				style: 'warning',
 			});
 		}
@@ -394,6 +399,13 @@ async function saveModerationNote() {
 	}
 }
 
+async function onMandatoryCWChanged(value: string | number) {
+	await os.promiseDialog(async () => {
+		await misskeyApi('admin/cw-instance', { host: props.host, cw: String(value) || null });
+		await fetch();
+	});
+}
+
 async function fetch(withHint = false): Promise<void> {
 	const [m, i] = await Promise.all([
 		(withHint && props.metaHint)
@@ -412,12 +424,12 @@ async function fetch(withHint = false): Promise<void> {
 	isSuspended.value = suspensionState.value !== 'none';
 	isBlocked.value = instance.value?.isBlocked ?? false;
 	isSilenced.value = instance.value?.isSilenced ?? false;
-	isNSFW.value = instance.value?.isNSFW ?? false;
 	rejectReports.value = instance.value?.rejectReports ?? false;
 	rejectQuotes.value = instance.value?.rejectQuotes ?? false;
 	isMediaSilenced.value = instance.value?.isMediaSilenced ?? false;
 	faviconUrl.value = getProxiedImageUrlNullable(instance.value?.faviconUrl, 'preview') ?? getProxiedImageUrlNullable(instance.value?.iconUrl, 'preview');
 	moderationNote.value = instance.value?.moderationNote ?? '';
+	mandatoryCW.value = instance.value?.mandatoryCW ?? '';
 }
 
 async function toggleBlock(): Promise<void> {
@@ -472,18 +484,6 @@ async function toggleSuspended(): Promise<void> {
 		await misskeyApi('admin/federation/update-instance', {
 			host: instance.value.host,
 			isSuspended: isSuspended.value,
-		});
-		await fetch();
-	});
-}
-
-async function toggleNSFW(): Promise<void> {
-	if (!iAmModerator) return;
-	await os.promiseDialog(async () => {
-		if (!instance.value) throw new Error('No instance?');
-		await misskeyApi('admin/federation/update-instance', {
-			host: instance.value.host,
-			isNSFW: isNSFW.value,
 		});
 		await fetch();
 	});

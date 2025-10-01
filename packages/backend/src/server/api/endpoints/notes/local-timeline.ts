@@ -117,8 +117,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return await this.noteEntityService.packMany(timeline, me);
 			}
 
-			const mutedThreads = me ? await this.cacheService.threadMutingsCache.fetch(me.id) : null;
-
 			const timeline = await this.fanoutTimelineEndpointService.timeline({
 				untilId,
 				sinceId,
@@ -131,7 +129,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					: ps.withReplies ? ['localTimeline', 'localTimelineWithReplies']
 					: me ? ['localTimeline', `localTimelineWithReplyTo:${me.id}`]
 					: ['localTimeline'],
-				alwaysIncludeMyNotes: true,
 				excludePureRenotes: !ps.withRenotes,
 				excludeBots: !ps.withBots,
 				dbFallback: async (untilId, sinceId, limit) => await this.getFromDb({
@@ -143,13 +140,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withBots: ps.withBots,
 					withRenotes: ps.withRenotes,
 				}, me),
-				noteFilter: note => {
-					if (mutedThreads?.has(note.threadId ?? note.id)) {
-						return false;
-					}
-
-					return true;
-				},
 			});
 
 			if (me) {
@@ -184,11 +174,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			.limit(ps.limit);
 
 		if (!ps.withReplies) {
-			query
-				// 1. Not a reply, 2. a self-reply
-				.andWhere(new Brackets(qb => qb
-					.orWhere('note.replyId IS NULL') // 返信ではない
-					.orWhere('note.replyUserId = note.userId')));
+			this.queryService.generateExcludedRepliesQueryForNotes(query, me);
 		}
 
 		this.queryService.generateBlockedHostQueryForNote(query);

@@ -58,7 +58,7 @@ import MkButton from '@/components/MkButton.vue';
 import { widgets as widgetDefs, federationWidgets } from '@/widgets/index.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
-import { instance } from '@/instance.js';
+import { instance, policies } from '@/instance.js';
 
 const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
 
@@ -68,7 +68,7 @@ const props = defineProps<{
 }>();
 
 const _widgetDefs = computed(() => {
-	if (instance.federation === 'none') {
+	if (instance.federation === 'none' || !policies.value.canViewFederation) {
 		return widgetDefs.filter(x => !federationWidgets.includes(x));
 	} else {
 		return widgetDefs;

@@ -145,14 +145,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				];
 			}
 
-			const [
-				followings,
-				mutedThreads,
-			] = await Promise.all([
-				this.cacheService.userFollowingsCache.fetch(me.id),
-				this.cacheService.threadMutingsCache.fetch(me.id),
-			]);
-
 			const redisTimeline = await this.fanoutTimelineEndpointService.timeline({
 				untilId,
 				sinceId,
@@ -161,20 +153,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				me,
 				redisTimelines: timelineConfig,
 				useDbFallback: this.serverSettings.enableFanoutTimelineDbFallback,
-				alwaysIncludeMyNotes: true,
 				excludePureRenotes: !ps.withRenotes,
 				excludeBots: !ps.withBots,
-				noteFilter: note => {
-					if (note.reply && note.reply.visibility === 'followers') {
-						if (!followings.has(note.reply.userId) && note.reply.userId !== me.id) return false;
-					}
-
-					if (mutedThreads.has(note.threadId ?? note.id)) {
-						return false;
-					}
-
-					return true;
-				},
 				dbFallback: async (untilId, sinceId, limit) => await this.getFromDb({
 					untilId,
 					sinceId,
@@ -204,14 +184,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		withRenotes: boolean,
 	}, me: MiLocalUser) {
 		const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
-			// 1. by a user I follow, 2. a public local post, 3. my own post
+			// by a user I follow OR a public local post OR my own post
 			.andWhere(new Brackets(qb => this.queryService
 				.orFollowingUser(qb, ':meId', 'note.userId')
 				.orWhere(new Brackets(qbb => qbb
 					.andWhere('note.visibility = \'public\'')
 					.andWhere('note.userHost IS NULL')))
 				.orWhere(':meId = note.userId')))
-			// 1. in a channel I follow, 2. not in a channel
+			// in a channel I follow OR not in a channel
 			.andWhere(new Brackets(qb => this.queryService
 				.orFollowingChannel(qb, ':meId', 'note.channelId')
 				.orWhere('note.channelId IS NULL')))
@@ -224,22 +204,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			.limit(ps.limit);
 
 		if (!ps.withReplies) {
-			query
-				.andWhere(new Brackets(qb => {
-					qb
-						// 1. Not a reply
-						.orWhere('note.replyId IS NULL')
-						// 2. a self-reply
-						.orWhere('note.replyUserId = note.userId')
-						// 3. a reply to me
-						.orWhere('note.replyUserId = :meId')
-						// 4. my reply
-						.orWhere('note.userId = :meId');
-
-					if (ps.withReplies) {
-						qb.orWhere(new Brackets(qb2 => this.queryService.andFollowingWithReply(qb2, ':meId', 'note.userId')));
-					}
-				}));
+			this.queryService.generateExcludedRepliesQueryForNotes(query, me);
 		}
 
 		this.queryService.generateVisibilityQuery(query, me);

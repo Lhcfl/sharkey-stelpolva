@@ -52,7 +52,7 @@ Displays an old version of an edited note.
 					<div class="_gaps_s" style="margin-top: 6px;" @click.stop>
 						<SkUrlPreviewGroup :sourceNodes="parsed" :sourceNote="appearNote" :compact="true" :detail="true" :showAsQuote="!appearNote.user.rejectQuotes" :skipNoteIds="selfNoteIds"/>
 					</div>
-					<div v-if="appearNote.renote" :class="$style.quote"><MkNoteSimple :note="appearNote.renote" :class="$style.quoteNote"/></div>
+					<div v-if="appearNote.renote" :class="$style.quote"><MkNoteSimple :note="appearNote.renote" :class="$style.quoteNote" :skipMute="true"/></div>
 				</div>
 				<MkA v-if="appearNote.channel && !inChannel" :class="$style.channel" :to="`/channels/${appearNote.channel.id}`"><i class="ph-television ph-bold ph-lg"></i> {{ appearNote.channel.name }}</MkA>
 			</div>

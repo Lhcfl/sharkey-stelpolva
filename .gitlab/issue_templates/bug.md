@@ -30,6 +30,6 @@
 <!-- Please copy and paste any relevant log output. You can find your log by inspecting the page, and going to the "console" tab. This will be automatically formatted into code, so no need for backticks. -->
 
 # **Contribution Guidelines**
-By submitting this issue, you agree to follow our [Contribution Guidelines](https://activitypub.software/TransFem-org/Sharkey/-/blob/develop/CONTRIBUTING.md)
+By submitting this issue, you agree to follow our [Contribution Guidelines](https://activitypub.software/TransFem-org/Sharkey/-/blob/develop/CONTRIBUTING.Sharkey.md)
 - [ ] I agree to follow this project's Contribution Guidelines
 - [ ] I have searched the issue tracker for similar issues, and this is not a duplicate.

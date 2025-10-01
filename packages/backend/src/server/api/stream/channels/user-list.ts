@@ -9,7 +9,7 @@ import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
-import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
+import { isPackedPureRenote } from '@/misc/is-renote.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type MiChannelService } from '../channel.js';
 
@@ -54,9 +54,9 @@ class UserListChannel extends Channel {
 		if (!listExist) return;
 
 		// Subscribe stream
-		this.subscriber.on(`userListStream:${this.listId}`, this.send);
+		this.subscriber?.on(`userListStream:${this.listId}`, this.send);
 
-		this.subscriber.on('notesStream', this.onNote);
+		this.subscriber?.on('notesStream', this.onNote);
 
 		this.updateListUsers();
 		this.listUsersClock = setInterval(this.updateListUsers, 5000);
@@ -82,8 +82,6 @@ class UserListChannel extends Channel {
 
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
-		const isMe = this.user?.id === note.userId;
-
 		// チャンネル投稿は無視する
 		if (note.channelId) return;
 
@@ -91,28 +89,9 @@ class UserListChannel extends Channel {
 
 		if (!Object.hasOwn(this.membershipsMap, note.userId)) return;
 
-		if (this.isNoteMutedOrBlocked(note)) return;
-		if (!this.isNoteVisibleToMe(note)) return;
-
-		if (note.reply) {
-			const reply = note.reply;
-			// 自分のフォローしていないユーザーの visibility: followers な投稿への返信は弾く
-			if (!this.isNoteVisibleToMe(reply)) return;
-			if (!this.following.get(note.userId)?.withReplies) {
-				// 「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
-				if (reply.userId !== this.user!.id && !isMe && reply.userId !== note.userId) return;
-			}
-		}
-
-		// 純粋なリノート（引用リノートでないリノート）の場合
-		if (isRenotePacked(note) && !isQuotePacked(note) && note.renote) {
-			if (!this.withRenotes) return;
-			if (note.renote.reply) {
-				const reply = note.renote.reply;
-				// 自分のフォローしていないユーザーの visibility: followers な投稿への返信のリノートは弾く
-				if (!this.isNoteVisibleToMe(reply)) return;
-			}
-		}
+		const { accessible, silence } = await this.checkNoteVisibility(note, { includeReplies: true });
+		if (!accessible || silence) return;
+		if (!this.withRenotes && isPackedPureRenote(note)) return;
 
 		const clonedNote = await this.rePackNote(note);
 		this.send('note', clonedNote);
@@ -121,8 +100,8 @@ class UserListChannel extends Channel {
 	@bindThis
 	public dispose() {
 		// Unsubscribe events
-		this.subscriber.off(`userListStream:${this.listId}`, this.send);
-		this.subscriber.off('notesStream', this.onNote);
+		this.subscriber?.off(`userListStream:${this.listId}`, this.send);
+		this.subscriber?.off('notesStream', this.onNote);
 
 		clearInterval(this.listUsersClock);
 	}

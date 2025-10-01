@@ -7,7 +7,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Brackets, Not, WhereExpressionBuilder } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MiUser } from '@/models/User.js';
-import { MiInstance } from '@/models/Instance.js';
 import type { UserProfilesRepository, FollowingsRepository, ChannelFollowingsRepository, BlockingsRepository, NoteThreadMutingsRepository, MutingsRepository, RenoteMutingsRepository, MiMeta, InstancesRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
@@ -81,6 +80,35 @@ export class QueryService {
 		return q;
 	}
 
+	/**
+	 * Exclude replies from the queries, used for timelines.
+	 * withRepliesProp can be specified to additionally allow replies when a given property is true.
+	 * Must match logic NoteVisibilityService.shouldSilenceForFollowWithoutReplies.
+	 */
+	@bindThis
+	public generateExcludedRepliesQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me?: { id: MiUser['id'] } | null, withRepliesProp?: string): SelectQueryBuilder<E> {
+		return q
+			.andWhere(new Brackets(qb => {
+				if (withRepliesProp) {
+					// Allow if query specifies it
+					qb.orWhere(`${withRepliesProp} = true`);
+				}
+
+				return this
+					// Allow if we're following w/ replies
+					.orFollowingUser(qb, ':meId', 'note.userId', true)
+					// Allow if it's not a reply
+					.orWhere('note.replyId IS NULL') // 返信ではない
+					// Allow if it's a self-reply (user replied to themself)
+					.orWhere('note.replyUserId = note.userId')
+					// Allow if it's a reply to me
+					.orWhere('note.replyUserId = :meId')
+					// Allow if it's my reply
+					.orWhere('note.userId = :meId');
+			}))
+			.setParameters({ meId: me?.id ?? null });
+	}
+
 	// ここでいうBlockedは被Blockedの意
 	@bindThis
 	public generateBlockedUserQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me: { id: MiUser['id'] }): SelectQueryBuilder<E> {
@@ -107,38 +135,66 @@ export class QueryService {
 
 	@bindThis
 	public generateMutedNoteThreadQuery<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me: { id: MiUser['id'] }): SelectQueryBuilder<E> {
+		// Muted thread
+		this.andNotMutingThread(q, ':meId', 'coalesce(note.threadId, note.id)');
+
+		// Muted note
+		this.andNotMutingNote(q, ':meId', 'note.id');
+
+		q.andWhere(new Brackets(qb => qb
+			.orWhere('note.renoteId IS NULL')
+			.orWhere(new Brackets(qbb => {
+				// Renote muted thread
+				this.andNotMutingThread(qbb, ':meId', 'coalesce(renote.threadId, renote.id)');
+
+				// Renote muted note
+				this.andNotMutingNote(qbb, ':meId', 'renote.id');
+			}))));
+
 		return this
-			.andNotMutingThread(q, ':meId', 'note.id')
-			.andWhere(new Brackets(qb => this
-				.orNotMutingThread(qb, ':meId', 'note.threadId')
-				.orWhere('note.threadId IS NULL')))
+			.leftJoin(q, 'note.renote', 'renote')
 			.setParameters({ meId: me.id });
 	}
 
 	@bindThis
-	public generateMutedUserQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me: { id: MiUser['id'] }, exclude?: { id: MiUser['id'] }): SelectQueryBuilder<E> {
-		// 投稿の作者をミュートしていない かつ
-		// 投稿の返信先の作者をミュートしていない かつ
-		// 投稿の引用元の作者をミュートしていない
-		return this
-			.andNotMutingUser(q, ':meId', 'note.userId', exclude)
+	public generateMutedUserQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me: { id: MiUser['id'] }, excludeAuthor = false): SelectQueryBuilder<E> {
+		if (!excludeAuthor) {
+			this
+				// muted user
+				.andNotMutingUser(q, ':meId', 'note.userId')
+				// muted host
+				.andWhere(new Brackets(qb => {
+					qb.orWhere('note.userHost IS NULL');
+					this.orFollowingUser(qb, ':meId', 'note.userId');
+					this.orNotMutingInstance(qb, ':meId', 'note.userHost');
+				}));
+		}
+
+		return q
+			// muted reply user
 			.andWhere(new Brackets(qb => this
-				.orNotMutingUser(qb, ':meId', 'note.replyUserId', exclude)
+				.orNotMutingUser(qb, ':meId', 'note.replyUserId')
+				.orWhere('note.replyUserId = note.userId')
 				.orWhere('note.replyUserId IS NULL')))
+			// muted renote user
 			.andWhere(new Brackets(qb => this
-				.orNotMutingUser(qb, ':meId', 'note.renoteUserId', exclude)
+				.orNotMutingUser(qb, ':meId', 'note.renoteUserId')
+				.orWhere('note.renoteUserId = note.userId')
 				.orWhere('note.renoteUserId IS NULL')))
-			// TODO exclude should also pass a host to skip these instances
-			// mute instances
-			.andWhere(new Brackets(qb => this
-				.andNotMutingInstance(qb, ':meId', 'note.userHost')
-				.orWhere('note.userHost IS NULL')))
-			.andWhere(new Brackets(qb => this
-				.orNotMutingInstance(qb, ':meId', 'note.replyUserHost')
-				.orWhere('note.replyUserHost IS NULL')))
-			.andWhere(new Brackets(qb => this
-				.orNotMutingInstance(qb, ':meId', 'note.renoteUserHost')
-				.orWhere('note.renoteUserHost IS NULL')))
+			// muted reply host
+			.andWhere(new Brackets(qb => {
+				qb.orWhere('note.replyUserHost IS NULL');
+				qb.orWhere('note.replyUserHost = note.userHost');
+				this.orFollowingUser(qb, ':meId', 'note.replyUserId');
+				this.orNotMutingInstance(qb, ':meId', 'note.replyUserHost');
+			}))
+			// muted renote host
+			.andWhere(new Brackets(qb => {
+				qb.orWhere('note.renoteUserHost IS NULL');
+				qb.orWhere('note.renoteUserHost = note.userHost');
+				this.orFollowingUser(qb, ':meId', 'note.renoteUserId');
+				this.orNotMutingInstance(qb, ':meId', 'note.renoteUserHost');
+			}))
 			.setParameters({ meId: me.id });
 	}
 
@@ -154,7 +210,7 @@ export class QueryService {
 	// For moderation purposes, you can set isSilenced to forcibly hide existing posts by a user.
 	@bindThis
 	public generateVisibilityQuery<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me?: { id: MiUser['id'] } | null): SelectQueryBuilder<E> {
-		// This code must always be synchronized with the checks in Notes.isVisibleForMe.
+		// This code must always be synchronized with the checks in NoteEntityService.isVisibleForMe.
 		return q.andWhere(new Brackets(qb => {
 			// Public post
 			qb.orWhere('note.visibility = \'public\'')
@@ -204,14 +260,15 @@ export class QueryService {
 	@bindThis
 	public generateBlockedHostQueryForNote<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, excludeAuthor?: boolean): SelectQueryBuilder<E> {
 		const checkFor = (key: 'user' | 'replyUser' | 'renoteUser') => this
-			.leftJoinInstance(q, `note.${key}Instance`, `${key}Instance`)
+			.leftJoin(q, `note.${key}Instance`, `${key}Instance`)
 			.andWhere(new Brackets(qb => {
 				qb
 					.orWhere(`"${key}Instance" IS NULL`) // local
 					.orWhere(`"${key}Instance"."isBlocked" = false`); // not blocked
 
-				if (excludeAuthor) {
-					qb.orWhere(`note.userId = note.${key}Id`); // author
+				if (key !== 'user') {
+					// Don't re-check self-replies and self-renote targets
+					qb.orWhere(`note.userId = note.${key}Id`);
 				}
 			}));
 
@@ -225,33 +282,119 @@ export class QueryService {
 	}
 
 	@bindThis
-	public generateSilencedUserQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me?: { id: MiUser['id'] } | null): SelectQueryBuilder<E> {
-		if (!me) {
-			return q.andWhere('user.isSilenced = false');
+	public generateSilencedUserQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me?: { id: MiUser['id'] } | null, excludeAuthor = false): SelectQueryBuilder<E> {
+		const checkFor = (key: 'user' | 'replyUser' | 'renoteUser', userKey: 'note.user' | 'reply.user' | 'renote.user') => {
+			// These are de-duplicated, since most call sites already provide some of them.
+			this.leftJoin(q, `note.${key}Instance`, `${key}Instance`); // note->instance
+			this.leftJoin(q, userKey, key); // note->user
+
+			q.andWhere(new Brackets(qb => {
+				// case 1: user does not exist (note is not reply/renote)
+				qb.orWhere(`note.${key}Id IS NULL`);
+
+				// case 2: user not silenced AND (instance not silenced OR instance is local)
+				qb.orWhere(new Brackets(qbb => qbb
+					.andWhere(`"${key}"."isSilenced" = false`)
+					.andWhere(new Brackets(qbbb => qbbb
+						.orWhere(`"${key}Instance"."isSilenced" = false`)
+						.orWhere(`"note"."${key}Host" IS NULL`)))));
+
+				if (me) {
+					// case 3: we are the author
+					qb.orWhere(`note.${key}Id = :meId`);
+
+					// case 4: we are following the user
+					this.orFollowingUser(qb, ':meId', `note.${key}Id`);
+				}
+
+				// case 5: user is the same
+				if (key !== 'user') {
+					qb.orWhere(`note.${key}Id = note.userId`);
+				}
+			}));
+		};
+
+		const checkForRenote = (_q: WhereExpressionBuilder, key: 'replyUser' | 'renoteUser', userRel: 'renoteReply.user' | 'renoteRenote.user', userAlias: 'renoteReplyUser' | 'renoteRenoteUser') => {
+			const instanceAlias = `${userAlias}Instance`;
+			this.leftJoin(q, `renote.${key}Instance`, instanceAlias); // note->instance
+			this.leftJoin(q, userRel, userAlias); // note->user
+
+			_q.andWhere(new Brackets(qb => {
+				// case 1: user does not exist (note is not reply/renote)
+				qb.orWhere(`renote.${key}Id IS NULL`);
+
+				// case 2: user not silenced AND (instance not silenced OR instance is local)
+				qb.orWhere(new Brackets(qbb => qbb
+					.andWhere(`"${userAlias}"."isSilenced" = false`)
+					.andWhere(new Brackets(qbbb => qbbb
+						.orWhere(`"${instanceAlias}"."isSilenced" = false`)
+						.orWhere(`"renote"."${key}Host" IS NULL`)))));
+
+				if (me) {
+					// case 3: we are the author
+					qb.orWhere(`renote.${key}Id = :meId`);
+
+					// case 4: we are following the user
+					this.orFollowingUser(qb, ':meId', `renote.${key}Id`);
+				}
+
+				// case 5: user is the same
+				qb.orWhere(`renote.${key}Id = renote.userId`);
+			}));
+		};
+
+		// Set parameters only once
+		if (me) {
+			q.setParameters({ meId: me.id });
 		}
 
-		return this
-			.leftJoinInstance(q, 'note.userInstance', 'userInstance')
-			.andWhere(new Brackets(qb => this
-				// case 1: we are following the user
-				.orFollowingUser(qb, ':meId', 'note.userId')
-				// case 2: user not silenced AND instance not silenced
-				.orWhere(new Brackets(qbb => qbb
-					.andWhere(new Brackets(qbbb => qbbb
-						.orWhere('"userInstance"."isSilenced" = false')
-						.orWhere('"userInstance" IS NULL')))
-					.andWhere('user.isSilenced = false')))))
-			.setParameters({ meId: me.id });
+		if (!excludeAuthor) {
+			checkFor('user', 'note.user');
+		}
+		checkFor('replyUser', 'reply.user');
+		checkFor('renoteUser', 'renote.user');
+
+		// Filter for boosts
+		this.leftJoin(q, 'renote.reply', 'renoteReply');
+		this.leftJoin(q, 'renote.renote', 'renoteRenote');
+		q.andWhere(new Brackets(qb => this
+			.orIsNotRenote(qb, 'note')
+			.orWhere(new Brackets(qbb => {
+				checkForRenote(qbb, 'replyUser', 'renoteReply.user', 'renoteReplyUser');
+				checkForRenote(qbb, 'renoteUser', 'renoteRenote.user', 'renoteRenoteUser');
+			}))));
+
+		return q;
 	}
 
 	/**
-	 * Left-joins an instance in to the query with a given alias and optional condition.
-	 * These calls are de-duplicated - multiple uses of the same alias are skipped.
+	 * Left-joins a relation into the query with a given alias and optional condition.
+	 * These calls are de-duplicated - multiple uses of the same relation+alias are skipped.
 	 */
 	@bindThis
-	public leftJoinInstance<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, relation: string | typeof MiInstance, alias: string, condition?: string): SelectQueryBuilder<E> {
+	public leftJoin<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, relation: string, alias: string, condition?: string): SelectQueryBuilder<E> {
 		// Skip if it's already joined, otherwise we'll get an error
-		if (!q.expressionMap.joinAttributes.some(j => j.alias.name === alias)) {
+		const join = q.expressionMap.joinAttributes.find(j => j.alias.name === alias);
+		if (join) {
+			const oldRelation = typeof(join.entityOrProperty) === 'function'
+				? join.entityOrProperty.name
+				: join.entityOrProperty;
+
+			const oldQuery = join.condition
+				? `JOIN ${oldRelation} AS ${alias} ON ${join.condition}`
+				: `JOIN ${oldRelation} AS ${alias}`;
+			const newQuery = condition
+				? `JOIN ${relation} AS ${alias} ON ${oldRelation}`
+				: `JOIN ${relation} AS ${alias}`;
+
+			if (oldRelation !== relation) {
+				throw new Error(`Query error: cannot add ${newQuery}: alias already used by ${oldQuery}`);
+			}
+
+			if (join.condition !== condition) {
+				throw new Error(`Query error: cannot add ${newQuery}: relation already defined with different condition by ${oldQuery}`);
+			}
+		} else {
 			q.leftJoin(relation, alias, condition);
 		}
 
@@ -375,26 +518,32 @@ export class QueryService {
 	/**
 	 * Adds OR condition that followerProp (user ID) is following followeeProp (user ID).
 	 * Both props should be expressions, not raw values.
+	 * If withReplies is set to a boolean, then this method will only count followings with the matching withReplies value.
 	 */
 	@bindThis
-	public orFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string): Q {
-		return this.addFollowingUser(q, followerProp, followeeProp, 'orWhere');
+	public orFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string, withReplies?: boolean): Q {
+		return this.addFollowingUser(q, followerProp, followeeProp, 'orWhere', withReplies);
 	}
 
 	/**
 	 * Adds AND condition that followerProp (user ID) is following followeeProp (user ID).
 	 * Both props should be expressions, not raw values.
+	 * If withReplies is set to a boolean, then this method will only count followings with the matching withReplies value.
 	 */
 	@bindThis
-	public andFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string): Q {
-		return this.addFollowingUser(q, followerProp, followeeProp, 'andWhere');
+	public andFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string, withReplies?: boolean): Q {
+		return this.addFollowingUser(q, followerProp, followeeProp, 'andWhere', withReplies);
 	}
 
-	private addFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string, join: 'andWhere' | 'orWhere'): Q {
+	private addFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string, join: 'andWhere' | 'orWhere', withReplies?: boolean): Q {
 		const followingQuery = this.followingsRepository.createQueryBuilder('following')
 			.select('1')
 			.andWhere(`following.followerId = ${followerProp}`)
 			.andWhere(`following.followeeId = ${followeeProp}`);
+
+		if (withReplies !== undefined) {
+			followingQuery.andWhere('following.withReplies = :withReplies', { withReplies });
+		}
 
 		return q[join](`EXISTS (${followingQuery.getQuery()})`, followingQuery.getParameters());
 	};
@@ -579,14 +728,48 @@ export class QueryService {
 		const threadMutedQuery = this.noteThreadMutingsRepository.createQueryBuilder('threadMuted')
 			.select('1')
 			.andWhere(`threadMuted.userId = ${muterProp}`)
-			.andWhere(`threadMuted.threadId = ${muteeProp}`);
+			.andWhere(`threadMuted.threadId = ${muteeProp}`)
+			.andWhere('threadMuted.isPostMute = false');
 
 		return q[join](`NOT EXISTS (${threadMutedQuery.getQuery()})`, threadMutedQuery.getParameters());
 	}
 
-	// Requirements: user replyUser renoteUser must be joined
+	/**
+	 * Adds OR condition that muterProp (user ID) is not muting muteeProp (note ID).
+	 * Both props should be expressions, not raw values.
+	 */
 	@bindThis
-	public generateSuspendedUserQueryForNote(q: SelectQueryBuilder<any>, excludeAuthor?: boolean): void {
+	public orNotMutingNote<Q extends WhereExpressionBuilder>(q: Q, muterProp: string, muteeProp: string): Q {
+		return this.excludeMutingNote(q, muterProp, muteeProp, 'orWhere');
+	}
+
+	/**
+	 * Adds AND condition that muterProp (user ID) is not muting muteeProp (note ID).
+	 * Both props should be expressions, not raw values.
+	 */
+	@bindThis
+	public andNotMutingNote<Q extends WhereExpressionBuilder>(q: Q, muterProp: string, muteeProp: string): Q {
+		return this.excludeMutingNote(q, muterProp, muteeProp, 'andWhere');
+	}
+
+	private excludeMutingNote<Q extends WhereExpressionBuilder>(q: Q, muterProp: string, muteeProp: string, join: 'andWhere' | 'orWhere'): Q {
+		const threadMutedQuery = this.noteThreadMutingsRepository.createQueryBuilder('threadMuted')
+			.select('1')
+			.andWhere(`threadMuted.userId = ${muterProp}`)
+			.andWhere(`threadMuted.threadId = ${muteeProp}`)
+			.andWhere('threadMuted.isPostMute = true');
+
+		return q[join](`NOT EXISTS (${threadMutedQuery.getQuery()})`, threadMutedQuery.getParameters());
+	}
+
+	@bindThis
+	public generateSuspendedUserQueryForNote<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, excludeAuthor?: boolean): void {
+		this.leftJoin(q, 'note.user', 'user');
+		this.leftJoin(q, 'note.reply', 'reply');
+		this.leftJoin(q, 'note.renote', 'renote');
+		this.leftJoin(q, 'reply.user', 'replyUser');
+		this.leftJoin(q, 'renote.user', 'renoteUser');
+
 		if (excludeAuthor) {
 			const brakets = (user: string) => new Brackets(qb => qb
 				.where(`note.${user}Id IS NULL`)

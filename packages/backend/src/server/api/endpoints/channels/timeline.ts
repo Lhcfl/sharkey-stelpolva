@@ -107,8 +107,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return await this.noteEntityService.packMany(await this.getFromDb({ untilId, sinceId, limit: ps.limit, channelId: channel.id, withFiles: ps.withFiles, withRenotes: ps.withRenotes }, me), me);
 			}
 
-			const threadMutings = me ? await this.cacheService.threadMutingsCache.fetch(me.id) : null;
-
 			return await this.fanoutTimelineEndpointService.timeline({
 				untilId,
 				sinceId,
@@ -121,13 +119,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				excludeNoFiles: ps.withFiles,
 				dbFallback: async (untilId, sinceId, limit) => {
 					return await this.getFromDb({ untilId, sinceId, limit, channelId: channel.id, withFiles: ps.withFiles, withRenotes: ps.withRenotes }, me);
-				},
-				noteFilter: note => {
-					if (threadMutings?.has(note.threadId ?? note.id)) {
-						return false;
-					}
-
-					return true;
 				},
 			});
 		});

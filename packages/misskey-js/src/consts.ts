@@ -81,6 +81,8 @@ export const permissions = [
 	'write:admin:nsfw-user',
 	'write:admin:unnsfw-user',
 	'write:admin:cw-user',
+	'write:admin:cw-note',
+	'write:admin:cw-instance',
 	'write:admin:silence-user',
 	'write:admin:unsilence-user',
 	'write:admin:unset-user-avatar',
@@ -148,8 +150,8 @@ export const moderationLogTypes = [
 	'deleteUserAnnouncement',
 	'resetPassword',
 	'setMandatoryCW',
-	'setRemoteInstanceNSFW',
-	'unsetRemoteInstanceNSFW',
+	'setMandatoryCWForNote',
+	'setMandatoryCWForInstance',
 	'suspendRemoteInstance',
 	'unsuspendRemoteInstance',
 	'rejectRemoteInstanceReports',
@@ -344,12 +346,17 @@ export type ModerationLogPayloads = {
 		userUsername: string;
 		userHost: string | null;
 	};
-	setRemoteInstanceNSFW: {
-		id: string;
-		host: string;
+	setMandatoryCWForNote: {
+		newCW: string | null;
+		oldCW: string | null;
+		noteId: string;
+		noteUserId: string;
+		noteUserUsername: string;
+		noteUserHost: string | null;
 	};
-	unsetRemoteInstanceNSFW: {
-		id: string;
+	setMandatoryCWForInstance: {
+		newCW: string | null;
+		oldCW: string | null;
 		host: string;
 	};
 	suspendRemoteInstance: {

@@ -10,7 +10,11 @@ Horizontal strip that displays a user's badges.
 	<div
 		v-for="badge of badges"
 		:key="badge.key"
-		:class="[$style.badge, semanticClass(badge)]"
+		:class="$style.badge"
+		:style="{
+			'color': color(badge),
+			'border-color': color(badge),
+		}"
 	>
 		{{ badge.label }}
 	</div>
@@ -39,17 +43,18 @@ export interface Badge {
 </script>
 
 <script setup lang="ts">
-import { useCssModule } from 'vue';
-
-const $style = useCssModule();
-
 defineProps<{
 	badges: Badge[],
 }>();
 
-function semanticClass(badge: Badge): string {
-	const style = badge.style ?? 'neutral';
-	return $style[`semantic_${style}`];
+// These can't be classes, or Vite will optimize them away from production builds.
+function color(badge: Badge) {
+	switch (badge.style) {
+		case 'success': return 'var(--MI_THEME-success)';
+		case 'warning': return 'var(--MI_THEME-warn)';
+		case 'error': return 'var(--MI_THEME-error)';
+		default: return 'unset';
+	}
 }
 </script>
 
@@ -67,20 +72,5 @@ function semanticClass(badge: Badge): string {
 	border-radius: var(--MI-radius-sm);
 	padding: 2px 6px;
 	font-size: 85%;
-}
-
-.semantic_error {
-	color: var(--MI_THEME-error);
-	border-color: var(--MI_THEME-error);
-}
-
-.semantic_warning {
-	color: var(--MI_THEME-warn);
-	border-color: var(--MI_THEME-warn);
-}
-
-.semantic_success {
-	color: var(--MI_THEME-success);
-	border-color: var(--MI_THEME-success);
 }
 </style>

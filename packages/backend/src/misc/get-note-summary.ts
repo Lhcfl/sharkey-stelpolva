@@ -23,8 +23,17 @@ export const getNoteSummary = (note: Packed<'Note'>): string => {
 
 	// Append mandatory CW, if applicable
 	let cw = note.cw;
+	if (note.mandatoryCW) {
+		cw = appendContentWarning(cw, `Note is flagged: "${note.mandatoryCW}"`);
+	}
 	if (note.user.mandatoryCW) {
-		cw = appendContentWarning(cw, note.user.mandatoryCW);
+		const username = note.user.host
+			? `@${note.user.username}@${note.user.host}`
+			: `@${note.user.username}`;
+		cw = appendContentWarning(cw, `${username} is flagged: "${note.user.mandatoryCW}"`);
+	}
+	if (note.user.instance?.mandatoryCW) {
+		cw = appendContentWarning(cw, `${note.user.host} is flagged: "${note.user.instance.mandatoryCW}"`);
 	}
 
 	// 本文

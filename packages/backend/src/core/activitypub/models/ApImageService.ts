@@ -75,7 +75,7 @@ export class ApImageService {
 		const shouldBeCached = this.meta.cacheRemoteFiles && (this.meta.cacheRemoteSensitiveFiles || !image.sensitive);
 
 		await this.federatedInstanceService.fetchOrRegister(actor.host).then(async i => {
-			if (i.isNSFW) {
+			if (i.isMediaSilenced) {
 				image.sensitive = true;
 			}
 		});

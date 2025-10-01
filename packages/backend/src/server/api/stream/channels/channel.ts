@@ -8,6 +8,7 @@ import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import type { JsonObject } from '@/misc/json-value.js';
+import { isPackedPureRenote } from '@/misc/is-renote.js';
 import Channel, { type MiChannelService } from '../channel.js';
 
 class ChannelChannel extends Channel {
@@ -36,7 +37,7 @@ class ChannelChannel extends Channel {
 		this.withRenotes = !!(params.withRenotes ?? true);
 
 		// Subscribe stream
-		this.subscriber.on('notesStream', this.onNote);
+		this.subscriber?.on('notesStream', this.onNote);
 	}
 
 	@bindThis
@@ -45,9 +46,9 @@ class ChannelChannel extends Channel {
 
 		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
 
-		if (note.renote && note.text == null && (note.fileIds == null || note.fileIds.length === 0) && !this.withRenotes) return;
-
-		if (this.isNoteMutedOrBlocked(note)) return;
+		const { accessible, silence } = await this.checkNoteVisibility(note, { includeReplies: true });
+		if (!accessible || silence) return;
+		if (!this.withRenotes && isPackedPureRenote(note)) return;
 
 		const clonedNote = await this.rePackNote(note);
 		this.send('note', clonedNote);
@@ -56,7 +57,7 @@ class ChannelChannel extends Channel {
 	@bindThis
 	public dispose() {
 		// Unsubscribe events
-		this.subscriber.off('notesStream', this.onNote);
+		this.subscriber?.off('notesStream', this.onNote);
 	}
 }
 

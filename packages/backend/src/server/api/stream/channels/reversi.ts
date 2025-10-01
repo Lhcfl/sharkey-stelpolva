@@ -25,13 +25,13 @@ class ReversiChannel extends Channel {
 
 	@bindThis
 	public async init(params: JsonObject) {
-		this.subscriber.on(`reversiStream:${this.user!.id}`, this.send);
+		this.subscriber?.on(`reversiStream:${this.user!.id}`, this.send);
 	}
 
 	@bindThis
 	public dispose() {
 		// Unsubscribe events
-		this.subscriber.off(`reversiStream:${this.user!.id}`, this.send);
+		this.subscriber?.off(`reversiStream:${this.user!.id}`, this.send);
 	}
 }
 

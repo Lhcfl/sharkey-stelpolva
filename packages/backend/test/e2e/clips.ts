@@ -695,7 +695,7 @@ describe('クリップ', () => {
 			}) as any as void;
 		};
 
-		const notes = async (parameters: Misskey.entities.ClipsNotesRequest, request: Partial<ApiRequest<'clips/notes'>> = {}): Promise<Misskey.entities.Note[]> => {
+		const notes = async (parameters: Misskey.entities.ClipsNotesRequest, request: Partial<ApiRequest<'clips/notes'>> = {}) => {
 			return successfulApiCall({
 				endpoint: 'clips/notes',
 				parameters,

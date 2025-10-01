@@ -12,6 +12,8 @@ import { schema } from '@/core/chart/charts/entities/federation.js';
 export const meta = {
 	tags: ['charts'],
 
+	requiredRolePolicy: 'canViewFederation',
+
 	res: getJsonSchema(schema),
 
 	allowGet: true,

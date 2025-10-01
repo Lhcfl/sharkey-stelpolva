@@ -1,6 +1,18 @@
 # Upgrade Notes
 
-## 2025.X.X
+## 2025.5.2
+
+### Mark instance as NSFW
+
+The "Mark instance as NSFW" has been removed in favor of the new "mandatory CW" / "force CW" system.
+Moderators can now apply any Content Warning of their choice to all notes from an instance by populating the "Force content warning" field on that instance's info page.
+The new Content Warning applies immediately, is retroactive, and does not federate or "infect" replies in a thread.
+
+The upgrade will automatically set a content warning of "NSFW" for instances that were formerly marked as NSFW, which displays as `[instance name] is flagged: "NSFW"` to users.
+The `notes` table is also cleaned up to remove any leftover "Instance is marked as NSFW" content warnings from posts.
+Staff can then remove or modify the new CW as usual.
+
+## 2025.2.2
 
 ### Authorized Fetch
 
@@ -12,6 +24,8 @@ Do not remove it before migration, or else the setting will reset to default (di
 ## 2024.10.0
 
 ### Hellspawns
+
+**Note: this workaround is no longer needed on Sharkey version 2025.5.2 and later, as "Mark instance as NSFW" has been completely rewritten.**
 
 Sharkey versions before 2024.10 suffered from a bug in the "Mark instance as NSFW" feature.
 When a user from such an instance boosted a note, the boost would be converted to a hellspawn (pure renote with Content Warning).

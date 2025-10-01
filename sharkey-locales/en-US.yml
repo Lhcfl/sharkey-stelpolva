@@ -35,6 +35,11 @@ muteNote: "Mute note"
 unmuteNote: "Unmute note"
 userSaysSomethingInMutedNote: "{name} said something in a muted post"
 userSaysSomethingInMutedThread: "{name} said something in a muted thread"
+silencedUserSaysSomething: "{name} has been silenced by {host} staff"
+silencedInstanceSaysSomething: "{name} has been silenced by {host} staff"
+userIsFlaggedAs: "{name} is flagged: \"{cw}\""
+noteIsFlaggedAs: "Note is flagged: \"{cw}\""
+instanceIsFlaggedAs: "{name} is flagged: \"{cw}\""
 markAsNSFW: "Mark all media from user as NSFW"
 markInstanceAsNSFW: "Mark as NSFW"
 nsfwConfirm: "Are you sure that you want to mark all media from this account as NSFW?"
@@ -177,6 +182,8 @@ flash: "Flash"
 filesRemoved: "Files removed"
 fileImported: "File imported"
 cannotLoadNote: "Failed to load note"
+clickToUnsubscribe: "Please click [OK] to unsubscribe from announcement e-mails."
+unsubscribeError: "There was a problem unsubscribing."
 _flash:
   contentHidden: "Flash Content Hidden"
   poweredByRuffle: "Powered by Ruffle."
@@ -250,6 +257,7 @@ _role:
     canUpdateBioMedia: "Allow users to edit their avatar or banner"
     scheduleNoteMax: "Maximum number of scheduled notes"
     canTrend: "Can appear in trending notes / users"
+    canViewFederation: "Can view federation stats and details of remote instances"
   _condition:
     isLocked: "Private account"
     isExplorable: "Account is discoverable"
@@ -266,6 +274,7 @@ _role:
     remoteFollowingLessThanOrEq: "Follows X or fewer remote accounts"
     remoteFollowingMoreThanOrEq: "Follows X or more remote accounts"
   remoteDataWarning: "This condition may be incorrect for remote users."
+  selectTestUser: "Select a user to test the condition."
 _emailUnavailable:
   banned: "This email address is banned"
 _signup:
@@ -325,6 +334,7 @@ _notification:
     edited: "Edits"
     scheduledNoteFailed: "Posting scheduled note failed"
     scheduledNotePosted: "Scheduled note was posted"
+    importCompleted: "The import has been completed"
   _actions:
     renote: "Boost"
 _webhookSettings:
@@ -342,8 +352,8 @@ _moderationLogTypes:
   approve: "Approved"
   decline: "Declined"
   setMandatoryCW: "Set content warning for user"
-  setRemoteInstanceNSFW: "Set remote instance as NSFW"
-  unsetRemoteInstanceNSFW: "Unset remote instance as NSFW"
+  setMandatoryCWForNote: "Set content warning for note"
+  setMandatoryCWForInstance: "Set content warning for instance"
   rejectRemoteInstanceReports: "Rejected reports from remote instance"
   acceptRemoteInstanceReports: "Accepted reports from remote instance"
   rejectQuotesUser: "Blocked/Stripped quote posts from user"
@@ -502,6 +512,8 @@ _permissions:
   "write:admin:nsfw-user": "Mark users as NSFW"
   "write:admin:unnsfw-user": "Mark users as not NSFW"
   "write:admin:cw-user": "Apply mandatory CW on users"
+  "write:admin:cw-note": "Apply mandatory CW on notes"
+  "write:admin:cw-instance": "Apply mandatory CW on instances"
   "write:admin:silence-user": "Silence users"
   "write:admin:unsilence-user": "Un-silence users"
   "write:admin:reject-quotes": "Allow/Prohibit quote posts from a user"
@@ -540,7 +552,11 @@ _noteSearch:
 id: "ID"
 
 mandatoryCW: "Force content warning"
-mandatoryCWDescription: "Applies a content warning to all posts created by this user. If the post already has a CW, then this is appended to the end."
+mandatoryCWDescription: "Applies a content warning to all posts created by this user. The forced warnings will appear like a word mute to distinguish them from the author's own content warnings."
+mandatoryCWForNote: "Force content warning"
+mandatoryCWForNoteDescription: "Applies an additional content warning to this post. The new warning will appear like a word mute to distinguish it from the author's own content warning."
+mandatoryCWForInstance: "Force content warning"
+mandatoryCWForInstanceDescription: "Applies a content warning to all posts originating from this instance. The forced warnings will appear like a word mute to distinguish them from the notes' own content warnings."
 fetchLinkedNote: "Fetch linked note"
 showTranslationButtonInNoteFooter: "Add \"Translate\" to note action menu"
 translationFailed: "Failed to translate note. Please try again later or contact an administrator for assistance."
@@ -660,3 +676,5 @@ clearCachedFilesOptions:
   keepFilesInUseDescription: "this option requires more complicated database queries, you may need to increase the value of db.extra.statement_timeout in the configuration file"
 
 customFontSize: "Custom font size"
+
+hideAds: "Hide ads"

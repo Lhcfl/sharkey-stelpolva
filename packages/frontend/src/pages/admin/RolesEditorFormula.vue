@@ -6,6 +6,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div class="_gaps">
 	<div :class="$style.header">
+		<div style="display: flex; align-items: center;">
+			<i v-if="results !== null && results[v.id]" class="ti ti-check" :class="$style.testResultTrue"></i>
+			<i v-else-if="results !== null" class="ti ti-x" :class="$style.testResultFalse"></i>
+		</div>
 		<MkSelect v-model="type" :class="$style.typeSelect">
 			<option value="isLocal">{{ i18n.ts._role._condition.isLocal }}</option>
 			<option value="isRemote">{{ i18n.ts._role._condition.isRemote }}</option>
@@ -50,7 +54,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<template #item="{element}">
 				<div :class="$style.item">
 					<!-- divが無いとエラーになる https://github.com/SortableJS/vue.draggable.next/issues/189 -->
-					<RolesEditorFormula :modelValue="element" draggable @update:modelValue="updated => valuesItemUpdated(updated)" @remove="removeItem(element)"/>
+					<RolesEditorFormula :modelValue="element" :results="results" draggable @update:modelValue="updated => valuesItemUpdated(updated)" @remove="removeItem(element)"/>
 				</div>
 			</template>
 		</Sortable>
@@ -58,7 +62,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 
 	<div v-else-if="type === 'not'" :class="$style.item">
-		<RolesEditorFormula v-model="v.value"/>
+		<RolesEditorFormula v-model="v.value" :results="results"/>
 	</div>
 
 	<MkInput v-else-if="type === 'createdLessThan' || type === 'createdMoreThan'" v-model="v.sec" type="number">
@@ -127,6 +131,7 @@ const emit = defineEmits<{
 const props = defineProps<{
 	modelValue: any;
 	draggable?: boolean;
+	results: object | null;
 }>();
 
 const v = ref(deepClone(props.modelValue));
@@ -228,5 +233,17 @@ function removeSelf() {
 	> i {
 		margin-right: 4px;
 	}
+}
+
+.testResultFalse {
+	color: var(--MI_THEME-error);
+	align-self: center;
+	margin-right: 10px;
+}
+
+.testResultTrue {
+	color: var(--MI_THEME-success);
+	align-self: center;
+	margin-right: 10px;
 }
 </style>

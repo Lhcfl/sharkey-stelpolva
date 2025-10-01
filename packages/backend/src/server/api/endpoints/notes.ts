@@ -9,6 +9,8 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { ApiError } from '@/server/api/error.js';
+import { RoleService } from '@/core/RoleService.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -20,6 +22,19 @@ export const meta = {
 			type: 'object',
 			optional: false, nullable: false,
 			ref: 'Note',
+		},
+	},
+
+	errors: {
+		gtlDisabled: {
+			message: 'Global timeline has been disabled.',
+			code: 'GTL_DISABLED',
+			id: '0332fc13-6ab2-4427-ae80-a9fadffd1a6b',
+		},
+		ltlDisabled: {
+			message: 'Local timeline has been disabled.',
+			code: 'LTL_DISABLED',
+			id: '45a6eb02-7695-4393-b023-dd3be9aaaefd',
 		},
 	},
 
@@ -55,8 +70,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
+		private readonly roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			const policies = await this.roleService.getUserPolicies(me ? me.id : null);
+			if (!ps.local && !policies.gtlAvailable) {
+				throw new ApiError(meta.errors.gtlDisabled);
+			}
+			if (ps.local && !policies.ltlAvailable) {
+				throw new ApiError(meta.errors.ltlDisabled);
+			}
+
 			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
 				.andWhere('note.visibility = \'public\'')
 				.andWhere('note.localOnly = FALSE')
@@ -68,7 +92,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.limit(ps.limit);
 
 			this.queryService.generateVisibilityQuery(query, me);
-			this.queryService.generateBlockedHostQueryForNote(query);
 			if (me) {
 				this.queryService.generateSilencedUserQueryForNotes(query, me);
 				this.queryService.generateMutedUserQueryForNotes(query, me);
@@ -77,10 +100,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.local) {
 				query.andWhere('note.userHost IS NULL');
+			} else {
+				this.queryService.generateBlockedHostQueryForNote(query);
 			}
 
-			if (ps.reply !== undefined) {
-				query.andWhere(ps.reply ? 'note.replyId IS NOT NULL' : 'note.replyId IS NULL');
+			if (ps.reply) {
+				this.queryService.generateExcludedRepliesQueryForNotes(query, me);
+			} else if (ps.reply === false) {
+				query.andWhere('note.replyId IS NULL');
 			}
 
 			if (ps.renote !== undefined) {

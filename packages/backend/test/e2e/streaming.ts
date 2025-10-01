@@ -734,6 +734,9 @@ describe('Streaming', () => {
 			const socket = new WebSocket(`ws://127.0.0.1:${port}/streaming?i=${application}`);
 			const established = await new Promise<boolean>((resolve, reject) => {
 				socket.on('error', () => resolve(false));
+				socket.on('close', (code, reason) => {
+					if (code === 4000) resolve(false);
+				});
 				socket.on('unexpected-response', () => resolve(false));
 				setTimeout(() => resolve(true), 3000);
 			});

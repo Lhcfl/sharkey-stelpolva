@@ -250,6 +250,8 @@ id: 'aidx'
 #maxAltTextLength: 20000
 # Amount of characters that will be saved for remote media descriptions (alt text). Longer descriptions will be truncated to this length. (minimum: 1)
 #maxRemoteAltTextLength: 100000
+# Amount of dialog-style announcements that can be active at a time. (minimum: 1)
+#maxDialogAnnouncements: 5
 
 # Proxy for HTTP/HTTPS
 #proxy: http://127.0.0.1:3128

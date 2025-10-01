@@ -7,7 +7,7 @@ import { Injectable } from '@nestjs/common';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
-import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
+import { isPackedPureRenote } from '@/misc/is-renote.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type MiChannelService } from '../channel.js';
 
@@ -36,7 +36,7 @@ class HomeTimelineChannel extends Channel {
 		this.withFiles = !!(params.withFiles ?? false);
 		this.withReplies = !!(params.withReplies ?? false);
 
-		this.subscriber.on('notesStream', this.onNote);
+		this.subscriber?.on('notesStream', this.onNote);
 	}
 
 	@bindThis
@@ -52,29 +52,9 @@ class HomeTimelineChannel extends Channel {
 			if (!isMe && !this.following.has(note.userId)) return;
 		}
 
-		if (this.isNoteMutedOrBlocked(note)) return;
-		if (!this.isNoteVisibleToMe(note)) return;
-
-		if (note.reply) {
-			const reply = note.reply;
-			// 自分のフォローしていないユーザーの visibility: followers な投稿への返信は弾く
-			if (!this.isNoteVisibleToMe(reply)) return;
-
-			if (!this.following.get(note.userId)?.withReplies && !this.withReplies) {
-				// 「チャンネル接続主への返信」でもなければ、「チャンネル接続主が行った返信」でもなければ、「投稿者の投稿者自身への返信」でもない場合
-				if (reply.userId !== this.user!.id && !isMe && reply.userId !== note.userId) return;
-			}
-		}
-
-		// 純粋なリノート（引用リノートでないリノート）の場合
-		if (isRenotePacked(note) && !isQuotePacked(note) && note.renote) {
-			if (!this.withRenotes) return;
-			if (note.renote.reply) {
-				const reply = note.renote.reply;
-				// 自分のフォローしていないユーザーの visibility: followers な投稿への返信のリノートは弾く
-				if (!this.isNoteVisibleToMe(reply)) return;
-			}
-		}
+		const { accessible, silence } = await this.checkNoteVisibility(note);
+		if (!accessible || silence) return;
+		if (!this.withRenotes && isPackedPureRenote(note)) return;
 
 		const clonedNote = await this.rePackNote(note);
 		this.send('note', clonedNote);
@@ -83,7 +63,7 @@ class HomeTimelineChannel extends Channel {
 	@bindThis
 	public dispose() {
 		// Unsubscribe events
-		this.subscriber.off('notesStream', this.onNote);
+		this.subscriber?.off('notesStream', this.onNote);
 	}
 }
 

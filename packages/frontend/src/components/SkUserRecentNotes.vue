@@ -9,7 +9,7 @@ Displays a user's recent notes for the "Following" feed.
 <MkPullToRefresh :refresher="() => reload()">
 	<div v-if="user" :class="$style.userInfo">
 		<MkUserInfo :class="$style.userInfo" class="user" :user="user"/>
-		<MkNotes :noGap="true" :pagination="pagination"/>
+		<MkNotes :noGap="true" :pagination="pagination" @expandMute="n => onExpandMute(n)"/>
 	</div>
 	<div v-else-if="loadError" :class="$style.panel">{{ loadError }}</div>
 	<MkLoading v-else-if="userId"/>
@@ -26,6 +26,8 @@ import MkNotes from '@/components/MkNotes.vue';
 import MkUserInfo from '@/components/MkUserInfo.vue';
 import MkPullToRefresh from '@/components/MkPullToRefresh.vue';
 import { misskeyApi } from '@/utility/misskey-api.js';
+import { useMuteOverrides } from '@/utility/check-word-mute';
+import { deepAssign } from '@/utility/merge';
 
 const props = defineProps<{
 	userId: string;
@@ -53,6 +55,22 @@ const pagination: Paging<'users/notes'> = {
 		allowPartial: true,
 	})),
 };
+
+const muteOverrides = useMuteOverrides();
+
+function onExpandMute(note: Misskey.entities.Note) {
+	if (note.user.id === props.userId) {
+		// This kills the mandatoryCW for this user below this point
+		deepAssign(muteOverrides, {
+			user: {
+				[props.userId]: {
+					userMandatoryCW: null,
+					instanceMandatoryCW: null,
+				},
+			},
+		});
+	}
+}
 
 defineExpose({
 	reload,

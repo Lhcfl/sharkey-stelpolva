@@ -22,10 +22,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
-import { instance } from '@/instance.js';
+import { instance, policies } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 import { claimAchievement } from '@/utility/achievements.js';
 import { definePage } from '@/page.js';
+import type { Tab } from '@/components/global/MkPageHeader.tabs.vue';
 
 const XOverview = defineAsyncComponent(() => import('@/pages/about.overview.vue'));
 const XEmojis = defineAsyncComponent(() => import('@/pages/about.emojis.vue'));
@@ -49,7 +50,7 @@ watch(tab, () => {
 const headerActions = computed(() => []);
 
 const headerTabs = computed(() => {
-	const items = [];
+	const items: Tab[] = [];
 
 	items.push({
 		key: 'overview',
@@ -60,7 +61,7 @@ const headerTabs = computed(() => {
 		icon: 'ph-smiley ph-bold ph-lg',
 	});
 
-	if (instance.federation !== 'none') {
+	if (instance.federation !== 'none' && policies.value.canViewFederation) {
 		items.push({
 			key: 'federation',
 			title: i18n.ts.federation,

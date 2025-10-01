@@ -46,8 +46,6 @@ _moderationLogTypes:
   approve: "ที่ได้รับการอนุมัติ"
   decline: "ปฏิเสธ"
   setMandatoryCW: "ตั้งค่าคำเตือนเนื้อหาสำหรับผู้ใช้"
-  setRemoteInstanceNSFW: "ตั้งค่าเซิร์ฟเวอร์ระยะไกลเป็น NSFW"
-  unsetRemoteInstanceNSFW: "ปิดการใช้งานการตั้งค่าเซิร์ฟเวอร์ระยะไกลเป็น NSFW"
   rejectRemoteInstanceReports: "รายงานถูกปฏิเสธจากเซิร์ฟเวอร์ระยะไกล"
   acceptRemoteInstanceReports: "รายงานได้รับการยอมรับจากเซิร์ฟเวอร์ระยะไกล"
   rejectQuotesUser: "โพสต์คำพูดของผู้ใช้ถูกบล็อค/ลบ"

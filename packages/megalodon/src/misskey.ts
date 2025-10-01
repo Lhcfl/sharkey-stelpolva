@@ -394,6 +394,7 @@ export default class Misskey implements MegalodonInterface {
       limit?: number
       max_id?: string
       since_id?: string
+      min_id?: string
     }
   ): Promise<Response<Array<Entity.Account>>> {
     let params = {
@@ -403,6 +404,20 @@ export default class Misskey implements MegalodonInterface {
       if (options.limit) {
         params = Object.assign(params, {
           limit: options.limit
+        })
+      }
+      if (options.max_id) {
+        params = Object.assign(params, {
+          untilId: options.max_id
+        })
+      }
+      if (options.since_id) {
+        params = Object.assign(params, {
+          sinceId: options.since_id
+        })
+      } else if (options.min_id) {
+        params = Object.assign(params, {
+          sinceId: options.min_id
         })
       }
     }
@@ -422,6 +437,7 @@ export default class Misskey implements MegalodonInterface {
       limit?: number
       max_id?: string
       since_id?: string
+      min_id?: string
     }
   ): Promise<Response<Array<Entity.Account>>> {
     let params = {
@@ -431,6 +447,20 @@ export default class Misskey implements MegalodonInterface {
       if (options.limit) {
         params = Object.assign(params, {
           limit: options.limit
+        })
+      }
+      if (options.max_id) {
+        params = Object.assign(params, {
+          untilId: options.max_id
+        })
+      }
+      if (options.since_id) {
+        params = Object.assign(params, {
+          sinceId: options.since_id
+        })
+      } else if (options.min_id) {
+        params = Object.assign(params, {
+          sinceId: options.min_id
         })
       }
     }
@@ -623,7 +653,7 @@ export default class Misskey implements MegalodonInterface {
       max_id?: string
       since_id?: string
     }
-  ): Promise<Response<Array<Entity.Account>> | any> {
+  ): Promise<Response<Array<Entity.Account>>> {
     let params = {
       query: q,
       detail: true

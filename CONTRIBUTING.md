@@ -1,15 +1,26 @@
+This file is a copy of [Misskey's
+CONTRIBUTING.md](https://github.com/misskey-dev/misskey/blob/develop/CONTRIBUTING.md),
+kept for compatibility. For Sharkey's contribution guide, see
+[CONTRIBUTING.Sharkey.md](CONTRIBUTING.Sharkey.md).
+
 # Contribution guide
-We're glad you're interested in contributing to Sharkey! In this document you will find the information you need to contribute to the project.
+We're glad you're interested in contributing Misskey! In this document you will find the information you need to contribute to the project.
+
+> [!NOTE]
+> This project uses Japanese as its major language, **but you do not need to translate and write the Issues/PRs in Japanese.**
+> Also, you might receive comments on your Issue/PR in Japanese, but you do not need to reply to them in Japanese as well.\
+> The accuracy of machine translation into Japanese is not high, so it will be easier for us to understand if you write it in the original language.
+> It will also allow the reader to use the translation tool of their preference if necessary.
 
 ## Roadmap
-See [ROADMAP.md](./ROADMAP.md) for the upstream Misskey roadmap.
+See [ROADMAP.md](./ROADMAP.md)
 
 ## Issues
 Before creating an issue, please check the following:
 - To avoid duplication, please search for similar issues before creating a new issue.
 - Do not use Issues to ask questions or troubleshooting.
 	- Issues should only be used to feature requests, suggestions, and bug tracking.
-	- Please ask questions or troubleshooting in [Discord](https://discord.gg/6VgKmEqHNk).
+	- Please ask questions or troubleshooting in [GitHub Discussions](https://github.com/misskey-dev/misskey/discussions) or [Discord](https://discord.gg/Wp8gVStHW3).
 
 > [!WARNING]
 > Do not close issues that are about to be resolved. It should remain open until a commit that actually resolves it is merged.
@@ -17,15 +28,10 @@ Before creating an issue, please check the following:
 ### Recommended discussing before implementation
 We welcome your proposal.
 
-When you want to add a feature or fix a bug, *please open an issue*,
-don't just start writing code. We may suggest different approaches, or
-show that the "bug" is actually intended behaviour (and offer
-work-arounds), or maybe we won't be able to merge your new feature
-because it would make it too hard to incorporate future changes from
-Misskey. Each of these examples have actually happened!
+When you want to add a feature or fix a bug, **first have the design and policy reviewed in an Issue** (if it is not there, please make one). Without this step, there is a high possibility that the PR will not be merged even if it is implemented.
 
-On the other hand, it's very likely that we'll tell you "go
-ahead!". We try our best to incorporate improvements from our users!
+At this point, you also need to clarify the goals of the PR you will create, and make sure that the other members of the team are aware of them.
+PRs that do not have a clear set of do's and don'ts tend to be bloated and difficult to review.
 
 Also, when you start implementation, assign yourself to the Issue (if you cannot do it yourself, ask Committer to assign you).
 By expressing your intention to work on the Issue, you can prevent conflicts in the work.
@@ -43,9 +49,10 @@ The Committers may:
 @syuilo reserves the Final Decision rights including whether the project will implement feature and how to implement, these rights are not always exercised.
 
 ## Well-known branches
-- **`stable`** branch is tracking the latest release and used for production purposes.
+- **`master`** branch is tracking the latest release and used for production purposes.
 - **`develop`** branch is where we work for the next release.
 	- When you create a PR, basically target it to this branch.
+- **`l10n_develop`** branch is reserved for localization management.
 
 ## Creating a PR
 Thank you for your PR! Before creating a PR, please check the following:
@@ -53,7 +60,7 @@ Thank you for your PR! Before creating a PR, please check the following:
 	- `fix` / `refactor` / `feat` / `enhance` / `perf` / `chore` etc
 	- Also, make sure that the granularity of this PR is appropriate. Please do not include more than one type of change or interest in a single PR.
 - If there is an Issue which will be resolved by this PR, please include a reference to the Issue in the text.
-- Please add the summary of the changes to [`CHANGELOG.md`](CHANGELOG.md). However, this is not necessary for changes that do not affect the users, such as refactoring.
+- Please add the summary of the changes to [`CHANGELOG.md`](/CHANGELOG.md). However, this is not necessary for changes that do not affect the users, such as refactoring.
 - Check if there are any documents that need to be created or updated due to this change.
 - If you have added a feature or fixed a bug, please add a test case if possible.
 - Please make sure that tests and Lint are passed in advance.
@@ -128,13 +135,13 @@ An actual domain will be assigned so you can test the federation.
 ### Release Instructions
 1. Commit version changes in the `develop` branch ([package.json](package.json))
 2. Create a release PR.
-	- Into `stable` from `develop` branch.
+	- Into `master` from `develop` branch.
 	- The title must be in the format `Release: x.y.z`.
 		- `x.y.z` is the new version you are trying to release.
 3. Deploy and perform a simple QA check. Also verify that the tests passed.
 4. Merge it. (Do not squash commit)
-5. Create a [release](https://activitypub.software/TransFem-org/Sharkey/-/releases)
-	- The target branch must be `stable`
+5. Create a [release of GitHub](https://github.com/misskey-dev/misskey/releases)
+	- The target branch must be `master`
 	- The tag name must be the version
 
 > [!NOTE]
@@ -154,15 +161,6 @@ If your language is not listed in Crowdin, please open an issue. We will add it 
 For newly added languages, once the translation progress per language exceeds 70%, it will be officially introduced into Misskey and made available to users.
 
 ![Crowdin](https://d322cqt584bo4o.cloudfront.net/misskey/localized.svg)
-
-## Icon Font (Shark Font)
-Sharkey has its own Icon Font called Shark Font which can be found at https://activitypub.software/TransFem-org/shark-font
-Build Instructions can all be found over there in the `README`.
-
-If you have an Icon Suggestion or want to add an Icon please open an issue/merge request over at that repo.
-
-When Updating the Font make sure to copy **all generated files** from the `dest` folder into `packages/backend/assets/fonts/sharkey-icons`
-For the CSS simply copy the file content and replace the old content in `style.css` and for the WOFF, TTF and SVG simply replace them.
 
 ## Development
 ### Setup
@@ -210,7 +208,6 @@ command.
 - You can see Misskey by accessing `http://localhost:3000` (Replace `3000` with the port configured with `port` in .config/default.yml).
 
 ## Testing
-
 You can run non-backend tests by executing following commands:
 ```sh
 pnpm --filter frontend test
@@ -228,7 +225,7 @@ There are three types of test codes for the backend:
 #### Running Unit Tests or Single-server E2E Tests
 1. Create a config file:
 ```sh
-cp .config/test-example.yml .config/test.yml
+cp .github/misskey/test.yml .config/
 ```
 
 2. Start DB and Redis servers for testing:
@@ -257,14 +254,20 @@ See [`/packages/backend/test-federation/README.md`](/packages/backend/test-feder
 - `MISSKEY_WEBFINGER_USE_HTTP`: If it's set true, WebFinger requests will be http instead of https, useful for testing federation between servers in localhost. NEVER USE IN PRODUCTION.
 
 ## Continuous integration
-Sharkey uses GitLab CI for executing automated tests.
-Configuration files are located in [`/.gitlab-ci.yml`](.gitlab-ci.yml).
+Misskey uses GitHub Actions for executing automated tests.
+Configuration files are located in [`/.github/workflows`](/.github/workflows).
 
 ## Vue
 Misskey uses Vue(v3) as its front-end framework.
 - Use TypeScript.
 - **When creating a new component, please use the Composition API (with [setup sugar](https://v3.vuejs.org/api/sfc-script-setup.html) and [ref sugar](https://github.com/vuejs/rfcs/discussions/369)) instead of the Options API.**
 	- Some of the existing components are implemented in the Options API, but it is an old implementation. Refactors that migrate those components to the Composition API are also welcome.
+
+## Tabler Icons
+アイコンは、Production Build時に使用されていないものが削除されるようになっています。
+
+**アイコンを動的に設定する際には、 `ti-${someVal}` のような、アイコン名のみを動的に変化させる実装を行わないでください。**
+必ず `ti-xxx` のような完全なクラス名を含めるようにしてください。
 
 ## nirax
 niraxは、Misskeyで使用しているオリジナルのフロントエンドルーティングシステムです。
@@ -577,33 +580,11 @@ enumの列挙の内容の削除は、その値をもつレコードを全て削�
 ### Migration作成方法
 packages/backendで:
 ```sh
-pnpm run build
-pnpm dlx typeorm migration:generate -d ormconfig.js -o migration/<migration name>
+pnpm dlx typeorm migration:generate -d ormconfig.js -o <migration name>
 ```
 
 - 生成後、ファイルをmigration下に移してください
 - 作成されたスクリプトは不必要な変更を含むため除去してください
-
-### JSON SchemaのobjectでanyOfを使うとき
-JSON Schemaで、objectに対してanyOfを使う場合、anyOfの中でpropertiesを定義しないこと。
-バリデーションが効かないため。（SchemaTypeもそのように作られており、objectのanyOf内のpropertiesは捨てられます）
-https://github.com/misskey-dev/misskey/pull/10082
-
-テキストhogeおよびfugaについて、片方を必須としつつ両方の指定もありうる場合:
-
-```ts
-export const paramDef = {
-	type: 'object',
-	properties: {
-		hoge: { type: 'string', minLength: 1 },
-		fuga: { type: 'string', minLength: 1 },
-	},
-	anyOf: [
-		{ required: ['hoge'] },
-		{ required: ['fuga'] },
-	],
-} as const;
-```
 
 ### コネクションには`markRaw`せよ
 **Vueのコンポーネントのdataオプションとして**misskey.jsのコネクションを設定するとき、必ず`markRaw`でラップしてください。インスタンスが不必要にリアクティブ化されることで、misskey.js内の処理で不具合が発生するとともに、パフォーマンス上の問題にも繋がる。なお、Composition APIを使う場合はこの限りではない(リアクティブ化はマニュアルなため)。
@@ -621,35 +602,6 @@ marginはそのコンポーネントを使う側が設定する
 
 ### indexというファイル名を使うな
 ESMではディレクトリインポートは廃止されているのと、ディレクトリインポートせずともファイル名が index だと何故か一部のライブラリ？でディレクトリインポートだと見做されてエラーになる
-
-### Memory Caches
-
-Sharkey offers multiple memory cache implementations, each meant for a different use case.
-The following table compares the available options:
-
-| Cache               | Type      | Consistency | Persistence | Data Source | Cardinality | Eviction | Description                                                                                                                                                                                                                                                                |
-|---------------------|-----------|-------------|-------------|-------------|-------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `MemoryKVCache`     | Key-Value | None        | None        | Caller      | Single      | Lifetime | Implements a basic in-memory Key-Value store. The implementation is entirely synchronous, except for user-provided data sources.                                                                                                                                           |
-| `MemorySingleCache` | Single    | None        | None        | Caller      | Single      | Lifetime | Implements a basic in-memory Single Value store. The implementation is entirely synchronous, except for user-provided data sources.                                                                                                                                        |
-| `RedisKVCache`      | Key-Value | Eventual    | Redis       | Callback    | Single      | Lifetime | Extends `MemoryKVCache` with Redis-backed persistence and a pre-defined callback data source. This provides eventual consistency guarantees based on the memory cache lifetime.                                                                                            |
-| `RedisSingleCache`  | Single    | Eventual    | Redis       | Callback    | Single      | Lifetime | Extends `MemorySingleCache` with Redis-backed persistence and a pre-defined callback data source. This provides eventual consistency guarantees based on the memory cache lifetime.                                                                                        |
-| `QuantumKVCache`    | Key-Value | Immediate   | None        | Callback    | Multiple    | Lifetime | Combines `MemoryKVCache` with a pre-defined callback data source and immediate consistency via Redis sync events. The implementation offers multi-item batch overloads for efficient bulk operations. **This is the recommended cache implementation for most use cases.** |
-
-Key-Value caches store multiple entries per cache, while Single caches store a single value that can be accessed directly.
-Consistency refers to the consistency of cached data between different processes in the instance cluster: "None" means no consistency guarantees, "Eventual" caches will gradually become consistent after some unknown time, and "Immediate" consistency ensures accurate data ASAP after the update.
-Caches with persistence can retain their data after a reboot through an external service such as Redis.
-If a data source is supported, then this allows the cache to directly load missing data in response to a fetch.
-"Caller" data sources are passed into the fetch method(s) directly, while "Callback" sources are passed in as a function when the cache is first initialized.
-The cardinality of a cache refers to the number of items that can be updated in a single operation, and eviction, finally, is the method that the cache uses to evict stale data.
-
-#### Selecting a cache implementation
-
-For most cache uses, `QuantumKVCache` should be considered first.
-It offers strong consistency guarantees, multiple cardinality, and a cleaner API surface than the older caches.
-An alternate cache implementation should be considered if any of the following apply:
-* The data is particularly slow to calculate or difficult to access. In these cases, either `RedisKVCache` or `RedisSingleCache` should be considered.
-* If stale data is acceptable, then consider `MemoryKVCache` or `MemorySingleCache`. These synchronous implementations have much less overhead than the other options.
-* There is only one data item, or all data items must be fetched together. Using `MemorySingleCache` or `RedisSingleCache` could provide a cleaner implementation without resorting to hacks like a fixed key.
 
 ## CSS Recipe
 
@@ -671,66 +623,3 @@ color: hsl(from var(--MI_THEME-accent) h s calc(l - 10));
 color: color(from var(--MI_THEME-accent) srgb r g b / 0.5);
 ```
 
-## Merging from Misskey into Sharkey
-
-Make sure you have both remotes in the same clone (`git remote add misskey
-https://github.com/misskey-dev/misskey.git`), then:
-
-	git remote update
-	git checkout develop   # this is Sharkey's develop
-	git checkout -m merge/$(date +%Y-%m-%d)   # or whatever
-	git merge --no-ff misskey/develop
-
-fix conflicts and *commit*! (conflicts in `pnpm-lock.yaml` can usually
-be fixed by running `pnpm install`, it detects conflict markers and
-seems to do a decent job)
-
-*after that commit*, do all the extra work, on the same branch:
-
-* copy all changes (commit after each step):
-    * in `packages/backend/src/core/activitypub/models/ApNoteService.ts`, from `createNote` to `updateNote`
-    * from `packages/backend/src/core/NoteCreateService.ts` to `packages/backend/src/core/NoteEditService.ts`
-    * from `packages/backend/src/server/api/endpoints/notes/create.ts` to `packages/backend/src/server/api/endpoints/notes/edit.ts`
-    * from MK note components to SK note components (if sensible)
-        * from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/SkNote.vue`
-        * from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/SkNoteDetailed.vue`
-        * from `packages/frontend/src/components/MkNoteHeader.vue` to `packages/frontend/src/components/SkNoteHeader.vue`
-        * from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/SkNoteSimple.vue`
-        * from `packages/frontend/src/components/MkNoteSub.vue` to `packages/frontend/src/components/SkNoteSub.vue`
-    * from MK note components to Dynamic note components (if the public signature changed)
-        * from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/DynamicNote.vue`
-        * from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/DynamicNoteDetailed.vue`
-        * from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/DynamicNoteSimple.vue`
-    * from the global timeline to the bubble timeline
-        * `packages/backend/src/server/api/stream/channels/global-timeline.ts`
-        * `packages/backend/src/server/api/stream/channels/bubble-timeline.ts`
-        * `packages/frontend/src/timelines.ts`
-        * `packages/frontend/src/components/MkTimeline.vue`
-        * `packages/frontend/src/pages/timeline.vue`
-        * `packages/frontend/src/ui/deck/tl-column.vue`
-        * `packages/frontend/src/widgets/WidgetTimeline.vue`
-    * from `packages/backend/src/queue/processors/InboxProcessorService.ts` to `packages/backend/src/core/UpdateInstanceQueue.ts`, where `updateInstanceQueue` is impacted
-    * from `.config/example.yml` to `.config/ci.yml` and `chart/files/default.yml`
-    * in `packages/backend/src/core/MfmService.ts`, from `toHtml` to `toMastoApiHtml`
-    * from `verifyLink` in `packages/backend/src/core/activitypub/models/ApPersonService.ts` to `verifyFieldLinks` in `packages/backend/src/misc/verify-field-link.ts` (if sensible)
-* if there have been any changes to the federated user data (the `renderPerson` function in `packages/backend/src/core/activitypub/ApRendererService.ts`), make sure that the set of fields in `userNeedsPublishing` and `profileNeedsPublishing` in `packages/backend/src/server/api/endpoints/i/update.ts` are still correct.
-* check the changes against our `develop` (`git diff develop`) and against Misskey (`git diff misskey/develop`)
-* re-generate `misskey-js` (`pnpm build-misskey-js-with-types`) and commit
-* re-generate locales (`pnpm run build-assets`) and commit
-* build the frontend: `rm -rf built/; NODE_ENV=development pnpm --filter=frontend --filter=frontend-embed --filter=frontend-shared build` (the `development` tells it to keep some of the original filenames in the built files)
-* make sure there aren't any new `ti-*` classes (Tabler Icons), and replace them with appropriate `ph-*` ones (Phosphor Icons) in [`vite.replaceicons.ts`](packages/frontend/vite.replaceIcons.ts).
-    * This command should show you want to change: `grep -ohrP '(?<=["'\''](ti )?)(ti-(?!fw)[\w\-]+)' --exclude \*.map -- built/ | sort -u`.
-    * NOTE: `ti-fw` is a special class that's defined by Misskey, leave it alone.
-    * After every change, re-build the frontend and check again, until there are no more `ti-*` classes in the built files.
-    * Commit!
-* double-check the new migration, that they won't conflict with our db changes: `git diff develop -- packages/backend/migration/`
-* `pnpm clean; pnpm build`
-* run tests `pnpm test; pnpm --filter backend test:e2e` (requires a
-  test database, [see above](#testing)) and fix them all (the e2e
-  tests randomly fail with weird errors like `relation "users" does
-  not exist`, run them again if that happens)
-* run lint `pnpm --filter=backend --filter=frontend-shared lint` +
-  `pnpm --filter=frontend --filter=frontend-embed eslint` and fix all
-  the problems
-
-Then push and open a Merge Request.

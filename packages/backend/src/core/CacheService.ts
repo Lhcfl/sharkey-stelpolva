@@ -146,7 +146,7 @@ export class CacheService implements OnApplicationShutdown {
 			bulkFetcher: blockeeIds => this.blockingsRepository
 				.createQueryBuilder('blocking')
 				.select('"blocking"."blockeeId"', 'blockeeId')
-				.addSelect('array_agg("blocking"."blockeeId")', 'blockeeIds')
+				.addSelect('array_agg("blocking"."blockerId")', 'blockerIds')
 				.where({ blockeeId: In(blockeeIds) })
 				.groupBy('blocking.blockeeId')
 				.getRawMany<{ blockeeId: string, blockerIds: string[] }>()

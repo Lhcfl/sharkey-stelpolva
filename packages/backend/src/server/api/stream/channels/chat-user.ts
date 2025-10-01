@@ -33,7 +33,7 @@ class ChatUserChannel extends Channel {
 		if (typeof params.otherId !== 'string') return;
 		this.otherId = params.otherId;
 
-		this.subscriber.on(`chatUserStream:${this.user!.id}-${this.otherId}`, this.onEvent);
+		this.subscriber?.on(`chatUserStream:${this.user!.id}-${this.otherId}`, this.onEvent);
 	}
 
 	@bindThis
@@ -54,7 +54,7 @@ class ChatUserChannel extends Channel {
 
 	@bindThis
 	public dispose() {
-		this.subscriber.off(`chatUserStream:${this.user!.id}-${this.otherId}`, this.onEvent);
+		this.subscriber?.off(`chatUserStream:${this.user!.id}-${this.otherId}`, this.onEvent);
 	}
 }
 

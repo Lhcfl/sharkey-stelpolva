@@ -20,6 +20,7 @@ import { EnvService } from '@/core/EnvService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
 import { ApLogService } from '@/core/ApLogService.js';
 import { UpdateInstanceQueue } from '@/core/UpdateInstanceQueue.js';
+import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { AccountMoveService } from './AccountMoveService.js';
 import { AccountUpdateService } from './AccountUpdateService.js';
 import { AnnouncementService } from './AnnouncementService.js';
@@ -240,6 +241,7 @@ const $RegistryApiService: Provider = { provide: 'RegistryApiService', useExisti
 const $ReversiService: Provider = { provide: 'ReversiService', useExisting: ReversiService };
 const $TimeService: Provider = { provide: 'TimeService', useExisting: TimeService };
 const $EnvService: Provider = { provide: 'EnvService', useExisting: EnvService };
+const $NoteVisibilityService: Provider = { provide: 'NoteVisibilityService', useExisting: NoteVisibilityService };
 
 const $ChartLoggerService: Provider = { provide: 'ChartLoggerService', useExisting: ChartLoggerService };
 const $FederationChart: Provider = { provide: 'FederationChart', useExisting: FederationChart };
@@ -400,6 +402,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		ReversiService,
 		TimeService,
 		EnvService,
+		NoteVisibilityService,
 
 		ChartLoggerService,
 		FederationChart,
@@ -556,6 +559,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		$ReversiService,
 		$TimeService,
 		$EnvService,
+		$NoteVisibilityService,
 
 		$ChartLoggerService,
 		$FederationChart,
@@ -713,6 +717,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		ReversiService,
 		TimeService,
 		EnvService,
+		NoteVisibilityService,
 
 		FederationChart,
 		NotesChart,
@@ -867,6 +872,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		$ReversiService,
 		$TimeService,
 		$EnvService,
+		$NoteVisibilityService,
 
 		$FederationChart,
 		$NotesChart,

@@ -1,140 +1,291 @@
 /*
- * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  */
+
 import * as Misskey from 'misskey-js';
-import { computed, inject, ref } from 'vue';
-import type { Ref, ComputedRef } from 'vue';
-import { $i } from '@/i';
 import { checkStpvSoftMute } from './check-stpv-soft-mute';
+import { provide, inject, reactive, computed, unref } from 'vue';
+import type { Ref, ComputedRef, Reactive } from 'vue';
+import { $i } from '@/i.js';
+import { deepAssign } from '@/utility/merge';
 
-export function checkMutes(noteToCheck: ComputedRef<Misskey.entities.Note>, withHardMute?: ComputedRef<boolean>) {
-	const muteEnable = ref(true);
+export interface Mute {
+	hasMute: boolean;
 
-	const muted = computed<false | string[], boolean>({
-		get() {
-			if (!muteEnable.value) return false;
-			const patch = checkStpvSoftMute(noteToCheck.value);
-			return checkMute(noteToCheck.value, $i?.mutedWords) || patch;
-		},
-		set(value: boolean) {
-			muteEnable.value = value;
-		},
-	});
+	hardMuted?: boolean;
+	softMutedWords?: string[];
+	sensitiveMuted?: boolean;
 
-	const threadMuted = computed(() => {
-		if (!muteEnable.value) return false;
-		return noteToCheck.value.isMutingThread;
-	});
+	userSilenced?: boolean;
+	instanceSilenced?: boolean;
 
-	const noteMuted = computed(() => {
-		if (!muteEnable.value) return false;
-		return noteToCheck.value.isMutingNote;
-	});
+	threadMuted?: boolean;
+	noteMuted?: boolean;
 
-	const hardMuted = computed(() => {
-		if (!withHardMute?.value) return false;
-		return checkMute(noteToCheck.value, $i?.hardMutedWords, true);
-	});
+	noteMandatoryCW?: string | null;
+	userMandatoryCW?: string | null;
+	instanceMandatoryCW?: string | null;
 
-	return { muted, hardMuted, threadMuted, noteMuted };
+	stpvMute: ReturnType<typeof checkStpvSoftMute>;
 }
 
-export function checkMute(note: Misskey.entities.Note, mutes: undefined | null): false;
-export function checkMute(note: Misskey.entities.Note, mutes: undefined | null, checkOnly: false): false;
-export function checkMute(note: Misskey.entities.Note, mutes: undefined | null, checkOnly?: boolean): false | 'sensitiveMute';
-export function checkMute(note: Misskey.entities.Note, mutes: Array<string | string[]> | undefined | null): string[] | false;
-export function checkMute(note: Misskey.entities.Note, mutes: Array<string | string[]> | undefined | null, checkOnly: false): string[] | false;
-export function checkMute(note: Misskey.entities.Note, mutes: Array<string | string[]> | undefined | null, checkOnly?: boolean): string[] | false | 'sensitiveMute';
-export function checkMute(note: Misskey.entities.Note, mutes: Array<string | string[]> | undefined | null, checkOnly = false): string[] | false | 'sensitiveMute' {
-	if (mutes != null) {
-		const result =
-			checkWordMute(note, $i, mutes)
-			|| checkWordMute(note.reply, $i, mutes)
-			|| checkWordMute(note.renote, $i, mutes);
+export interface MuteOverrides {
+	/**
+	 * Allows directly modifying the Mute object for all mutes.
+	 */
+	all?: Partial<Omit<Mute, 'hasMute'>>;
 
-		// Only continue to sensitiveMute if we don't match any *actual* mutes
-		if (result) {
-			return result;
-		}
-	}
+	/**
+	 * Per instance overrides.
+	 * Key: instance hostname.
+	 */
+	instance: Partial<Record<string, Partial<Mute>>>;
 
-	if (checkOnly) {
-		const inTimeline = inject<boolean>('inTimeline', false);
-		const tl_withSensitive = inject<Ref<boolean> | null>('tl_withSensitive', null);
-		if (inTimeline && tl_withSensitive?.value === false && note.files?.some((v) => v.isSensitive)) {
-			return 'sensitiveMute';
-		}
-	}
+	/**
+	 * Per user overrides.
+	 * Key: user ID.
+	 */
+	user: Partial<Record<string, Partial<Mute>>>;
 
-	return false;
+	/**
+	 * Per note overrides.
+	 * Key: note ID.
+	 */
+	note: Partial<Record<string, Partial<Mute>>>;
+
+	/**
+	 * Per thread overrides.
+	 * Key: thread ID.
+	 */
+	thread: Partial<Record<string, Partial<Mute>>>;
 }
 
-export function checkWordMute(note: string | Misskey.entities.Note | undefined | null, me: Misskey.entities.UserLite | null | undefined, mutedWords: Array<string | string[]>): string[] | false {
-	if (note == null) return false;
+export const muteOverridesSymbol = Symbol('muteOverrides');
 
-	// 自分自身
-	if (me && typeof(note) === 'object' && (note.userId === me.id)) return false;
+export function useMuteOverrides(): Reactive<MuteOverrides> {
+	// Re-use the same instance if possible
+	let overrides = injectMuteOverrides();
 
-	if (mutedWords.length > 0) {
-		const text = typeof(note) === 'object' ? getNoteText(note) : note;
+	if (!overrides) {
+		overrides = reactive({
+			note: {},
+			user: {},
+			instance: {},
+			thread: {},
+		});
+		provideMuteOverrides(overrides);
+	}
 
-		if (text === '') return false;
+	return overrides;
+}
 
-		const matched = mutedWords.reduce((matchedWords, filter) => {
-			if (Array.isArray(filter)) {
-				// Clean up
-				const filteredFilter = filter.filter(keyword => keyword !== '');
-				if (filteredFilter.length > 0 && filteredFilter.every(keyword => text.includes(keyword))) {
-					const fullFilter = filteredFilter.join(' ');
-					matchedWords.add(fullFilter);
-				}
-			} else {
-				// represents RegExp
-				const regexp = filter.match(/^\/(.+)\/(.*)$/);
+function injectMuteOverrides(): Reactive<MuteOverrides> | null {
+	return inject(muteOverridesSymbol, null);
+}
 
-				// This should never happen due to input sanitisation.
-				if (regexp) {
-					try {
-						const flags = regexp[2].includes('g') ? regexp[2] : (regexp[2] + 'g');
-						const matches = text.matchAll(new RegExp(regexp[1], flags));
-						for (const match of matches) {
-							matchedWords.add(match[0]);
-						}
-					} catch {
-						// This should never happen due to input sanitisation.
-					}
-				}
+function provideMuteOverrides(overrides: Reactive<MuteOverrides> | null) {
+	provide(muteOverridesSymbol, overrides);
+}
+
+export function checkMute(note: Misskey.entities.Note | ComputedRef<Misskey.entities.Note>, withHardMute?: boolean | ComputedRef<boolean>, uncollapseCW?: boolean | ComputedRef<boolean>): ComputedRef<Mute> {
+	// inject() can only be used inside script setup, so it MUST be outside the computed block!
+	const overrides = injectMuteOverrides();
+
+	return computed(() => {
+		const _note = unref(note);
+		const _withHardMute = unref(withHardMute) ?? true;
+		const _uncollapseCW = unref(uncollapseCW) ?? false;
+		return getMutes(_note, _withHardMute, _uncollapseCW, overrides);
+	});
+}
+
+function getMutes(note: Misskey.entities.Note, withHardMute: boolean, uncollapseCW: boolean, overrides: MuteOverrides | null): Mute {
+	const override: Partial<Mute> = overrides ? deepAssign(
+		{},
+		note.user.host ? overrides.instance[note.user.host] : undefined,
+		overrides.user[note.user.id],
+		overrides.thread[note.threadId],
+		overrides.note[note.id],
+		overrides.all,
+	) : {};
+
+	const stpvMute = checkStpvSoftMute(note);
+
+	const isMe = $i != null && $i.id === note.userId;
+	const bypassSilence = note.bypassSilence || note.user.bypassSilence;
+
+	const hardMuted = override.hardMuted ?? (!isMe && withHardMute && isHardMuted(note));
+	const softMutedWords = override.softMutedWords ?? (isMe ? [] : isSoftMuted(note));
+	const sensitiveMuted = override.sensitiveMuted ?? isSensitiveMuted(note);
+	const userSilenced = override.userSilenced ?? (note.user.isSilenced && !bypassSilence);
+	const instanceSilenced = override.instanceSilenced ?? (note.user.instance?.isSilenced && !bypassSilence) ?? false;
+	const threadMuted = override.threadMuted ?? (!isMe && note.isMutingThread);
+	const noteMuted = override.noteMuted ?? (!isMe && note.isMutingNote);
+	const noteMandatoryCW = getNoteMandatoryCW(note, isMe, uncollapseCW, override);
+	const userMandatoryCW = getUserMandatoryCW(note, bypassSilence, uncollapseCW, override);
+	const instanceMandatoryCW = getInstanceMandatoryCW(note, bypassSilence, uncollapseCW, override);
+
+	const hasMute = hardMuted || softMutedWords.length > 0 || sensitiveMuted || userSilenced || instanceSilenced || threadMuted || noteMuted || !!noteMandatoryCW || !!userMandatoryCW || !!instanceMandatoryCW;
+
+	return { hasMute, hardMuted, softMutedWords, sensitiveMuted, userSilenced, instanceSilenced, threadMuted, noteMuted, noteMandatoryCW, userMandatoryCW, instanceMandatoryCW, stpvMute };
+}
+
+function getNoteMandatoryCW(note: Misskey.entities.Note, isMe: boolean, uncollapseCW: boolean, override: Partial<Mute>): string | null {
+	if (override.noteMandatoryCW !== undefined) return override.noteMandatoryCW;
+	if (uncollapseCW) return null;
+	if (isMe) return null;
+	return note.mandatoryCW ?? null;
+}
+
+function getUserMandatoryCW(note: Misskey.entities.Note, bypassSilence: boolean, uncollapseCW: boolean, override: Partial<Mute>): string | null {
+	if (override.userMandatoryCW !== undefined) return override.userMandatoryCW;
+	if (uncollapseCW) return null;
+	if (bypassSilence) return null;
+	return note.user.mandatoryCW ?? null;
+}
+
+function getInstanceMandatoryCW(note: Misskey.entities.Note, bypassSilence: boolean, uncollapseCW: boolean, override: Partial<Mute>): string | null {
+	if (override.instanceMandatoryCW !== undefined) return override.instanceMandatoryCW;
+	if (uncollapseCW) return null;
+	if (bypassSilence) return null;
+	return note.user.instance?.mandatoryCW ?? null;
+}
+
+function isHardMuted(note: Misskey.entities.Note): boolean {
+	if (!$i?.hardMutedWords.length) return false;
+
+	const inputs = expandNote(note);
+	return containsMutedWord($i.hardMutedWords, inputs);
+}
+
+function isSoftMuted(note: Misskey.entities.Note): string[] {
+	if (!$i?.mutedWords.length) return [];
+
+	const inputs = expandNote(note);
+	return getMutedWords($i.mutedWords, inputs);
+}
+
+function isSensitiveMuted(note: Misskey.entities.Note): boolean {
+	// 1. At least one sensitive file
+	if (!note.files) return false;
+	if (!note.files.some((v) => v.isSensitive)) return false;
+
+	// 2. In a timeline
+	const inTimeline = inject<boolean>('inTimeline', false);
+	if (!inTimeline) return false;
+
+	// 3. With sensitive files hidden
+	const tl_withSensitive = inject<Ref<boolean> | null>('tl_withSensitive', null);
+	return tl_withSensitive?.value === false;
+}
+
+export function getMutedWords(mutedWords: (string | string[])[], inputs: Iterable<string>): string[] {
+	// Fixup: string is assignable to Iterable<string>, but doesn't work below.
+	// As a workaround, we can special-case it to "upgrade" plain strings into arrays instead.
+	// We also need a noinspection tag, since JetBrains IDEs don't understand this behavior either.
+	// noinspection SuspiciousTypeOfGuard
+	if (typeof(inputs) === 'string') {
+		inputs = [inputs];
+	}
+
+	// Parse mutes
+	const { regexMutes, patternMutes } = parseMutes(mutedWords);
+
+	// Make sure we didn't filter them all out
+	if (regexMutes.length < 1 && patternMutes.length < 1) {
+		return [];
+	}
+
+	const matches = new Set<string>();
+
+	// Expand notes into searchable test
+	for (const text of inputs) {
+		for (const pattern of patternMutes) {
+			// Case-sensitive, non-boundary search for backwards compatibility
+			if (pattern.every(word => text.includes(word))) {
+				const muteLabel = pattern.join(' ');
+				matches.add(muteLabel);
 			}
+		}
 
-			return matchedWords;
-		}, new Set<string>());
+		for (const regex of regexMutes) {
+			for (const match of text.matchAll(regex)) {
+				matches.add(match[0]);
+			}
+		}
+	}
 
-		// Nested arrays are intentional, otherwise the note components will join with space (" ") and it's confusing.
-		if (matched.size > 0) return Array.from(matched);
+	return Array.from(matches);
+}
+
+export function containsMutedWord(mutedWords: (string | string[])[], inputs: Iterable<string>): boolean {
+	// Parse mutes
+	const { regexMutes, patternMutes } = parseMutes(mutedWords);
+
+	// Make sure we didn't filter them all out
+	if (regexMutes.length < 1 && patternMutes.length < 1) {
+		return false;
+	}
+
+	// Expand notes into searchable test
+	for (const text of inputs) {
+		for (const pattern of patternMutes) {
+			// Case-sensitive, non-boundary search for backwards compatibility
+			if (pattern.every(word => text.includes(word))) {
+				return true;
+			}
+		}
+
+		if (regexMutes.some(regex => text.match(regex))) {
+			return true;
+		}
 	}
 
 	return false;
 }
 
-function getNoteText(note: Misskey.entities.Note): string {
-	const textParts: string[] = [];
-
-	if (note.cw) textParts.push(note.cw);
-
-	if (note.text) textParts.push(note.text);
-
+export function *expandNote(note: Misskey.entities.Note): Generator<string> {
+	if (note.cw) yield note.cw;
+	if (note.text) yield note.text;
 	if (note.files) {
 		for (const file of note.files) {
-			if (file.comment) textParts.push(file.comment);
+			if (file.comment) yield file.comment;
 		}
 	}
-
 	if (note.poll) {
 		for (const choice of note.poll.choices) {
-			if (choice.text) textParts.push(choice.text);
+			if (choice.text) yield choice.text;
+		}
+	}
+}
+
+function parseMutes(mutedWords: (string | string[])[]) {
+	const regexMutes: RegExp[] = [];
+	const patternMutes: string[][] = [];
+
+	for (const mute of mutedWords) {
+		if (Array.isArray(mute)) {
+			if (mute.length > 0) {
+				const filtered = mute.filter(keyword => keyword !== '');
+				if (filtered.length > 0) {
+					patternMutes.push(filtered);
+				} else {
+					console.warn('Skipping invalid pattern mute:', mute);
+				}
+			}
+		} else {
+			const parsed = mute.match(/^\/(.+)\/(.*)$/);
+			if (parsed && parsed.length === 3) {
+				try {
+					const flags = parsed[2].includes('g') ? parsed[2] : `${parsed[2]}g`;
+					regexMutes.push(new RegExp(parsed[1], flags));
+				} catch {
+					console.warn('Skipping invalid regexp mute:', mute);
+				}
+			}
 		}
 	}
 
-	return textParts.join('\n').trim();
+	return { regexMutes, patternMutes };
 }

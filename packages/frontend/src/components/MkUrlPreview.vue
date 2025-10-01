@@ -45,7 +45,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 <!-- never compact -->
 <div v-else-if="theNote && apExpanded" :class="$style.linkNote">
-	<DynamicNoteSimple :note="theNote" :class="$style.body"/>
+	<DynamicNoteSimple :note="theNote" :class="$style.body" @expandMute="n => emit('expandMute', n)"/>
 	<div :class="$style.action">
 		<MkButton :small="true" inline @click.stop="apExpanded = false">
 			<i class="ti ti-x"></i> {{ i18n.ts.close }}
@@ -163,6 +163,10 @@ const props = withDefaults(defineProps<{
 	noteHint: undefined,
 	attributionHint: undefined,
 });
+
+const emit = defineEmits<{
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
+}>();
 
 const MOBILE_THRESHOLD = 500;
 const isMobile = ref(deviceKind === 'smartphone' || window.innerWidth <= MOBILE_THRESHOLD);

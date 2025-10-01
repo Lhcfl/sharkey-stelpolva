@@ -33,3 +33,39 @@ export function deepMerge<X extends Record<PropertyKey, unknown>>(value: DeepPar
 	}
 	throw new Error('deepMerge: value and def must be pure objects');
 }
+
+/**
+ * Assigns properties from one or more partial objects into a target.
+ * Nested objects are assigned in the same way.
+ * Like Object.assign, but deep.
+ */
+export function deepAssign<T extends Record<PropertyKey, unknown>>(target: T, ...partials: (DeepPartial<T> | undefined)[]): T {
+	return _deepAssign(target, ...partials) as T;
+}
+
+function _deepAssign(target: Record<PropertyKey, unknown>, ...partials: (Record<PropertyKey, unknown> | undefined)[]): Record<PropertyKey, unknown> {
+	if (isPureObject(target)) {
+		for (const partial of partials) {
+			if (!isPureObject(partial)) continue;
+
+			for (const [key, value] of Object.entries(partial)) {
+				// Populate empty keys
+				if (!Reflect.has(target, key)) {
+					target[key] = value;
+					continue;
+				}
+
+				// Merge objects
+				if (isPureObject(target[key]) && isPureObject(value)) {
+					_deepAssign(target[key], value);
+					continue;
+				}
+
+				// Replace flat values
+				target[key] = value;
+			}
+		}
+	}
+
+	return target;
+}

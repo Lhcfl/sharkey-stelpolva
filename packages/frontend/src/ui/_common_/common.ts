@@ -6,7 +6,7 @@
 import { defineAsyncComponent } from 'vue';
 import type { MenuItem } from '@/types/menu.js';
 import * as os from '@/os.js';
-import { instance } from '@/instance.js';
+import { instance, policies } from '@/instance.js';
 import { host } from '@@/js/config.js';
 import { i18n } from '@/i18n.js';
 import { $i } from '@/i.js';
@@ -58,7 +58,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 		to: '/about#emojis',
 	});
 
-	if (instance.federation !== 'none') {
+	if (instance.federation !== 'none' && policies.value.canViewFederation) {
 		menuItems.push({
 			type: 'link',
 			text: i18n.ts.federation,

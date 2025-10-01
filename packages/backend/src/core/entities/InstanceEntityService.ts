@@ -63,11 +63,11 @@ export class InstanceEntityService {
 			themeColor: instance.themeColor,
 			infoUpdatedAt: instance.infoUpdatedAt ? instance.infoUpdatedAt.toISOString() : null,
 			latestRequestReceivedAt: instance.latestRequestReceivedAt ? instance.latestRequestReceivedAt.toISOString() : null,
-			isNSFW: instance.isNSFW,
 			rejectReports: instance.rejectReports,
 			rejectQuotes: instance.rejectQuotes,
 			moderationNote: iAmModerator ? instance.moderationNote : null,
 			isBubbled: this.utilityService.isBubbledHost(instance.host),
+			mandatoryCW: instance.mandatoryCW,
 		};
 	}
 

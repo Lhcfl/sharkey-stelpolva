@@ -16,6 +16,6 @@
 <!-- What instance of Sharkey are you using? -->
 
 # **Contribution Guidelines**
-By submitting this issue, you agree to follow our [Contribution Guidelines](https://activitypub.software/TransFem-org/Sharkey/-/blob/develop/CONTRIBUTING.md)
+By submitting this issue, you agree to follow our [Contribution Guidelines](https://activitypub.software/TransFem-org/Sharkey/-/blob/develop/CONTRIBUTING.Sharkey.md)
 - [ ] I agree to follow this project's Contribution Guidelines
 - [ ] I have searched the issue tracker for similar requests, and this is not a duplicate.

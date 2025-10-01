@@ -75,17 +75,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as Misskey from 'misskey-js';
 import { onMounted, ref, useCssModule } from 'vue';
+import { retryOnThrottled } from '@@/js/retry-on-throttled';
+import promiseLimit from 'promise-limit';
 import type { RequestLogItem } from '@/pages/admin/custom-emojis-manager.impl.js';
+import { emptyStrToEmptyArray, emptyStrToNull, roleIdsParser } from '@/pages/admin/custom-emojis-manager.impl.js';
 import type { GridCellValidationEvent, GridCellValueChangeEvent, GridEvent } from '@/components/grid/grid-event.js';
 import type { DroppedFile } from '@/utility/file-drop.js';
+import { extractDroppedItems, flattenDroppedFiles } from '@/utility/file-drop.js';
 import type { GridSetting } from '@/components/grid/grid.js';
 import type { GridRow } from '@/components/grid/row.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
-import {
-	emptyStrToEmptyArray,
-	emptyStrToNull,
-	roleIdsParser,
-} from '@/pages/admin/custom-emojis-manager.impl.js';
 import MkGrid from '@/components/grid/MkGrid.vue';
 import { i18n } from '@/i18n.js';
 import MkSelect from '@/components/MkSelect.vue';
@@ -96,7 +95,6 @@ import * as os from '@/os.js';
 import { validators } from '@/components/grid/cell-validators.js';
 import { chooseFileFromDrive, chooseFileFromPc } from '@/utility/select-file.js';
 import { uploadFile } from '@/utility/upload.js';
-import { extractDroppedItems, flattenDroppedFiles } from '@/utility/file-drop.js';
 import XRegisterLogs from '@/pages/admin/custom-emojis-manager.logs.vue';
 import { copyGridDataToClipboard } from '@/components/grid/grid-utils.js';
 
@@ -247,7 +245,56 @@ const registerButtonDisabled = ref<boolean>(false);
 const requestLogs = ref<RequestLogItem[]>([]);
 const isDragOver = ref<boolean>(false);
 
-async function onRegistryClicked() {
+type ApiResponse = {
+	item: any;
+	success: boolean;
+	err?: unknown;
+};
+
+const execute = async (item: any, apiEndpoint: string, payload: any): Promise<ApiResponse> => {
+	try {
+		await retryOnThrottled(() => misskeyApi(apiEndpoint, payload));
+		return { item, success: true };
+	} catch (err) {
+		return { item, success: false, err };
+	}
+};
+
+const importEmojis = async (targets: any[]): Promise<void> => {
+	const confirm = await os.confirm({
+		type: 'info',
+		title: i18n.ts._customEmojisManager._remote.confirmImportEmojisTitle,
+		text: i18n.tsx._customEmojisManager._remote.confirmImportEmojisDescription({ count: targets.length }),
+	});
+
+	if (confirm.canceled) {
+		return;
+	}
+
+	async function action(): Promise<ApiResponse[]> {
+		const limit = promiseLimit<ApiResponse>(3);
+		return await Promise.all(targets.map(item => limit(() => execute(item, 'admin/emoji/copy', { emojiId: item.id }))));
+	}
+
+	const result = await os.promiseDialog(action());
+	const failedItems = result.filter(it => !it.success);
+	if (failedItems.length > 0) {
+		await os.alert({
+			type: 'error',
+			title: i18n.ts.somethingHappened,
+			text: i18n.ts._customEmojisManager._gridCommon.alertEmojisRegisterFailedDescription,
+		});
+	}
+
+	requestLogs.value = result.map(it => ({
+		failed: !it.success,
+		url: it.item.url,
+		name: it.item.name,
+		error: it.err ? JSON.stringify(it.err) : undefined,
+	}));
+};
+
+const onRegistryClicked = async (): Promise<void> => {
 	const dialogSelection = await os.confirm({
 		type: 'info',
 		text: i18n.tsx._customEmojisManager._local._register.confirmRegisterEmojisDescription({ count: MAXIMUM_EMOJI_REGISTER_COUNT }),
@@ -257,29 +304,24 @@ async function onRegistryClicked() {
 		return;
 	}
 
-	const items = gridItems.value;
-	const upload = () => {
-		return items.slice(0, MAXIMUM_EMOJI_REGISTER_COUNT)
-			.map(item =>
-				misskeyApi(
-					'admin/emoji/add', {
-						name: item.name,
-						category: emptyStrToNull(item.category),
-						aliases: emptyStrToEmptyArray(item.aliases),
-						license: emptyStrToNull(item.license),
-						isSensitive: item.isSensitive,
-						localOnly: item.localOnly,
-						roleIdsThatCanBeUsedThisEmojiAsReaction: item.roleIdsThatCanBeUsedThisEmojiAsReaction.map(it => it.id),
-						fileId: item.fileId!,
-					})
-					.then(() => ({ item, success: true, err: undefined }))
-					.catch(err => ({ item, success: false, err })),
-			);
-	};
+	const items = gridItems.value.slice(0, MAXIMUM_EMOJI_REGISTER_COUNT);
 
-	const result = await os.promiseDialog(Promise.all(upload()));
+	async function action(): Promise<ApiResponse[]> {
+		const limit = promiseLimit<ApiResponse>(2);
+		return await Promise.all(items.map(item => limit(() => execute(item, 'admin/emoji/add', {
+			name: item.name,
+			category: emptyStrToNull(item.category),
+			aliases: emptyStrToEmptyArray(item.aliases),
+			license: emptyStrToNull(item.license),
+			isSensitive: item.isSensitive,
+			localOnly: item.localOnly,
+			roleIdsThatCanBeUsedThisEmojiAsReaction: item.roleIdsThatCanBeUsedThisEmojiAsReaction.map((it: any) => it.id),
+			fileId: item.fileId!,
+		}))));
+	}
+
+	const result = await os.promiseDialog(action());
 	const failedItems = result.filter(it => !it.success);
-
 	if (failedItems.length > 0) {
 		await os.alert({
 			type: 'error',
@@ -295,10 +337,10 @@ async function onRegistryClicked() {
 		error: it.err ? JSON.stringify(it.err) : undefined,
 	}));
 
-	// 登録に成功したものは一覧から除く
+	// Remove successfully registered items from the list
 	const successItems = result.filter(it => it.success).map(it => it.item);
 	gridItems.value = gridItems.value.filter(it => !successItems.includes(it));
-}
+};
 
 async function onClearClicked() {
 	const result = await os.confirm({

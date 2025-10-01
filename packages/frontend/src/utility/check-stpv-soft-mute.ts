@@ -1,5 +1,7 @@
+import type * as Misskey from 'misskey-js';
 import { store } from '@/store';
-import * as Misskey from 'misskey-js';
+
+type StpvMute = { reason?: string, detail?: string };
 
 function checkForSub<T>(note: Misskey.entities.Note, fn: (n: Misskey.entities.Note) => T) {
 	let res = fn(note);
@@ -15,10 +17,12 @@ function checkForSub<T>(note: Misskey.entities.Note, fn: (n: Misskey.entities.No
 	return false;
 }
 
-export const checkStpvSoftMute = (note: Misskey.entities.Note) => {
-	if (checkForSub(note, n => store.r.stpvClientMutedNotes.value.includes(n.id))) { return ['noteMuted'];}
-	if (checkForSub(note, n => store.r.stpvClientMutedUsers.value.includes(n.userId))) { return ['authorMuted']; }
-	return checkForSub(note, n => (
-		n.user.host && store.r.stpvClientMutedDomains.value.includes(n.user.host)) ? [`mutedByDomain:${n.user.host}`] : false,
+export const checkStpvSoftMute = (note: Misskey.entities.Note) : StpvMute => {
+	if (checkForSub(note, n => store.r.stpvClientMutedNotes.value.includes(n.id))) { return { reason: 'noteMuted' }; }
+	if (checkForSub(note, n => store.r.stpvClientMutedUsers.value.includes(n.userId))) { return { reason: 'authorMuted' }; }
+	const domain = checkForSub(note, n => (
+		n.user.host && store.r.stpvClientMutedDomains.value.includes(n.user.host)) ? n.user.host : false,
 	);
+	if (domain) { return { reason: 'domainMuted', detail: domain }; }
+	return {};
 };

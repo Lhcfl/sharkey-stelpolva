@@ -93,7 +93,7 @@ import { useChartTooltip } from '@/use/use-chart-tooltip.js';
 import { $i } from '@/i.js';
 import * as os from '@/os.js';
 import { misskeyApiGet } from '@/utility/misskey-api.js';
-import { instance } from '@/instance.js';
+import { instance, policies } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 import MkHeatmap from '@/components/MkHeatmap.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
@@ -103,7 +103,7 @@ import { initChart } from '@/utility/init-chart.js';
 
 initChart();
 
-const shouldShowFederation = computed(() => instance.federation !== 'none' || $i?.isModerator);
+const shouldShowFederation = computed(() => (instance.federation !== 'none' || $i?.isModerator) && policies.canViewFederation);
 
 const chartLimit = 500;
 const chartSpan = ref<'hour' | 'day'>('hour');

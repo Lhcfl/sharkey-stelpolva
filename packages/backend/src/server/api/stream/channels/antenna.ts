@@ -33,7 +33,7 @@ class AntennaChannel extends Channel {
 		this.antennaId = params.antennaId;
 
 		// Subscribe stream
-		this.subscriber.on(`antennaStream:${this.antennaId}`, this.onEvent);
+		this.subscriber?.on(`antennaStream:${this.antennaId}`, this.onEvent);
 	}
 
 	@bindThis
@@ -41,7 +41,8 @@ class AntennaChannel extends Channel {
 		if (data.type === 'note') {
 			const note = await this.noteEntityService.pack(data.body.id, this.user, { detail: true });
 
-			if (this.isNoteMutedOrBlocked(note)) return;
+			const { accessible, silence } = await this.checkNoteVisibility(note, { includeReplies: true });
+			if (!accessible || silence) return;
 
 			this.send('note', note);
 		} else {
@@ -52,7 +53,7 @@ class AntennaChannel extends Channel {
 	@bindThis
 	public dispose() {
 		// Unsubscribe events
-		this.subscriber.off(`antennaStream:${this.antennaId}`, this.onEvent);
+		this.subscriber?.off(`antennaStream:${this.antennaId}`, this.onEvent);
 	}
 }
 

@@ -151,6 +151,28 @@ export function getAbuseNoteMenu(note: Misskey.entities.Note, text: string): Men
 	};
 }
 
+export function getMandatoryCWMenu(note: Misskey.entities.Note): MenuItem {
+	return {
+		icon: 'ph-warning ph-bold ph-lg',
+		text: i18n.ts.mandatoryCWForNote,
+		action: async () => {
+			const result = await os.inputText({
+				type: 'text',
+				title: i18n.ts.mandatoryCWForNote,
+				text: i18n.ts.mandatoryCWForNoteDescription,
+				default: note.mandatoryCW ?? '',
+			});
+
+			if (result.canceled) return;
+
+			await os.apiWithDialog('admin/cw-note', {
+				noteId: note.id,
+				cw: result.result || null,
+			});
+		},
+	};
+}
+
 export function getCopyNoteLinkMenu(note: Misskey.entities.Note, text: string): MenuItem {
 	return {
 		icon: 'ti ti-link',
@@ -512,6 +534,9 @@ export function getNoteMenu(props: {
 
 		if (appearNote.userId === $i.id || $i.isModerator || $i.isAdmin) {
 			menuItems.push({ type: 'divider' });
+			if ($i.isModerator || $i.isAdmin) {
+				menuItems.push(getMandatoryCWMenu(appearNote));
+			}
 			if (appearNote.userId === $i.id) {
 				menuItems.push({
 					icon: 'ph-pencil-simple ph-bold ph-lg',

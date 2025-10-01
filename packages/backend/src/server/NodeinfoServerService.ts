@@ -4,7 +4,9 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
+import { IsNull, MoreThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
+import type { UsersRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import { MetaService } from '@/core/MetaService.js';
 import { MemorySingleCache } from '@/misc/cache.js';
@@ -24,6 +26,9 @@ export class NodeinfoServerService {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
+
+		@Inject(DI.usersRepository)
+		private usersRepository: UsersRepository,
 
 		private systemAccountService: SystemAccountService,
 		private metaService: MetaService,
@@ -57,17 +62,14 @@ export class NodeinfoServerService {
 
 			const [
 				meta,
-				//activeHalfyear,
-				//activeMonth,
+				activeHalfyear,
+				activeMonth,
 			] = await Promise.all([
 				this.metaService.fetch(true),
 				// 重い
-				//this.usersRepository.count({ where: { host: IsNull(), lastActiveDate: MoreThan(new Date(now - 15552000000)) } }),
-				//this.usersRepository.count({ where: { host: IsNull(), lastActiveDate: MoreThan(new Date(now - 2592000000)) } }),
+				this.usersRepository.count({ where: { host: IsNull(), isBot: false, lastActiveDate: MoreThan(new Date(now - 15552000000)) } }),
+				this.usersRepository.count({ where: { host: IsNull(), isBot: false, lastActiveDate: MoreThan(new Date(now - 2592000000)) } }),
 			]);
-
-			const activeHalfyear = null;
-			const activeMonth = null;
 
 			const proxyAccount = await this.systemAccountService.fetch('proxy');
 

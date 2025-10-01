@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<component :is="getComponent(block.type)" :key="block.id" :page="page" :block="block" :h="h"/>
+<component :is="getComponent(block.type)" :key="block.id" :page="page" :block="block" :h="h" @expandMute="n => onExpandNote(n)"/>
 </template>
 
 <script lang="ts" setup>
@@ -15,6 +15,8 @@ import XSection from './page.section.vue';
 import XImage from './page.image.vue';
 import XNote from './page.note.vue';
 import XDynamic from './page.dynamic.vue';
+import { deepAssign } from '@/utility/merge';
+import { useMuteOverrides } from '@/utility/check-word-mute';
 
 function getComponent(type: string) {
 	switch (type) {
@@ -45,4 +47,30 @@ defineProps<{
 	h: number,
 	page: Misskey.entities.Page,
 }>();
+
+const emit = defineEmits<{
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
+}>();
+
+const muteOverrides = useMuteOverrides();
+
+function onExpandNote(note: Misskey.entities.Note) {
+	// Expand related mutes within this page group
+	deepAssign(muteOverrides, {
+		user: {
+			[note.user.id]: {
+				userMandatoryCW: null,
+				userSilenced: false,
+			},
+		},
+		instance: {
+			[note.user.host ?? '']: {
+				instanceMandatoryCW: null,
+				instanceSilenced: false,
+			},
+		},
+	});
+
+	emit('expandMute', note);
+}
 </script>

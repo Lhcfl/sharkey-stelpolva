@@ -34,6 +34,7 @@ type Q =
 	{ op: 'or', qs: Q[] } |
 	{ op: 'not', q: Q };
 
+// Sync with consts.ts and const.ts
 const fileTypes = {
 	image: [
 		'image/webp',
@@ -42,12 +43,20 @@ const fileTypes = {
 		'image/avif',
 		'image/apng',
 		'image/gif',
+		'image/bmp',
+		'image/tiff',
+		'image/x-icon',
 	],
 	video: [
 		'video/mp4',
 		'video/webm',
 		'video/mpeg',
 		'video/x-m4v',
+		'video/ogg',
+		'video/quicktime',
+		'video/3gpp',
+		'video/3gpp2',
+		'video/x-matroska',
 	],
 	audio: [
 		'audio/mpeg',
@@ -58,6 +67,9 @@ const fileTypes = {
 		'audio/opus',
 		'audio/ogg',
 		'audio/x-m4a',
+		'audio/mp4',
+		'audio/x-flac',
+		'audio/vnd.wave',
 		'audio/mod',
 		'audio/s3m',
 		'audio/xm',
@@ -304,6 +316,7 @@ export class SearchService {
 		this.queryService.generateVisibilityQuery(query, me);
 		this.queryService.generateBlockedHostQueryForNote(query);
 		this.queryService.generateSuspendedUserQueryForNote(query);
+		this.queryService.generateSilencedUserQueryForNotes(query, me);
 		if (me) this.queryService.generateMutedUserQueryForNotes(query, me);
 		if (me) this.queryService.generateBlockedUserQueryForNotes(query, me);
 
@@ -476,6 +489,7 @@ export class SearchService {
 
 		this.queryService.generateBlockedHostQueryForNote(query);
 		this.queryService.generateSuspendedUserQueryForNote(query);
+		this.queryService.generateSilencedUserQueryForNotes(query, me);
 
 		const notes = (await query.getMany()).filter(note => {
 			if (me && isUserRelated(note, userIdsWhoBlockingMe)) return false;

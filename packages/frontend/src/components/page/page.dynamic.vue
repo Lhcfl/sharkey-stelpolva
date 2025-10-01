@@ -23,6 +23,10 @@ const props = defineProps<{
 	block: Misskey.entities.PageBlock,
 	page: Misskey.entities.Page,
 }>();
+
+defineEmits<{
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
+}>();
 </script>
 
 <style lang="scss" module>

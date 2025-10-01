@@ -19,6 +19,10 @@ const props = defineProps<{
 	page: Misskey.entities.Page,
 }>();
 
+defineEmits<{
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
+}>();
+
 const image = ref<Misskey.entities.DriveFile | null>(null);
 
 onMounted(() => {

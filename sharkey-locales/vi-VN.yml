@@ -41,8 +41,6 @@ _moderationLogTypes:
     approve: "Đã chấp thuận"
     decline: "Từ chối"
     setMandatoryCW: "Đặt cảnh báo nội dung cho người dùng"
-    setRemoteInstanceNSFW: "Đặt máy chủ từ xa thành NSFW"
-    unsetRemoteInstanceNSFW: "Hủy cài đặt máy chủ từ xa thành NSFW"
     rejectRemoteInstanceReports: "Báo cáo bị từ chối từ máy chủ từ xa"
     acceptRemoteInstanceReports: "Đã chấp nhận báo cáo từ máy chủ từ xa"
     rejectQuotesUser: "Đã chặn/Xóa bài đăng trích dẫn của người dùng"

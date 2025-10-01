@@ -5,8 +5,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div :class="$style.root">
-	<MkNote v-if="note && !block.detailed" :key="note.id + ':normal'" :note="note"/>
-	<MkNoteDetailed v-if="note && block.detailed" :key="note.id + ':detail'" :note="note"/>
+	<MkNote v-if="note && !block.detailed" :key="note.id + ':normal'" :note="note" @expandMute="n => emit('expandMute', n)"/>
+	<MkNoteDetailed v-if="note && block.detailed" :key="note.id + ':detail'" :note="note" @expandMute="n => emit('expandMute', n)"/>
 </div>
 </template>
 
@@ -22,6 +22,10 @@ const props = defineProps<{
 	block: Misskey.entities.PageBlock,
 	page: Misskey.entities.Page,
 	index: number;
+}>();
+
+const emit = defineEmits<{
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
 }>();
 
 const note = ref<Misskey.entities.Note | null>(null);

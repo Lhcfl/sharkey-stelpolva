@@ -230,6 +230,15 @@ export class MiNote {
 	})
 	public processErrors: string[] | null;
 
+	/**
+	 * Specifies a Content Warning that should be forcibly attached to this note.
+	 * Does not replace the user's own CW.
+	 */
+	@Column('text', {
+		nullable: true,
+	})
+	public mandatoryCW: string | null;
+
 	//#region Denormalized fields
 	@Column('varchar', {
 		length: 128, nullable: true,

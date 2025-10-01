@@ -153,6 +153,25 @@ export class ApiAccountMastodon {
 			return reply.send(response);
 		});
 
+		fastify.get<{ Querystring: { q: string; limit?: string; offset?: string; resolve?: string; following?: string; } }>('/v1/accounts/search', async (request, reply) => {
+			if (!request.query.q) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required property "q"' });
+
+			const client = this.clientService.getClient(request);
+
+			const limit = request.query.limit ? parseInt(request.query.limit) : 40;
+
+			const options = {
+				following: toBoolean(request.query.following),
+				limit,
+				resolve: toBoolean(request.query.resolve),
+			};
+
+			const data = await client.searchAccount(request.query.q, options);
+			const response = await Promise.all(data.data.map(async (account) => await this.mastoConverters.convertAccount(account)));
+
+			return reply.send(response);
+		});
+
 		fastify.get<{ Params: { id?: string } }>('/v1/accounts/:id', async (_request, reply) => {
 			if (!_request.params.id) return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'Missing required parameter "id"' });
 

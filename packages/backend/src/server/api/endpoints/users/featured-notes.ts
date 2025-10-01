@@ -78,12 +78,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return [];
 			}
 
-			const [
-				userIdsWhoMeMuting,
-			] = me ? await Promise.all([
-				this.cacheService.userMutingsCache.fetch(me.id),
-			]) : [new Set<string>()];
-
 			const query = this.notesRepository.createQueryBuilder('note')
 				.where('note.id IN (:...noteIds)', { noteIds: noteIds })
 				.innerJoinAndSelect('note.user', 'user')
@@ -95,13 +89,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			this.queryService.generateBlockedHostQueryForNote(query);
 			this.queryService.generateSuspendedUserQueryForNote(query);
+			this.queryService.generateSilencedUserQueryForNotes(query, me, true);
+			this.queryService.generateExcludedRepliesQueryForNotes(query, me);
+			if (me) {
+				this.queryService.generateBlockedUserQueryForNotes(query, me);
+				this.queryService.generateMutedNoteThreadQuery(query, me);
+				this.queryService.generateMutedUserQueryForNotes(query, me, true);
+			}
 
-			const notes = (await query.getMany()).filter(note => {
-				if (me && isUserRelated(note, userIdsWhoBlockingMe, false)) return false;
-				if (me && isUserRelated(note, userIdsWhoMeMuting, true)) return false;
-
-				return true;
-			});
+			const notes = await query.getMany();
 
 			notes.sort((a, b) => a.id > b.id ? -1 : 1);
 

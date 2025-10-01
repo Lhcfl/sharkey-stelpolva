@@ -4,16 +4,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div v-if="!isDeleted" :class="$style.root">
+<SkMutedNote v-if="!isDeleted" :note="note" :skipMute="skipMute" :class="$style.root" @expandMute="n => emit('expandMute', n)">
 	<MkAvatar :class="$style.avatar" :user="note.user" link preview/>
 	<div :class="$style.main">
 		<MkNoteHeader :class="$style.header" :note="note" :mini="true"/>
 		<div>
-			<p v-if="mergedCW != null" :class="$style.cw">
-				<Mfm v-if="mergedCW != ''" style="margin-right: 8px;" :text="mergedCW" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
+			<p v-if="props.note.cw != null" :class="$style.cw">
+				<Mfm v-if="props.note.cw != ''" style="margin-right: 8px;" :text="props.note.cw" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
 				<MkCwButton v-model="showContent" :text="note.text" :files="note.files" :poll="note.poll" @click.stop/>
 			</p>
-			<div v-show="mergedCW == null || showContent">
+			<div v-show="props.note.cw == null || showContent">
 				<MkSubNoteContent :hideFiles="hideFiles" :class="$style.text" :note="note" :expandAllCws="props.expandAllCws"/>
 				<div v-if="note.isSchedule" style="margin-top: 10px;">
 					<MkButton :class="$style.button" inline @click.stop.prevent="editScheduleNote()"><i class="ti ti-eraser"></i> {{ i18n.ts.edit }}</MkButton>
@@ -22,20 +22,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</div>
 	</div>
-</div>
+</SkMutedNote>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import * as Misskey from 'misskey-js';
-import { computeMergedCw } from '@@/js/compute-merged-cw.js';
 import * as os from '@/os.js';
 import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
 import MkButton from '@/components/MkButton.vue';
+import SkMutedNote from '@/components/SkMutedNote.vue';
 import { i18n } from '@/i18n.js';
 import { prefer } from '@/preferences.js';
+import { setupNoteViewInterruptors } from '@/plugin.js';
+import { deepClone } from '@/utility/clone.js';
 
 const props = defineProps<{
 	note: Misskey.entities.Note & {
@@ -43,16 +45,22 @@ const props = defineProps<{
 		scheduledNoteId?: string
 	};
 	expandAllCws?: boolean;
+	skipMute?: boolean;
 	hideFiles?: boolean;
 }>();
 
 const showContent = ref(prefer.s.uncollapseCW);
 const isDeleted = ref(false);
 
-const mergedCW = computed(() => computeMergedCw(props.note));
+const note = ref(deepClone(props.note));
+
+if (!note.value.isSchedule) {
+	setupNoteViewInterruptors(note, null);
+}
 
 const emit = defineEmits<{
 	(ev: 'editScheduleNote'): void;
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
 }>();
 
 async function deleteScheduleNote() {
@@ -63,7 +71,7 @@ async function deleteScheduleNote() {
 		cancelText: i18n.ts.cancel,
 	});
 	if (canceled) return;
-	await os.apiWithDialog('notes/schedule/delete', { noteId: props.note.id })
+	await os.apiWithDialog('notes/schedule/delete', { noteId: note.value.id })
 		.then(() => {
 			isDeleted.value = true;
 		});

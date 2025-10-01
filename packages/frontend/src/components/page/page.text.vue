@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div class="_gaps" :class="$style.textRoot">
 	<Mfm :text="block.text ?? ''" :isBlock="true" :isNote="false"/>
 	<div v-if="isEnabledUrlPreview" class="_gaps_s" @click.stop>
-		<SkUrlPreviewGroup :sourceText="block.text" :showAsQuote="!page.user.rejectQuotes"/>
+		<SkUrlPreviewGroup :sourceText="block.text" :showAsQuote="!page.user.rejectQuotes" @expandMute="n => emit('expandMute', n)"/>
 	</div>
 </div>
 </template>
@@ -20,6 +20,10 @@ import SkUrlPreviewGroup from '@/components/SkUrlPreviewGroup.vue';
 defineProps<{
 	block: Misskey.entities.PageBlock,
 	page: Misskey.entities.Page,
+}>();
+
+const emit = defineEmits<{
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
 }>();
 </script>
 

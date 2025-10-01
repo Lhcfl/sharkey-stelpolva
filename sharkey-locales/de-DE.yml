@@ -221,8 +221,6 @@ _moderationLogTypes:
   approve: "Genehmigt"
   decline: "Abgelehnt"
   setMandatoryCW: "Inhaltswarnung für Benutzer gesetzt"
-  setRemoteInstanceNSFW: "Fremde Instanz als NSFW markiert"
-  unsetRemoteInstanceNSFW: "NSFW-Markierung für fremde Instanz entfernt"
   rejectRemoteInstanceReports: "Meldungen von fremder Instanz abgelehnt"
   acceptRemoteInstanceReports: "Meldungen von fremder Instanz akzeptiert"
   rejectQuotesUser: "Zitate von Benutzer gesperrt/entfernt"

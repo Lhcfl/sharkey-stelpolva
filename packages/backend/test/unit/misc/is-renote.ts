@@ -48,6 +48,7 @@ const base: MiNote = {
 	renoteUserHost: null,
 	renoteUserInstance: null,
 	processErrors: [],
+	mandatoryCW: null,
 };
 
 describe('misc:is-renote', () => {

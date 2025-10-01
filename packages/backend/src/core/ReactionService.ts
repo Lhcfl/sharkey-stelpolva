@@ -31,6 +31,7 @@ import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
 import { PER_NOTE_REACTION_USER_PAIR_CACHE_MAX } from '@/const.js';
 import { CacheService } from '@/core/CacheService.js';
+import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import type { DataSource } from 'typeorm';
 
 const FALLBACK = '\u2764';
@@ -108,6 +109,7 @@ export class ReactionService {
 		private notificationService: NotificationService,
 		private perUserReactionsChart: PerUserReactionsChart,
 		private readonly cacheService: CacheService,
+		private readonly noteVisibilityService: NoteVisibilityService,
 	) {
 	}
 
@@ -122,7 +124,8 @@ export class ReactionService {
 		}
 
 		// check visibility
-		if (!await this.noteEntityService.isVisibleForMe(note, user.id, { me: user })) {
+		const { accessible } = await this.noteVisibilityService.checkNoteVisibilityAsync(note, user);
+		if (!accessible) {
 			throw new IdentifiableError('68e9d2d1-48bf-42c2-b90a-b20e09fd3d48', 'Note not accessible for you.');
 		}
 

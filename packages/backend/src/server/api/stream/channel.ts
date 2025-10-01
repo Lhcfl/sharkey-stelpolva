@@ -12,6 +12,7 @@ import type { JsonObject, JsonValue } from '@/misc/json-value.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { deepClone } from '@/misc/clone.js';
 import type Connection from '@/server/api/stream/Connection.js';
+import { NoteVisibilityFilters } from '@/core/NoteVisibilityService.js';
 
 /**
  * Stream channel
@@ -25,6 +26,10 @@ export default abstract class Channel {
 	public static readonly shouldShare: boolean;
 	public static readonly requireCredential: boolean;
 	public static readonly kind?: string | null;
+
+	protected get noteVisibilityService() {
+		return this.noteEntityService.noteVisibilityService;
+	}
 
 	protected get user() {
 		return this.connection.user;
@@ -105,8 +110,14 @@ export default abstract class Channel {
 		return this.connection.myRecentFavorites;
 	}
 
+	protected async checkNoteVisibility(note: Packed<'Note'>, filters?: NoteVisibilityFilters) {
+		// Don't use any of the local cached data, because this does everything through CacheService which is just as fast with updated data.
+		return await this.noteVisibilityService.checkNoteVisibilityAsync(note, this.user, { filters });
+	}
+
 	/**
 	 * Checks if a note is visible to the current user *excluding* blocks and mutes.
+	 * @deprecated use isNoteHidden instead
 	 */
 	protected isNoteVisibleToMe(note: Packed<'Note'>): boolean {
 		if (note.visibility === 'public') return true;
@@ -120,8 +131,9 @@ export default abstract class Channel {
 		return note.visibleUserIds.includes(this.user.id);
 	}
 
-	/*
+	/**
 	 * ミュートとブロックされてるを処理する
+	 * @deprecated use isNoteHidden instead
 	 */
 	protected isNoteMutedOrBlocked(note: Packed<'Note'>): boolean {
 		// Ignore notes that require sign-in
@@ -196,12 +208,11 @@ export default abstract class Channel {
 		// If we didn't clone the notes here, different connections would asynchronously write
 		// different values to the same object, resulting in a random value being sent to each frontend. -- Dakkar
 		const clonedNote = deepClone(note);
-		const notes = crawl(clonedNote);
 
 		// Hide notes before everything else, since this modifies fields that the other functions will check.
-		await this.noteEntityService.hideNotes(notes, this.user.id);
+		const notes = crawl(clonedNote);
 
-		const [myReactions, myRenotes, myFavorites, myThreadMutings, myNoteMutings] = await Promise.all([
+		const [myReactions, myRenotes, myFavorites, myThreadMutings, myNoteMutings, myFollowings] = await Promise.all([
 			this.noteEntityService.populateMyReactions(notes, this.user.id, {
 				myReactions: this.myRecentReactions,
 			}),
@@ -213,13 +224,25 @@ export default abstract class Channel {
 			}),
 			this.noteEntityService.populateMyTheadMutings(notes, this.user.id),
 			this.noteEntityService.populateMyNoteMutings(notes, this.user.id),
+			this.cacheService.userFollowingsCache.fetch(this.user.id),
 		]);
 
-		note.myReaction = myReactions.get(note.id) ?? null;
-		note.isRenoted = myRenotes.has(note.id);
-		note.isFavorited = myFavorites.has(note.id);
-		note.isMutingThread = myThreadMutings.has(note.id);
-		note.isMutingNote = myNoteMutings.has(note.id);
+		for (const n of notes) {
+			// Sync visibility in case there's something like "makeNotesFollowersOnlyBefore" enabled
+			this.noteVisibilityService.syncVisibility(n);
+
+			n.myReaction = myReactions.get(n.id) ?? null;
+			n.isRenoted = myRenotes.has(n.id);
+			n.isFavorited = myFavorites.has(n.id);
+			n.isMutingThread = myThreadMutings.has(n.id);
+			n.isMutingNote = myNoteMutings.has(n.id);
+			n.user.bypassSilence = n.userId === this.user.id || myFollowings.has(n.userId);
+		}
+
+		// Hide notes *after* we sync visibility
+		await this.noteEntityService.hideNotes(notes, this.user.id, {
+			userFollowings: myFollowings,
+		});
 
 		return clonedNote;
 	}

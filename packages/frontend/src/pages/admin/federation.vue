@@ -19,8 +19,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<option value="federating">{{ i18n.ts.federating }}</option>
 						<option value="subscribing">{{ i18n.ts.subscribing }}</option>
 						<option value="publishing">{{ i18n.ts.publishing }}</option>
-						<!-- TODO translate -->
-						<option value="nsfw">NSFW</option>
 						<option value="suspended">{{ i18n.ts.suspended }}</option>
 						<option value="blocked">{{ i18n.ts.blocked }}</option>
 						<option value="silenced">{{ i18n.ts.silence }}</option>
@@ -85,7 +83,6 @@ const pagination = {
 			state.value === 'blocked' ? { blocked: true } :
 			state.value === 'silenced' ? { silenced: true } :
 			state.value === 'notResponding' ? { notResponding: true } :
-			state.value === 'nsfw' ? { nsfw: true } :
 			{}),
 	})),
 };
@@ -104,7 +101,6 @@ function getStatus(instance: Misskey.entities.FederationInstance) {
 	if (instance.isBlocked) return 'Blocked';
 	if (instance.isSilenced) return 'Silenced';
 	if (instance.isNotResponding) return 'Error';
-	if (instance.isNSFW) return 'NSFW';
 	return 'Alive';
 }
 

@@ -14,6 +14,7 @@ import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
 export const meta = {
 	tags: ['federation'],
 
+	requiredRolePolicy: 'canViewFederation',
 	requireCredential: false,
 	allowGet: true,
 	cacheSec: 3600,

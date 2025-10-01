@@ -37,7 +37,7 @@ class ReversiGameChannel extends Channel {
 		if (typeof params.gameId !== 'string') return;
 		this.gameId = params.gameId;
 
-		this.subscriber.on(`reversiGameStream:${this.gameId}`, this.send);
+		this.subscriber?.on(`reversiGameStream:${this.gameId}`, this.send);
 	}
 
 	@bindThis
@@ -105,7 +105,7 @@ class ReversiGameChannel extends Channel {
 	@bindThis
 	public dispose() {
 		// Unsubscribe events
-		this.subscriber.off(`reversiGameStream:${this.gameId}`, this.send);
+		this.subscriber?.off(`reversiGameStream:${this.gameId}`, this.send);
 	}
 }
 

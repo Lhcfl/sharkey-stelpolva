@@ -207,6 +207,9 @@ export const ROUTE_DEF = [{
 	path: '/signup-complete/:code',
 	component: page(() => import('@/pages/signup-complete.vue')),
 }, {
+	path: '/unsubscribe/:user/:token',
+	component: page(() => import('@/pages/unsubscribe.vue')),
+}, {
 	path: '/announcements',
 	component: page(() => import('@/pages/announcements.vue')),
 }, {

@@ -127,6 +127,7 @@ function generateDummyNote(override?: Partial<MiNote>): MiNote {
 		renoteUserInstance: null,
 		updatedAt: null,
 		processErrors: [],
+		mandatoryCW: null,
 		...override,
 	};
 }
@@ -400,6 +401,7 @@ export class WebhookTestService {
 			text: note.text,
 			cw: note.cw,
 			userId: note.userId,
+			userHost: note.userHost ?? null,
 			user: await this.toPackedUserLite(note.user ?? generateDummyUser()),
 			replyId: note.replyId,
 			renoteId: note.renoteId,
@@ -408,6 +410,7 @@ export class WebhookTestService {
 			isMutingNote: false,
 			isFavorited: false,
 			isRenoted: false,
+			bypassSilence: false,
 			visibility: note.visibility,
 			mentions: note.mentions,
 			visibleUserIds: note.visibleUserIds,
@@ -450,6 +453,8 @@ export class WebhookTestService {
 			username: user.username,
 			host: user.host,
 			description: 'dummy user',
+			isSilenced: false,
+			bypassSilence: false,
 			avatarUrl: user.avatarId == null ? null : user.avatarUrl,
 			avatarBlurhash: user.avatarId == null ? null : user.avatarBlurhash,
 			avatarDecorations: user.avatarDecorations.map(it => ({

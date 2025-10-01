@@ -109,14 +109,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return await this.noteEntityService.packMany(timeline, me);
 			}
 
-			const [
-				followings,
-				threadMutings,
-			] = await Promise.all([
-				this.cacheService.userFollowingsCache.fetch(me.id),
-				this.cacheService.threadMutingsCache.fetch(me.id),
-			]);
-
 			const timeline = this.fanoutTimelineEndpointService.timeline({
 				untilId,
 				sinceId,
@@ -125,18 +117,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				me,
 				useDbFallback: this.serverSettings.enableFanoutTimelineDbFallback,
 				redisTimelines: ps.withFiles ? [`homeTimelineWithFiles:${me.id}`] : [`homeTimeline:${me.id}`],
-				alwaysIncludeMyNotes: true,
 				excludePureRenotes: !ps.withRenotes,
-				noteFilter: note => {
-					if (note.reply && note.reply.visibility === 'followers') {
-						if (!followings.has(note.reply.userId) && note.reply.userId !== me.id) return false;
-					}
-					if (!ps.withBots && note.user?.isBot) return false;
-
-					if (threadMutings.has(note.threadId ?? note.id)) return false;
-
-					return true;
-				},
 				dbFallback: async (untilId, sinceId, limit) => await this.getFromDb({
 					untilId,
 					sinceId,
@@ -167,7 +148,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	}, me: MiLocalUser) {
 		//#region Construct query
 		const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
-			// 1. in a channel I follow, 2. my own post, 3. by a user I follow
+			// in a channel I follow OR my own post OR by a user I follow
 			.andWhere(new Brackets(qb => this.queryService
 				.orFollowingChannel(qb, ':meId', 'note.channelId')
 				.orWhere(':meId = note.userId')
@@ -181,74 +162,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			.leftJoinAndSelect('note.renote', 'renote')
 			.leftJoinAndSelect('reply.user', 'replyUser')
 			.leftJoinAndSelect('renote.user', 'renoteUser')
-			.andWhere(new Brackets(qb => {
-				qb
-					// 1. Not a reply
-					.orWhere('note.replyId IS NULL')
-					// 2. a self-reply
-					.orWhere('note.replyUserId = note.userId')
-					// 3. a reply to me
-					.orWhere('note.replyUserId = :meId')
-					// 4. my reply
-					.orWhere('note.userId = :meId');
-
-				if (ps.withReplies) {
-					qb.orWhere(new Brackets(qb2 => this.queryService.andFollowingWithReply(qb2, ':meId', 'note.userId')));
-				}
-			}))
 			.limit(ps.limit);
 
-		// if (followees.length > 0 && followingChannels.length > 0) {
-		// 	// ユーザー・チャンネルともにフォローあり
-		// 	const meOrFolloweeIds = [me.id, ...followees.map(f => f.followeeId)];
-		// 	const followingChannelIds = followingChannels.map(x => x.followeeId);
-		// 	query.andWhere(new Brackets(qb => {
-		// 		qb
-		// 			.where(new Brackets(qb2 => {
-		// 				qb2
-		// 					.where('note.userId IN (:...meOrFolloweeIds)', { meOrFolloweeIds: meOrFolloweeIds })
-		// 					.andWhere('note.channelId IS NULL');
-		// 			}))
-		// 			.orWhere('note.channelId IN (:...followingChannelIds)', { followingChannelIds });
-		// 	}));
-		// } else if (followees.length > 0) {
-		// 	// ユーザーフォローのみ（チャンネルフォローなし）
-		// 	const meOrFolloweeIds = [me.id, ...followees.map(f => f.followeeId)];
-		// 	query
-		// 		.andWhere('note.channelId IS NULL')
-		// 		.andWhere('note.userId IN (:...meOrFolloweeIds)', { meOrFolloweeIds: meOrFolloweeIds });
-		// } else if (followingChannels.length > 0) {
-		// 	// チャンネルフォローのみ（ユーザーフォローなし）
-		// 	const followingChannelIds = followingChannels.map(x => x.followeeId);
-		// 	query.andWhere(new Brackets(qb => {
-		// 		qb
-		// 			.where('note.channelId IN (:...followingChannelIds)', { followingChannelIds })
-		// 			.orWhere('note.userId = :meId', { meId: me.id });
-		// 	}));
-		// } else {
-		// 	// フォローなし
-		// 	query
-		// 		.andWhere('note.channelId IS NULL')
-		// 		.andWhere('note.userId = :meId', { meId: me.id });
-		// }
-
-		// if (!ps.withReplies) {
-		// 	const shouldShowReplyUserIds = [me.id, ...followees.filter(x => x.withReplies).map(x => x.followeeId)];
-		// 	query.andWhere(new Brackets(qb => {
-		// 		qb
-		// 			.where('note.replyId IS NULL') // 返信ではない
-		// 			.orWhere('note.replyUserId = :meId', { meId: me.id }) // reply my note
-		// 			.orWhere(new Brackets(qb => {
-		// 				qb // 返信だけど投稿者自身への返信
-		// 					.where('note.replyId IS NOT NULL')
-		// 					.andWhere('note.replyUserId = note.userId');
-		// 			}))
-		// 			.orWhere('note.userId IN (:...shouldShowReplyUserIds)', {
-		// 				shouldShowReplyUserIds,
-		// 			});
-		// 	}));
-		// }
-
+		this.queryService.generateExcludedRepliesQueryForNotes(query, me);
 		this.queryService.generateVisibilityQuery(query, me);
 		this.queryService.generateBlockedHostQueryForNote(query);
 		this.queryService.generateSuspendedUserQueryForNote(query);

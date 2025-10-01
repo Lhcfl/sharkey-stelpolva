@@ -102,14 +102,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return [];
 			}
 
-			const [
-				userIdsWhoMeMuting,
-				userIdsWhoBlockingMe,
-			] = me ? await Promise.all([
-				this.cacheService.userMutingsCache.fetch(me.id),
-				this.cacheService.userBlockedCache.fetch(me.id),
-			]) : [new Set<string>(), new Set<string>()];
-
 			const query = this.notesRepository.createQueryBuilder('note')
 				.where('note.id IN (:...noteIds)', { noteIds: noteIds })
 				.innerJoinAndSelect('note.user', 'user')
@@ -120,15 +112,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('note.channel', 'channel')
 				.andWhere('user.isExplorable = TRUE');
 
+			this.queryService.generateVisibilityQuery(query, me);
 			this.queryService.generateBlockedHostQueryForNote(query);
 			this.queryService.generateSuspendedUserQueryForNote(query);
+			this.queryService.generateSilencedUserQueryForNotes(query, me);
+			if (me) {
+				this.queryService.generateMutedUserQueryForNotes(query, me);
+				this.queryService.generateBlockedUserQueryForNotes(query, me);
+				this.queryService.generateMutedNoteThreadQuery(query, me);
+			}
 
-			const notes = (await query.getMany()).filter(note => {
-				if (me && isUserRelated(note, userIdsWhoBlockingMe)) return false;
-				if (me && isUserRelated(note, userIdsWhoMeMuting)) return false;
-
-				return true;
-			});
+			const notes = await query.getMany();
 
 			notes.sort((a, b) => a.id > b.id ? -1 : 1);
 

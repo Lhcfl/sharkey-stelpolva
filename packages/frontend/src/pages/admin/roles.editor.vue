@@ -48,7 +48,39 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkFolder v-if="role.target === 'conditional'" defaultOpen>
 		<template #label>{{ i18n.ts._role.condition }}</template>
 		<div class="_gaps">
-			<RolesEditorFormula v-model="role.condFormula"/>
+			<RolesEditorFormula v-model="role.condFormula" :results="conditionResults"/>
+			<div>
+				<div :class="$style.userSelectLabel">{{ i18n.ts._role.selectTestUser }}</div>
+				<MkButton
+					v-if="conditionTestUser == null"
+					transparent
+					:class="$style.userSelectButton"
+					@click="selectUser"
+				>
+					<div :class="$style.userSelectButtonInner">
+						<span><i class="ti ti-plus"></i></span>
+						<span>{{ i18n.ts.selectUser }}</span>
+					</div>
+				</MkButton>
+				<div v-else :class="$style.userSelectedButtons">
+					<div style="overflow: hidden;">
+						<MkUserCardMini
+							:user="conditionTestUser"
+							:withChart="false"
+							:class="$style.userSelectedCard"
+						/>
+					</div>
+					<div>
+						<button
+							class="_button"
+							:class="$style.userSelectedSwitchButton"
+							@click="selectUser"
+						>
+							<i class="ph-user-switch ph-bold ph-lg"></i>
+						</button>
+					</div>
+				</div>
+			</div>
 		</div>
 	</MkFolder>
 
@@ -817,16 +849,37 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkRange>
 				</div>
 			</MkFolder>
+
+			<MkFolder v-if="matchQuery([i18n.ts._role._options.canViewFederation, 'canViewFederation'])">
+				<template #label>{{ i18n.ts._role._options.canViewFederation }}</template>
+				<template #suffix>
+					<span v-if="role.policies.canViewFederation.useDefault" :class="$style.useDefaultLabel">{{ i18n.ts._role.useBaseValue }}</span>
+					<span v-else>{{ role.policies.canViewFederation.value ? i18n.ts.yes : i18n.ts.no }}</span>
+					<span :class="$style.priorityIndicator"><i :class="getPriorityIcon(role.policies.canViewFederation)"></i></span>
+				</template>
+				<div class="_gaps">
+					<MkSwitch v-model="role.policies.canViewFederation.useDefault" :readonly="readonly">
+						<template #label>{{ i18n.ts._role.useBaseValue }}</template>
+					</MkSwitch>
+					<MkSwitch v-model="role.policies.canViewFederation.value" :disabled="role.policies.canViewFederation.useDefault" :readonly="readonly">
+						<template #label>{{ i18n.ts.enable }}</template>
+					</MkSwitch>
+					<MkRange v-model="role.policies.canViewFederation.priority" :min="0" :max="2" :step="1" easing :textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
+						<template #label>{{ i18n.ts._role.priority }}</template>
+					</MkRange>
+				</div>
+			</MkFolder>
 		</div>
 	</FormSlot>
 </div>
 </template>
 
 <script lang="ts" setup>
-import { watch, ref, computed } from 'vue';
+import { watch, ref, computed, shallowRef } from 'vue';
 import { throttle } from 'throttle-debounce';
 import { ROLE_POLICIES } from '@@/js/const.js';
 import RolesEditorFormula from './RolesEditorFormula.vue';
+import type * as Misskey from 'misskey-js';
 import MkInput from '@/components/MkInput.vue';
 import MkColorInput from '@/components/MkColorInput.vue';
 import MkSelect from '@/components/MkSelect.vue';
@@ -834,10 +887,14 @@ import MkTextarea from '@/components/MkTextarea.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkRange from '@/components/MkRange.vue';
+import MkButton from '@/components/MkButton.vue';
+import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import FormSlot from '@/components/form/slot.vue';
 import { i18n } from '@/i18n.js';
 import { instance } from '@/instance.js';
 import { deepClone } from '@/utility/clone.js';
+import * as os from '@/os.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
 
 const emit = defineEmits<{
 	(ev: 'update:modelValue', v: any): void;
@@ -849,6 +906,10 @@ const props = defineProps<{
 }>();
 
 const role = ref(deepClone(props.modelValue));
+
+const conditionTestUser = shallowRef<Misskey.entities.UserDetailed | null>(null);
+
+const conditionResults = ref(null);
 
 // fill missing policy
 for (const ROLE_POLICY of ROLE_POLICIES) {
@@ -888,6 +949,19 @@ function matchQuery(keywords: string[]): boolean {
 	return keywords.some(keyword => keyword.toLowerCase().includes(q.value.toLowerCase()));
 }
 
+async function updateTestResults() {
+	conditionResults.value = await misskeyApi('admin/roles/annotate-condition', { userId: conditionTestUser.value.id, condFormula: role.value.condFormula });
+}
+
+function selectUser() {
+	os.selectUser({
+		includeSelf: true,
+	}).then((_user) => {
+		conditionTestUser.value = _user;
+		updateTestResults();
+	});
+}
+
 const save = throttle(100, () => {
 	const data = {
 		name: role.value.name,
@@ -906,6 +980,10 @@ const save = throttle(100, () => {
 		policies: role.value.policies,
 	};
 
+	if (conditionTestUser.value !== null) {
+		updateTestResults();
+	}
+
 	emit('update:modelValue', data);
 });
 
@@ -919,5 +997,37 @@ watch(role, save, { deep: true });
 
 .priorityIndicator {
 	margin-left: 8px;
+}
+
+.userSelectLabel {
+	font-size: 0.85em;
+	padding: 0 0 8px;
+	user-select: none;
+}
+
+.userSelectButton {
+	width: 100%;
+	height: 100%;
+	padding: 12px;
+	border: 2px dashed color(from var(--MI_THEME-fg) srgb r g b / 0.5);
+}
+
+.userSelectButtonInner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 38px;
+}
+
+.userSelectedButtons {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+}
+
+.userSelectedSwitchButton {
+	width: 32px;
+	height: 32px;
 }
 </style>

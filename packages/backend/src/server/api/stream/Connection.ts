@@ -32,8 +32,8 @@ const MAX_SUBSCRIPTIONS_PER_CONNECTION = 512;
 export default class Connection {
 	public user?: MiUser;
 	public token?: MiAccessToken;
-	private wsConnection: WebSocket.WebSocket;
-	public subscriber: StreamEventEmitter;
+	private wsConnection?: WebSocket.WebSocket;
+	public subscriber?: StreamEventEmitter;
 	private channels = new Map<string, Channel>();
 	private subscribingNotes = new Map<string, number>();
 	public userProfile: MiUserProfile | null = null;
@@ -157,7 +157,7 @@ export default class Connection {
 			this.logger.warn(`Closing a connection from ${this.ip} (user=${this.user?.id}}) due to an excessive influx of messages.`);
 
 			this.closingConnection = true;
-			this.wsConnection.close(1008, 'Disconnected - too many requests');
+			this.wsConnection?.close(1008, 'Disconnected - too many requests');
 			return;
 		}
 
@@ -212,11 +212,11 @@ export default class Connection {
 			const oldestKey = this.subscribingNotes.keys().next().value!;
 
 			this.subscribingNotes.delete(oldestKey);
-			this.subscriber.off(`noteStream:${oldestKey}`, this.onNoteStreamMessage);
+			this.subscriber?.off(`noteStream:${oldestKey}`, this.onNoteStreamMessage);
 		}
 
 		if (updated === 1) {
-			this.subscriber.on(`noteStream:${payload.id}`, this.onNoteStreamMessage);
+			this.subscriber?.on(`noteStream:${payload.id}`, this.onNoteStreamMessage);
 		}
 	}
 
@@ -234,7 +234,7 @@ export default class Connection {
 		this.subscribingNotes.set(payload.id, updated);
 		if (updated <= 0) {
 			this.subscribingNotes.delete(payload.id);
-			this.subscriber.off(`noteStream:${payload.id}`, this.onNoteStreamMessage);
+			this.subscriber?.off(`noteStream:${payload.id}`, this.onNoteStreamMessage);
 		}
 	}
 
@@ -289,6 +289,7 @@ export default class Connection {
 	 */
 	@bindThis
 	public sendMessageToWs(type: string, payload: JsonObject) {
+		if (!this.wsConnection) throw new Error('Cannot send: not connected');
 		this.wsConnection.send(JSON.stringify({
 			type: type,
 			body: payload,
@@ -380,8 +381,9 @@ export default class Connection {
 			if (c.dispose) c.dispose();
 		}
 		for (const k of this.subscribingNotes.keys()) {
-			this.subscriber.off(`noteStream:${k}`, this.onNoteStreamMessage);
+			this.subscriber?.off(`noteStream:${k}`, this.onNoteStreamMessage);
 		}
+		this.wsConnection?.off('message', this.onWsConnectionMessage);
 
 		this.fetchIntervalId = null;
 		this.channels.clear();

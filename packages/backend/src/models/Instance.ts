@@ -208,11 +208,6 @@ export class MiInstance {
 	@Column('boolean', {
 		default: false,
 	})
-	public isNSFW: boolean;
-
-	@Column('boolean', {
-		default: false,
-	})
 	public rejectReports: boolean;
 
 	/**
@@ -228,4 +223,13 @@ export class MiInstance {
 		length: 16384, default: '',
 	})
 	public moderationNote: string;
+
+	/**
+	 * Specifies a Content Warning that should be forcibly applied to all notes from this instance
+	 * If null (default), then no Content Warning is applied.
+	 */
+	@Column('text', {
+		nullable: true,
+	})
+	public mandatoryCW: string | null;
 }

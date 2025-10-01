@@ -142,6 +142,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script setup lang="ts">
 import { computed, onMounted, ref, useCssModule } from 'vue';
 import * as Misskey from 'misskey-js';
+import { retryOnThrottled } from '@@/js/retry-on-throttled';
 import type { GridSortOrderKey, RequestLogItem } from '@/pages/admin/custom-emojis-manager.impl.js';
 import type { GridCellValueChangeEvent, GridEvent } from '@/components/grid/grid-event.js';
 import type { GridSetting } from '@/components/grid/grid.js';
@@ -160,6 +161,7 @@ import { deviceKind } from '@/utility/device-kind.js';
 import MkPagingButtons from '@/components/MkPagingButtons.vue';
 import MkSortOrderEditor from '@/components/MkSortOrderEditor.vue';
 import { useLoading } from '@/components/hook/useLoading.js';
+import promiseLimit from "promise-limit";
 
 type GridItem = {
 	checked: boolean;
@@ -310,7 +312,24 @@ function onGridCellValueChange(event: GridCellValueChangeEvent) {
 	}
 }
 
-async function importEmojis(targets: GridItem[]) {
+type ApiResponse = {
+	item: any;
+	success: boolean;
+	err?: unknown;
+};
+
+const execute = async (item: any): Promise<ApiResponse> => {
+	try {
+		await retryOnThrottled(() => misskeyApi('admin/emoji/copy', {
+			emojiId: item.id,
+		}));
+		return { item, success: true };
+	} catch (err) {
+		return { item, success: false, err };
+	}
+};
+
+const importEmojis = async (targets: any[]): Promise<void> => {
 	const confirm = await os.confirm({
 		type: 'info',
 		title: i18n.ts._customEmojisManager._remote.confirmImportEmojisTitle,
@@ -321,21 +340,10 @@ async function importEmojis(targets: GridItem[]) {
 		return;
 	}
 
-	const result = await os.promiseDialog(
-		Promise.all(
-			targets.map(item =>
-				misskeyApi(
-					'admin/emoji/copy',
-					{
-						emojiId: item.id!,
-					})
-					.then(() => ({ item, success: true, err: undefined }))
-					.catch(err => ({ item, success: false, err })),
-			),
-		),
-	);
-	const failedItems = result.filter(it => !it.success);
+	const limit = promiseLimit<ApiResponse>(2);
+	const results = await Promise.all(targets.map(it => limit(() => execute(it))));
 
+	const failedItems = results.filter(it => !it.success);
 	if (failedItems.length > 0) {
 		await os.alert({
 			type: 'error',
@@ -344,7 +352,7 @@ async function importEmojis(targets: GridItem[]) {
 		});
 	}
 
-	requestLogs.value = result.map(it => ({
+	requestLogs.value = results.map(it => ({
 		failed: !it.success,
 		url: it.item.url,
 		name: it.item.name,
@@ -352,7 +360,7 @@ async function importEmojis(targets: GridItem[]) {
 	}));
 
 	await refreshCustomEmojis();
-}
+};
 
 async function refreshCustomEmojis() {
 	const query: Misskey.entities.V2AdminEmojiListRequest['query'] = {

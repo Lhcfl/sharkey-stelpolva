@@ -144,6 +144,7 @@ type Option = {
 	url?: string | null;
 	app?: MiApp | null;
 	processErrors?: string[] | null;
+	mandatoryCW?: string | null;
 };
 
 export type PureRenoteOption = Option & { renote: MiNote } & ({ text?: null } | { cw?: null } | { reply?: null } | { poll?: null } | { files?: null | [] });
@@ -414,14 +415,6 @@ export class NoteCreateService implements OnApplicationShutdown {
 			}
 		}
 
-		if (user.host && !data.cw) {
-			await this.federatedInstanceService.fetchOrRegister(user.host).then(async i => {
-				if (i.isNSFW && !this.isPureRenote(data)) {
-					data.cw = 'Instance is marked as NSFW';
-				}
-			});
-		}
-
 		if (mentionedUsers.length > 0 && mentionedUsers.length > (await this.roleService.getUserPolicies(user.id)).mentionLimit) {
 			throw new IdentifiableError('9f466dab-c856-48cd-9e65-ff90ff750580', 'Note contains too many mentions');
 		}
@@ -485,6 +478,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			renoteUserHost: data.renote ? data.renote.userHost : null,
 			userHost: user.host,
 			processErrors: data.processErrors,
+			mandatoryCW: data.mandatoryCW,
 		});
 
 		// should really not happen, but better safe than sorry
@@ -994,7 +988,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 			// 自分自身のHTL
 			if (note.userHost == null) {
-				if (note.visibility !== 'specified' || !note.visibleUserIds.some(v => v === user.id)) {
+				if (note.visibility !== 'specified' || !note.visibleUserIds.some(v => v === user.id) || note.userId === user.id) {
 					this.fanoutTimelineService.push(`homeTimeline:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
 					if (note.fileIds.length > 0) {
 						this.fanoutTimelineService.push(`homeTimelineWithFiles:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);

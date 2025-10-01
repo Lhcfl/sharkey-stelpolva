@@ -4,8 +4,10 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { ApiError } from '@/server/api/error.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -48,6 +50,14 @@ export const meta = {
 			},
 		},
 	},
+
+	errors: {
+		dialogLimitExceeded: {
+			message: 'Cannot create the announcement because there are too many active dialog-style announcements.',
+			code: 'DIALOG_LIMIT_EXCEEDED',
+			id: '7c1bc084-9c14-4bcf-a910-978cd8e99b5a',
+		},
+	},
 } as const;
 
 export const paramDef = {
@@ -74,23 +84,30 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private announcementService: AnnouncementService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const { raw, packed } = await this.announcementService.create({
-				updatedAt: null,
-				title: ps.title,
-				text: ps.text,
-				/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- 空の文字列の場合、nullを渡すようにするため */
-				imageUrl: ps.imageUrl || null,
-				icon: ps.icon,
-				display: ps.display,
-				forExistingUsers: ps.forExistingUsers,
-				forRoles: ps.forRoles,
-				silence: ps.silence,
-				needConfirmationToRead: ps.needConfirmationToRead,
-				confetti: ps.confetti,
-				userId: ps.userId,
-			}, me);
+			try {
+				const { raw, packed } = await this.announcementService.create({
+					updatedAt: null,
+					title: ps.title,
+					text: ps.text,
+					/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- 空の文字列の場合、nullを渡すようにするため */
+					imageUrl: ps.imageUrl || null,
+					icon: ps.icon,
+					display: ps.display,
+					forExistingUsers: ps.forExistingUsers,
+					forRoles: ps.forRoles,
+					silence: ps.silence,
+					needConfirmationToRead: ps.needConfirmationToRead,
+					confetti: ps.confetti,
+					userId: ps.userId,
+				}, me);
 
-			return packed;
+				return packed;
+			} catch (e) {
+				if (e instanceof IdentifiableError) {
+					if (e.id === 'c0d15f15-f18e-4a40-bcb1-f310d58204ee') throw new ApiError(meta.errors.dialogLimitExceeded);
+				}
+				throw e;
+			}
 		});
 	}
 }

@@ -36,6 +36,8 @@ import { i18n } from '@/i18n.js';
 import { $i } from '@/i.js';
 import { serverContext, assertServerContext } from '@/server-context.js';
 import { isTouchUsing } from '@/utility/touch.js';
+import { useMuteOverrides } from '@/utility/check-word-mute';
+import { deepAssign } from '@/utility/merge';
 
 const XHome = defineAsyncComponent(() => import('./home.vue'));
 const XTimeline = defineAsyncComponent(() => import('./index.timeline.vue'));
@@ -64,6 +66,21 @@ const tab = ref(props.page);
 
 const user = ref<null | Misskey.entities.UserDetailed>(CTX_USER);
 const error = ref<any>(null);
+
+const muteOverrides = useMuteOverrides();
+
+watch(user, () => {
+	if (user.value) {
+		deepAssign(muteOverrides, {
+			user: {
+				[user.value.id]: {
+					userSilenced: false,
+					instanceSilenced: false,
+				},
+			},
+		});
+	}
+});
 
 function fetchUser(): void {
 	if (props.acct == null) return;

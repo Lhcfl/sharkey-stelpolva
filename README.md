@@ -12,7 +12,7 @@
 <a href="https://docs.joinsharkey.org/docs/install/fresh/">
 		<img src="https://custom-icon-badges.herokuapp.com/badge/create_an-instance-FBD53C?logoColor=FBD53C&style=for-the-badge&logo=server&labelColor=363B40" alt="create an instance"/></a>
 
-<a href="./CONTRIBUTING.md">
+<a href="./CONTRIBUTING.Sharkey.md">
 		<img src="https://custom-icon-badges.herokuapp.com/badge/become_a-contributor-A371F7?logoColor=A371F7&style=for-the-badge&logo=git-merge&labelColor=363B40" alt="become a contributor"/></a>
 
 <a href="https://discord.gg/6VgKmEqHNk">

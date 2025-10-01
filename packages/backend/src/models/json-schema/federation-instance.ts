@@ -116,11 +116,6 @@ export const packedFederationInstanceSchema = {
 			optional: false, nullable: true,
 			format: 'date-time',
 		},
-		isNSFW: {
-			type: 'boolean',
-			optional: false,
-			nullable: false,
-		},
 		rejectReports: {
 			type: 'boolean',
 			optional: false,
@@ -138,6 +133,10 @@ export const packedFederationInstanceSchema = {
 		isBubbled: {
 			type: 'boolean',
 			optional: false, nullable: false,
+		},
+		mandatoryCW: {
+			type: 'string',
+			optional: false, nullable: true,
 		},
 	},
 } as const;

@@ -19,7 +19,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<option value="subscribing">{{ i18n.ts.subscribing }}</option>
 				<option value="publishing">{{ i18n.ts.publishing }}</option>
 				<option value="bubble">Bubble</option>
-				<option value="nsfw">NSFW</option>
 				<option v-if="$i" value="suspended">{{ i18n.ts.suspended }}</option>
 				<option v-if="$i" value="silenced">{{ i18n.ts.silence }}</option>
 				<option v-if="$i" value="blocked">{{ i18n.ts.blocked }}</option>
@@ -83,18 +82,16 @@ const pagination = {
 			state.value === 'blocked' ? { blocked: true } :
 			state.value === 'silenced' ? { silenced: true } :
 			state.value === 'notResponding' ? { notResponding: true } :
-			state.value === 'nsfw' ? { nsfw: true } :
 			state.value === 'bubble' ? { bubble: true } :
 			{}),
 	})),
-} as Paging;
+} satisfies Paging;
 
 function getStatus(instance) {
 	if (instance.isSuspended) return 'Suspended';
 	if (instance.isBlocked) return 'Blocked';
 	if (instance.isSilenced) return 'Silenced';
 	if (instance.isNotResponding) return 'Error';
-	if (instance.isNSFW) return 'NSFW';
 	return 'Alive';
 }
 </script>

@@ -348,6 +348,8 @@ id: 'aidx'
 #maxBioLength: 1500
 # Amount of characters that will be saved for remote user bios. Longer descriptions will be truncated to this length. (minimum: 1)
 #maxRemoteBioLength: 15000
+# Amount of dialog-style announcements that can be active at a time. (minimum: 1)
+#maxDialogAnnouncements: 5
 
 # Proxy for HTTP/HTTPS
 #proxy: http://127.0.0.1:3128

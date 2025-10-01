@@ -6,7 +6,7 @@ Selectable entry on the "Following" feed, displaying a user with their most rece
 -->
 
 <template>
-<div v-if="!hardMuted" :class="$style.root" @click="$emit('select', note.user)">
+<SkMutedNote :note="note" :mutedClass="$style.muted" :expandedClass="$style.root" @click="$emit('select', note.user)">
 	<div :class="$style.avatar">
 		<MkAvatar :class="$style.icon" :user="note.user" indictor/>
 	</div>
@@ -20,39 +20,26 @@ Selectable entry on the "Following" feed, displaying a user with their most rece
 			</MkA>
 		</header>
 		<div>
-			<div v-if="muted || threadMuted || noteMuted" :class="[$style.text, $style.muted]">
-				<SkMutedNote :muted="muted" :threadMuted="threadMuted" :noteMuted="noteMuted" :note="note"></SkMutedNote>
-			</div>
-			<Mfm v-else :class="$style.text" :text="getNoteSummary(note)" :isBlock="true" :plain="true" :nowrap="false" :isNote="true" nyaize="respect" :author="note.user"/>
+			<Mfm :class="$style.text" :text="getNoteSummary(note, false)" :isBlock="true" :plain="true" :nowrap="false" :isNote="true" nyaize="respect" :author="note.user"/>
 		</div>
 	</div>
-</div>
-<div v-else>
-	<!--
-		MkDateSeparatedList uses TransitionGroup which requires single element in the child elements
-		so MkNote create empty div instead of no elements
-	-->
-</div>
+</SkMutedNote>
 </template>
 
 <script lang="ts" setup>
 import * as Misskey from 'misskey-js';
-import { computed } from 'vue';
 import { getNoteSummary } from '@/utility/get-note-summary.js';
 import { userPage } from '@/filters/user.js';
 import { notePage } from '@/filters/note.js';
-import { checkMutes } from '@/utility/check-word-mute';
 import SkMutedNote from '@/components/SkMutedNote.vue';
 
-const props = defineProps<{
+defineProps<{
 	note: Misskey.entities.Note,
 }>();
 
 defineEmits<{
 	(event: 'select', user: Misskey.entities.UserLite): void
 }>();
-
-const { muted, hardMuted, threadMuted, noteMuted } = checkMutes(computed(() => props.note));
 </script>
 
 <style lang="scss" module>
@@ -65,6 +52,10 @@ const { muted, hardMuted, threadMuted, noteMuted } = checkMutes(computed(() => p
 	display: flex;
 	contain: content;
 	cursor: pointer;
+}
+
+.root:hover {
+	background: var(--MI_THEME-buttonBg);
 }
 
 .avatar {
@@ -116,6 +107,8 @@ const { muted, hardMuted, threadMuted, noteMuted } = checkMutes(computed(() => p
 
 .muted {
 	font-style: italic;
+	align-items: center;
+	justify-content: center;
 }
 
 @container (max-width: 600px) {

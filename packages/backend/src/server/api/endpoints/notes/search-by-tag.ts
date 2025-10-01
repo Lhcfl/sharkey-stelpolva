@@ -98,7 +98,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			this.queryService.generateSilencedUserQueryForNotes(query, me);
 			if (me) this.queryService.generateMutedUserQueryForNotes(query, me);
 			if (me) this.queryService.generateBlockedUserQueryForNotes(query, me);
-			if (me) this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+			if (me) this.queryService.generateMutedNoteThreadQuery(query, me);
 
 			if (!this.serverSettings.enableBotTrending) query.andWhere('user.isBot = FALSE');
 
@@ -123,19 +123,24 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw e;
 			}
 
-			if (ps.reply != null) {
+			if (ps.reply === false) {
+				query.andWhere('note.replyId IS NULL');
+			} else {
 				if (ps.reply) {
 					query.andWhere('note.replyId IS NOT NULL');
-				} else {
-					query.andWhere('note.replyId IS NULL');
 				}
+				this.queryService.generateExcludedRepliesQueryForNotes(query, me);
 			}
 
-			if (ps.renote != null) {
+			if (ps.renote === false) {
+				this.queryService.andIsNotRenote(query, 'note');
+			} else {
 				if (ps.renote) {
 					this.queryService.andIsRenote(query, 'note');
-				} else {
-					this.queryService.andIsNotRenote(query, 'note');
+				}
+
+				if (me) {
+					this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
 				}
 			}
 

@@ -6,14 +6,16 @@
 import { URLSearchParams } from 'node:url';
 import * as nodemailer from 'nodemailer';
 import juice from 'juice';
+import { nanoid } from 'nanoid';
 import { Inject, Injectable } from '@nestjs/common';
 import { validate as validateEmail } from 'deep-email-validator';
 import { UtilityService } from '@/core/UtilityService.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import type Logger from '@/logger.js';
-import type { MiMeta, UserProfilesRepository } from '@/models/_.js';
+import type { MiMeta, MiUserProfile, UserProfilesRepository } from '@/models/_.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { bindThis } from '@/decorators.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 
@@ -34,12 +36,13 @@ export class EmailService {
 		private loggerService: LoggerService,
 		private utilityService: UtilityService,
 		private httpRequestService: HttpRequestService,
+		private cacheService: CacheService,
 	) {
 		this.logger = this.loggerService.getLogger('email');
 	}
 
 	@bindThis
-	public async sendEmail(to: string, subject: string, html: string, text: string) {
+	public async sendEmail(to: string, subject: string, html: string, text: string, opts?: { announcementFor?: MiUserProfile } | undefined) {
 		if (!this.meta.enableEmail) return;
 
 		const iconUrl = `${this.config.url}/static-assets/mi-white.png`;
@@ -142,6 +145,19 @@ export class EmailService {
 
 		const inlinedHtml = juice(htmlContent);
 
+		const headers: any = {};
+		if (opts && opts.announcementFor) {
+			const { userId } = opts.announcementFor;
+			let { oneClickUnsubscribeToken } = opts.announcementFor;
+			if (!oneClickUnsubscribeToken) {
+				oneClickUnsubscribeToken = nanoid();
+				await this.userProfilesRepository.update({ userId }, { oneClickUnsubscribeToken });
+				await this.cacheService.userProfileCache.delete(userId);
+			}
+			headers['List-Unsubscribe'] = `<${this.config.apiUrl}/unsubscribe/${userId}/${oneClickUnsubscribeToken}>`;
+			headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+		}
+
 		try {
 			// TODO: htmlサニタイズ
 			const info = await transporter.sendMail({
@@ -150,6 +166,7 @@ export class EmailService {
 				subject: subject,
 				text: text,
 				html: inlinedHtml,
+				headers: headers,
 			});
 
 			this.logger.info(`Message sent: ${info.messageId}`);

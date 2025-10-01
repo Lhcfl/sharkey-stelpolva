@@ -377,6 +377,12 @@ export function connectStream<C extends keyof misskey.Channels>(user: UserToken,
 		const ws = new WebSocket(url, options);
 
 		ws.on('unexpected-response', (req, res) => rej(res));
+		ws.on('close', (code, reason) => {
+			rej({
+				statusCode: code,
+				reason: reason.toString('utf8'),
+			});
+		});
 		ws.on('open', () => {
 			ws.on('message', data => {
 				const msg = JSON.parse(data.toString());

@@ -25,6 +25,7 @@ Attempts to avoid displaying the same preview twice, even if multiple URLs point
 		:showAsQuote="showAsQuote"
 		:showActions="showActions"
 		:skipNoteIds="skipNoteIds"
+		@expandMute="n => onExpandNote(n)"
 	></MkUrlPreview>
 </template>
 </template>
@@ -42,6 +43,8 @@ import { $i } from '@/i';
 import { misskeyApi } from '@/utility/misskey-api';
 import MkUrlPreview from '@/components/MkUrlPreview.vue';
 import { getNoteUrls } from '@/utility/getNoteUrls';
+import { deepAssign } from '@/utility/merge';
+import { useMuteOverrides } from '@/utility/check-word-mute';
 
 type Summary = SummalyResult & {
 	note?: Misskey.entities.Note | null;
@@ -73,6 +76,32 @@ const props = withDefaults(defineProps<{
 	showActions: undefined,
 	skipNoteIds: () => [],
 });
+
+const emit = defineEmits<{
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
+}>();
+
+const muteOverrides = useMuteOverrides();
+
+function onExpandNote(note: Misskey.entities.Note) {
+	// Expand related mutes within this preview group
+	deepAssign(muteOverrides, {
+		user: {
+			[note.user.id]: {
+				userMandatoryCW: null,
+				userSilenced: false,
+			},
+		},
+		instance: {
+			[note.user.host ?? '']: {
+				instanceMandatoryCW: null,
+				instanceSilenced: false,
+			},
+		},
+	});
+
+	emit('expandMute', note);
+}
 
 const urlPreviews = ref<Summary[]>([]);
 

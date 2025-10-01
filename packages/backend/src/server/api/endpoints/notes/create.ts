@@ -18,6 +18,7 @@ import { NoteCreateService } from '@/core/NoteCreateService.js';
 import { DI } from '@/di-symbols.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -261,6 +262,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private noteEntityService: NoteEntityService,
 		private noteCreateService: NoteCreateService,
+		private readonly noteVisibilityService: NoteVisibilityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.text && ps.text.length > this.config.maxNoteLength) {
@@ -303,7 +305,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					throw new ApiError(meta.errors.noSuchRenoteTarget);
 				} else if (isRenote(renote) && !isQuote(renote)) {
 					throw new ApiError(meta.errors.cannotReRenote);
-				} else if (!await this.noteEntityService.isVisibleForMe(renote, me.id)) {
+				} else if (!(await this.noteVisibilityService.checkNoteVisibilityAsync(renote, me)).accessible) {
 					throw new ApiError(meta.errors.cannotRenoteDueToVisibility);
 				}
 
@@ -351,7 +353,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					throw new ApiError(meta.errors.noSuchReplyTarget);
 				} else if (isRenote(reply) && !isQuote(reply)) {
 					throw new ApiError(meta.errors.cannotReplyToPureRenote);
-				} else if (!await this.noteEntityService.isVisibleForMe(reply, me.id, { me })) {
+				} else if (!(await this.noteVisibilityService.checkNoteVisibilityAsync(reply, me)).accessible) {
 					throw new ApiError(meta.errors.cannotReplyToInvisibleNote);
 				} else if (reply.visibility === 'specified' && ps.visibility !== 'specified') {
 					throw new ApiError(meta.errors.cannotReplyToSpecifiedVisibilityNoteWithExtendedVisibility);

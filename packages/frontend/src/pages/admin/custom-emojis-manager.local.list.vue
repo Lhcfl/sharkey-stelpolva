@@ -90,6 +90,8 @@ import MkPagingButtons from '@/components/MkPagingButtons.vue';
 import { selectFile } from '@/utility/select-file.js';
 import { copyGridDataToClipboard, removeDataFromGrid } from '@/components/grid/grid-utils.js';
 import { useLoading } from '@/components/hook/useLoading.js';
+import { retryOnThrottled } from '@@/js/retry-on-throttled';
+import promiseLimit from "promise-limit";
 
 type GridItem = {
 	checked: boolean;
@@ -326,28 +328,39 @@ async function onUpdateButtonClicked() {
 		return;
 	}
 
-	const action = () => {
-		return updatedItems.map(item =>
-			misskeyApi(
-				'admin/emoji/update',
-				{
-					// eslint-disable-next-line
-					id: item.id!,
-					name: item.name,
-					category: emptyStrToNull(item.category),
-					aliases: emptyStrToEmptyArray(item.aliases),
-					license: emptyStrToNull(item.license),
-					isSensitive: item.isSensitive,
-					localOnly: item.localOnly,
-					roleIdsThatCanBeUsedThisEmojiAsReaction: item.roleIdsThatCanBeUsedThisEmojiAsReaction.map(it => it.id),
-					fileId: item.fileId,
-				})
-				.then(() => ({ item, success: true, err: undefined }))
-				.catch(err => ({ item, success: false, err })),
-		);
+	const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms));
+
+	type ApiResponse = {
+		item: any;
+		success: boolean;
+		err?: unknown;
 	};
 
-	const result = await os.promiseDialog(Promise.all(action()));
+	const execute = async (item: any): Promise<ApiResponse> => {
+		try {
+			await retryOnThrottled(() => misskeyApi('admin/emoji/update', {
+				id: item.id,
+				name: item.name,
+				category: emptyStrToNull(item.category),
+				aliases: emptyStrToEmptyArray(item.aliases),
+				license: emptyStrToNull(item.license),
+				isSensitive: item.isSensitive,
+				localOnly: item.localOnly,
+				roleIdsThatCanBeUsedThisEmojiAsReaction: item.roleIdsThatCanBeUsedThisEmojiAsReaction.map((it: any) => it.id),
+				fileId: item.fileId,
+			}));
+			return { item, success: true };
+		} catch (error) {
+			return { item, success: false, err: error };
+		}
+	};
+
+	const action = async (): Promise<ApiResponse[]> => {
+		const limit = promiseLimit<ApiResponse>(2);
+		return await Promise.all(updatedItems.map(async it => limit(() => execute(it))));
+	};
+
+	const result = await os.promiseDialog(action());
 	const failedItems = result.filter(it => !it.success);
 
 	if (failedItems.length > 0) {

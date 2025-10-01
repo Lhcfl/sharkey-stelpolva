@@ -27,6 +27,7 @@ async function launch() {
 	app = await NestFactory.createApplicationContext(MainModule, {
 		logger: new NestLogger(),
 	});
+	app.enableShutdownHooks();
 	serverService = app.get(ServerService);
 	await serverService.launch();
 
@@ -86,6 +87,7 @@ async function startControllerEndpoints(port = config.port + 1000) {
 		app = await NestFactory.createApplicationContext(MainModule, {
 			logger: new NestLogger(),
 		});
+		app.enableShutdownHooks();
 		serverService = app.get(ServerService);
 		await serverService.launch();
 

@@ -100,8 +100,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}
 			}
 
-			const userIdsWhoMeMuting = me ? await this.cacheService.userMutingsCache.fetch(me.id) : new Set<string>();
-
 			const query = this.queryService.makePaginationQuery(this.noteReactionsRepository.createQueryBuilder('reaction'),
 				ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('reaction.userId = :userId', { userId: ps.userId })
@@ -115,21 +113,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			this.queryService.generateVisibilityQuery(query, me);
 			this.queryService.generateBlockedHostQueryForNote(query);
 			this.queryService.generateSuspendedUserQueryForNote(query);
+			this.queryService.generateSilencedUserQueryForNotes(query, me, true);
 			if (me) {
-				this.queryService.generateMutedUserQueryForNotes(query, me);
+				this.queryService.generateMutedUserQueryForNotes(query, me, true);
 				this.queryService.generateBlockedUserQueryForNotes(query, me);
 				this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
 			}
 
-			const reactions = (await query
-				.limit(ps.limit)
-				.getMany()).filter(reaction => {
-				if (reaction.note?.userId === ps.userId) return true; // we can see reactions to note of requesting user
-				if (me && isUserRelated(reaction.note, userIdsWhoBlockingMe)) return false;
-				if (me && isUserRelated(reaction.note, userIdsWhoMeMuting)) return false;
-
-				return true;
-			});
+			const reactions = await query.limit(ps.limit).getMany();
 
 			return await this.noteReactionEntityService.packMany(reactions, me, { withNote: true });
 		});

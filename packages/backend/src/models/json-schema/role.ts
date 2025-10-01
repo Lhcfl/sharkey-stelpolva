@@ -313,6 +313,10 @@ export const packedRolePoliciesSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		canViewFederation: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 	},
 } as const;
 

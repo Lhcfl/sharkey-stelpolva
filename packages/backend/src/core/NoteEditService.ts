@@ -118,7 +118,7 @@ type MinimumUser = {
 	uri: MiUser['uri'];
 };
 
-type Option = {
+export type Option = {
 	createdAt?: Date | null;
 	name?: string | null;
 	text?: string | null;
@@ -141,6 +141,7 @@ type Option = {
 	updatedAt?: Date | null;
 	editcount?: boolean | null;
 	processErrors?: string[] | null;
+	mandatoryCW?: string | null;
 };
 
 @Injectable()
@@ -224,13 +225,7 @@ export class NoteEditService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async edit(user: MiUser & {
-		id: MiUser['id'];
-		username: MiUser['username'];
-		host: MiUser['host'];
-		isBot: MiUser['isBot'];
-		noindex: MiUser['noindex'];
-	}, editid: MiNote['id'], data: Option, silent = false): Promise<MiNote> {
+	public async edit(user: MiUser, editid: MiNote['id'], data: Option, silent = false): Promise<MiNote> {
 		if (!editid) {
 			throw new UnrecoverableError('edit failed: missing editid');
 		}
@@ -379,8 +374,6 @@ export class NoteEditService implements OnApplicationShutdown {
 			if (data.text === '') {
 				data.text = null;
 			}
-		} else {
-			data.text = null;
 		}
 
 		const maxCwLength = user.host == null
@@ -395,8 +388,6 @@ export class NoteEditService implements OnApplicationShutdown {
 			if (data.cw === '') {
 				data.cw = null;
 			}
-		} else {
-			data.cw = null;
 		}
 
 		let tags = data.apHashtags;
@@ -443,27 +434,22 @@ export class NoteEditService implements OnApplicationShutdown {
 			}
 		}
 
-		if (user.host && !data.cw) {
-			await this.federatedInstanceService.fetchOrRegister(user.host).then(async i => {
-				if (i.isNSFW && !this.noteCreateService.isPureRenote(data)) {
-					data.cw = 'Instance is marked as NSFW';
-				}
-			});
-		}
-
 		if (mentionedUsers.length > 0 && mentionedUsers.length > (await this.roleService.getUserPolicies(user.id)).mentionLimit) {
 			throw new IdentifiableError('9f466dab-c856-48cd-9e65-ff90ff750580', 'Note contains too many mentions');
 		}
 
 		const update: Partial<MiNote> = {};
-		if (data.text !== oldnote.text) {
+		if (data.text !== undefined && data.text !== oldnote.text) {
 			update.text = data.text;
 		}
-		if (data.cw !== oldnote.cw) {
+		if (data.cw !== undefined && data.cw !== oldnote.cw) {
 			update.cw = data.cw;
 		}
-		if (oldnote.hasPoll !== !!data.poll) {
+		if (data.poll !== undefined && oldnote.hasPoll !== !!data.poll) {
 			update.hasPoll = !!data.poll;
+		}
+		if (data.mandatoryCW !== undefined && oldnote.mandatoryCW !== data.mandatoryCW) {
+			update.mandatoryCW = data.mandatoryCW;
 		}
 
 		// TODO deep-compare files
@@ -526,6 +512,7 @@ export class NoteEditService implements OnApplicationShutdown {
 				renoteUserHost: data.renote ? data.renote.userHost : null,
 				userHost: user.host,
 				reactionAndUserPairCache: oldnote.reactionAndUserPairCache,
+				mandatoryCW: data.mandatoryCW,
 			});
 
 			if (data.uri != null) note.uri = data.uri;

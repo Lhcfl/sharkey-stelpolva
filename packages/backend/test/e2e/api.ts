@@ -236,9 +236,9 @@ describe('API', () => {
 					},
 					'homeTimeline',
 					() => { },
-				), (err: IncomingMessage) => {
-					assert.strictEqual(err.statusCode, 401);
-					assert.ok(err.headers['www-authenticate']?.startsWith('Bearer realm="Misskey", error="invalid_token", error_description'));
+				), (err: { statusCode: string, reason: string }) => {
+					assert.strictEqual(err.statusCode, 4000);
+					assert.ok(err.reason?.startsWith('Failed to authenticate'));
 					return true;
 				});
 			});

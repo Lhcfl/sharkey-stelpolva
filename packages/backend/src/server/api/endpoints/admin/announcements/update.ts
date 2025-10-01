@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AnnouncementsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -22,6 +23,11 @@ export const meta = {
 			message: 'No such announcement.',
 			code: 'NO_SUCH_ANNOUNCEMENT',
 			id: 'd3aae5a7-6372-4cb4-b61c-f511ffc2d7cc',
+		},
+		dialogLimitExceeded: {
+			message: 'Cannot create the announcement because there are too many active dialog-style announcements.',
+			code: 'DIALOG_LIMIT_EXCEEDED',
+			id: '1a5db7ca-6d3f-44bc-ac51-05cae93b643c',
 		},
 	},
 } as const;
@@ -58,21 +64,28 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (announcement == null) throw new ApiError(meta.errors.noSuchAnnouncement);
 
-			await this.announcementService.update(announcement, {
-				updatedAt: new Date(),
-				title: ps.title,
-				text: ps.text,
-				/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- 空の文字列の場合、nullを渡すようにするため */
-				imageUrl: ps.imageUrl || null,
-				display: ps.display,
-				icon: ps.icon,
-				forExistingUsers: ps.forExistingUsers,
-				forRoles: ps.forRoles,
-				silence: ps.silence,
-				needConfirmationToRead: ps.needConfirmationToRead,
-				confetti: ps.confetti,
-				isActive: ps.isActive,
-			}, me);
+			try {
+				await this.announcementService.update(announcement, {
+					updatedAt: new Date(),
+					title: ps.title,
+					text: ps.text,
+					/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- 空の文字列の場合、nullを渡すようにするため */
+					imageUrl: ps.imageUrl || null,
+					display: ps.display,
+					icon: ps.icon,
+					forExistingUsers: ps.forExistingUsers,
+					forRoles: ps.forRoles,
+					silence: ps.silence,
+					needConfirmationToRead: ps.needConfirmationToRead,
+					confetti: ps.confetti,
+					isActive: ps.isActive,
+				}, me);
+			} catch (e) {
+				if (e instanceof IdentifiableError) {
+					if (e.id === 'c0d15f15-f18e-4a40-bcb1-f310d58204ee') throw new ApiError(meta.errors.dialogLimitExceeded);
+				}
+				throw e;
+			}
 		});
 	}
 }

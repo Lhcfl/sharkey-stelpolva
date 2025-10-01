@@ -6,50 +6,62 @@ Simple view of a note in the Sharkey style. Used in quote renotes, link previews
 -->
 
 <template>
-<div :class="$style.root">
+<SkMutedNote :note="note" :skipMute="skipMute" :class="$style.root" @expandMute="n => emit('expandMute', n)">
 	<MkAvatar :class="$style.avatar" :user="note.user" link preview/>
 	<div :class="$style.main">
 		<MkNoteHeader :class="$style.header" :classic="true" :note="note" :mini="true"/>
 		<div>
-			<p v-if="mergedCW != null" :class="$style.cw">
-				<Mfm v-if="mergedCW != ''" style="margin-right: 8px;" :text="mergedCW" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis" @click.stop="prefer.s.clickToOpen ? noteclick(note.id) : undefined"/>
+			<p v-if="props.note.cw != null" :class="$style.cw">
+				<Mfm v-if="props.note.cw != ''" style="margin-right: 8px;" :text="props.note.cw" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis" @click.stop="prefer.s.clickToOpen ? noteclick(note.id) : undefined"/>
 				<MkCwButton v-model="showContent" :text="note.text" :files="note.files" :poll="note.poll" @click.stop/>
 			</p>
-			<div v-show="mergedCW == null || showContent">
+			<div v-show="props.note.cw == null || showContent">
 				<MkSubNoteContent :hideFiles="hideFiles" :class="$style.text" :note="note" :expandAllCws="props.expandAllCws"/>
 			</div>
 		</div>
 	</div>
-</div>
+</SkMutedNote>
 </template>
 
 <script lang="ts" setup>
-import { watch, ref, computed } from 'vue';
+import { watch, ref } from 'vue';
 import * as Misskey from 'misskey-js';
-import { computeMergedCw } from '@@/js/compute-merged-cw.js';
 import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
 import { useRouter } from '@/router';
 import { prefer } from '@/preferences.js';
-import { state } from 'happy-dom/lib/PropertySymbol.js';
+import { setupNoteViewInterruptors } from '@/plugin.js';
+import { deepClone } from '@/utility/clone.js';
+import SkMutedNote from '@/components/SkMutedNote.vue';
 
 const props = defineProps<{
-	note: Misskey.entities.Note;
+	note: Misskey.entities.Note & {
+		isSchedule?: boolean,
+		scheduledNoteId?: string
+	};
 	expandAllCws?: boolean;
+	skipMute?: boolean;
 	hideFiles?: boolean;
+}>();
+
+const emit = defineEmits<{
+	(ev: 'editScheduleNote'): void;
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
 }>();
 
 let showContent = ref(prefer.s.uncollapseCW);
 
-const mergedCW = computed(() => computeMergedCw(props.note));
+const note = ref(deepClone(props.note));
+
+setupNoteViewInterruptors(note, null);
 
 watch(() => props.expandAllCws, (expandAllCws) => {
 	if (expandAllCws !== showContent.value) showContent.value = expandAllCws;
 });
 
 function noteclick(id: string) {
-	const selection = document.getSelection();
+	const selection = window.document.getSelection();
 	if (selection?.toString().length === 0) {
 		useRouter().push(`/notes/${id}`);
 	}

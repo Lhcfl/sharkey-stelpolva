@@ -491,7 +491,7 @@ async function refreshUser() {
 
 async function onMandatoryCWChanged(value: string | number) {
 	await os.promiseDialog(async () => {
-		await misskeyApi('admin/cw-user', { userId: props.userId, cw: String(value) });
+		await misskeyApi('admin/cw-user', { userId: props.userId, cw: String(value) || null });
 		await refreshUser();
 	});
 }

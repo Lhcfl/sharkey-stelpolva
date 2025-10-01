@@ -15,6 +15,7 @@ import { DI } from '@/di-symbols.js';
 import { CacheService } from '@/core/CacheService.js';
 import { hasText } from '@/models/Note.js';
 import { ApiLoggerService } from '@/server/api/ApiLoggerService.js';
+import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -84,6 +85,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 		private readonly cacheService: CacheService,
 		private readonly loggerService: ApiLoggerService,
+		private readonly noteVisibilityService: NoteVisibilityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {
@@ -91,7 +93,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw err;
 			});
 
-			if (!(await this.noteEntityService.isVisibleForMe(note, me?.id ?? null, { me }))) {
+			const { accessible } = await this.noteVisibilityService.checkNoteVisibilityAsync(note, me);
+			if (!accessible) {
 				throw new ApiError(meta.errors.cannotTranslateInvisibleNote);
 			}
 
