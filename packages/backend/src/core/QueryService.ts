@@ -129,7 +129,7 @@ export class QueryService {
 	// 无论如何都允许查看自己的帖子
 	@bindThis
 	public generateLooseBlockedUserQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me: { id: MiUser['id'] }): SelectQueryBuilder<E> {
-		return q
+		return q.andWhere(new Brackets(qb => qb
 			.orWhere('note.userId = :meId')
 			.orWhere(
 				new Brackets(qb => this
@@ -139,7 +139,7 @@ export class QueryService {
 						.orWhere('note.replyUserId IS NULL')))
 					.andWhere(new Brackets(qb => this
 						.orNotBlockingUser(qb, 'note.renoteUserId', ':meId')
-						.orWhere('note.renoteUserId IS NULL')))))
+						.orWhere('note.renoteUserId IS NULL')))))))
 			.setParameters({ meId: me.id });
 	}
 
