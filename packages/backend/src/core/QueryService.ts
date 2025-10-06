@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { Brackets, Not, WhereExpressionBuilder } from 'typeorm';
+import { Brackets, Not, QueryBuilder, WhereExpressionBuilder } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MiUser } from '@/models/User.js';
 import type { UserProfilesRepository, FollowingsRepository, ChannelFollowingsRepository, BlockingsRepository, NoteThreadMutingsRepository, MutingsRepository, RenoteMutingsRepository, MiMeta, InstancesRepository } from '@/models/_.js';
@@ -123,6 +123,23 @@ export class QueryService {
 			.andWhere(new Brackets(qb => this
 				.orNotBlockingUser(qb, 'note.renoteUserId', ':meId')
 				.orWhere('note.renoteUserId IS NULL')))
+			.setParameters({ meId: me.id });
+	}
+
+	// 无论如何都允许查看自己的帖子
+	@bindThis
+	public generateLooseBlockedUserQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me: { id: MiUser['id'] }): SelectQueryBuilder<E> {
+		return q
+			.orWhere('note.userId = :meId')
+			.orWhere(
+				new Brackets(qb => this
+					.andNotBlockingUser(qb, 'note.userId', ':meId')
+					.andWhere(new Brackets(qb => this
+						.orNotBlockingUser(qb, 'note.replyUserId', ':meId')
+						.orWhere('note.replyUserId IS NULL')))
+					.andWhere(new Brackets(qb => this
+						.orNotBlockingUser(qb, 'note.renoteUserId', ':meId')
+						.orWhere('note.renoteUserId IS NULL')))))
 			.setParameters({ meId: me.id });
 	}
 
