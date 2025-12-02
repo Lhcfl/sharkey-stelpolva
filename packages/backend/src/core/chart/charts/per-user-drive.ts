@@ -8,6 +8,7 @@ import { DataSource } from 'typeorm';
 import type { DriveFilesRepository } from '@/models/_.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import { AppLockService } from '@/core/AppLockService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import { bindThis } from '@/decorators.js';
@@ -31,8 +32,13 @@ export default class PerUserDriveChart extends Chart<typeof schema> { // eslint-
 		private appLockService: AppLockService,
 		private driveFileEntityService: DriveFileEntityService,
 		private chartLoggerService: ChartLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		super(db, (k) => appLockService.getChartInsertLock(k), chartLoggerService.logger, name, schema, true);
+	}
+
+	protected getCurrentDate(): Date {
+		return this.timeService.date;
 	}
 
 	protected async tickMajor(group: string): Promise<Partial<KVs<typeof schema>>> {
@@ -52,9 +58,9 @@ export default class PerUserDriveChart extends Chart<typeof schema> { // eslint-
 	}
 
 	@bindThis
-	public async update(file: MiDriveFile, isAdditional: boolean): Promise<void> {
+	public update(file: MiDriveFile, isAdditional: boolean): void {
 		const fileSizeKb = file.size / 1000;
-		await this.commit({
+		this.commit({
 			'totalCount': isAdditional ? 1 : -1,
 			'totalSize': isAdditional ? fileSizeKb : -fileSizeKb,
 			'incCount': isAdditional ? 1 : 0,

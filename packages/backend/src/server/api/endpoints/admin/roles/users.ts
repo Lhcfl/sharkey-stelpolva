@@ -11,6 +11,7 @@ import { QueryService } from '@/core/QueryService.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -71,6 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 		private userEntityService: UserEntityService,
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const role = await this.rolesRepository.findOneBy({
@@ -86,7 +88,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.andWhere(new Brackets(qb => {
 					qb
 						.where('assign.expiresAt IS NULL')
-						.orWhere('assign.expiresAt > :now', { now: new Date() });
+						.orWhere('assign.expiresAt > :now', { now: this.timeService.date });
 				}))
 				.innerJoinAndSelect('assign.user', 'user');
 

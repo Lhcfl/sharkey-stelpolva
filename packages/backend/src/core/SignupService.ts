@@ -23,6 +23,7 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { UserService } from '@/core/UserService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
 import { MetaService } from '@/core/MetaService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class SignupService {
@@ -46,6 +47,7 @@ export class SignupService {
 		private systemAccountService: SystemAccountService,
 		private metaService: MetaService,
 		private usersChart: UsersChart,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -150,7 +152,7 @@ export class SignupService {
 			}));
 
 			await transactionalEntityManager.save(new MiUsedUsername({
-				createdAt: new Date(),
+				createdAt: this.timeService.date,
 				username: username.toLowerCase(),
 			}));
 		});

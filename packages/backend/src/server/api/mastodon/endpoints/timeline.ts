@@ -6,6 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { MastodonClientService } from '@/server/api/mastodon/MastodonClientService.js';
 import { attachMinMaxPagination } from '@/server/api/mastodon/pagination.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import { convertList, MastodonConverters } from '../MastodonConverters.js';
 import { parseTimelineArgs, TimelineArgs, toBoolean } from '../argsUtils.js';
 import type { Entity } from 'megalodon';
@@ -25,7 +26,7 @@ export class ApiTimelineMastodon {
 			const data = toBoolean(request.query.local)
 				? await client.getLocalTimeline(query)
 				: await client.getPublicTimeline(query);
-			const response = await Promise.all(data.data.map((status: Entity.Status) => this.mastoConverters.convertStatus(status, me)));
+			const response = await promiseMap(data.data, async (status: Entity.Status) => await this.mastoConverters.convertStatus(status, me), { limit: 4 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);
@@ -35,7 +36,7 @@ export class ApiTimelineMastodon {
 			const { client, me } = await this.clientService.getAuthClient(request);
 			const query = parseTimelineArgs(request.query);
 			const data = await client.getHomeTimeline(query);
-			const response = await Promise.all(data.data.map((status: Entity.Status) => this.mastoConverters.convertStatus(status, me)));
+			const response = await promiseMap(data.data, async (status: Entity.Status) => await this.mastoConverters.convertStatus(status, me), { limit: 4 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);
@@ -47,7 +48,7 @@ export class ApiTimelineMastodon {
 			const { client, me } = await this.clientService.getAuthClient(request);
 			const query = parseTimelineArgs(request.query);
 			const data = await client.getTagTimeline(request.params.hashtag, query);
-			const response = await Promise.all(data.data.map((status: Entity.Status) => this.mastoConverters.convertStatus(status, me)));
+			const response = await promiseMap(data.data, async (status: Entity.Status) => await this.mastoConverters.convertStatus(status, me), { limit: 4 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);
@@ -59,7 +60,7 @@ export class ApiTimelineMastodon {
 			const { client, me } = await this.clientService.getAuthClient(request);
 			const query = parseTimelineArgs(request.query);
 			const data = await client.getListTimeline(request.params.id, query);
-			const response = await Promise.all(data.data.map(async (status: Entity.Status) => await this.mastoConverters.convertStatus(status, me)));
+			const response = await promiseMap(data.data, async (status: Entity.Status) => await this.mastoConverters.convertStatus(status, me), { limit: 4 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);
@@ -69,7 +70,7 @@ export class ApiTimelineMastodon {
 			const { client, me } = await this.clientService.getAuthClient(request);
 			const query = parseTimelineArgs(request.query);
 			const data = await client.getConversationTimeline(query);
-			const response = await Promise.all(data.data.map((conversation: Entity.Conversation) => this.mastoConverters.convertConversation(conversation, me)));
+			const response = await promiseMap(data.data, async (conversation: Entity.Conversation) => await this.mastoConverters.convertConversation(conversation, me), { limit: 4 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);
@@ -99,7 +100,7 @@ export class ApiTimelineMastodon {
 
 			const client = this.clientService.getClient(request);
 			const data = await client.getAccountsInList(request.params.id, parseTimelineArgs(request.query));
-			const response = await Promise.all(data.data.map((account: Entity.Account) => this.mastoConverters.convertAccount(account)));
+			const response = await promiseMap(data.data, async (account: Entity.Account) => await this.mastoConverters.convertAccount(account), { limit: 4 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);

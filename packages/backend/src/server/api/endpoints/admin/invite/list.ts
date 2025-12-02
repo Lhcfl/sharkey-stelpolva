@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { RegistrationTicketsRepository } from '@/models/_.js';
 import { InviteCodeEntityService } from '@/core/entities/InviteCodeEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -45,6 +46,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private registrationTicketsRepository: RegistrationTicketsRepository,
 
 		private inviteCodeEntityService: InviteCodeEntityService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.registrationTicketsRepository.createQueryBuilder('ticket')
@@ -54,7 +56,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			switch (ps.type) {
 				case 'unused': query.andWhere('ticket.usedBy IS NULL'); break;
 				case 'used': query.andWhere('ticket.usedBy IS NOT NULL'); break;
-				case 'expired': query.andWhere('ticket.expiresAt < :now', { now: new Date() }); break;
+				case 'expired': query.andWhere('ticket.expiresAt < :now', { now: this.timeService.date }); break;
 			}
 
 			switch (ps.sort) {

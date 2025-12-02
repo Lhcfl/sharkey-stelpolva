@@ -9,6 +9,7 @@ import type { UserListsRepository, UserListMembershipsRepository, BlockingsRepos
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { UserListService } from '@/core/UserListService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../../error.js';
 
@@ -84,43 +85,30 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private getterService: GetterService,
 		private userListService: UserListService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			// Fetch the list
-			const userList = await this.userListsRepository.findOneBy({
-				id: ps.listId,
-				userId: me.id,
-			});
+			const [user, blockings, userList, exist] = await Promise.all([
+				this.cacheService.findOptionalUserById(ps.userId),
+				this.cacheService.userBlockingCache.fetch(ps.userId),
+				this.userListService.userListsCache.fetchMaybe(ps.listId),
+				this.cacheService.listUserMembershipsCache.fetch(ps.listId).then(ms => ms.has(ps.userId)),
+			]);
 
-			if (userList == null) {
+			if (userList == null || userList.userId !== me.id) {
 				throw new ApiError(meta.errors.noSuchList);
 			}
 
-			// Fetch the user
-			const user = await this.getterService.getUser(ps.userId).catch(err => {
-				if (err.id === '15348ddd-432d-49c2-8a5a-8069753becff') throw new ApiError(meta.errors.noSuchUser);
-				throw err;
-			});
+			if (!user) {
+				throw new ApiError(meta.errors.noSuchUser);
+			}
 
-			// Check blocking
 			if (user.id !== me.id) {
-				const blockExist = await this.blockingsRepository.exists({
-					where: {
-						blockerId: user.id,
-						blockeeId: me.id,
-					},
-				});
+				const blockExist = blockings.has(me.id);
 				if (blockExist) {
 					throw new ApiError(meta.errors.youHaveBeenBlocked);
 				}
 			}
-
-			const exist = await this.userListMembershipsRepository.exists({
-				where: {
-					userListId: userList.id,
-					userId: user.id,
-				},
-			});
 
 			if (exist) {
 				throw new ApiError(meta.errors.alreadyAdded);

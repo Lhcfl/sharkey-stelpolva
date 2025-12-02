@@ -50,7 +50,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private followingEntityService: FollowingEntityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			return this.followingEntityService.getFollowers(me, ps);
+			return await this.followingEntityService.getFollowers(me, ps);
 		});
 	}
 }

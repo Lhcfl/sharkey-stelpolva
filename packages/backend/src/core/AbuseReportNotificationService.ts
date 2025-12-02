@@ -23,6 +23,7 @@ import { RecipientMethod } from '@/models/AbuseReportNotificationRecipient.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { IdService } from './IdService.js';
 
 @Injectable()
@@ -44,6 +45,7 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
 		private userEntityService: UserEntityService,
+		private readonly timeService: TimeService,
 	) {
 		this.redisForSub.on('message', this.onMessage);
 	}
@@ -326,7 +328,7 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 
 		await this.abuseReportNotificationRecipientRepository.update(params.id, {
 			isActive: params.isActive,
-			updatedAt: new Date(),
+			updatedAt: this.timeService.date,
 			name: params.name,
 			method: params.method,
 			userId: params.userId,

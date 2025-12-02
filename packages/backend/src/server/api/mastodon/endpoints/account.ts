@@ -12,6 +12,7 @@ import type { AccessTokensRepository, UserProfilesRepository } from '@/models/_.
 import { attachMinMaxPagination } from '@/server/api/mastodon/pagination.js';
 import { MastodonConverters, convertRelationship, convertFeaturedTag, convertList } from '../MastodonConverters.js';
 import type { FastifyInstance } from 'fastify';
+import { promiseMap } from '@/misc/promise-map.js';
 
 interface ApiAccountMastodonRoute {
 	Params: { id?: string },
@@ -188,7 +189,7 @@ export class ApiAccountMastodon {
 			const { client, me } = await this.clientService.getAuthClient(request);
 			const args = parseTimelineArgs(request.query);
 			const data = await client.getAccountStatuses(request.params.id, args);
-			const response = await Promise.all(data.data.map(async (status) => await this.mastoConverters.convertStatus(status, me)));
+			const response = await promiseMap(data.data, async status => await this.mastoConverters.convertStatus(status, me), { limit: 2 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);
@@ -212,7 +213,7 @@ export class ApiAccountMastodon {
 				request.params.id,
 				parseTimelineArgs(request.query),
 			);
-			const response = await Promise.all(data.data.map(async (account) => await this.mastoConverters.convertAccount(account)));
+			const response = await promiseMap(data.data, async account => await this.mastoConverters.convertAccount(account), { limit: 2 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);
@@ -226,7 +227,7 @@ export class ApiAccountMastodon {
 				request.params.id,
 				parseTimelineArgs(request.query),
 			);
-			const response = await Promise.all(data.data.map(async (account) => await this.mastoConverters.convertAccount(account)));
+			const response = await promiseMap(data.data, async account => await this.mastoConverters.convertAccount(account), { limit: 2 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);

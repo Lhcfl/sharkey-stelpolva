@@ -9,6 +9,7 @@ import type { UserProfilesRepository, PasswordResetRequestsRepository } from '@/
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	tags: ['reset password'],
@@ -47,6 +48,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userProfilesRepository: UserProfilesRepository,
 
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const req = await this.passwordResetRequestsRepository.findOneByOrFail({
@@ -54,7 +56,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			// 発行してから30分以上経過していたら無効
-			if (Date.now() - this.idService.parse(req.id).date.getTime() > 1000 * 60 * 30) {
+			if (this.timeService.now - this.idService.parse(req.id).date.getTime() > 1000 * 60 * 30) {
 				throw new Error(); // TODO
 			}
 
@@ -65,7 +67,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				password: hash,
 			});
 
-			this.passwordResetRequestsRepository.delete(req.id);
+			await this.passwordResetRequestsRepository.delete(req.id);
 		});
 	}
 }

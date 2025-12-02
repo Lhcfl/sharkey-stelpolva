@@ -8,8 +8,8 @@
 window.onload = async () => {
 	const content = document.getElementById('content');
 
-	document.getElementById('ls').addEventListener('click', () => {
-		content.innerHTML = '';
+	document.getElementById('ls')?.addEventListener('click', () => {
+		if (content) content.innerHTML = '';
 
 		const lsEditor = document.createElement('div');
 		lsEditor.id = 'lsEditor';
@@ -31,7 +31,7 @@ window.onload = async () => {
 		lsEditor.appendChild(adder);
 
 		for (let i = 0; i < localStorage.length; i++) {
-			const k = localStorage.key(i);
+			const k = /** @type {string} */ (localStorage.key(i));
 			const record = document.createElement('div');
 			record.classList.add('record');
 			const header = document.createElement('header');
@@ -57,6 +57,6 @@ window.onload = async () => {
 			lsEditor.appendChild(record);
 		}
 
-		content.appendChild(lsEditor);
+		content?.appendChild(lsEditor);
 	});
 };

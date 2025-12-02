@@ -1,18 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Not } from 'typeorm';
-import { MiNote } from '@/models/Note.js';
-import { isPureRenote } from '@/misc/is-renote.js';
+import { isPureRenote, MinimalNote } from '@/misc/is-renote.js';
 import { SkLatestNote } from '@/models/LatestNote.js';
 import { DI } from '@/di-symbols.js';
-import type { LatestNotesRepository, NotesRepository } from '@/models/_.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import Logger from '@/logger.js';
-import { QueryService } from './QueryService.js';
+import type { LatestNotesRepository, MiNote, NotesRepository } from '@/models/_.js';
+import { QueryService } from '@/core/QueryService.js';
+import { QueueService } from '@/core/QueueService.js';
 
 @Injectable()
 export class LatestNoteService {
-	private readonly logger: Logger;
-
 	constructor(
 		@Inject(DI.notesRepository)
 		private readonly notesRepository: NotesRepository,
@@ -21,19 +17,23 @@ export class LatestNoteService {
 		private readonly latestNotesRepository: LatestNotesRepository,
 
 		private readonly queryService: QueryService,
-		loggerService: LoggerService,
-	) {
-		this.logger = loggerService.getLogger('LatestNoteService');
+		private readonly queueService: QueueService,
+	) {}
+
+	async handleUpdatedNoteDeferred(note: MiNote): Promise<void> {
+		await this.queueService.createUpdateLatestNoteJob(note);
 	}
 
-	handleUpdatedNoteBG(before: MiNote, after: MiNote): void {
-		this
-			.handleUpdatedNote(before, after)
-			.catch(err => this.logger.error('Unhandled exception while updating latest_note (after update):', err));
+	async handleCreatedNoteDeferred(note: MiNote): Promise<void> {
+		await this.queueService.createUpdateLatestNoteJob(note);
 	}
 
-	async handleUpdatedNote(before: MiNote, after: MiNote): Promise<void> {
-		// If the key didn't change, then there's nothing to update
+	async handleDeletedNoteDeferred(note: MiNote): Promise<void> {
+		await this.queueService.createUpdateLatestNoteJob(note);
+	}
+
+	async handleUpdatedNote(before: MinimalNote, after: MinimalNote): Promise<void> {
+		// If the key didn't change, then there's nothing to update.
 		if (SkLatestNote.areEquivalent(before, after)) return;
 
 		// Simulate update as delete + create
@@ -41,13 +41,7 @@ export class LatestNoteService {
 		await this.handleCreatedNote(after);
 	}
 
-	handleCreatedNoteBG(note: MiNote): void {
-		this
-			.handleCreatedNote(note)
-			.catch(err => this.logger.error('Unhandled exception while updating latest_note (after create):', err));
-	}
-
-	async handleCreatedNote(note: MiNote): Promise<void> {
+	async handleCreatedNote(note: MinimalNote): Promise<void> {
 		// Ignore DMs.
 		// Followers-only posts are *included*, as this table is used to back the "following" feed.
 		if (note.visibility === 'specified') return;
@@ -71,13 +65,7 @@ export class LatestNoteService {
 		await this.latestNotesRepository.upsert(latestNote, ['userId', 'isPublic', 'isReply', 'isQuote']);
 	}
 
-	handleDeletedNoteBG(note: MiNote): void {
-		this
-			.handleDeletedNote(note)
-			.catch(err => this.logger.error('Unhandled exception while updating latest_note (after delete):', err));
-	}
-
-	async handleDeletedNote(note: MiNote): Promise<void> {
+	async handleDeletedNote(note: MinimalNote): Promise<void> {
 		// If it's a DM, then it can't possibly be the latest note so we can safely skip this.
 		if (note.visibility === 'specified') return;
 

@@ -6,7 +6,7 @@
 		"type": "git",
 		"url": "https://activitypub.software/TransFem-org/Sharkey.git"
 	},
-	"packageManager": "pnpm@9.6.0",
+	"packageManager": "pnpm@10.16.0",
 	"workspaces": [
 		"packages/frontend-shared",
 		"packages/frontend",
@@ -36,7 +36,7 @@
 		"lint": "pnpm -r lint",
 		"lint-all": "pnpm -r --no-bail lint",
 		"eslint": "pnpm -r eslint",
-		"eslint-all": "pnpm -r --no-bail eslint",
+		"eslint-all": "pnpm -r --no-bail eslint-all && pnpm -r --no-bail eslint",
 		"cy:open": "pnpm cypress open --browser --e2e --config-file=cypress.config.ts",
 		"cy:run": "pnpm cypress run",
 		"e2e": "pnpm start-server-and-test start:test http://localhost:61812 cy:run",
@@ -47,38 +47,40 @@
 		"test-and-coverage": "pnpm -r test-and-coverage",
 		"clean": "node ./scripts/clean.js",
 		"clean-all": "node ./scripts/clean-all.js",
-		"cleanall": "pnpm clean-all"
+		"cleanall": "pnpm clean-all",
+		"sync-dependency-versions": "node scripts/sync-deps.mjs"
 	},
 	"resolutions": {
 		"chokidar": "4.0.3",
-		"lodash": "4.17.21"
+		"lodash": "4.17.21",
+		"axios": "1.12.2"
 	},
 	"dependencies": {
 		"js-yaml": "4.1.0"
 	},
 	"optionalDependencies": {
-		"cypress": "14.3.2"
+		"cypress": "15.3.0"
 	},
 	"devDependencies": {
 		"@misskey-dev/eslint-plugin": "2.1.0",
-		"@types/node": "22.15.2",
-		"@typescript-eslint/eslint-plugin": "8.31.0",
-		"@typescript-eslint/parser": "8.31.0",
-		"cross-env": "7.0.3",
-		"cssnano": "7.0.6",
-		"esbuild": "0.25.3",
-		"eslint": "9.25.1",
-		"execa": "9.5.2",
+		"@types/node": "22.18.1",
+		"@typescript-eslint/eslint-plugin": "8.44.1",
+		"@typescript-eslint/parser": "8.44.1",
+		"cross-env": "10.0.0",
+		"cssnano": "7.1.1",
+		"esbuild": "0.25.10",
+		"eslint": "9.36.0",
+		"execa": "9.6.0",
 		"fast-glob": "3.3.3",
-		"glob": "11.0.2",
-		"globals": "16.1.0",
+		"glob": "11.0.3",
+		"globals": "16.4.0",
+		"ignore-walk": "8.0.0",
 		"ncp": "2.0.0",
-		"pnpm": "9.6.0",
-		"ignore-walk": "7.0.0",
-		"postcss": "8.5.3",
-		"start-server-and-test": "2.0.11",
-		"tar": "7.4.3",
-		"terser": "5.39.0",
-		"typescript": "5.8.3"
+		"pnpm": "10.17.1",
+		"postcss": "8.5.6",
+		"start-server-and-test": "2.1.2",
+		"tar": "7.5.1",
+		"terser": "5.44.0",
+		"typescript": "5.9.2"
 	}
 }

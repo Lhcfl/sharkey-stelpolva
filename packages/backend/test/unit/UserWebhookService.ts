@@ -15,6 +15,8 @@ import { DI } from '@/di-symbols.js';
 import { QueueService } from '@/core/QueueService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { UserWebhookService } from '@/core/UserWebhookService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
+import { CoreModule } from '@/core/CoreModule.js';
 
 describe('UserWebhookService', () => {
 	let app: TestingModule;
@@ -25,6 +27,7 @@ describe('UserWebhookService', () => {
 	let usersRepository: UsersRepository;
 	let userWebhooksRepository: WebhooksRepository;
 	let idService: IdService;
+	let cacheManagementService: CacheManagementService;
 	let queueService: jest.Mocked<QueueService>;
 
 	// --------------------------------------------------------------------------------------
@@ -58,55 +61,47 @@ describe('UserWebhookService', () => {
 
 	// --------------------------------------------------------------------------------------
 
-	async function beforeAllImpl() {
+	beforeAll(async () => {
 		app = await Test
 			.createTestingModule({
 				imports: [
 					GlobalModule,
-				],
-				providers: [
-					UserWebhookService,
-					IdService,
-					LoggerService,
-					GlobalEventService,
-					{
-						provide: QueueService, useFactory: () => ({ userWebhookDeliver: jest.fn() }),
-					},
+					CoreModule,
 				],
 			})
+			.overrideProvider(QueueService).useValue({ userWebhookDeliver: jest.fn() })
 			.compile();
+
+		await app.init();
+		app.enableShutdownHooks();
 
 		usersRepository = app.get(DI.usersRepository);
 		userWebhooksRepository = app.get(DI.webhooksRepository);
 
 		service = app.get(UserWebhookService);
 		idService = app.get(IdService);
+		cacheManagementService = app.get(CacheManagementService);
 		queueService = app.get(QueueService) as jest.Mocked<QueueService>;
+	});
 
-		app.enableShutdownHooks();
-	}
-
-	async function afterAllImpl() {
+	afterAll(async () => {
 		await app.close();
-	}
+	});
 
-	async function beforeEachImpl() {
+	beforeEach(async () => {
 		root = await createUser({ username: 'root', usernameLower: 'root' });
-	}
+	});
 
-	async function afterEachImpl() {
-		await usersRepository.delete({});
-		await userWebhooksRepository.delete({});
-	}
+	afterEach(async () => {
+		await usersRepository.deleteAll();
+		await userWebhooksRepository.deleteAll();
+		queueService.userWebhookDeliver.mockReset();
+		cacheManagementService.clear();
+	});
 
 	// --------------------------------------------------------------------------------------
 
 	describe('アプリを毎回作り直す必要のないグループ', () => {
-		beforeAll(beforeAllImpl);
-		afterAll(afterAllImpl);
-		beforeEach(beforeEachImpl);
-		afterEach(afterEachImpl);
-
 		describe('fetchSystemWebhooks', () => {
 			test('フィルタなし', async () => {
 				const webhook1 = await createWebhook({
@@ -243,16 +238,6 @@ describe('UserWebhookService', () => {
 	});
 
 	describe('アプリを毎回作り直す必要があるグループ', () => {
-		beforeEach(async () => {
-			await beforeAllImpl();
-			await beforeEachImpl();
-		});
-
-		afterEach(async () => {
-			await afterEachImpl();
-			await afterAllImpl();
-		});
-
 		describe('enqueueUserWebhook', () => {
 			test('キューに追加成功', async () => {
 				const webhook = await createWebhook({

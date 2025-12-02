@@ -7,6 +7,7 @@ import { defineAsyncComponent, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { popup } from '@/os.js';
 import { prefer } from '@/preferences.js';
+import { fetchCustomEmojis } from '@/custom-emojis.js';
 
 /**
  * 絵文字ピッカーを表示する。
@@ -67,6 +68,9 @@ class EmojiPicker {
 		this.manualShowing.value = true;
 		this.onChosen = onChosen;
 		this.onClosed = onClosed;
+
+		// Lazy-refresh emojis
+		fetchCustomEmojis();
 	}
 }
 

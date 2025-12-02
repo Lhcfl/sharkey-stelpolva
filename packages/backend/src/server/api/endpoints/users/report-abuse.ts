@@ -65,10 +65,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup user
-			const targetUser = await this.cacheService.findOptionalUserById(ps.userId);
-			if (!targetUser) {
-				throw new ApiError(meta.errors.noSuchUser);
-			}
+			const targetUser = await this.cacheService.findUserById(ps.userId);
 
 			if (targetUser.id === me.id) {
 				throw new ApiError(meta.errors.cannotReportYourself);

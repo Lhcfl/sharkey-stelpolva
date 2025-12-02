@@ -77,7 +77,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				name: ps.name,
 			} as MiUserList);
 
-			return await this.userListEntityService.pack(userList);
+			return await this.userListEntityService.pack(userList, me.id);
 		});
 	}
 }

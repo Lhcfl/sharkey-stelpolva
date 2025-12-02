@@ -8,6 +8,8 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AntennasRepository, UserListsRepository } from '@/models/_.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { AntennaEntityService } from '@/core/entities/AntennaEntityService.js';
+import { UserListService } from '@/core/UserListService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../error.js';
 
@@ -94,6 +96,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private antennaEntityService: AntennaEntityService,
 		private globalEventService: GlobalEventService,
+		private readonly timeService: TimeService,
+		private readonly userListService: UserListService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.keywords && ps.excludeKeywords) {
@@ -114,12 +118,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			let userList;
 
 			if ((ps.src === 'list' || antenna.src === 'list') && ps.userListId) {
-				userList = await this.userListsRepository.findOneBy({
-					id: ps.userListId,
-					userId: me.id,
-				});
+				userList = await this.userListService.userListsCache.fetchMaybe(ps.userListId);
 
 				if (userList == null) {
+					throw new ApiError(meta.errors.noSuchUserList);
+				}
+
+				if (!userList.isPublic && userList.userId !== me.id) {
 					throw new ApiError(meta.errors.noSuchUserList);
 				}
 			}
@@ -138,7 +143,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				withFile: ps.withFile,
 				excludeNotesInSensitiveChannel: ps.excludeNotesInSensitiveChannel,
 				isActive: true,
-				lastUsedAt: new Date(),
+				lastUsedAt: this.timeService.date,
 			});
 
 			this.globalEventService.publishInternalEvent('antennaUpdated', await this.antennasRepository.findOneByOrFail({ id: antenna.id }));

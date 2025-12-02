@@ -2,8 +2,12 @@ import { DataSource } from 'typeorm';
 import { loadConfig } from './built/config.js';
 import { entities } from './built/postgres.js';
 import { isConcurrentIndexMigrationEnabled } from "./migration/js/migration-config.js";
+import { LoggerService } from './built/core/LoggerService.js';
+import { NativeTimeService } from './built/global/TimeService.js';
+import { EnvService } from './built/global/EnvService.js';
 
-const config = loadConfig();
+const loggerService = new LoggerService(console, new NativeTimeService(), new EnvService());
+const config = loadConfig(loggerService);
 
 export default new DataSource({
 	type: 'postgres',

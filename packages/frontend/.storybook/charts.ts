@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { HttpResponse, http } from 'msw';
+import { HttpResponse } from 'msw';
 import type { DefaultBodyType, HttpResponseResolver, JsonBodyType, PathParams } from 'msw';
 import seedrandom from 'seedrandom';
-import { action } from '@storybook/addon-actions';
+import { action } from 'storybook/actions';
 
 function getChartArray(seed: string, limit: number, option?: { accumulate?: boolean, mul?: number }): number[] {
 	const rng = seedrandom(seed);
@@ -30,7 +30,9 @@ export function getChartResolver(fields: string[], option?: { accumulate?: boole
 		action(`GET ${request.url}`)();
 		const limitParam = new URL(request.url).searchParams.get('limit');
 		const limit = limitParam ? parseInt(limitParam) : 30;
-		const res = {};
+		// What the *fuck* is the type of this object???
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const res: any = {};
 		for (const field of fields) {
 			const layers = field.split('.');
 			let current = res;

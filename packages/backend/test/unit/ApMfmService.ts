@@ -4,21 +4,21 @@
  */
 
 import * as assert from 'assert';
-import { Test } from '@nestjs/testing';
-
-import { CoreModule } from '@/core/CoreModule.js';
+import type { Config } from '@/config.js';
 import { ApMfmService } from '@/core/activitypub/ApMfmService.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { MiNote } from '@/models/Note.js';
+import { MfmService } from '@/core/MfmService.js';
 
 describe('ApMfmService', () => {
+	let config: Config;
+	let mfmService: MfmService;
 	let apMfmService: ApMfmService;
 
-	beforeAll(async () => {
-		const app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-		}).compile();
-		apMfmService = app.get<ApMfmService>(ApMfmService);
+	beforeEach(() => {
+		config = {
+			url: 'http://misskey.local',
+		} as unknown as Config;
+		mfmService = new MfmService(config);
+		apMfmService = new ApMfmService(mfmService);
 	});
 
 	describe('getNoteHtml', () => {

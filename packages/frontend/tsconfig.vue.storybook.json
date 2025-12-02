@@ -1,0 +1,31 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./tsconfig.vue.json",
+	"compilerOptions": {
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true
+	},
+	"include": [
+		"./lib/**/*.ts",
+		"./src/**/*.ts",
+		"./src/**/*.vue",
+		"./test/**/*.ts",
+		"./test/**/*.vue",
+		"./@types/**/*.ts",
+		"./vue-shims.d.ts",
+		".storybook/**/*.js",
+		".storybook/**/*.jsx",
+		".storybook/**/*.ts",
+		".storybook/**/*.tsx"
+	],
+	"exclude": [
+		"node_modules",
+		"eslint.config.js",
+		"vite.*",
+		".storybook/changes.ts",
+		".storybook/main.ts",
+		".storybook/generate.tsx",
+		".storybook/preload-locale.ts",
+		".storybook/preload-theme.ts"
+	]
+}

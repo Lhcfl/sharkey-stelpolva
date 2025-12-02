@@ -85,7 +85,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				me,
 			);
 
-			return this.systemWebhookEntityService.pack(result);
+			return await this.systemWebhookEntityService.pack(result);
 		});
 	}
 }

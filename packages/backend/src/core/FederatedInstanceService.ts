@@ -4,22 +4,24 @@
  */
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import * as Redis from 'ioredis';
 import { In } from 'typeorm';
-import type { InstancesRepository, MiMeta } from '@/models/_.js';
+import type { InstancesRepository } from '@/models/_.js';
+import type { MiMeta } from '@/models/Meta.js';
 import type { MiInstance } from '@/models/Instance.js';
+import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 import { IdService } from '@/core/IdService.js';
 import { DI } from '@/di-symbols.js';
 import { UtilityService } from '@/core/UtilityService.js';
-import { bindThis } from '@/decorators.js';
+import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/CacheManagementService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { diffArraysSimple } from '@/misc/diff-arrays.js';
-import { QuantumKVCache } from '@/misc/QuantumKVCache.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { bindThis } from '@/decorators.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 @Injectable()
 export class FederatedInstanceService implements OnApplicationShutdown {
-	public readonly federatedInstanceCache: QuantumKVCache<MiInstance>;
+	public readonly federatedInstanceCache: ManagedQuantumKVCache<MiInstance>;
 
 	constructor(
 		@Inject(DI.instancesRepository)
@@ -31,8 +33,12 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 		private utilityService: UtilityService,
 		private idService: IdService,
 		private readonly internalEventService: InternalEventService,
+		private readonly timeService: TimeService,
+
+		cacheManagementService: CacheManagementService,
 	) {
-		this.federatedInstanceCache = new QuantumKVCache(this.internalEventService, 'federatedInstance', {
+		this.federatedInstanceCache = cacheManagementService.createQuantumKVCache('federatedInstance', {
+			// TODO can we increase this?
 			lifetime: 1000 * 60 * 3, // 3 minutes
 			fetcher: async key => {
 				const host = this.utilityService.toPuny(key);
@@ -43,7 +49,7 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 						.values({
 							id: this.idService.gen(),
 							host,
-							firstRetrievedAt: new Date(),
+							firstRetrievedAt: this.timeService.date,
 							isBlocked: this.utilityService.isBlockedHost(host),
 							isSilenced: this.utilityService.isSilencedHost(host),
 							isMediaSilenced: this.utilityService.isMediaSilencedHost(host),
@@ -57,14 +63,15 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 				}
 				return instance;
 			},
+			// optionalFetcher not needed
 			bulkFetcher: async keys => {
 				const hosts = keys.map(key => this.utilityService.toPuny(key));
 				const instances = await this.instancesRepository.findBy({ host: In(hosts) });
-				return instances.map(i => [i.host, i]);
+				return instances.map(instance => [instance.host, instance]);
 			},
 		});
 
-		this.internalEventService.on('metaUpdated', this.onMetaUpdated);
+		this.internalEventService.on('metaUpdated', this.onMetaUpdated, { ignoreRemote: true });
 	}
 
 	@bindThis
@@ -83,7 +90,7 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 				.values({
 					id: this.idService.gen(),
 					host,
-					firstRetrievedAt: new Date(),
+					firstRetrievedAt: this.timeService.date,
 					isBlocked: this.utilityService.isBlockedHost(host),
 					isSilenced: this.utilityService.isSilencedHost(host),
 					isMediaSilenced: this.utilityService.isMediaSilencedHost(host),
@@ -159,34 +166,31 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 		return instances.map(i => i[1]);
 	}
 
-	// This gets fired *in each process* so don't do anything to trigger cache notifications!
-	private syncCache(before: MiMeta | undefined, after: MiMeta): void {
-		const changed =
+	@bindThis
+	private async onMetaUpdated(body: InternalEventTypes['metaUpdated']): Promise<void> {
+		const { before, after } = body;
+		const changed = (
 			diffArraysSimple(before?.blockedHosts, after.blockedHosts) ||
 			diffArraysSimple(before?.silencedHosts, after.silencedHosts) ||
 			diffArraysSimple(before?.mediaSilencedHosts, after.mediaSilencedHosts) ||
 			diffArraysSimple(before?.federationHosts, after.federationHosts) ||
-			diffArraysSimple(before?.bubbleInstances, after.bubbleInstances);
+			diffArraysSimple(before?.bubbleInstances, after.bubbleInstances)
+		);
 
 		if (changed) {
 			// We have to clear the whole thing, otherwise subdomains won't be synced.
+			// This gets fired in *each* process so don't do anything to trigger cache notifications!
 			this.federatedInstanceCache.clear();
 		}
 	}
 
 	@bindThis
-	private async onMetaUpdated(body: { before?: MiMeta; after: MiMeta; }) {
-		this.syncCache(body.before, body.after);
-	}
-
-	@bindThis
-	public dispose(): void {
+	public dispose() {
 		this.internalEventService.off('metaUpdated', this.onMetaUpdated);
-		this.federatedInstanceCache.dispose();
 	}
 
 	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
+	public onApplicationShutdown() {
 		this.dispose();
 	}
 }

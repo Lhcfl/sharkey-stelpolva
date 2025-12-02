@@ -1,0 +1,20 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./tsconfig.common.jsonc",
+	"compilerOptions": {
+		// Target
+		// TODO should we target an older standard?
+		"target": "ES2022",
+		"module": "ES2022",
+		"moduleResolution": "Bundler",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+
+		// Checking
+		// TODO separate web/bundler profiles to account for stuff like this
+		"resolveJsonModule": true,
+
+		// Output
+		"sourceMap": true,
+		"inlineSources": true
+	}
+}

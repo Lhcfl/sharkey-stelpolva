@@ -1,5 +1,5 @@
-import { ModerationLogPayloads } from './consts.js';
-import {
+import type { ModerationLogPayloads } from './consts.js';
+import type {
 	Announcement,
 	EmojiDetailed,
 	MeDetailed,
@@ -139,6 +139,9 @@ export type ModerationLog = {
 } | {
 	type: 'setMandatoryCWForInstance';
 	info: ModerationLogPayloads['setMandatoryCWForInstance'];
+} | {
+	type: 'restartMigration';
+	info: ModerationLogPayloads['restartMigration'];
 } | {
 	type: 'resetPassword';
 	info: ModerationLogPayloads['resetPassword'];
@@ -305,6 +308,12 @@ export type QueueStats = {
 		delayed: number;
 	};
 	inbox: {
+		activeSincePrevTick: number;
+		active: number;
+		waiting: number;
+		delayed: number;
+	};
+	background: {
 		activeSincePrevTick: number;
 		active: number;
 		waiting: number;

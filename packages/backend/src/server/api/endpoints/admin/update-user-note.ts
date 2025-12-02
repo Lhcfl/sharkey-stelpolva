@@ -8,6 +8,8 @@ import type { UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import { CacheService } from '@/core/CacheService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -34,23 +36,23 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
+		private readonly internalEventService: InternalEventService,
+		private readonly cacheService: CacheService,
 
 		private moderationLogService: ModerationLogService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const user = await this.usersRepository.findOneBy({ id: ps.userId });
-
-			if (user == null) {
-				throw new Error('user not found');
-			}
-
-			const currentProfile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
+			const [user, currentProfile] = await Promise.all([
+				this.cacheService.findUserById(ps.userId),
+				this.cacheService.userProfileCache.fetch(ps.userId),
+			]);
 
 			await this.userProfilesRepository.update({ userId: user.id }, {
 				moderationNote: ps.text,
 			});
+			await this.internalEventService.emit('updateUserProfile', { userId: user.id });
 
-			this.moderationLogService.log(me, 'updateUserNote', {
+			await this.moderationLogService.log(me, 'updateUserNote', {
 				userId: user.id,
 				userUsername: user.username,
 				userHost: user.host,

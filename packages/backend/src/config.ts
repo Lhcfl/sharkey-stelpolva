@@ -14,6 +14,7 @@ import type * as Sentry from '@sentry/node';
 import type * as SentryVue from '@sentry/vue';
 import type { RedisOptions } from 'ioredis';
 import type { IPv4, IPv6 } from 'ipaddr.js';
+import type { LoggerService } from '@/core/LoggerService.js';
 
 type RedisOptionsSource = Partial<RedisOptions> & {
 	host?: string;
@@ -110,11 +111,14 @@ type Source = {
 	deliverJobConcurrency?: number;
 	inboxJobConcurrency?: number;
 	relationshipJobConcurrency?: number;
+	backgroundJobConcurrency?: number;
 	deliverJobPerSec?: number;
 	inboxJobPerSec?: number;
 	relationshipJobPerSec?: number;
+	backgroundJobPerSec?: number;
 	deliverJobMaxAttempts?: number;
 	inboxJobMaxAttempts?: number;
+	backgroundJobMaxAttempts?: number;
 
 	mediaDirectory?: string;
 	mediaProxy?: string;
@@ -147,7 +151,6 @@ type Source = {
 			disableQueryTruncation?: boolean,
 			enableQueryParamLogging?: boolean,
 		};
-		verbose?: boolean;
 	}
 
 	activityLogging?: {
@@ -162,8 +165,6 @@ type Source = {
 		head?: string;
 	}
 };
-
-const configLogger = new Logger('config');
 
 export type PrivateNetworkSource = string | { network?: string, ports?: number[] };
 
@@ -183,10 +184,10 @@ export type PrivateNetwork = {
 
 export type CIDR = [ip: IPv4 | IPv6, prefixLength: number];
 
-export function parsePrivateNetworks(patterns: PrivateNetworkSource[]): PrivateNetwork[];
-export function parsePrivateNetworks(patterns: undefined): undefined;
-export function parsePrivateNetworks(patterns: PrivateNetworkSource[] | undefined): PrivateNetwork[] | undefined;
-export function parsePrivateNetworks(patterns: PrivateNetworkSource[] | undefined): PrivateNetwork[] | undefined {
+export function parsePrivateNetworks(patterns: PrivateNetworkSource[], configLogger: Logger): PrivateNetwork[];
+export function parsePrivateNetworks(patterns: undefined, configLogger: Logger): undefined;
+export function parsePrivateNetworks(patterns: PrivateNetworkSource[] | undefined, configLogger: Logger): PrivateNetwork[] | undefined;
+export function parsePrivateNetworks(patterns: PrivateNetworkSource[] | undefined, configLogger: Logger): PrivateNetwork[] | undefined {
 	if (!patterns) return undefined;
 	return patterns
 		.map(e => {
@@ -277,11 +278,14 @@ export type Config = {
 	deliverJobConcurrency: number | undefined;
 	inboxJobConcurrency: number | undefined;
 	relationshipJobConcurrency: number | undefined;
+	backgroundJobConcurrency: number | undefined;
 	deliverJobPerSec: number | undefined;
 	inboxJobPerSec: number | undefined;
 	relationshipJobPerSec: number | undefined;
+	backgroundJobPerSec: number | undefined;
 	deliverJobMaxAttempts: number | undefined;
 	inboxJobMaxAttempts: number | undefined;
+	backgroundJobMaxAttempts: number | undefined;
 	proxyRemoteFiles: boolean | undefined;
 	customMOTD: string[] | undefined;
 	signToActivityPubGet: boolean;
@@ -293,7 +297,6 @@ export type Config = {
 			disableQueryTruncation?: boolean,
 			enableQueryParamLogging?: boolean,
 		};
-		verbose?: boolean;
 	}
 
 	version: string;
@@ -375,7 +378,9 @@ const path = process.env.MISSKEY_CONFIG_YML
 		? resolve(dir, 'test.yml')
 		: resolve(dir, 'default.yml');
 
-export function loadConfig(): Config {
+export function loadConfig(loggerService: LoggerService): Config {
+	const configLogger = loggerService.getLogger('config');
+
 	const meta = JSON.parse(fs.readFileSync(`${_dirname}/../../../built/meta.json`, 'utf-8'));
 
 	const frontendManifestExists = fs.existsSync(_dirname + '/../../../built/_frontend_vite_/manifest.json');
@@ -463,7 +468,7 @@ export function loadConfig(): Config {
 		proxy: config.proxy,
 		proxySmtp: config.proxySmtp,
 		proxyBypassHosts: config.proxyBypassHosts,
-		allowedPrivateNetworks: parsePrivateNetworks(config.allowedPrivateNetworks),
+		allowedPrivateNetworks: parsePrivateNetworks(config.allowedPrivateNetworks, configLogger),
 		disallowExternalApRedirect: config.disallowExternalApRedirect ?? false,
 		maxFileSize: config.maxFileSize ?? 262144000,
 		maxNoteLength: config.maxNoteLength ?? 3000,
@@ -481,11 +486,14 @@ export function loadConfig(): Config {
 		deliverJobConcurrency: config.deliverJobConcurrency,
 		inboxJobConcurrency: config.inboxJobConcurrency,
 		relationshipJobConcurrency: config.relationshipJobConcurrency,
+		backgroundJobConcurrency: config.backgroundJobConcurrency,
 		deliverJobPerSec: config.deliverJobPerSec,
 		inboxJobPerSec: config.inboxJobPerSec,
 		relationshipJobPerSec: config.relationshipJobPerSec,
+		backgroundJobPerSec: config.backgroundJobPerSec,
 		deliverJobMaxAttempts: config.deliverJobMaxAttempts,
 		inboxJobMaxAttempts: config.inboxJobMaxAttempts,
+		backgroundJobMaxAttempts: config.backgroundJobMaxAttempts,
 		proxyRemoteFiles: config.proxyRemoteFiles,
 		customMOTD: config.customMOTD,
 		signToActivityPubGet: config.signToActivityPubGet ?? true,
@@ -678,7 +686,6 @@ function applyEnvOverrides(config: Source) {
 	_apply_top(['import', ['downloadTimeout', 'maxFileSize']]);
 	_apply_top([['signToActivityPubGet', 'checkActivityPubGetSignature', 'setupPassword', 'disallowExternalApRedirect']]);
 	_apply_top(['logging', 'sql', ['disableQueryTruncation', 'enableQueryParamLogging']]);
-	_apply_top(['logging', ['verbose']]);
 	_apply_top(['activityLogging', ['enabled', 'preSave', 'maxAge']]);
 	_apply_top(['customHtml', ['head']]);
 }

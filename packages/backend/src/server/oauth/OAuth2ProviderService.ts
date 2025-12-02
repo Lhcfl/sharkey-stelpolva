@@ -11,6 +11,7 @@ import { DI } from '@/di-symbols.js';
 import { MastodonClientService } from '@/server/api/mastodon/MastodonClientService.js';
 import { getErrorData } from '@/server/api/mastodon/MastodonLogger.js';
 import { ServerUtilityService } from '@/server/ServerUtilityService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { FastifyInstance } from 'fastify';
 
 const kinds = [
@@ -56,6 +57,7 @@ export class OAuth2ProviderService {
 
 		private readonly mastodonClientService: MastodonClientService,
 		private readonly serverUtilityService: ServerUtilityService,
+		private readonly timeService: TimeService,
 	) { }
 
 	// https://datatracker.ietf.org/doc/html/rfc8414.html
@@ -118,7 +120,7 @@ export class OAuth2ProviderService {
 					access_token: uuid(),
 					token_type: 'Bearer',
 					scope: 'read',
-					created_at: Math.floor(new Date().getTime() / 1000),
+					created_at: Math.floor(this.timeService.now / 1000),
 				};
 				return reply.send(ret);
 			}
@@ -138,7 +140,7 @@ export class OAuth2ProviderService {
 					access_token: atData.accessToken,
 					token_type: 'Bearer',
 					scope: atData.scope || body.scope || 'read write follow push',
-					created_at: atData.createdAt || Math.floor(new Date().getTime() / 1000),
+					created_at: atData.createdAt || Math.floor(this.timeService.now / 1000),
 				};
 				return reply.send(ret);
 			} catch (e: unknown) {

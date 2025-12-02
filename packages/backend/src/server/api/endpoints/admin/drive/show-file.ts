@@ -167,6 +167,7 @@ export const paramDef = {
 		fileId: { type: 'string', format: 'misskey:id' },
 		url: { type: 'string' },
 	},
+	// TODO it chokes on this
 	anyOf: [
 		{ required: ['fileId'] },
 		{ required: ['url'] },

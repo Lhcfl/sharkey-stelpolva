@@ -70,7 +70,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				secret: secret,
 			});
 
-			return await this.appEntityService.pack(app, null, {
+			return await this.appEntityService.pack(app, me, {
 				detail: true,
 				includeSecret: true,
 			});

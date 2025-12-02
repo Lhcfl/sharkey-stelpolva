@@ -1,12 +1,20 @@
 {
 	"name": "megalodon",
+	"type": "module",
 	"version": "7.0.1",
+	"private": true,
 	"description": "Mastodon API client for node.js and browser",
-	"main": "./lib/src/index.js",
-	"typings": "./lib/src/index.d.ts",
+	"main": "./built/lib/index.js",
+	"typings": "./built/lib/index.d.ts",
 	"scripts": {
-		"build": "tsc -p ./",
-		"test": "cross-env NODE_ENV=test jest -u --maxWorkers=3"
+		"build": "tsc -p src/lib/tsconfig.json",
+		"typecheck-all": "pnpm run --no-bail typecheck:lib && pnpm run --no-bail typecheck:test",
+		"typecheck": "pnpm run typecheck:lib && pnpm run typecheck:test",
+		"typecheck:lib": "tsc -p src/lib/tsconfig.json --noEmit",
+		"typecheck:test": "tsc -p src/test/tsconfig.json --noEmit",
+		"lint": "pnpm run typecheck",
+		"jest": "cross-env NODE_ENV=test node --no-experimental-require-module --experimental-vm-modules --experimental-import-meta-resolve node_modules/jest/bin/jest.js --coverage --detectOpenHandles",
+		"test": "pnpm run jest"
 	},
 	"engines": {
 		"node": "^22.0.0"
@@ -28,42 +36,23 @@
 	"bugs": {
 		"url": "https://github.com/h3poteto/megalodon/issues"
 	},
-	"jest": {
-		"moduleFileExtensions": [
-			"ts",
-			"js"
-		],
-		"moduleNameMapper": {
-			"^@/(.+)": "<rootDir>/src/$1",
-			"^~/(.+)": "<rootDir>/$1"
-		},
-		"testMatch": [
-			"**/test/**/*.spec.ts"
-		],
-		"preset": "ts-jest/presets/default",
-		"transform": {
-			"^.+\\.(ts|tsx)$": [
-				"ts-jest",
-				{
-					"tsconfig": "tsconfig.json"
-				}
-			]
-		},
-		"testEnvironment": "node"
-	},
 	"homepage": "https://github.com/h3poteto/megalodon#readme",
 	"dependencies": {
-		"axios": "1.9.0",
-		"dayjs": "1.11.13",
-		"form-data": "4.0.2",
-		"oauth": "0.10.2",
-		"typescript": "5.8.3"
+		"axios": "1.12.2",
+		"dayjs": "1.11.18",
+		"form-data": "4.0.4",
+		"oauth": "0.10.2"
 	},
 	"devDependencies": {
-		"@types/jest": "29.5.14",
+		"@jest/globals": "30.2.0",
+		"@types/jest": "30.0.0",
+		"@types/node": "22.18.1",
 		"@types/oauth": "0.9.6",
-		"jest": "29.7.0",
-		"jest-worker": "29.7.0",
-		"ts-jest": "29.3.4"
+		"jest": "30.2.0",
+		"jest-mock": "30.2.0",
+		"jest-worker": "30.1.0",
+		"ts-jest": "29.4.5",
+		"ts-node": "10.9.2",
+		"typescript": "5.9.2"
 	}
 }

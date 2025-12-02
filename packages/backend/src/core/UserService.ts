@@ -10,7 +10,8 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { CacheService } from '@/core/CacheService.js';
+import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class UserService {
@@ -21,42 +22,14 @@ export class UserService {
 		private followingsRepository: FollowingsRepository,
 		private systemWebhookService: SystemWebhookService,
 		private userEntityService: UserEntityService,
-		private readonly cacheService: CacheService,
+		private readonly collapsedQueueService: CollapsedQueueService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
 	@bindThis
 	public async updateLastActiveDate(user: MiUser): Promise<void> {
-		if (user.isHibernated) {
-			const result = await this.usersRepository.createQueryBuilder().update()
-				.set({
-					lastActiveDate: new Date(),
-				})
-				.where('id = :id', { id: user.id })
-				.returning('*')
-				.execute()
-				.then((response) => {
-					return response.raw[0];
-				});
-			const wokeUp = result.isHibernated;
-			if (wokeUp) {
-				await Promise.all([
-					this.usersRepository.update(user.id, {
-						isHibernated: false,
-					}),
-					this.followingsRepository.update({
-						followerId: user.id,
-					}, {
-						isFollowerHibernated: false,
-					}),
-					this.cacheService.hibernatedUserCache.set(user.id, false),
-				]);
-			}
-		} else {
-			this.usersRepository.update(user.id, {
-				lastActiveDate: new Date(),
-			});
-		}
+		await this.collapsedQueueService.updateUserQueue.enqueue(user.id, { lastActiveDate: this.timeService.date });
 	}
 
 	/**
@@ -68,6 +41,6 @@ export class UserService {
 	@bindThis
 	public async notifySystemWebhook(user: MiUser, type: 'userCreated') {
 		const packedUser = await this.userEntityService.pack(user, null, { schema: 'UserLite' });
-		return this.systemWebhookService.enqueueSystemWebhook(type, packedUser);
+		return await this.systemWebhookService.enqueueSystemWebhook(type, packedUser);
 	}
 }

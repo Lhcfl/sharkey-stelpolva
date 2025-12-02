@@ -27,6 +27,7 @@ describe('MetaService', () => {
 			],
 		}).compile();
 
+		await app.init();
 		app.enableShutdownHooks();
 
 		metaService = app.get<MetaService>(MetaService, { strict: false });

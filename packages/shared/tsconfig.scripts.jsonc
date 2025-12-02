@@ -1,0 +1,12 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./tsconfig.node.jsonc",
+	"compilerOptions": {
+		// Checking
+		"noImplicitAny": false,
+		"allowImportingTsExtensions": true,
+
+		// Output
+		"noEmit": true
+	}
+}

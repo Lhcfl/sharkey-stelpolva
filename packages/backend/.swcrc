@@ -17,7 +17,7 @@
 		"paths": {
 			"@/*": ["*"]
 		},
-		"target": "es2022"
+		"target": "ESNext"
 	},
 	"minify": false,
 	"sourceMaps": "inline"

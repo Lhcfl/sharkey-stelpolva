@@ -10,7 +10,7 @@ import { getSchemas, convertSchemaToOpenApiSchema } from './schemas.js';
 
 export function genOpenapiSpec(config: Config, includeSelfRef = false) {
 	const spec = {
-		openapi: '3.1.0',
+		openapi: '3.1',
 
 		info: {
 			version: config.version,

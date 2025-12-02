@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { NoteFavoritesRepository } from '@/models/_.js';
+import type { MiNote, MiNoteFavorite, NoteFavoritesRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteFavoriteEntityService } from '@/core/entities/NoteFavoriteEntityService.js';
 import { DI } from '@/di-symbols.js';
@@ -56,11 +56,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.noteFavoritesRepository.createQueryBuilder('favorite'), ps.sinceId, ps.untilId)
 				.andWhere('favorite.userId = :meId', { meId: me.id })
-				.leftJoinAndSelect('favorite.note', 'note');
+				.innerJoinAndSelect('favorite.note', 'note');
 
 			const favorites = await query
 				.limit(ps.limit)
-				.getMany();
+				.getMany() as (MiNoteFavorite & { note: MiNote })[];
 
 			return await this.noteFavoriteEntityService.packMany(favorites, me);
 		});

@@ -9,6 +9,7 @@ import type { EmojisRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { EmojiEntityService } from '@/core/entities/EmojiEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -47,16 +48,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private emojisRepository: EmojisRepository,
 
 		private emojiEntityService: EmojiEntityService,
+		private readonly customEmojiService: CustomEmojiService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const emoji = await this.emojisRepository.findOneOrFail({
-				where: {
-					name: ps.name,
-					host: IsNull(),
-				},
-			});
+			const emoji = await this.customEmojiService.emojisByKeyCache.fetch(ps.name);
 
-			return this.emojiEntityService.packDetailed(emoji);
+			return await this.emojiEntityService.packDetailed(emoji);
 		});
 	}
 }

@@ -117,7 +117,7 @@ export class ChatEntityService {
 				.then(rooms => new Map(rooms.map(r => [r.id, r]))),
 		]);
 
-		return Promise.all(messages.map(message => this.packMessageDetailed(message, me, { _hint_: { packedUsers, packedFiles, packedRooms } })));
+		return await Promise.all(messages.map(message => this.packMessageDetailed(message, me, { _hint_: { packedUsers, packedFiles, packedRooms } })));
 	}
 
 	@bindThis
@@ -165,7 +165,7 @@ export class ChatEntityService {
 				.then(files => new Map(files.map(f => [f.id, f]))),
 		]);
 
-		return Promise.all(messages.map(message => this.packMessageLiteFor1on1(message, { _hint_: { packedFiles } })));
+		return await Promise.all(messages.map(message => this.packMessageLiteFor1on1(message, { _hint_: { packedFiles } })));
 	}
 
 	@bindThis
@@ -228,7 +228,7 @@ export class ChatEntityService {
 				.then(files => new Map(files.map(f => [f.id, f]))),
 		]);
 
-		return Promise.all(messages.map(message => this.packMessageLiteForRoom(message, { _hint_: { packedFiles, packedUsers } })));
+		return await Promise.all(messages.map(message => this.packMessageLiteForRoom(message, { _hint_: { packedFiles, packedUsers } })));
 	}
 
 	@bindThis
@@ -289,7 +289,7 @@ export class ChatEntityService {
 			}).then(memberships => new Map(_rooms.map(r => [r.id, memberships.find(m => m.roomId === r.id)]))),
 		]);
 
-		return Promise.all(_rooms.map(room => this.packRoom(room, me, { _hint_: { packedOwners, memberships } })));
+		return await Promise.all(_rooms.map(room => this.packRoom(room, me, { _hint_: { packedOwners, memberships } })));
 	}
 
 	@bindThis
@@ -322,7 +322,7 @@ export class ChatEntityService {
 	) {
 		if (invitations.length === 0) return [];
 
-		return Promise.all(invitations.map(invitation => this.packRoomInvitation(invitation, me)));
+		return await Promise.all(invitations.map(invitation => this.packRoomInvitation(invitation, me)));
 	}
 
 	@bindThis
@@ -371,6 +371,6 @@ export class ChatEntityService {
 				.then(rooms => new Map(rooms.map(r => [r.id, r]))),
 		]);
 
-		return Promise.all(memberships.map(membership => this.packRoomMembership(membership, me, { ...options, _hint_: { packedUsers, packedRooms } })));
+		return await Promise.all(memberships.map(membership => this.packRoomMembership(membership, me, { ...options, _hint_: { packedUsers, packedRooms } })));
 	}
 }

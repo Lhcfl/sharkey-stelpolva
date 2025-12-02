@@ -4,11 +4,11 @@ import Fastify from 'fastify';
 import { NestFactory } from '@nestjs/core';
 import { MainModule } from '@/MainModule.js';
 import { ServerService } from '@/server/ServerService.js';
-import { loadConfig } from '@/config.js';
+import type { Config } from '@/config.js';
 import { NestLogger } from '@/NestLogger.js';
+import { DI } from '@/di-symbols.js';
 import { INestApplicationContext } from '@nestjs/common';
 
-const config = loadConfig();
 const originEnv = JSON.stringify(process.env);
 
 process.env.NODE_ENV = 'test';
@@ -20,18 +20,21 @@ let serverService: ServerService;
  * テスト用のサーバインスタンスを起動する
  */
 async function launch() {
-	await killTestServer();
-
-	console.log('starting application...');
-
 	app = await NestFactory.createApplicationContext(MainModule, {
 		logger: new NestLogger(),
 	});
 	app.enableShutdownHooks();
+
+	const config = app.get<Config>(DI.config);
+
+	await killTestServer(config);
+
+	console.log('starting application...');
+
 	serverService = app.get(ServerService);
 	await serverService.launch();
 
-	await startControllerEndpoints();
+	await startControllerEndpoints(config);
 
 	// ジョブキューは必要な時にテストコード側で起動する
 	// ジョブキューが動くとテスト結果の確認に支障が出ることがあるので意図的に動かさないでいる
@@ -42,7 +45,7 @@ async function launch() {
 /**
  * 既に重複したポートで待ち受けしているサーバがある場合はkillする
  */
-async function killTestServer() {
+async function killTestServer(config: Config) {
 	//
 	try {
 		const pid = await portToPid(config.port);
@@ -56,9 +59,10 @@ async function killTestServer() {
 
 /**
  * 別プロセスに切り離してしまったが故に出来なくなった環境変数の書き換え等を実現するためのエンドポイントを作る
- * @param port
+ * @param config
  */
-async function startControllerEndpoints(port = config.port + 1000) {
+async function startControllerEndpoints(config: Config) {
+	const port = config.port + 1000;
 	const fastify = Fastify();
 
 	fastify.post<{ Body: { key?: string, value?: string } }>('/env', async (req, res) => {
@@ -80,7 +84,7 @@ async function startControllerEndpoints(port = config.port + 1000) {
 		await serverService.dispose();
 		await app.close();
 
-		await killTestServer();
+		await killTestServer(config);
 
 		console.log('starting application...');
 

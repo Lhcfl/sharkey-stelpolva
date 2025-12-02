@@ -157,6 +157,23 @@ export type MiNotification = {
 	id: string;
 	createdAt: string;
 	target: string | null;
+} | {
+	type: 'sharedAccessGranted';
+	id: string;
+	createdAt: string;
+	notifierId: MiUser['id'];
+	permCount: number;
+	rank: 'user' | 'mod' | 'admin' | null;
+} | {
+	type: 'sharedAccessRevoked';
+	id: string;
+	createdAt: string;
+	notifierId: MiUser['id'];
+} | {
+	type: 'sharedAccessLogin';
+	id: string;
+	createdAt: string;
+	notifierId: MiUser['id'];
 };
 
 export type MiGroupedNotification = MiNotification | {

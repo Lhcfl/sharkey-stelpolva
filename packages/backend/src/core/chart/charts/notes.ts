@@ -8,6 +8,7 @@ import { Not, IsNull, DataSource } from 'typeorm';
 import type { NotesRepository } from '@/models/_.js';
 import type { MiNote } from '@/models/Note.js';
 import { AppLockService } from '@/core/AppLockService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import Chart from '../core.js';
@@ -29,8 +30,13 @@ export default class NotesChart extends Chart<typeof schema> { // eslint-disable
 
 		private appLockService: AppLockService,
 		private chartLoggerService: ChartLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		super(db, (k) => appLockService.getChartInsertLock(k), chartLoggerService.logger, name, schema);
+	}
+
+	protected getCurrentDate(): Date {
+		return this.timeService.date;
 	}
 
 	protected async tickMajor(): Promise<Partial<KVs<typeof schema>>> {
@@ -50,10 +56,10 @@ export default class NotesChart extends Chart<typeof schema> { // eslint-disable
 	}
 
 	@bindThis
-	public async update(note: MiNote, isAdditional: boolean): Promise<void> {
+	public update(note: MiNote, isAdditional: boolean): void {
 		const prefix = note.userHost === null ? 'local' : 'remote';
 
-		await this.commit({
+		this.commit({
 			[`${prefix}.total`]: isAdditional ? 1 : -1,
 			[`${prefix}.inc`]: isAdditional ? 1 : 0,
 			[`${prefix}.dec`]: isAdditional ? 0 : 1,

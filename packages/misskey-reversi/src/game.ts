@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import CRC32 from 'crc-32';
+import * as CRC32 from 'crc-32';
 
 /**
  * true ... 黒

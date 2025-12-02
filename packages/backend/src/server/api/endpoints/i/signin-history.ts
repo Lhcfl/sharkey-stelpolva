@@ -9,6 +9,7 @@ import type { SigninsRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
 import { SigninEntityService } from '@/core/entities/SigninEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { promiseMap } from '@/misc/promise-map.js';
 
 export const meta = {
 	requireCredential: true,
@@ -56,7 +57,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const history = await query.limit(ps.limit).getMany();
 
-			return await Promise.all(history.map(record => this.signinEntityService.pack(record)));
+			return await promiseMap(history, async record => await this.signinEntityService.pack(record), { limit: 4 });
 		});
 	}
 }

@@ -27,6 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				[$style.t_exportCompleted]: notification.type === 'exportCompleted',
 				[$style.t_importCompleted]: notification.type === 'importCompleted',
 				[$style.t_login]: notification.type === 'login',
+				[$style.t_login]: ['sharedAccessGranted', 'sharedAccessRevoked', 'sharedAccessLogin'].includes(notification.type),
 				[$style.t_createToken]: notification.type === 'createToken',
 				[$style.t_chatRoomInvitationReceived]: notification.type === 'chatRoomInvitationReceived',
 				[$style.t_roleAssigned]: notification.type === 'roleAssigned' && notification.role.iconUrl == null,
@@ -59,6 +60,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i v-else-if="notification.type === 'scheduledNoteFailed'" class="ti ti-calendar-event"></i>
 			<i v-else-if="notification.type === 'scheduledNotePosted'" class="ti ti-calendar-event"></i>
 			<i v-else-if="notification.type === 'reportAccepted'" class="ph-check ph-bold ph-lg"></i>
+			<i v-else-if="notification.type === 'sharedAccessGranted'" class="ph-door-open ph-bold pg-lg"></i>
+			<i v-else-if="notification.type === 'sharedAccessRevoked'" class="ph-lock ph-bold pg-lg"></i>
+			<i v-else-if="notification.type === 'sharedAccessLogin'" class="ph-sign-in ph-bold pg-lg"></i>
 			<!-- notification.reaction が null になることはまずないが、ここでoptional chaining使うと一部ブラウザで刺さるので念の為 -->
 			<MkReactionIcon
 				v-else-if="notification.type === 'reaction'"
@@ -90,6 +94,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-else-if="notification.type === 'scheduledNoteFailed'">{{ i18n.ts._notification.scheduledNoteFailed }}</span>
 			<span v-else-if="notification.type === 'scheduledNotePosted'">{{ i18n.ts._notification.scheduledNotePosted }}</span>
 			<span v-else-if="notification.type === 'reportAccepted'">{{ i18n.ts._notification.reportAccepted }}</span>
+			<span v-else-if="notification.type === 'sharedAccessGranted'">{{ i18n.ts._notification.sharedAccessGranted }}</span>
+			<span v-else-if="notification.type === 'sharedAccessRevoked'">{{ i18n.ts._notification.sharedAccessRevoked }}</span>
+			<span v-else-if="notification.type === 'sharedAccessLogin'">{{ i18n.ts._notification.sharedAccessLogin }}</span>
 			<MkTime v-if="withTime" :time="notification.createdAt" :class="$style.headerTime"/>
 		</header>
 		<div>
@@ -201,6 +208,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i class="ph-quotes ph-bold ph-lg" :class="$style.quote"></i>
 				<Mfm :text="getNoteSummary(notification.note)" :isBlock="true" :plain="true" :nowrap="true" :author="notification.note.user"/>
 				<i class="ph-quotes ph-bold ph-lg" :class="$style.quote"></i>
+			</MkA>
+
+			<div v-else-if="notification.type === 'sharedAccessGranted'">
+				<MkA :to="userPage(notification.user)">
+					<I18n :src="i18n.ts.sharedAccessGranted" tag="span">
+						<template #target><MkAcct :user="notification.user"/></template>
+						<template #rank>{{ i18n.ts._ranks[notification.rank ?? 'default'] }}</template>
+						<template #perms>{{ notification.permCount ?? 0 }}</template>
+					</I18n>
+				</MkA>
+			</div>
+
+			<MkA v-else-if="notification.type === 'sharedAccessRevoked'" :to="userPage(notification.user)">
+				<I18n :src="i18n.ts.sharedAccessRevoked" tag="span">
+					<template #target><MkAcct :user="notification.user"/></template>
+				</I18n>
+			</MkA>
+
+			<MkA v-else-if="notification.type === 'sharedAccessLogin'" :to="userPage(notification.user)">
+				<I18n :src="i18n.ts.sharedAccessLogin" tag="span">
+					<template #target><MkAcct :user="notification.user"/></template>
+				</I18n>
 			</MkA>
 		</div>
 	</div>

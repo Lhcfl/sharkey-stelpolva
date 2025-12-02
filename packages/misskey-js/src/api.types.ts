@@ -1,7 +1,12 @@
-import { Endpoints as Gen } from './autogen/endpoint.js';
-import { UserDetailed } from './autogen/models.js';
-import { AdminRolesCreateRequest, AdminRolesCreateResponse, UsersShowRequest } from './autogen/entities.js';
-import {
+import type { Endpoints as Gen } from './autogen/endpoint.js';
+import type { UserDetailed } from './autogen/models.js';
+import type {
+	AdminRolesCreateRequest,
+	AdminRolesCreateResponse,
+	UsersShowRequest,
+	EmptyRequest,
+} from './autogen/entities.js';
+import type {
 	PartialRolePolicyOverride,
 	SigninFlowRequest,
 	SigninFlowResponse,
@@ -109,3 +114,7 @@ export type Endpoints = Overwrite<
 		}
 	}
 >;
+
+export type EndpointsWithOptionalParams = {
+	[E in keyof Endpoints]: EmptyRequest extends Endpoints[E]['req'] ? Endpoints[E] : never;
+};

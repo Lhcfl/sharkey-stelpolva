@@ -1,43 +1,20 @@
 {
+	"extends": "../../shared/tsconfig.node.jsonc",
 	"compilerOptions": {
-		"allowJs": true,
-		"noEmitOnError": false,
-		"noImplicitAny": true,
-		"noImplicitReturns": true,
-		"noUnusedParameters": false,
-		"noUnusedLocals": false,
-		"noFallthroughCasesInSwitch": true,
-		"declaration": false,
-		"sourceMap": true,
-		"target": "ES2022",
-		"module": "nodenext",
-		"moduleResolution": "nodenext",
-		"allowSyntheticDefaultImports": true,
-		"removeComments": false,
-		"noLib": false,
-		"strict": true,
-		"strictNullChecks": true,
+		// Checking
+		"types": ["jest", "node"],
+		"verbatimModuleSyntax": false,
+		"noImplicitOverride": false,
+		"noImplicitAny": false,
+		"strictFunctionTypes": false,
 		"strictPropertyInitialization": false,
-		"skipLibCheck": true,
-		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"incremental": true,
-		"baseUrl": "./",
 		"paths": {
 			"@/*": ["../src/*"]
 		},
-		"typeRoots": [
-			"../node_modules/@types",
-			"../src/@types"
-		],
-		"lib": [
-			"esnext"
-		],
-		"types": ["jest", "node"]
+
+		// Output
+		"outDir": "./built"
 	},
-	"compileOnSave": false,
 	"include": [
 		"./**/*.ts",
 		"../src/**/*.test.ts",

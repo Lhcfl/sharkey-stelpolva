@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ulid } from 'ulid';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
+import { TimeService } from '@/global/TimeService.js';
 import { genAid, isSafeAidT, parseAid, parseAidFull } from '@/misc/id/aid.js';
 import { genAidx, isSafeAidxT, parseAidx, parseAidxFull } from '@/misc/id/aidx.js';
 import { genMeid, isSafeMeidT, parseMeid, parseMeidFull } from '@/misc/id/meid.js';
@@ -22,6 +23,7 @@ export class IdService {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
+		private readonly timeService: TimeService,
 	) {
 		this.method = config.id.toLowerCase();
 	}
@@ -45,7 +47,7 @@ export class IdService {
 	 */
 	@bindThis
 	public gen(time?: number): string {
-		const t = (!time || (time > Date.now())) ? Date.now() : time;
+		const t = (!time || (time > this.timeService.now)) ? this.timeService.now : time;
 
 		switch (this.method) {
 			case 'aid': return genAid(t);

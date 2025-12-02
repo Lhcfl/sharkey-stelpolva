@@ -1,4 +1,5 @@
 import tsParser from '@typescript-eslint/parser';
+import globals from 'globals';
 import sharedConfig from '../shared/eslint.config.js';
 
 // eslint-disable-next-line import/no-default-export
@@ -6,28 +7,57 @@ export default [
 	...sharedConfig,
 	{
 		ignores: [
-			'**/node_modules',
+			'generator',
+			'temp',
 			'built',
 			'coverage',
-			'jest.config.ts',
-			'test',
-			'test-d',
-			'generator',
-			'**/lib/',
-			'**/temp/',
-			'**/built/',
-			'**/coverage/',
-			'**/node_modules/',
+			'node_modules',
 		],
 	},
 	{
-		files: ['**/*.ts', '**/*.tsx'],
+		files: ['src/**/*.ts'],
 		languageOptions: {
 			parserOptions: {
 				parser: tsParser,
-				project: ['./tsconfig.json'],
+				project: ['src/tsconfig.json'],
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
+			},
+		},
+	},
+	{
+		files: ['test/**/*.ts'],
+		languageOptions: {
+			parserOptions: {
+				parser: tsParser,
+				projectService: ['test/tsconfig.json'],
+				sourceType: 'module',
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
+	},
+	{
+		files: ['test-d/**/*.ts'],
+		languageOptions: {
+			parserOptions: {
+				parser: tsParser,
+				projectService: ['test-d/tsconfig.json'],
+				sourceType: 'module',
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
+	},
+	{
+		files: ['*.ts', '*.js', 'scripts/**/*.ts', 'scripts/**/*.js', 'scripts/**/*.mjs', 'scripts/**/*.cjs'],
+		languageOptions: {
+			parserOptions: {
+				parser: tsParser,
+				project: ['tsconfig.scripts.json'],
+				sourceType: 'module',
+				tsconfigRootDir: import.meta.dirname,
+			},
+			globals: {
+				...globals.node,
 			},
 		},
 	},

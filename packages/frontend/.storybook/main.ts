@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/vue3-vite';
-import { type Plugin, mergeConfig } from 'vite';
+import { mergeConfig } from 'vite';
 import turbosnap from 'vite-plugin-turbosnap';
 
 const require = createRequire(import.meta.url);
@@ -29,19 +29,20 @@ const config = {
 		options: {},
 	},
 	docs: {
+		// @ts-expect-error This seems to be wrong, but I can't find what the alternative might be.
 		autodocs: 'tag',
 	},
 	core: {
 		disableTelemetry: true,
 	},
 	async viteFinal(config) {
-		const replacePluginForIsChromatic = config.plugins?.findIndex((plugin: Plugin) => plugin && plugin.name === 'replace') ?? -1;
+		const replacePluginForIsChromatic = config.plugins?.findIndex(plugin => plugin && 'name' in plugin && plugin.name === 'replace') ?? -1;
 		if (~replacePluginForIsChromatic) {
 			config.plugins?.splice(replacePluginForIsChromatic, 1);
 		}
 
 		//pluginsからcreateSearchIndexを削除、複数あるかもしれないので全て削除
-		config.plugins = config.plugins?.filter((plugin: Plugin) => plugin && plugin.name !== 'createSearchIndex') ?? [];
+		config.plugins = config.plugins?.filter(plugin => plugin && 'name' in plugin && plugin.name !== 'createSearchIndex') ?? [];
 
 		return mergeConfig(config, {
 			plugins: [

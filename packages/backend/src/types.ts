@@ -47,6 +47,9 @@ export const notificationTypes = [
 	'app',
 	'test',
 	'reportAccepted',
+	'sharedAccessGranted',
+	'sharedAccessRevoked',
+	'sharedAccessLogin',
 ] as const;
 
 export const groupedNotificationTypes = [
@@ -106,6 +109,7 @@ export const moderationLogTypes = [
 	'deleteGlobalAnnouncement',
 	'deleteUserAnnouncement',
 	'resetPassword',
+	'restartMigration',
 	'setMandatoryCW',
 	'setMandatoryCWForNote',
 	'setMandatoryCWForInstance',
@@ -285,6 +289,11 @@ export type ModerationLogPayloads = {
 		userHost: string | null;
 	};
 	resetPassword: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+	};
+	restartMigration: {
 		userId: string;
 		userUsername: string;
 		userHost: string | null;
@@ -544,13 +553,17 @@ export type Serialized<T> = {
 		? string
 		: T[K] extends (Date | null)
 			? (string | null)
-			: T[K] extends Record<string, any>
-				? Serialized<T[K]>
-				: T[K] extends (Record<string, any> | null)
-					? (Serialized<T[K]> | null)
-					: T[K] extends (Record<string, any> | undefined)
-						? (Serialized<T[K]> | undefined)
-						: T[K];
+			: T[K] extends (Date | undefined)
+				? (string | undefined)
+				: T[K] extends (Date | null | undefined)
+					? (string | null | undefined)
+					: T[K] extends Record<string, any>
+						? Serialized<T[K]>
+						: T[K] extends (Record<string, any> | null)
+							? (Serialized<T[K]> | null)
+							: T[K] extends (Record<string, any> | undefined)
+								? (Serialized<T[K]> | undefined)
+								: T[K];
 };
 
 export type FilterUnionByProperty<

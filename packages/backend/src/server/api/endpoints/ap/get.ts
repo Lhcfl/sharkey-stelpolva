@@ -91,7 +91,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const object = await resolver.resolve(uri, ps.allowAnonymous ?? false);
 
 			if (ps.expandCollectionItems && isCollectionOrOrderedCollection(object)) {
-				const items = await resolver.resolveCollectionItems(object, ps.expandCollectionLimit, ps.allowAnonymous ?? false);
+				const items = await resolver.resolveCollectionItems(object, ps.allowAnonymous ?? false, uri, ps.expandCollectionLimit);
 
 				if (isOrderedCollection(object) || isOrderedCollectionPage(object)) {
 					object.orderedItems = items;

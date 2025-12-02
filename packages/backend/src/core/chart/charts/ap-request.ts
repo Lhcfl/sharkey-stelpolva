@@ -6,6 +6,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { AppLockService } from '@/core/AppLockService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import Chart from '../core.js';
@@ -24,8 +25,13 @@ export default class ApRequestChart extends Chart<typeof schema> { // eslint-dis
 
 		private appLockService: AppLockService,
 		private chartLoggerService: ChartLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		super(db, (k) => appLockService.getChartInsertLock(k), chartLoggerService.logger, name, schema);
+	}
+
+	protected getCurrentDate(): Date {
+		return this.timeService.date;
 	}
 
 	protected async tickMajor(): Promise<Partial<KVs<typeof schema>>> {
@@ -37,22 +43,22 @@ export default class ApRequestChart extends Chart<typeof schema> { // eslint-dis
 	}
 
 	@bindThis
-	public async deliverSucc(): Promise<void> {
-		await this.commit({
+	public deliverSucc(): void {
+		this.commit({
 			'deliverSucceeded': 1,
 		});
 	}
 
 	@bindThis
-	public async deliverFail(): Promise<void> {
-		await this.commit({
+	public deliverFail(): void {
+		this.commit({
 			'deliverFailed': 1,
 		});
 	}
 
 	@bindThis
-	public async inbox(): Promise<void> {
-		await this.commit({
+	public inbox(): void {
+		this.commit({
 			'inboxReceived': 1,
 		});
 	}

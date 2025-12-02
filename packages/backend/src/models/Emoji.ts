@@ -84,4 +84,10 @@ export class MiEmoji {
 		array: true, length: 128, default: '{}',
 	})
 	public roleIdsThatCanBeUsedThisEmojiAsReaction: string[];
+
+	constructor(data?: Partial<MiEmoji>) {
+		if (data) {
+			Object.assign(this, data);
+		}
+	}
 }

@@ -243,7 +243,7 @@ export class SigninApiService {
 			if (same) {
 				if (profile.password!.startsWith('$2')) {
 					const newHash = await argon2.hash(password);
-					this.userProfilesRepository.update(user.id, {
+					await this.userProfilesRepository.update(user.id, {
 						password: newHash,
 					});
 				}
@@ -267,7 +267,7 @@ export class SigninApiService {
 			try {
 				if (profile.password!.startsWith('$2')) {
 					const newHash = await argon2.hash(password);
-					this.userProfilesRepository.update(user.id, {
+					await this.userProfilesRepository.update(user.id, {
 						password: newHash,
 					});
 				}

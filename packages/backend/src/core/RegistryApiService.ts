@@ -11,6 +11,7 @@ import type { MiUser } from '@/models/User.js';
 import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { bindThis } from '@/decorators.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class RegistryApiService {
@@ -20,6 +21,7 @@ export class RegistryApiService {
 
 		private idService: IdService,
 		private globalEventService: GlobalEventService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -31,7 +33,7 @@ export class RegistryApiService {
 			.insert()
 			.values({
 				id: this.idService.gen(),
-				updatedAt: new Date(),
+				updatedAt: this.timeService.date,
 				userId: userId,
 				domain: domain,
 				scope: scope,

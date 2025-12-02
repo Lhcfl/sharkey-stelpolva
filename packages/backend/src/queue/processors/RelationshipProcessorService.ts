@@ -7,6 +7,8 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
+import { CacheService } from '@/core/CacheService.js';
+import { AccountMoveService } from '@/core/AccountMoveService.js';
 import { bindThis } from '@/decorators.js';
 import type Logger from '@/logger.js';
 
@@ -28,8 +30,10 @@ export class RelationshipProcessorService {
 		private queueLoggerService: QueueLoggerService,
 		private userFollowingService: UserFollowingService,
 		private userBlockingService: UserBlockingService,
+		private readonly cacheService: CacheService,
+		private readonly accountMoveService: AccountMoveService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('follow-block');
+		this.logger = this.queueLoggerService.logger.createSubLogger('relationship');
 	}
 
 	@bindThis
@@ -47,8 +51,8 @@ export class RelationshipProcessorService {
 	public async processUnfollow(job: Bull.Job<RelationshipJobData>): Promise<string> {
 		this.logger.info(`${job.data.from.id} is trying to unfollow ${job.data.to.id}`);
 		const [follower, followee] = await Promise.all([
-			this.usersRepository.findOneByOrFail({ id: job.data.from.id }),
-			this.usersRepository.findOneByOrFail({ id: job.data.to.id }),
+			this.cacheService.findUserById(job.data.from.id),
+			this.cacheService.findUserById(job.data.to.id),
 		]) as [MiLocalUser | MiRemoteUser, MiLocalUser | MiRemoteUser];
 		await this.userFollowingService.unfollow(follower, followee, job.data.silent);
 		return 'ok';
@@ -58,8 +62,8 @@ export class RelationshipProcessorService {
 	public async processBlock(job: Bull.Job<RelationshipJobData>): Promise<string> {
 		this.logger.info(`${job.data.from.id} is trying to block ${job.data.to.id}`);
 		const [blockee, blocker] = await Promise.all([
-			this.usersRepository.findOneByOrFail({ id: job.data.from.id }),
-			this.usersRepository.findOneByOrFail({ id: job.data.to.id }),
+			this.cacheService.findUserById(job.data.from.id),
+			this.cacheService.findUserById(job.data.to.id),
 		]);
 		await this.userBlockingService.block(blockee, blocker, job.data.silent);
 		return 'ok';
@@ -69,10 +73,20 @@ export class RelationshipProcessorService {
 	public async processUnblock(job: Bull.Job<RelationshipJobData>): Promise<string> {
 		this.logger.info(`${job.data.from.id} is trying to unblock ${job.data.to.id}`);
 		const [blockee, blocker] = await Promise.all([
-			this.usersRepository.findOneByOrFail({ id: job.data.from.id }),
-			this.usersRepository.findOneByOrFail({ id: job.data.to.id }),
+			this.cacheService.findUserById(job.data.from.id),
+			this.cacheService.findUserById(job.data.to.id),
 		]);
 		await this.userBlockingService.unblock(blockee, blocker);
+		return 'ok';
+	}
+
+	public async processMove(job: Bull.Job<RelationshipJobData>): Promise<string> {
+		this.logger.info(`${job.data.from.id} is trying to migrate to ${job.data.to.id}`);
+		const [src, dst] = await Promise.all([
+			this.cacheService.findUserById(job.data.from.id),
+			this.cacheService.findUserById(job.data.to.id),
+		]);
+		await this.accountMoveService.postMoveProcess(src, dst);
 		return 'ok';
 	}
 }

@@ -54,7 +54,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchRoom);
 			}
 
-			return this.chatEntityService.packRoom(room, me);
+			return await this.chatEntityService.packRoom(room, me);
 		});
 	}
 }

@@ -19,8 +19,6 @@ export const meta = {
 	requireCredential: true,
 	requireModerator: true,
 	kind: 'write:admin:cw-note',
-
-	res: {},
 } as const;
 
 export const paramDef = {
@@ -99,7 +97,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			reactionAcceptance: note.reactionAcceptance,
 			visibility: note.visibility,
 			visibleUsers: note.visibleUserIds.length > 0
-				? this.cacheService.getUsers(note.visibleUserIds).then(us => Array.from(us.values())) : null,
+				? this.cacheService.findUsersById(note.visibleUserIds).then(us => Array.from(us.values())) : null,
 			channel: note.channel ?? (note.channelId ? this.channelsRepository.findOneByOrFail({ id: note.channelId }) : null),
 			apMentions: undefined,
 			apHashtags: undefined,

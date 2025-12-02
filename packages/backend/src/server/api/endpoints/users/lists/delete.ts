@@ -7,6 +7,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { UserListsRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
+import { CacheService } from '@/core/CacheService.js';
+import { UserListService } from '@/core/UserListService.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -46,18 +48,29 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		@Inject(DI.userListsRepository)
 		private userListsRepository: UserListsRepository,
+
+		private readonly cacheService: CacheService,
+		private readonly userListService: UserListService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const userList = await this.userListsRepository.findOneBy({
-				id: ps.listId,
-				userId: me.id,
-			});
+			const [userList, listMembership, listFavorites] = await Promise.all([
+				this.userListService.userListsCache.fetchMaybe(ps.listId),
+				this.cacheService.listUserMembershipsCache.fetch(ps.listId),
+				this.cacheService.listUserFavoritesCache.fetch(ps.listId),
+			]);
 
-			if (userList == null) {
+			if (userList == null || userList.userId !== me.id) {
 				throw new ApiError(meta.errors.noSuchList);
 			}
 
-			await this.userListsRepository.delete(userList.id);
+			await Promise.all([
+				this.userListsRepository.delete(userList.id),
+				this.userListService.userListsCache.delete(userList.id),
+				this.cacheService.listUserFavoritesCache.delete(userList.id),
+				this.cacheService.listUserMembershipsCache.delete(userList.id),
+				this.cacheService.userListFavoritesCache.deleteMany(listFavorites),
+				this.cacheService.userListMembershipsCache.deleteMany(listMembership.keys()),
+			]);
 		});
 	}
 }

@@ -20,12 +20,14 @@ import type { MiPage } from '@/models/Page.js';
 import type { MiWebhook } from '@/models/Webhook.js';
 import type { MiSystemWebhook } from '@/models/SystemWebhook.js';
 import type { MiMeta } from '@/models/Meta.js';
-import { MiAvatarDecoration, MiChatMessage, MiChatRoom, MiReversiGame, MiRole, MiRoleAssignment } from '@/models/_.js';
+import type { MiAvatarDecoration, MiChatMessage, MiChatRoom, MiReversiGame, MiRole, MiRoleAssignment } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
-import { Serialized } from '@/types.js';
+import type { Serialized } from '@/types.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
 import type Emitter from 'strict-event-emitter-types';
 import type { EventEmitter } from 'events';
 
@@ -236,8 +238,12 @@ export interface InternalEventTypes {
 	userChangeSuspendedState: { id: MiUser['id']; isSuspended: MiUser['isSuspended']; };
 	userChangeDeletedState: { id: MiUser['id']; isDeleted: MiUser['isDeleted']; };
 	userTokenRegenerated: { id: MiUser['id']; oldToken: string; newToken: string; };
+	/** @deprecated Use userUpdated or usersUpdated instead */
 	remoteUserUpdated: { id: MiUser['id']; };
+	/** @deprecated Use userUpdated or usersUpdated instead */
 	localUserUpdated: { id: MiUser['id']; };
+	usersUpdated: { ids: MiUser['id'][]; };
+	userUpdated: { id: MiUser['id']; };
 	follow: { followerId: MiUser['id']; followeeId: MiUser['id']; };
 	unfollow: { followerId: MiUser['id']; followeeId: MiUser['id']; };
 	blockingCreated: { blockerId: MiUser['id']; blockeeId: MiUser['id']; };
@@ -248,12 +254,12 @@ export interface InternalEventTypes {
 	roleUpdated: MiRole;
 	userRoleAssigned: MiRoleAssignment;
 	userRoleUnassigned: MiRoleAssignment;
-	webhookCreated: MiWebhook;
-	webhookDeleted: MiWebhook;
-	webhookUpdated: MiWebhook;
-	systemWebhookCreated: MiSystemWebhook;
-	systemWebhookDeleted: MiSystemWebhook;
-	systemWebhookUpdated: MiSystemWebhook;
+	webhookCreated: { id: MiWebhook['id'] };
+	webhookDeleted: { id: MiWebhook['id'] };
+	webhookUpdated: { id: MiWebhook['id'] };
+	systemWebhookCreated: { id: MiSystemWebhook['id'] };
+	systemWebhookDeleted: { id: MiSystemWebhook['id'] };
+	systemWebhookUpdated: { id: MiSystemWebhook['id'] };
 	antennaCreated: MiAntenna;
 	antennaDeleted: MiAntenna;
 	antennaUpdated: MiAntenna;
@@ -263,12 +269,19 @@ export interface InternalEventTypes {
 	metaUpdated: { before?: MiMeta; after: MiMeta; };
 	followChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };
 	unfollowChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };
-	updateUserProfile: MiUserProfile;
+	updateUserProfile: { userId: MiUserProfile['userId'] };
 	mute: { muterId: MiUser['id']; muteeId: MiUser['id']; };
 	unmute: { muterId: MiUser['id']; muteeId: MiUser['id']; };
 	userListMemberAdded: { userListId: MiUserList['id']; memberId: MiUser['id']; };
+	userListMemberUpdated: { userListId: MiUserList['id']; memberId: MiUser['id']; };
 	userListMemberRemoved: { userListId: MiUserList['id']; memberId: MiUser['id']; };
+	userListMemberBulkAdded: { userListIds: MiUserList['id'][]; memberId: MiUser['id']; };
+	userListMemberBulkUpdated: { userListIds: MiUserList['id'][]; memberId: MiUser['id']; };
+	userListMemberBulkRemoved: { userListIds: MiUserList['id'][]; memberId: MiUser['id']; };
 	quantumCacheUpdated: { name: string, keys: string[] };
+	quantumCacheReset: { name: string };
+	collapsedQueueDefer: { name: string, key: string, deferred: boolean };
+	collapsedQueueEnqueue: { name: string, key: string, value: unknown };
 }
 
 type EventTypesToEventPayload<T> = EventUnionFromDictionary<UndefinedAsNullAll<SerializedAll<T>>>;
@@ -353,6 +366,8 @@ export class GlobalEventService {
 
 		@Inject(DI.redisForPub)
 		private redisForPub: Redis.Redis,
+
+		private readonly internalEventService: InternalEventService,
 	) {
 	}
 
@@ -368,81 +383,83 @@ export class GlobalEventService {
 		}));
 	}
 
+	/** @deprecated use InternalEventService instead */
 	@bindThis
-	public publishInternalEvent<K extends keyof InternalEventTypes>(type: K, value?: InternalEventTypes[K]): void {
-		this.publish('internal', type, typeof value === 'undefined' ? null : value);
+	public publishInternalEvent<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K]): void {
+		trackPromise(this.internalEventService.emit(type, value));
+	}
+
+	/** @deprecated use InternalEventService instead */
+	@bindThis
+	public async publishInternalEventAsync<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K]): Promise<void> {
+		await this.internalEventService.emit(type, value);
 	}
 
 	@bindThis
-	public async publishInternalEventAsync<K extends keyof InternalEventTypes>(type: K, value?: InternalEventTypes[K]): Promise<void> {
-		await this.publish('internal', type, typeof value === 'undefined' ? null : value);
+	public async publishBroadcastStream<K extends keyof BroadcastTypes>(type: K, value?: BroadcastTypes[K]): Promise<void> {
+		await this.publish('broadcast', type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis
-	public publishBroadcastStream<K extends keyof BroadcastTypes>(type: K, value?: BroadcastTypes[K]): void {
-		this.publish('broadcast', type, typeof value === 'undefined' ? null : value);
+	public async publishMainStream<K extends keyof MainEventTypes>(userId: MiUser['id'], type: K, value?: MainEventTypes[K]): Promise<void> {
+		await this.publish(`mainStream:${userId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis
-	public publishMainStream<K extends keyof MainEventTypes>(userId: MiUser['id'], type: K, value?: MainEventTypes[K]): void {
-		this.publish(`mainStream:${userId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishDriveStream<K extends keyof DriveEventTypes>(userId: MiUser['id'], type: K, value?: DriveEventTypes[K]): Promise<void> {
+		await this.publish(`driveStream:${userId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis
-	public publishDriveStream<K extends keyof DriveEventTypes>(userId: MiUser['id'], type: K, value?: DriveEventTypes[K]): void {
-		this.publish(`driveStream:${userId}`, type, typeof value === 'undefined' ? null : value);
-	}
-
-	@bindThis
-	public publishNoteStream<K extends keyof NoteEventTypes>(noteId: MiNote['id'], type: K, value?: NoteEventTypes[K]): void {
-		this.publish(`noteStream:${noteId}`, type, {
+	public async publishNoteStream<K extends keyof NoteEventTypes>(noteId: MiNote['id'], type: K, value?: NoteEventTypes[K]): Promise<void> {
+		await this.publish(`noteStream:${noteId}`, type, {
 			id: noteId,
 			body: value,
 		});
 	}
 
 	@bindThis
-	public publishUserListStream<K extends keyof UserListEventTypes>(listId: MiUserList['id'], type: K, value?: UserListEventTypes[K]): void {
-		this.publish(`userListStream:${listId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishUserListStream<K extends keyof UserListEventTypes>(listId: MiUserList['id'], type: K, value?: UserListEventTypes[K]): Promise<void> {
+		await this.publish(`userListStream:${listId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis
-	public publishAntennaStream<K extends keyof AntennaEventTypes>(antennaId: MiAntenna['id'], type: K, value?: AntennaEventTypes[K]): void {
-		this.publish(`antennaStream:${antennaId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishAntennaStream<K extends keyof AntennaEventTypes>(antennaId: MiAntenna['id'], type: K, value?: AntennaEventTypes[K]): Promise<void> {
+		await this.publish(`antennaStream:${antennaId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis
-	public publishRoleTimelineStream<K extends keyof RoleTimelineEventTypes>(roleId: MiRole['id'], type: K, value?: RoleTimelineEventTypes[K]): void {
-		this.publish(`roleTimelineStream:${roleId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishRoleTimelineStream<K extends keyof RoleTimelineEventTypes>(roleId: MiRole['id'], type: K, value?: RoleTimelineEventTypes[K]): Promise<void> {
+		await this.publish(`roleTimelineStream:${roleId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis
-	public publishNotesStream(note: Packed<'Note'>): void {
-		this.publish('notesStream', null, note);
+	public async publishNotesStream(note: Packed<'Note'>): Promise<void> {
+		await this.publish('notesStream', null, note);
 	}
 
 	@bindThis
-	public publishAdminStream<K extends keyof AdminEventTypes>(userId: MiUser['id'], type: K, value?: AdminEventTypes[K]): void {
-		this.publish(`adminStream:${userId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishAdminStream<K extends keyof AdminEventTypes>(userId: MiUser['id'], type: K, value?: AdminEventTypes[K]): Promise<void> {
+		await this.publish(`adminStream:${userId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis
-	public publishChatUserStream<K extends keyof ChatEventTypes>(fromUserId: MiUser['id'], toUserId: MiUser['id'], type: K, value?: ChatEventTypes[K]): void {
-		this.publish(`chatUserStream:${fromUserId}-${toUserId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishChatUserStream<K extends keyof ChatEventTypes>(fromUserId: MiUser['id'], toUserId: MiUser['id'], type: K, value?: ChatEventTypes[K]): Promise<void> {
+		await this.publish(`chatUserStream:${fromUserId}-${toUserId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis
-	public publishChatRoomStream<K extends keyof ChatEventTypes>(toRoomId: MiChatRoom['id'], type: K, value?: ChatEventTypes[K]): void {
-		this.publish(`chatRoomStream:${toRoomId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishChatRoomStream<K extends keyof ChatEventTypes>(toRoomId: MiChatRoom['id'], type: K, value?: ChatEventTypes[K]): Promise<void> {
+		await this.publish(`chatRoomStream:${toRoomId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis
-	public publishReversiStream<K extends keyof ReversiEventTypes>(userId: MiUser['id'], type: K, value?: ReversiEventTypes[K]): void {
-		this.publish(`reversiStream:${userId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishReversiStream<K extends keyof ReversiEventTypes>(userId: MiUser['id'], type: K, value?: ReversiEventTypes[K]): Promise<void> {
+		await this.publish(`reversiStream:${userId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis
-	public publishReversiGameStream<K extends keyof ReversiGameEventTypes>(gameId: MiReversiGame['id'], type: K, value?: ReversiGameEventTypes[K]): void {
-		this.publish(`reversiGameStream:${gameId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishReversiGameStream<K extends keyof ReversiGameEventTypes>(gameId: MiReversiGame['id'], type: K, value?: ReversiGameEventTypes[K]): Promise<void> {
+		await this.publish(`reversiGameStream:${gameId}`, type, typeof value === 'undefined' ? null : value);
 	}
 }

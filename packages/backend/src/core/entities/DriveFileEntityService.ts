@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { In } from 'typeorm';
+import { ModuleRef } from '@nestjs/core';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -19,8 +20,8 @@ import { isMimeImage } from '@/misc/is-mime-image.js';
 import { IdService } from '@/core/IdService.js';
 import { UtilityService } from '../UtilityService.js';
 import { VideoProcessingService } from '../VideoProcessingService.js';
-import { UserEntityService } from './UserEntityService.js';
 import { DriveFolderEntityService } from './DriveFolderEntityService.js';
+import type { UserEntityService } from './UserEntityService.js';
 
 type PackOptions = {
 	detail?: boolean,
@@ -29,23 +30,28 @@ type PackOptions = {
 };
 
 @Injectable()
-export class DriveFileEntityService {
+export class DriveFileEntityService implements OnModuleInit {
+	private userEntityService: UserEntityService;
+
 	constructor(
+		private readonly moduleRef: ModuleRef,
+
 		@Inject(DI.config)
 		private config: Config,
 
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
-		// 循環参照のため / for circular dependency
-		@Inject(forwardRef(() => UserEntityService))
-		private userEntityService: UserEntityService,
-
 		private utilityService: UtilityService,
 		private driveFolderEntityService: DriveFolderEntityService,
 		private videoProcessingService: VideoProcessingService,
 		private idService: IdService,
 	) {
+	}
+
+	@bindThis
+	public onModuleInit() {
+		this.userEntityService = this.moduleRef.get('UserEntityService');
 	}
 
 	@bindThis
@@ -195,6 +201,7 @@ export class DriveFileEntityService {
 
 		const file = typeof src === 'object' ? src : await this.driveFilesRepository.findOneByOrFail({ id: src });
 
+		// noinspection ES6MissingAwait
 		return await awaitAll<Packed<'DriveFile'>>({
 			id: file.id,
 			createdAt: this.idService.parse(file.id).date.toISOString(),
@@ -233,6 +240,7 @@ export class DriveFileEntityService {
 		const file = typeof src === 'object' ? src : await this.driveFilesRepository.findOneBy({ id: src });
 		if (file == null) return null;
 
+		// noinspection ES6MissingAwait
 		return await awaitAll<Packed<'DriveFile'>>({
 			id: file.id,
 			createdAt: this.idService.parse(file.id).date.toISOString(),

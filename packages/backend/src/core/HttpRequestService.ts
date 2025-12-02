@@ -19,6 +19,7 @@ import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/val
 import type { IObject, IObjectWithId } from '@/core/activitypub/type.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { Response } from 'node-fetch';
 import type { Socket } from 'node:net';
 
@@ -72,7 +73,7 @@ export function validateSocketConnect(allowedPrivateNetworks: PrivateNetwork[] |
 
 declare module 'node:http' {
 	interface Agent {
-		createConnection(options: net.NetConnectOpts, callback?: (err: unknown, stream: net.Socket) => void): net.Socket;
+		createConnection(options: net.NetConnectOpts, callback?: (err: Error | null, stream: net.Socket) => void): net.Socket;
 	}
 }
 
@@ -85,7 +86,7 @@ class HttpRequestServiceAgent extends http.Agent {
 	}
 
 	@bindThis
-	public createConnection(options: net.NetConnectOpts, callback?: (err: unknown, stream: net.Socket) => void): net.Socket {
+	public createConnection(options: net.NetConnectOpts, callback?: (err: Error | null, stream: net.Socket) => void): net.Socket {
 		const socket = super.createConnection(options, callback)
 			.on('connect', () => {
 				if (process.env.NODE_ENV === 'production') {
@@ -105,7 +106,7 @@ class HttpsRequestServiceAgent extends https.Agent {
 	}
 
 	@bindThis
-	public createConnection(options: net.NetConnectOpts, callback?: (err: unknown, stream: net.Socket) => void): net.Socket {
+	public createConnection(options: net.NetConnectOpts, callback?: (err: Error | null, stream: net.Socket) => void): net.Socket {
 		const socket = super.createConnection(options, callback)
 			.on('connect', () => {
 				if (process.env.NODE_ENV === 'production') {
@@ -156,8 +157,10 @@ export class HttpRequestService {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
+
 		private readonly apUtilityService: ApUtilityService,
 		private readonly utilityService: UtilityService,
+		private readonly timeService: TimeService,
 	) {
 		const cache = new CacheableLookup({
 			maxTtl: 3600,	// 1hours
@@ -343,7 +346,7 @@ export class HttpRequestService {
 		this.utilityService.assertUrl(parsedUrl, allowHttp);
 
 		const controller = new AbortController();
-		setTimeout(() => {
+		this.timeService.startTimer(() => {
 			controller.abort();
 		}, timeout);
 

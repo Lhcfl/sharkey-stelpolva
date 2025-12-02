@@ -4,21 +4,25 @@
 	"scripts": {
 		"watch": "nodemon -w ../../package.json -e json --exec \"node build.js watch\"",
 		"build": "node build.js",
-		"typecheck": "tsc --noEmit",
-		"eslint": "eslint --quiet \"{src,test,js,@types}/**/*.{js,jsx,ts,tsx,vue}\" --cache",
+		"typecheck-all": "pnpm run --no-bail typecheck:sw && pnpm run --no-bail typecheck:scripts",
+		"typecheck": "pnpm run typecheck:sw && pnpm run typecheck:scripts",
+		"typecheck:sw": "tsc -p tsconfig.sw.json --noEmit",
+		"typecheck:scripts": "tsc -p tsconfig.scripts.json --noEmit",
+		"eslint": "eslint --quiet --cache -c eslint.config.js",
 		"lint": "pnpm typecheck && pnpm eslint"
 	},
 	"dependencies": {
-		"esbuild": "0.25.3",
-		"idb-keyval": "6.2.1",
+		"idb-keyval": "6.2.2",
 		"misskey-js": "workspace:*"
 	},
 	"devDependencies": {
-		"@typescript-eslint/parser": "8.31.0",
-		"@typescript/lib-webworker": "npm:@types/serviceworker@0.0.74",
-		"eslint-plugin-import": "2.31.0",
+		"@types/node": "22.18.1",
+		"@typescript-eslint/parser": "8.44.1",
+		"@typescript/lib-webworker": "npm:@types/serviceworker@0.0.153",
+		"esbuild": "0.25.10",
+		"eslint-plugin-import": "2.32.0",
 		"nodemon": "3.1.10",
-		"typescript": "5.8.3"
+		"typescript": "5.9.2"
 	},
 	"type": "module"
 }

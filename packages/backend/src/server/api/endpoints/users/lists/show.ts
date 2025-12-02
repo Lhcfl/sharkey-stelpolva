@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { UserListsRepository, UserListFavoritesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserListEntityService } from '@/core/entities/UserListEntityService.js';
+import { UserListService } from '@/core/UserListService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../../error.js';
 
@@ -59,41 +60,21 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private userListFavoritesRepository: UserListFavoritesRepository,
 
 		private userListEntityService: UserListEntityService,
+		private readonly userListService: UserListService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const additionalProperties: Partial<{ likedCount: number, isLiked: boolean }> = {};
 			// Fetch the list
-			const userList = await this.userListsRepository.findOneBy(!ps.forPublic && me !== null ? {
-				id: ps.listId,
-				userId: me.id,
-			} : {
-				id: ps.listId,
-				isPublic: true,
-			});
+			const userList = await this.userListService.userListsCache.fetchMaybe(ps.listId);
 
 			if (userList == null) {
 				throw new ApiError(meta.errors.noSuchList);
 			}
 
-			if (ps.forPublic && userList.isPublic) {
-				additionalProperties.likedCount = await this.userListFavoritesRepository.countBy({
-					userListId: ps.listId,
-				});
-				if (me !== null) {
-					additionalProperties.isLiked = await this.userListFavoritesRepository.exists({
-						where: {
-							userId: me.id,
-							userListId: ps.listId,
-						},
-					});
-				} else {
-					additionalProperties.isLiked = false;
-				}
+			if (!userList.isPublic && userList.userId !== me?.id) {
+				throw new ApiError(meta.errors.noSuchList);
 			}
-			return {
-				...await this.userListEntityService.pack(userList),
-				...additionalProperties,
-			};
+
+			return await this.userListEntityService.pack(userList, me?.id);
 		});
 	}
 }

@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { In, EntityNotFoundError } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { FollowRequestsRepository, NotesRepository, MiUser, UsersRepository } from '@/models/_.js';
+import type { FollowRequestsRepository, NotesRepository, MiUser, UsersRepository, AccessTokensRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
 import type { MiGroupedNotification, MiNotification } from '@/models/Notification.js';
 import type { MiNote } from '@/models/Note.js';
@@ -15,13 +15,13 @@ import type { Packed } from '@/misc/json-schema.js';
 import { bindThis } from '@/decorators.js';
 import { FilterUnionByProperty, groupedNotificationTypes } from '@/types.js';
 import { CacheService } from '@/core/CacheService.js';
-import { RoleEntityService } from './RoleEntityService.js';
-import { ChatEntityService } from './ChatEntityService.js';
+import type { RoleEntityService } from './RoleEntityService.js';
+import type { ChatEntityService } from './ChatEntityService.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { UserEntityService } from './UserEntityService.js';
 import type { NoteEntityService } from './NoteEntityService.js';
 
-const NOTE_REQUIRED_NOTIFICATION_TYPES = new Set(['note', 'mention', 'reply', 'renote', 'renote:grouped', 'quote', 'reaction', 'reaction:grouped', 'pollEnded', 'edited', 'scheduledNotePosted'] as (typeof groupedNotificationTypes[number])[]);
+const NOTE_REQUIRED_NOTIFICATION_TYPES = new Set(['note', 'mention', 'reply', 'renote', 'renote:grouped', 'quote', 'reaction', 'reaction:grouped', 'pollEnded', 'edited', 'scheduledNotePosted']);
 
 function undefOnMissing<T>(packPromise: Promise<T>): Promise<T | undefined> {
 	return packPromise.catch(err => {
@@ -49,10 +49,14 @@ export class NotificationEntityService implements OnModuleInit {
 		@Inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
+		@Inject(DI.accessTokensRepository)
+		private readonly accessTokensRepository: AccessTokensRepository,
+
 		private cacheService: CacheService,
 	) {
 	}
 
+	@bindThis
 	onModuleInit() {
 		this.userEntityService = this.moduleRef.get('UserEntityService');
 		this.noteEntityService = this.moduleRef.get('NoteEntityService');
@@ -65,7 +69,7 @@ export class NotificationEntityService implements OnModuleInit {
 	*/
 	async #packInternal <T extends MiNotification | MiGroupedNotification> (
 		src: T,
-		meId: MiUser['id'],
+		me: MiUser,
 		options: {
 			checkValidNotifier?: boolean;
 		},
@@ -76,13 +80,13 @@ export class NotificationEntityService implements OnModuleInit {
 	): Promise<Packed<'Notification'> | null> {
 		const notification = src;
 
-		if (options.checkValidNotifier !== false && !(await this.#isValidNotifier(notification, meId))) return null;
+		if (options.checkValidNotifier !== false && !(await this.#isValidNotifier(notification, me.id))) return null;
 
 		const needsNote = NOTE_REQUIRED_NOTIFICATION_TYPES.has(notification.type) && 'noteId' in notification;
 		const noteIfNeed = needsNote ? (
 			hint?.packedNotes != null
 				? hint.packedNotes.get(notification.noteId)
-				: undefOnMissing(this.noteEntityService.pack(notification.noteId, { id: meId }, {
+				: undefOnMissing(this.noteEntityService.pack(notification.noteId, me, {
 					detail: true,
 				}))
 		) : undefined;
@@ -93,7 +97,7 @@ export class NotificationEntityService implements OnModuleInit {
 		const userIfNeed = needsUser ? (
 			hint?.packedUsers != null
 				? hint.packedUsers.get(notification.notifierId)
-				: undefOnMissing(this.userEntityService.pack(notification.notifierId, { id: meId }))
+				: undefOnMissing(this.userEntityService.pack(notification.notifierId, me))
 		) : undefined;
 		// if the user has been deleted, don't show this notification
 		if (needsUser && !userIfNeed) return null;
@@ -103,7 +107,7 @@ export class NotificationEntityService implements OnModuleInit {
 			const reactions = (await Promise.all(notification.reactions.map(async reaction => {
 				const user = hint?.packedUsers != null
 					? hint.packedUsers.get(reaction.userId)!
-					: await undefOnMissing(this.userEntityService.pack(reaction.userId, { id: meId }));
+					: await undefOnMissing(this.userEntityService.pack(reaction.userId, me));
 				return {
 					user,
 					reaction: reaction.reaction,
@@ -128,7 +132,7 @@ export class NotificationEntityService implements OnModuleInit {
 					return packedUser;
 				}
 
-				return undefOnMissing(this.userEntityService.pack(userId, { id: meId }));
+				return undefOnMissing(this.userEntityService.pack(userId, me));
 			}))).filter(x => x != null);
 			// if all users have been deleted, don't show this notification
 			if (users.length === 0) {
@@ -155,7 +159,7 @@ export class NotificationEntityService implements OnModuleInit {
 		}
 
 		const needsChatRoomInvitation = notification.type === 'chatRoomInvitationReceived';
-		const chatRoomInvitation = needsChatRoomInvitation ? await this.chatEntityService.packRoomInvitation(notification.invitationId, { id: meId }).catch(() => null) : undefined;
+		const chatRoomInvitation = needsChatRoomInvitation ? await this.chatEntityService.packRoomInvitation(notification.invitationId, me).catch(() => null) : undefined;
 		// if the invitation has been deleted, don't show this notification
 		if (needsChatRoomInvitation && !chatRoomInvitation) {
 			return null;
@@ -202,41 +206,43 @@ export class NotificationEntityService implements OnModuleInit {
 			...(notification.type === 'reportAccepted' ? {
 				target: notification.target,
 			} : {}),
+			...(notification.type === 'sharedAccessGranted' ? {
+				permCount: notification.permCount,
+				rank: notification.rank,
+			} : {}),
 		});
 	}
 
 	async #packManyInternal <T extends MiNotification | MiGroupedNotification>	(
 		notifications: T[],
-		meId: MiUser['id'],
+		me: MiUser,
 	): Promise<T[]> {
 		if (notifications.length === 0) return [];
 
 		let validNotifications = notifications;
 
-		validNotifications = await this.#filterValidNotifier(validNotifications, meId);
+		validNotifications = await this.#filterValidNotifier(validNotifications, me.id);
 
 		const noteIds = validNotifications.map(x => 'noteId' in x ? x.noteId : null).filter(x => x != null);
 		const notes = noteIds.length > 0 ? await this.notesRepository.find({
 			where: { id: In(noteIds) },
-			relations: ['user', 'reply', 'reply.user', 'renote', 'renote.user'],
+			relations: ['user', 'reply', 'reply.user', 'renote', 'renote.user', 'renote.reply'],
 		}) : [];
-		const packedNotesArray = await this.noteEntityService.packMany(notes, { id: meId }, {
+		const packedNotesArray = await this.noteEntityService.packMany(notes, me, {
 			detail: true,
 		});
 		const packedNotes = new Map(packedNotesArray.map(p => [p.id, p]));
 
 		validNotifications = validNotifications.filter(x => !('noteId' in x) || packedNotes.has(x.noteId));
 
-		const userIds = [];
+		const userIds: string[] = [];
 		for (const notification of validNotifications) {
 			if ('notifierId' in notification) userIds.push(notification.notifierId);
 			if (notification.type === 'reaction:grouped') userIds.push(...notification.reactions.map(x => x.userId));
 			if (notification.type === 'renote:grouped') userIds.push(...notification.userIds);
 		}
-		const users = userIds.length > 0 ? await this.usersRepository.find({
-			where: { id: In(userIds) },
-		}) : [];
-		const packedUsersArray = await this.userEntityService.packMany(users, { id: meId });
+		const users = await this.cacheService.findUsersById(userIds);
+		const packedUsersArray = await this.userEntityService.packMany(Array.from(users.values()), me);
 		const packedUsers = new Map(packedUsersArray.map(p => [p.id, p]));
 
 		// 既に解決されたフォローリクエストの通知を除外
@@ -251,7 +257,7 @@ export class NotificationEntityService implements OnModuleInit {
 		const packPromises = validNotifications.map(x => {
 			return this.pack(
 				x,
-				meId,
+				me,
 				{ checkValidNotifier: false },
 				{ packedNotes, packedUsers },
 			);
@@ -263,7 +269,7 @@ export class NotificationEntityService implements OnModuleInit {
 	@bindThis
 	public async pack(
 		src: MiNotification | MiGroupedNotification,
-		meId: MiUser['id'],
+		me: MiUser,
 
 		options: {
 			checkValidNotifier?: boolean;
@@ -273,23 +279,23 @@ export class NotificationEntityService implements OnModuleInit {
 			packedUsers: Map<MiUser['id'], Packed<'UserLite'>>;
 		},
 	): Promise<Packed<'Notification'> | null> {
-		return await this.#packInternal(src, meId, options, hint);
+		return await this.#packInternal(src, me, options, hint);
 	}
 
 	@bindThis
 	public async packMany(
 		notifications: MiNotification[],
-		meId: MiUser['id'],
+		me: MiUser,
 	): Promise<MiNotification[]> {
-		return await this.#packManyInternal(notifications, meId);
+		return await this.#packManyInternal(notifications, me);
 	}
 
 	@bindThis
 	public async packGroupedMany(
 		notifications: MiGroupedNotification[],
-		meId: MiUser['id'],
+		me: MiUser,
 	): Promise<MiGroupedNotification[]> {
-		return await this.#packManyInternal(notifications, meId);
+		return await this.#packManyInternal(notifications, me);
 	}
 
 	/**
@@ -299,12 +305,12 @@ export class NotificationEntityService implements OnModuleInit {
 		notification: T,
 		userIdsWhoMeMuting: Set<MiUser['id']>,
 		userMutedInstances: Set<string>,
-		notifiers: MiUser[],
+		notifiers: Map<string, MiUser>,
 	): boolean {
 		if (!('notifierId' in notification)) return true;
 		if (userIdsWhoMeMuting.has(notification.notifierId)) return false;
 
-		const notifier = notifiers.find(x => x.id === notification.notifierId) ?? null;
+		const notifier = notifiers.get(notification.notifierId) ?? null;
 
 		if (notifier == null) return false;
 		if (notifier.host && userMutedInstances.has(notifier.host)) return false;
@@ -331,18 +337,17 @@ export class NotificationEntityService implements OnModuleInit {
 		notifications: T[],
 		meId: MiUser['id'],
 	): Promise<T[]> {
+		const notifierIds = notifications.map(notification => 'notifierId' in notification ? notification.notifierId : null).filter(x => x != null);
+
 		const [
 			userIdsWhoMeMuting,
 			userMutedInstances,
+			notifiers,
 		] = await Promise.all([
 			this.cacheService.userMutingsCache.fetch(meId),
-			this.cacheService.userProfileCache.fetch(meId).then(p => new Set(p.mutedInstances)),
+			this.cacheService.userMutingsCache.fetch(meId),
+			this.cacheService.findUsersById(notifierIds),
 		]);
-
-		const notifierIds = notifications.map(notification => 'notifierId' in notification ? notification.notifierId : null).filter(x => x != null);
-		const notifiers = notifierIds.length > 0 ? await this.usersRepository.find({
-			where: { id: In(notifierIds) },
-		}) : [];
 
 		const filteredNotifications = ((await Promise.all(notifications.map(async (notification) => {
 			const isValid = this.#validateNotifier(notification, userIdsWhoMeMuting, userMutedInstances, notifiers);

@@ -56,7 +56,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchSystemWebhook);
 			}
 
-			return this.systemWebhookEntityService.pack(webhooks[0]);
+			return await this.systemWebhookEntityService.pack(webhooks[0]);
 		});
 	}
 }

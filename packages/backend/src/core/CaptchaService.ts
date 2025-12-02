@@ -10,22 +10,12 @@ import { MetaService } from '@/core/MetaService.js';
 import { MiMeta } from '@/models/Meta.js';
 import Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
-import { CaptchaError } from '@/misc/captcha-error.js';
+import { CaptchaError, captchaErrorCodes } from '@/misc/captcha-error.js';
 
 export { CaptchaError } from '@/misc/captcha-error.js';
 
 export const supportedCaptchaProviders = ['none', 'hcaptcha', 'mcaptcha', 'recaptcha', 'turnstile', 'fc', 'testcaptcha'] as const;
 export type CaptchaProvider = typeof supportedCaptchaProviders[number];
-
-export const captchaErrorCodes = {
-	invalidProvider: Symbol('invalidProvider'),
-	invalidParameters: Symbol('invalidParameters'),
-	noResponseProvided: Symbol('noResponseProvided'),
-	requestFailed: Symbol('requestFailed'),
-	verificationFailed: Symbol('verificationFailed'),
-	unknown: Symbol('unknown'),
-} as const;
-export type CaptchaErrorCode = typeof captchaErrorCodes[keyof typeof captchaErrorCodes];
 
 export type CaptchaSetting = {
 	provider: CaptchaProvider;

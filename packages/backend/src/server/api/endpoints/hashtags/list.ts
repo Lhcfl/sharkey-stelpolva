@@ -91,7 +91,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const tags = await query.limit(ps.limit).getMany();
 
-			return this.hashtagEntityService.packMany(tags);
+			return await this.hashtagEntityService.packMany(tags);
 		});
 	}
 }

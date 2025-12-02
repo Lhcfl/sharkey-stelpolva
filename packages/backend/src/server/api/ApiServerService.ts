@@ -194,7 +194,7 @@ export class ApiServerService {
 			});
 
 			if (token && token.session != null && !token.fetched) {
-				this.accessTokensRepository.update(token.id, {
+				await this.accessTokensRepository.update(token.id, {
 					fetched: true,
 				});
 

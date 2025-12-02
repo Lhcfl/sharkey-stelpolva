@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AppsRepository } from '@/models/_.js';
 import { AppEntityService } from '@/core/entities/AppEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { promiseMap } from '@/misc/promise-map.js';
 
 export const meta = {
 	tags: ['account', 'app'],
@@ -60,9 +61,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				skip: ps.offset,
 			});
 
-			return await Promise.all(apps.map(app => this.appEntityService.pack(app, me, {
+			return await promiseMap(apps, async app => await this.appEntityService.pack(app, me, {
 				detail: true,
-			})));
+			}), {
+				limit: 4,
+			});
 		});
 	}
 }

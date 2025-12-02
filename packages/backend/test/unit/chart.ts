@@ -3,12 +3,16 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { MockConsole } from '../misc/MockConsole.js';
+
 process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
-import { jest } from '@jest/globals';
-import * as lolex from '@sinonjs/fake-timers';
 import { DataSource } from 'typeorm';
+import { Test, TestingModule } from '@nestjs/testing';
+import { GodOfTimeService } from '../misc/GodOfTimeService.js';
+import { MockRedis } from '../misc/MockRedis.js';
+import { GlobalModule } from '@/GlobalModule.js';
 import TestChart from '@/core/chart/charts/test.js';
 import TestGroupedChart from '@/core/chart/charts/test-grouped.js';
 import TestUniqueChart from '@/core/chart/charts/test-unique.js';
@@ -17,70 +21,72 @@ import { entity as TestChartEntity } from '@/core/chart/charts/entities/test.js'
 import { entity as TestGroupedChartEntity } from '@/core/chart/charts/entities/test-grouped.js';
 import { entity as TestUniqueChartEntity } from '@/core/chart/charts/entities/test-unique.js';
 import { entity as TestIntersectionChartEntity } from '@/core/chart/charts/entities/test-intersection.js';
-import { loadConfig } from '@/config.js';
-import type { AppLockService } from '@/core/AppLockService.js';
+import { AppLockService } from '@/core/AppLockService.js';
 import Logger from '@/logger.js';
+import { CoreModule } from '@/core/CoreModule.js';
+import { DI } from '@/di-symbols.js';
+import { TimeService } from '@/global/TimeService.js';
+import { LoggerService } from '@/core/LoggerService.js';
 
 describe('Chart', () => {
-	const config = loadConfig();
-	const appLockService = {
-		getChartInsertLock: () => () => Promise.resolve(() => {}),
-	} as unknown as jest.Mocked<AppLockService>;
-
-	let db: DataSource | undefined;
+	let app: TestingModule;
+	let db: DataSource;
+	let appLockService: AppLockService;
+	let logger: Logger;
+	let redis: MockRedis;
 
 	let testChart: TestChart;
 	let testGroupedChart: TestGroupedChart;
 	let testUniqueChart: TestUniqueChart;
 	let testIntersectionChart: TestIntersectionChart;
-	let clock: lolex.InstalledClock;
+	let clock: GodOfTimeService;
 
-	beforeEach(async () => {
-		if (db) db.destroy();
+	beforeAll(async () => {
+		app = await Test.createTestingModule({
+			imports: [GlobalModule, CoreModule],
+		})
+			.overrideProvider(DI.redis).useClass(MockRedis)
+			.overrideProvider(TimeService).useClass(GodOfTimeService)
+			.overrideProvider(DI.console).useClass(MockConsole)
+			.compile();
 
-		db = new DataSource({
-			type: 'postgres',
-			host: config.db.host,
-			port: config.db.port,
-			username: config.db.user,
-			password: config.db.pass,
-			database: config.db.db,
-			extra: {
-				statement_timeout: 1000 * 10,
-				...config.db.extra,
-			},
-			synchronize: true,
-			dropSchema: true,
-			maxQueryExecutionTime: 300,
-			entities: [
-				TestChartEntity.hour, TestChartEntity.day,
-				TestGroupedChartEntity.hour, TestGroupedChartEntity.day,
-				TestUniqueChartEntity.hour, TestUniqueChartEntity.day,
-				TestIntersectionChartEntity.hour, TestIntersectionChartEntity.day,
-			],
-			migrations: ['../../migration/*.js'],
-		});
+		logger = app.get(LoggerService).getLogger('chart');
+		appLockService = app.get(AppLockService);
+		redis = app.get(DI.redis);
+		db = app.get(DI.db);
 
-		await db.initialize();
+		clock = app.get(TimeService);
+		clock.resetTo(Date.UTC(2000, 0, 1, 0, 0, 0));
 
-		const logger = new Logger('chart'); // TODO: モックにする
-		testChart = new TestChart(db, appLockService, logger);
-		testGroupedChart = new TestGroupedChart(db, appLockService, logger);
-		testUniqueChart = new TestUniqueChart(db, appLockService, logger);
-		testIntersectionChart = new TestIntersectionChart(db, appLockService, logger);
-
-		clock = lolex.install({
-			now: new Date(Date.UTC(2000, 0, 1, 0, 0, 0)),
-			shouldClearNativeTimers: true,
-		});
-	});
-
-	afterEach(() => {
-		clock.uninstall();
+		await app.init();
+		app.enableShutdownHooks();
 	});
 
 	afterAll(async () => {
-		if (db) await db.destroy();
+		await app.close();
+	});
+
+	beforeEach(async () => {
+		clock.resetTo(Date.UTC(2000, 0, 1, 0, 0, 0));
+		redis.mockReset();
+
+		testChart = new TestChart(db, appLockService, clock, logger);
+		testGroupedChart = new TestGroupedChart(db, appLockService, clock, logger);
+		testUniqueChart = new TestUniqueChart(db, appLockService, clock, logger);
+		testIntersectionChart = new TestIntersectionChart(db, appLockService, clock, logger);
+	});
+
+	afterEach(async () => {
+		const entities = [
+			TestChartEntity.hour, TestChartEntity.day,
+			TestGroupedChartEntity.hour, TestGroupedChartEntity.day,
+			TestUniqueChartEntity.hour, TestUniqueChartEntity.day,
+			TestIntersectionChartEntity.hour, TestIntersectionChartEntity.day,
+		];
+
+		for (const entity of entities) {
+			await db.getRepository(entity).deleteAll();
+		}
 	});
 
 	test('Can updates', async () => {
@@ -208,7 +214,7 @@ describe('Chart', () => {
 		await testChart.increment();
 		await testChart.save();
 
-		clock.tick('01:00:00');
+		clock.tick({ hours: 1 });
 
 		await testChart.increment();
 		await testChart.save();
@@ -268,7 +274,7 @@ describe('Chart', () => {
 		await testChart.increment();
 		await testChart.save();
 
-		clock.tick('02:00:00');
+		clock.tick({ hours: 2 });
 
 		await testChart.increment();
 		await testChart.save();
@@ -298,7 +304,7 @@ describe('Chart', () => {
 		await testChart.increment();
 		await testChart.save();
 
-		clock.tick('05:00:00');
+		clock.tick({ hours: 5 });
 
 		const chartHours = await testChart.getChart('hour', 3, null);
 		const chartDays = await testChart.getChart('day', 3, null);
@@ -326,7 +332,7 @@ describe('Chart', () => {
 		await testChart.increment();
 		await testChart.save();
 
-		clock.tick('05:00:00');
+		clock.tick({ hours: 5 });
 
 		await testChart.increment();
 		await testChart.save();
@@ -355,7 +361,7 @@ describe('Chart', () => {
 		await testChart.increment();
 		await testChart.save();
 
-		clock.tick('01:00:00');
+		clock.tick({ hours: 1 });
 
 		await testChart.increment();
 		await testChart.save();
@@ -381,12 +387,12 @@ describe('Chart', () => {
 	});
 
 	test('Can specify offset (floor time)', async () => {
-		clock.tick('00:30:00');
+		clock.tick({ minutes: 30 });
 
 		await testChart.increment();
 		await testChart.save();
 
-		clock.tick('01:30:00');
+		clock.tick({ hours: 1, minutes: 30 });
 
 		await testChart.increment();
 		await testChart.save();
@@ -552,7 +558,7 @@ describe('Chart', () => {
 			await testChart.increment();
 			await testChart.save();
 
-			clock.tick('01:00:00');
+			clock.tick({ hours: 1 });
 
 			testChart.total = 100;
 

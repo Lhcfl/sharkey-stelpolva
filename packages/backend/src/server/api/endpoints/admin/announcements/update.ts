@@ -9,6 +9,7 @@ import type { AnnouncementsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { TimeService } from '@/global/TimeService.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -58,6 +59,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private announcementsRepository: AnnouncementsRepository,
 
 		private announcementService: AnnouncementService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const announcement = await this.announcementsRepository.findOneBy({ id: ps.id });
@@ -66,7 +68,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			try {
 				await this.announcementService.update(announcement, {
-					updatedAt: new Date(),
+					updatedAt: this.timeService.date,
 					title: ps.title,
 					text: ps.text,
 					/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- 空の文字列の場合、nullを渡すようにするため */

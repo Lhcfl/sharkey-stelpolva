@@ -33,10 +33,11 @@ import { misskeyApi } from '@/utility/misskey-api.js';
 import { definePage } from '@/page.js';
 import { i18n } from '@/i18n.js';
 import { useRouter } from '@/router.js';
-import { store } from '@/store.js';
 import { deepMerge } from '@/utility/merge.js';
-import * as os from '@/os.js';
+import { useMuteOverrides } from '@/utility/check-word-mute.js';
+import { store } from '@/store.js';
 import { $i } from '@/i.js';
+import * as os from '@/os.js';
 
 const router = useRouter();
 
@@ -65,10 +66,22 @@ function saveTlFilter(key: keyof typeof store.s.tl.filter, newValue: boolean) {
 	}
 }
 
+const muteOverrides = useMuteOverrides();
+
 watch(() => props.listId, async () => {
-	list.value = await misskeyApi('users/lists/show', {
+	const _list = await misskeyApi('users/lists/show', {
 		listId: props.listId,
 	});
+	list.value = _list;
+
+	// Disable mandatory CW for all list members
+	muteOverrides.user = {}; // Reset prior
+	for (const userId of _list.userIds) {
+		muteOverrides.user[userId] = {
+			userMandatoryCW: null,
+			instanceMandatoryCW: null,
+		};
+	}
 }, { immediate: true });
 
 function queueUpdated(q) {
@@ -76,6 +89,7 @@ function queueUpdated(q) {
 }
 
 function top() {
+	if (!rootEl.value) return;
 	scrollInContainer(rootEl.value, { top: 0 });
 }
 

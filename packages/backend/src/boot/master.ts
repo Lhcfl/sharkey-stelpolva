@@ -13,11 +13,15 @@ import chalk from 'chalk';
 import chalkTemplate from 'chalk-template';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
-import Logger from '@/logger.js';
+import type Logger from '@/logger.js';
 import { loadConfig } from '@/config.js';
 import type { Config } from '@/config.js';
+import type { LoggerService } from '@/core/LoggerService.js';
+import type { EnvService } from '@/global/EnvService.js';
+import type { EnvOption } from '@/env.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { showMachineInfo } from '@/misc/show-machine-info.js';
-import { envOption } from '@/env.js';
+import { coreLogger } from '@/boot/coreLogger.js';
 import { jobQueue, server } from './common.js';
 
 const _filename = fileURLToPath(import.meta.url);
@@ -25,29 +29,26 @@ const _dirname = dirname(_filename);
 
 const meta = JSON.parse(fs.readFileSync(`${_dirname}/../../../../built/meta.json`, 'utf-8'));
 
-const logger = new Logger('core', 'cyan');
-const bootLogger = logger.createSubLogger('boot', 'magenta');
-
 const themeColor = chalk.hex('#86b300');
 
-function greet() {
+function greet(logger: Logger, bootLogger: Logger, envOption: EnvOption) {
 	if (!envOption.quiet) {
 		//#region Misskey logo
-		console.log(themeColor(' _____ _                _              '));
-		console.log(themeColor('/  ___| |              | |             '));
-		console.log(themeColor('\\ `--.| |__   __ _ _ __| | _____ _   _ '));
-		console.log(themeColor(' `--. \\ \'_ \\ / _` | \'__| |/ / _ \\ | | |'));
-		console.log(themeColor('/\\__/ / | | | (_| | |  |   <  __/ |_| |'));
-		console.log(themeColor('\\____/|_| |_|\\__,_|_|  |_|\\_\\___|\\__, |'));
-		console.log(themeColor('                                  __/ |'));
-		console.log(themeColor('                                 |___/ '));
+		logger.info(themeColor(' _____ _                _              '));
+		logger.info(themeColor('/  ___| |              | |             '));
+		logger.info(themeColor('\\ `--.| |__   __ _ _ __| | _____ _   _ '));
+		logger.info(themeColor(' `--. \\ \'_ \\ / _` | \'__| |/ / _ \\ | | |'));
+		logger.info(themeColor('/\\__/ / | | | (_| | |  |   <  __/ |_| |'));
+		logger.info(themeColor('\\____/|_| |_|\\__,_|_|  |_|\\_\\___|\\__, |'));
+		logger.info(themeColor('                                  __/ |'));
+		logger.info(themeColor('                                 |___/ '));
 		//#endregion
 
-		console.log(' Sharkey is an open-source decentralized microblogging platform.');
-		console.log(chalk.rgb(255, 136, 0)(' If you like Sharkey, please donate to support development. https://opencollective.com/sharkey'));
+		logger.info(' Sharkey is an open-source decentralized microblogging platform.');
+		logger.info(chalk.rgb(255, 136, 0)(' If you like Sharkey, please donate to support development. https://opencollective.com/sharkey'));
 
-		console.log('');
-		console.log(chalkTemplate`--- ${os.hostname()} {gray (PID: ${process.pid.toString()})} ---`);
+		logger.info('');
+		logger.info(chalkTemplate`--- ${os.hostname()} {gray (PID: ${process.pid.toString()})} ---`);
 	}
 
 	bootLogger.info('Welcome to Sharkey!');
@@ -57,20 +58,23 @@ function greet() {
 /**
  * Init master process
  */
-export async function masterMain() {
+export async function masterMain(loggerService: LoggerService, envService: EnvService) {
 	let config!: Config;
+
+	const bootLogger = coreLogger.createSubLogger('boot', 'magenta');
+	const envOption = envService.options;
 
 	// initialize app
 	try {
-		greet();
-		showEnvironment();
+		greet(coreLogger, bootLogger, envOption);
+		showEnvironment(bootLogger);
 		await showMachineInfo(bootLogger);
-		showNodejsVersion();
-		config = loadConfigBoot();
+		showNodejsVersion(bootLogger);
+		config = loadConfig(loggerService);
 		//await connectDb();
 		if (config.pidFile) fs.writeFileSync(config.pidFile, process.pid.toString());
 	} catch (e) {
-		bootLogger.error('Fatal error occurred during initialization', null, true);
+		bootLogger.error(`Fatal error occurred during initialization: ${renderInlineError(e)}`, { e }, true);
 		process.exit(1);
 	}
 
@@ -125,7 +129,7 @@ export async function masterMain() {
 			process.exit(1);
 		}
 
-		await spawnWorkers(config.clusterLimit);
+		await spawnWorkers(bootLogger, config.clusterLimit);
 	} else {
 		// clusterモジュール無効時
 
@@ -147,7 +151,7 @@ export async function masterMain() {
 	}
 }
 
-function showEnvironment(): void {
+function showEnvironment(bootLogger: Logger): void {
 	const env = process.env.NODE_ENV;
 	const logger = bootLogger.createSubLogger('env');
 	logger.info(typeof env === 'undefined' ? 'NODE_ENV is not set' : `NODE_ENV: ${env}`);
@@ -158,32 +162,10 @@ function showEnvironment(): void {
 	}
 }
 
-function showNodejsVersion(): void {
+function showNodejsVersion(bootLogger: Logger): void {
 	const nodejsLogger = bootLogger.createSubLogger('nodejs');
 
 	nodejsLogger.info(`Version ${process.version} detected.`);
-}
-
-function loadConfigBoot(): Config {
-	const configLogger = bootLogger.createSubLogger('config');
-	let config;
-
-	try {
-		config = loadConfig();
-	} catch (exception) {
-		if (typeof exception === 'string') {
-			configLogger.error('Exception loading config:', exception);
-			process.exit(1);
-		} else if ((exception as any).code === 'ENOENT') {
-			configLogger.error('Configuration file not found', null, true);
-			process.exit(1);
-		}
-		throw exception;
-	}
-
-	configLogger.info('Loaded');
-
-	return config;
 }
 
 /*
@@ -204,17 +186,17 @@ async function connectDb(): Promise<void> {
 }
 */
 
-async function spawnWorkers(limit = 1) {
+async function spawnWorkers(bootLogger: Logger, limit = 1) {
 	const cpuCount = os.cpus().length;
 	// in some weird environments, node can't count the CPUs; we trust the config in those cases
 	const workers = cpuCount === 0 ? limit : Math.min(limit, cpuCount);
 
 	bootLogger.info(`Starting ${workers} worker${workers === 1 ? '' : 's'}...`);
-	await Promise.all([...Array(workers)].map(spawnWorker));
+	await Promise.all([...Array(workers)].map(() => spawnWorker(bootLogger)));
 	bootLogger.info('All workers started');
 }
 
-function spawnWorker(): Promise<void> {
+function spawnWorker(bootLogger: Logger): Promise<void> {
 	return new Promise(res => {
 		const worker = cluster.fork();
 		worker.on('message', message => {

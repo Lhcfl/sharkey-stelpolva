@@ -1,0 +1,15 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "../../shared/tsconfig.lib.jsonc",
+	"compilerOptions": {
+		// Checking
+		"exactOptionalPropertyTypes": true,
+
+		// Output
+		"outDir": "../temp/built/src",
+		"tsBuildInfoFile": "../temp/built/src/tsconfig.lib.tsbuildinfo"
+	},
+	"include": [
+		"**/*"
+	]
+}

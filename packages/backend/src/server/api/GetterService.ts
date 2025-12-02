@@ -5,11 +5,12 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
-import type { NotesRepository, UsersRepository, NoteEditRepository } from '@/models/_.js';
+import type { NotesRepository, UsersRepository, NoteEditsRepository } from '@/models/_.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
+import { isRemoteUser, isLocalUser } from '@/models/User.js';
 import type { MiNote } from '@/models/Note.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { bindThis } from '@/decorators.js';
 
 @Injectable()
@@ -21,10 +22,10 @@ export class GetterService {
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		@Inject(DI.noteEditRepository)
-		private noteEditRepository: NoteEditRepository,
+		@Inject(DI.noteEditsRepository)
+		private noteEditsRepository: NoteEditsRepository,
 
-		private userEntityService: UserEntityService,
+		private readonly cacheService: CacheService,
 	) {
 	}
 
@@ -58,7 +59,7 @@ export class GetterService {
 	 */
 	@bindThis
 	public async getEdits(noteId: MiNote['id']) {
-		const edits = await this.noteEditRepository.findBy({ noteId: noteId }).catch(() => {
+		const edits = await this.noteEditsRepository.findBy({ noteId: noteId }).catch(() => {
 			throw new IdentifiableError('9725d0ce-ba28-4dde-95a7-2cbb2c15de24', `Note ${noteId} does not exist`);
 		});
 
@@ -70,7 +71,7 @@ export class GetterService {
 	 */
 	@bindThis
 	public async getUser(userId: MiUser['id']) {
-		const user = await this.usersRepository.findOneBy({ id: userId });
+		const user = await this.cacheService.findOptionalUserById(userId);
 
 		if (user == null) {
 			throw new IdentifiableError('15348ddd-432d-49c2-8a5a-8069753becff', `User ${userId} does not exist`);
@@ -86,8 +87,8 @@ export class GetterService {
 	public async getRemoteUser(userId: MiUser['id']) {
 		const user = await this.getUser(userId);
 
-		if (!this.userEntityService.isRemoteUser(user)) {
-			throw new Error('user is not a remote user');
+		if (!isRemoteUser(user)) {
+			throw new IdentifiableError('aeac1339-2550-4521-a8e3-781f06d98656', 'User is not remote');
 		}
 
 		return user;
@@ -100,8 +101,8 @@ export class GetterService {
 	public async getLocalUser(userId: MiUser['id']) {
 		const user = await this.getUser(userId);
 
-		if (!this.userEntityService.isLocalUser(user)) {
-			throw new Error('user is not a local user');
+		if (!isLocalUser(user)) {
+			throw new IdentifiableError('aeac1339-2550-4521-a8e3-781f06d98656', 'User is not local');
 		}
 
 		return user;

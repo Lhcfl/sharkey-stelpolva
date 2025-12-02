@@ -7,6 +7,9 @@
  * ID付きエラー
  */
 export class IdentifiableError extends Error {
+	// Fix the error name in stack traces - https://stackoverflow.com/a/71573071
+	override name = this.constructor.name;
+
 	public message: string;
 	public id: string;
 
@@ -22,3 +25,15 @@ export class IdentifiableError extends Error {
 		this.isRetryable = isRetryable;
 	}
 }
+
+/**
+ * Standard error codes to reference throughout the app
+ */
+export const errorCodes = {
+	// User has been deleted (hard or soft deleted)
+	userIsDeleted: '4cac9436-baa3-4955-a368-7628aea676cf',
+	// User is suspended (directly or by instance)
+	userIsSuspended: '1e56d624-737f-48e4-beb6-0bdddb9fa809',
+	// User has no valid featured collection (not defined, invalid, etc)
+	noFeaturedCollection: '2aa4766e-b7d8-4291-a671-56800498b085',
+} as const;

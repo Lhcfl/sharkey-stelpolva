@@ -38,6 +38,17 @@ export default [
 				name: '__filename',
 				message: 'Not in ESModule. Use `import.meta.url` instead.',
 			}],
+			'no-restricted-syntax': [
+				'error',
+				{
+					"selector": "CallExpression[callee.property.name='delete'][arguments.length=1] > ObjectExpression[properties.length=0]",
+					"message": "repository.delete({}) will produce a runtime error. Use repository.deleteAll() instead."
+				},
+				{
+					"selector": "CallExpression[callee.property.name='update'][arguments.length>=1] > ObjectExpression[properties.length=0]",
+					"message": "repository.update({}, {...}) will produce a runtime error. Use repository.updateAll({...}) instead."
+				},
+			],
 		},
 	},
 ];

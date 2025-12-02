@@ -34,6 +34,7 @@ export class ModerationLogEntityService {
 	) {
 		const log = typeof src === 'object' ? src : await this.moderationLogsRepository.findOneByOrFail({ id: src });
 
+		// noinspection ES6MissingAwait
 		return await awaitAll({
 			id: log.id,
 			createdAt: this.idService.parse(log.id).date.toISOString(),
@@ -53,7 +54,7 @@ export class ModerationLogEntityService {
 		const _users = reports.map(({ user, userId }) => user ?? userId);
 		const _userMap = await this.userEntityService.packMany(_users, null, { schema: 'UserDetailedNotMe' })
 			.then(users => new Map(users.map(u => [u.id, u])));
-		return Promise.all(reports.map(report => this.pack(report, { packedUser: _userMap.get(report.userId) })));
+		return await Promise.all(reports.map(report => this.pack(report, { packedUser: _userMap.get(report.userId) })));
 	}
 }
 

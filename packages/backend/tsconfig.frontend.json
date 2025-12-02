@@ -1,0 +1,27 @@
+{
+	"extends": "../shared/tsconfig.web.jsonc",
+	"compilerOptions": {
+		"noEmit": true,
+	},
+	"include": [
+		"./assets/**/*.js",
+		"./assets/**/*.mjs",
+		"./assets/**/*.cjs",
+		"./assets/**/*.d.ts",
+		"./src/server/web/**/*.js",
+		"./src/server/web/**/*.mjs",
+		"./src/server/web/**/*.cjs",
+		"./src/server/web/**/*.d.ts"
+	],
+	"exclude": [
+		"node_modules",
+		"built",
+		"built-test",
+		"js-built",
+		"temp",
+		"coverage",
+		"test",
+		"test-federation",
+		"test-server"
+	]
+}

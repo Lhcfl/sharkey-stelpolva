@@ -41,17 +41,18 @@ export class EndedPollNotificationProcessorService {
 
 		const votes = await this.pollVotesRepository.createQueryBuilder('vote')
 			.select('vote.userId')
+			.groupBy('vote.userId')
 			.where('vote.noteId = :noteId', { noteId: note.id })
-			.innerJoinAndSelect('vote.user', 'user')
-			.andWhere('user.host IS NULL')
-			.getMany();
+			.getRawMany() as { vote_userId: string }[];
 
-		const userIds = [...new Set([note.userId, ...votes.map(v => v.userId)])];
+		const userIds = new Set(votes.map(v => v.vote_userId));
+		userIds.add(note.id);
 
-		for (const userId of userIds) {
-			const profile = await this.cacheService.userProfileCache.fetch(userId);
-			if (profile.userHost === null) {
-				this.notificationService.createNotification(userId, 'pollEnded', {
+		const users = await this.cacheService.findUsersById(userIds);
+
+		for (const user of users.values()) {
+			if (user.host == null) {
+				this.notificationService.createNotification(user.id, 'pollEnded', {
 					noteId: note.id,
 				});
 			}

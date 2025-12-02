@@ -37,7 +37,7 @@ const buildOptions = {
 	outbase: `${__dirname}/src`,
 	outdir: `${__dirname}/../../built/_sw_dist_`,
 	treeShaking: true,
-	tsconfig: `${__dirname}/tsconfig.json`,
+	tsconfig: `${__dirname}/tsconfig.sw.json`,
 };
 
 (async () => {

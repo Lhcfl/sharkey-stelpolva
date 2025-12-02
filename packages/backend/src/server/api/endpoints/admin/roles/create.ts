@@ -7,6 +7,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { RoleEntityService } from '@/core/entities/RoleEntityService.js';
 import { RoleService } from '@/core/RoleService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { ApiError } from '../../../error.js';
 
 export const meta = {
 	tags: ['admin', 'role'],
@@ -19,6 +21,14 @@ export const meta = {
 		type: 'object',
 		optional: false, nullable: false,
 		ref: 'Role',
+	},
+
+	errors: {
+		badValues: {
+			message: 'Invalid policy values',
+			code: 'BAD_POLICY_VALUES',
+			id: '39d78ad7-0f00-4bff-b2e2-2e7db889e05d',
+		},
 	},
 } as const;
 
@@ -69,7 +79,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		super(meta, paramDef, async (ps, me) => {
 			const created = await this.roleService.create(ps, me);
 
-			return await this.roleEntityService.pack(created, me);
+			try {
+				return await this.roleEntityService.pack(created, me);
+			} catch (e) {
+				if (e instanceof IdentifiableError) {
+					if (e.id === '39d78ad7-0f00-4bff-b2e2-2e7db889e05d') {
+						throw new ApiError(
+							meta.errors.badValues,
+							e.cause,
+						);
+					}
+				}
+				throw e;
+			}
 		});
 	}
 }

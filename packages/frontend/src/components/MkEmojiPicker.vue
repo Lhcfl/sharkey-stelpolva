@@ -151,6 +151,9 @@ const props = withDefaults(defineProps<{
 	targetNote?: Misskey.entities.Note;
 }>(), {
 	showPinned: true,
+	pinnedEmojis: undefined,
+	maxHeight: undefined,
+	targetNote: undefined,
 });
 
 const emit = defineEmits<{
@@ -188,36 +191,40 @@ const searchResultCustom = ref<Misskey.entities.EmojiSimple[]>([]);
 const searchResultUnicode = ref<UnicodeEmojiDef[]>([]);
 const tab = ref<'index' | 'custom' | 'unicode' | 'tags'>('index');
 
-const customEmojiFolderRoot: CustomEmojiFolderTree = { value: '', category: '', children: [] };
+const customEmojiFolderRoot = computed<CustomEmojiFolderTree>(() => {
+	const root = { value: '', category: '', children: [] };
 
-function parseAndMergeCategories(input: string, root: CustomEmojiFolderTree): CustomEmojiFolderTree {
-	const parts = input.split('/').map(p => p.trim());
-	let currentNode: CustomEmojiFolderTree = root;
+	function parseAndMergeCategories(category: string): CustomEmojiFolderTree {
+		const parts = category.split('/').map(p => p.trim());
+		let currentNode: CustomEmojiFolderTree = root;
 
-	const currentPath = [] as string[];
-	for (const part of parts) {
-		currentPath.push(part);
-		let existingNode = currentNode.children.find((node) => node.value === part);
+		const currentPath = [] as string[];
+		for (const part of parts) {
+			currentPath.push(part);
+			let existingNode = currentNode.children.find((node) => node.value === part);
 
-		if (!existingNode) {
-			const newNode: CustomEmojiFolderTree = { value: part, category: currentPath.join("/"), children: [] };
-			currentNode.children.push(newNode);
-			existingNode = newNode;
+			if (!existingNode) {
+				const newNode: CustomEmojiFolderTree = { value: part, category: currentPath.join("/"), children: [] };
+				currentNode.children.push(newNode);
+				existingNode = newNode;
+			}
+
+			currentNode = existingNode;
 		}
 
-		currentNode = existingNode;
+		return currentNode;
 	}
 
-	return currentNode;
-}
+	customEmojiCategories.value.forEach(ec => {
+		if (ec !== null) {
+			parseAndMergeCategories(ec);
+		}
+	});
 
-customEmojiCategories.value.forEach(ec => {
-	if (ec !== null) {
-		parseAndMergeCategories(ec, customEmojiFolderRoot);
-	}
+	parseAndMergeCategories('');
+
+	return root;
 });
-
-parseAndMergeCategories('', customEmojiFolderRoot);
 
 watch(q, () => {
 	if (emojisEl.value) emojisEl.value.scrollTop = 0;

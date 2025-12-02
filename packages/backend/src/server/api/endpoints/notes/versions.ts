@@ -108,7 +108,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				editArray.push({
 					oldDate: (edit.oldDate ?? edit.updatedAt).toISOString(),
 					updatedAt: edit.updatedAt.toISOString(),
-					text: edit.oldText ?? edit.newText ?? null,
+					text: edit.text ?? null,
 				});
 			}
 

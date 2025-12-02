@@ -11,6 +11,8 @@ import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
+import { TimeService } from '@/global/TimeService.js';
+import { promiseMap } from '@/misc/promise-map.js';
 
 export const meta = {
 	requireCredential: false,
@@ -60,6 +62,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private userEntityService: UserEntityService,
 		private readonly roleService: RoleService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (!safeForSql(normalizeForSearch(ps.tag))) throw new Error('Injection');
@@ -67,7 +70,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.where(':tag <@ user.tags', { tag: [normalizeForSearch(ps.tag)] })
 				.andWhere('user.isSuspended = FALSE');
 
-			const recent = new Date(Date.now() - (1000 * 60 * 60 * 24 * 5));
+			const recent = new Date(this.timeService.now - (1000 * 60 * 60 * 24 * 5));
 
 			if (ps.state === 'alive') {
 				query.andWhere('user.updatedAt > :date', { date: recent });
@@ -95,7 +98,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// 2. A span of more than "limit" consecutive non-trendable users may cause the pagination to stop early.
 			// Unfortunately, there's no better solution unless we refactor role policies to be persisted to the DB.
 			if (ps.trending) {
-				const usersWithRoles = await Promise.all(users.map(async u => [u, await this.roleService.getUserPolicies(u)] as const));
+				const usersWithRoles = await promiseMap(users, async u => [u, await this.roleService.getUserPolicies(u)] as const, { limit: 4 });
 				users = usersWithRoles
 					.filter(([,p]) => p.canTrend)
 					.map(([u]) => u);

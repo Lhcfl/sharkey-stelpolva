@@ -139,6 +139,7 @@ export class FollowingEntityService {
 
 		if (opts == null) opts = {};
 
+		// noinspection ES6MissingAwait
 		return await awaitAll({
 			id: following.id,
 			createdAt: this.idService.parse(following.id).date.toISOString(),
@@ -166,7 +167,7 @@ export class FollowingEntityService {
 		const _followers = opts?.populateFollower ? followings.map(({ follower, followerId }) => follower ?? followerId) : [];
 		const _userMap = await this.userEntityService.packMany([..._followees, ..._followers], me, { schema: 'UserDetailedNotMe' })
 			.then(users => new Map(users.map(u => [u.id, u])));
-		return Promise.all(
+		return await Promise.all(
 			followings.map(following => {
 				const packedFollowee = opts?.populateFollowee ? _userMap.get(following.followeeId) : undefined;
 				const packedFollower = opts?.populateFollower ? _userMap.get(following.followerId) : undefined;

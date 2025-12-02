@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { UserListsRepository, UserListFavoritesRepository, UserListMembershipsRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserListEntityService } from '@/core/entities/UserListEntityService.js';
+import { UserListService } from '@/core/UserListService.js';
 import { DI } from '@/di-symbols.js';
 import { QueryService } from '@/core/QueryService.js';
 import { ApiError } from '../../../error.js';
@@ -85,18 +86,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 		private userListEntityService: UserListEntityService,
 		private queryService: QueryService,
+		private readonly userListService: UserListService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch the list
-			const userList = await this.userListsRepository.findOneBy(!ps.forPublic && me !== null ? {
-				id: ps.listId,
-				userId: me.id,
-			} : {
-				id: ps.listId,
-				isPublic: true,
-			});
+			const userList = await this.userListService.userListsCache.fetchMaybe(ps.listId);
 
 			if (userList == null) {
+				throw new ApiError(meta.errors.noSuchList);
+			}
+
+			if (!userList.isPublic && userList.userId !== me?.id) {
 				throw new ApiError(meta.errors.noSuchList);
 			}
 
@@ -108,7 +108,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				.limit(ps.limit)
 				.getMany();
 
-			return this.userListEntityService.packMembershipsMany(memberships);
+			return await this.userListEntityService.packMembershipsMany(memberships);
 		});
 	}
 }

@@ -8,6 +8,14 @@ import * as Redis from 'ioredis';
 import { DataSource } from 'typeorm';
 import { MeiliSearch } from 'meilisearch';
 import { MiMeta } from '@/models/Meta.js';
+import { bindThis } from '@/decorators.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
+import { TimeService, NativeTimeService } from '@/global/TimeService.js';
+import { EnvService } from '@/global/EnvService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import { DependencyService } from '@/global/DependencyService.js';
+import { LoggerService } from '@/core/LoggerService.js';
 import { DI } from './di-symbols.js';
 import { Config, loadConfig } from './config.js';
 import { createPostgresDataSource } from './postgres.js';
@@ -19,21 +27,17 @@ import type { Provider, OnApplicationShutdown } from '@nestjs/common';
 
 const $config: Provider = {
 	provide: DI.config,
-	useValue: loadConfig(),
+	useFactory: (loggerService: LoggerService) => loadConfig(loggerService),
+	inject: [LoggerService],
 };
 
 const $db: Provider = {
 	provide: DI.db,
-	useFactory: async (config) => {
-		try {
-			const db = createPostgresDataSource(config);
-			return await db.initialize();
-		} catch (e) {
-			console.error('failed to initialize database connection', e);
-			throw e;
-		}
+	useFactory: async (config: Config, loggerService: LoggerService) => {
+		const db = createPostgresDataSource(config, loggerService);
+		return await db.initialize();
 	},
-	inject: [DI.config],
+	inject: [DI.config, LoggerService],
 };
 
 const $meilisearch: Provider = {
@@ -163,11 +167,22 @@ const $meta: Provider = {
 	inject: [DI.db, DI.redisForSub],
 };
 
+const $CacheManagementService: Provider[] = [CacheManagementService, { provide: 'CacheManagementService', useExisting: CacheManagementService }];
+const $InternalEventService: Provider[] = [InternalEventService, { provide: 'InternalEventService', useExisting: InternalEventService }];
+const $TimeService: Provider[] = [
+	{ provide: TimeService, useClass: NativeTimeService },
+	{ provide: 'TimeService', useExisting: TimeService },
+];
+const $EnvService: Provider[] = [EnvService, { provide: 'EnvService', useExisting: EnvService }];
+const $LoggerService: Provider[] = [LoggerService, { provide: 'LoggerService', useExisting: LoggerService }];
+const $Console: Provider[] = [{ provide: DI.console, useFactory: () => global.console }]; // useValue will break overrideProvider for some reason
+const $DependencyService: Provider[] = [DependencyService, { provide: 'DependencyService', useExisting: DependencyService }];
+
 @Global()
 @Module({
 	imports: [RepositoryModule],
-	providers: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit],
-	exports: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, RepositoryModule],
+	providers: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService, $LoggerService, $Console, $DependencyService].flat(),
+	exports: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService, $LoggerService, RepositoryModule, $Console, $DependencyService].flat(),
 })
 export class GlobalModule implements OnApplicationShutdown {
 	private readonly logger = new Logger('global');
@@ -189,16 +204,25 @@ export class GlobalModule implements OnApplicationShutdown {
 		// And then disconnect from DB
 		this.logger.info('Disconnected from data sources...');
 		await this.db.destroy();
-		this.redisClient.disconnect();
-		this.redisForPub.disconnect();
-		this.redisForSub.disconnect();
-		this.redisForTimelines.disconnect();
-		this.redisForReactions.disconnect();
-		this.redisForRateLimit.disconnect();
+		this.safeDisconnect(this.redisClient);
+		this.safeDisconnect(this.redisForPub);
+		this.safeDisconnect(this.redisForSub);
+		this.safeDisconnect(this.redisForTimelines);
+		this.safeDisconnect(this.redisForReactions);
+		this.safeDisconnect(this.redisForRateLimit);
 		this.logger.info('Global module disposed.');
 	}
 
+	@bindThis
 	async onApplicationShutdown(signal: string): Promise<void> {
 		await this.dispose();
+	}
+
+	private safeDisconnect(redis: { disconnect(): void }): void {
+		try {
+			redis.disconnect();
+		} catch (err) {
+			this.logger.error(`Unhandled error disconnecting redis: ${renderInlineError(err)}`);
+		}
 	}
 }

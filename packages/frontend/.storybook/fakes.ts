@@ -4,7 +4,7 @@
  */
 
 import { AISCRIPT_VERSION } from '@syuilo/aiscript';
-import type { entities } from 'misskey-js'
+import type { entities } from 'misskey-js';
 import { date, imageDataUrl, text } from "./fake-utils.js";
 
 export function abuseUserReport() {
@@ -124,7 +124,7 @@ export function galleryPost(isSensitive = false) {
 		isSensitive,
 		likedCount: 0,
 		isLiked: false,
-	}
+	};
 }
 
 export function file(isSensitive = false) {
@@ -220,6 +220,11 @@ export function federationInstance(): entities.FederationInstance {
 		themeColor: '',
 		infoUpdatedAt: '',
 		latestRequestReceivedAt: '',
+		isMediaSilenced: false,
+		rejectReports: false,
+		rejectQuotes: false,
+		isBubbled: false,
+		mandatoryCW: null,
 	};
 }
 
@@ -240,6 +245,13 @@ export function note(id = 'somenoteid'): entities.Note {
 		reactionCount: 0,
 		renoteCount: 0,
 		repliesCount: 0,
+		threadId: '',
+		userHost: null,
+		isMutingThread: false,
+		isMutingNote: false,
+		isFavorited: false,
+		isRenoted: false,
+		bypassSilence: false,
 	};
 }
 
@@ -254,6 +266,23 @@ export function userLite(id = 'someuserid', username = 'miskist', host: entities
 		avatarBlurhash: 'eQFRshof5NWBRi},juayfPju53WB?0ofs;s*a{ofjuay^SoMEJR%ay',
 		avatarDecorations: [],
 		emojis: {},
+		createdAt: '',
+		updatedAt: null,
+		lastFetchedAt: null,
+		approved: false,
+		description: null,
+		isAdmin: false,
+		isModerator: false,
+		isSystem: false,
+		noindex: false,
+		enableRss: false,
+		mandatoryCW: null,
+		isSilenced: false,
+		bypassSilence: false,
+		followersCount: 0,
+		followingCount: 0,
+		notesCount: 0,
+		attributionDomains: [],
 	};
 }
 
@@ -312,19 +341,27 @@ export function userDetailed(id = 'someuserid', username = 'miskist', host: enti
 		alsoKnownAs: null,
 		notify: 'none',
 		memo: null,
+		backgroundUrl: null,
+		backgroundId: null,
+		backgroundBlurhash: null,
+		listenbrainz: null,
+		canChat: true,
+		chatScope: 'none',
 	};
 }
+
+export default userDetailed;
 
 export function inviteCode(isUsed = false, hasExpiration = false, isExpired = false, isCreatedBySystem = false) {
 	const date = new Date();
 	const createdAt = new Date();
-	createdAt.setDate(date.getDate() - 1)
+	createdAt.setDate(date.getDate() - 1);
 	const expiresAt = new Date();
 
 	if (isExpired) {
-		expiresAt.setHours(date.getHours() - 1)
+		expiresAt.setHours(date.getHours() - 1);
 	} else {
-		expiresAt.setHours(date.getHours() + 1)
+		expiresAt.setHours(date.getHours() + 1);
 	}
 
 	return {
@@ -336,7 +373,7 @@ export function inviteCode(isUsed = false, hasExpiration = false, isExpired = fa
 		usedBy: isUsed ? userDetailed('3i3r2znx1v') : null,
 		usedAt: isUsed ? date.toISOString() : null,
 		used: isUsed,
-	}
+	};
 }
 
 export function role(params: {
@@ -382,10 +419,11 @@ export function role(params: {
 		condFormula: {
 			id: '',
 			type: 'or',
-			values: []
+			values: [],
 		},
 		policies: {},
-	}
+		preserveAssignmentOnMoveAccount: true,
+	};
 }
 
 export function emoji(params?: {
@@ -401,7 +439,7 @@ export function emoji(params?: {
 	license?: string,
 	isSensitive?: boolean,
 	localOnly?: boolean,
-	roleIdsThatCanBeUsedThisEmojiAsReaction?: {id:string, name:string}[],
+	roleIdsThatCanBeUsedThisEmojiAsReaction?: { id: string, name: string }[],
 	updatedAt?: string,
 }, seed?: string): entities.EmojiDetailedAdmin {
 	const _seed = seed ?? (params?.id ?? "DEFAULT_SEED");
@@ -409,7 +447,7 @@ export function emoji(params?: {
 	const name = params?.name ?? text(8, _seed);
 	const updatedAt = params?.updatedAt ?? date({}, _seed).toISOString();
 
-	const image = imageDataUrl({}, _seed)
+	const image = imageDataUrl({}, _seed);
 
 	return {
 		id: id,
@@ -426,5 +464,5 @@ export function emoji(params?: {
 		localOnly: params?.localOnly ?? false,
 		roleIdsThatCanBeUsedThisEmojiAsReaction: params?.roleIdsThatCanBeUsedThisEmojiAsReaction ?? [],
 		updatedAt: updatedAt,
-	}
+	};
 }

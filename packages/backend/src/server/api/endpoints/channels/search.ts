@@ -11,6 +11,7 @@ import type { ChannelsRepository } from '@/models/_.js';
 import { ChannelEntityService } from '@/core/entities/ChannelEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
+import { promiseMap } from '@/misc/promise-map.js';
 
 export const meta = {
 	tags: ['channels'],
@@ -75,7 +76,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.limit(ps.limit)
 				.getMany();
 
-			return await Promise.all(channels.map(x => this.channelEntityService.pack(x, me)));
+			return await promiseMap(channels, async x => await this.channelEntityService.pack(x, me), { limit: 4 });
 		});
 	}
 }

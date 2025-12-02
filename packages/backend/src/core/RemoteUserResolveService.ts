@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { UsersRepository } from '@/models/_.js';
-import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
+import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import type { Config } from '@/config.js';
 import type Logger from '@/logger.js';
 import { UtilityService } from '@/core/UtilityService.js';
@@ -16,12 +16,19 @@ import { ILink, WebfingerService } from '@/core/WebfingerService.js';
 import { RemoteLoggerService } from '@/core/RemoteLoggerService.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
+import { TimeService } from '@/global/TimeService.js';
+import { CacheService } from '@/core/CacheService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import * as Acct from '@/misc/acct.js';
+import { isRemoteUser } from '@/models/User.js';
 import { bindThis } from '@/decorators.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 
 @Injectable()
 export class RemoteUserResolveService {
 	private logger: Logger;
+	private readonly selfHost: string;
 
 	constructor(
 		@Inject(DI.config)
@@ -35,86 +42,112 @@ export class RemoteUserResolveService {
 		private remoteLoggerService: RemoteLoggerService,
 		private apDbResolverService: ApDbResolverService,
 		private apPersonService: ApPersonService,
+		private readonly cacheService: CacheService,
+		private readonly internalEventService: InternalEventService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.remoteLoggerService.logger.createSubLogger('resolve-user');
+		this.selfHost = this.utilityService.toPuny(this.config.host);
 	}
 
 	@bindThis
 	public async resolveUser(username: string, host: string | null): Promise<MiLocalUser | MiRemoteUser> {
-		const usernameLower = username.toLowerCase();
+		// Normalize inputs
+		username = username.toLowerCase();
+		host = host ? this.utilityService.toPuny(host) : null; // unicode -> punycode
+		host = host !== this.selfHost ? host : null; // self-host -> null
+		const acct = Acct.toString({ username, host }); // username+host -> acct (handle)
 
-		if (host == null) {
-			return await this.usersRepository.findOneByOrFail({ usernameLower, host: IsNull() }) as MiLocalUser;
+		// Try fetch from DB
+		let user: MiUser | null | undefined = await this.cacheService.findOptionalUserByAcct(acct);
+
+		// Opportunistically update remote users
+		if (user != null && isRemoteUser(user)) {
+			user = await this.tryUpdateUser(user, acct);
 		}
 
-		host = this.utilityService.toPuny(host);
-
-		if (host === this.utilityService.toPuny(this.config.host)) {
-			return await this.usersRepository.findOneByOrFail({ usernameLower, host: IsNull() }) as MiLocalUser;
+		// Try resolve from AP
+		if (user == null && host != null) {
+			user = await this.tryCreateUser(acct);
 		}
 
-		const user = await this.usersRepository.findOneBy({ usernameLower, host }) as MiRemoteUser | null;
-
-		const acctLower = `${usernameLower}@${host}`;
-
+		// Failed to fetch or resolve
 		if (user == null) {
-			const self = await this.resolveSelf(acctLower);
+			throw new IdentifiableError('15348ddd-432d-49c2-8a5a-8069753becff', `Could not resolve user ${acct}`);
+		}
+
+		return user as MiLocalUser | MiRemoteUser;
+	}
+
+	@bindThis
+	private async tryCreateUser(acct: string): Promise<MiRemoteUser | null> {
+		try {
+			const self = await this.resolveSelf(acct);
 
 			if (this.utilityService.isUriLocal(self.href)) {
-				const local = this.apDbResolverService.parseUri(self.href);
-				if (local.local && local.type === 'users') {
-					// the LR points to local
-					return (await this.apDbResolverService
-						.getUserFromApId(self.href)
-						.then((u) => {
-							if (u == null) {
-								throw new Error(`local user not found: ${self.href}`);
-							} else {
-								return u;
-							}
-						})) as MiLocalUser;
-				}
+				this.logger.warn(`Ignoring WebFinger response for ${chalk.magenta(acct)}: remote URI points to a local user.`);
+				return null;
 			}
 
-			this.logger.info(`Fetching new remote user ${chalk.magenta(acctLower)} from ${self.href}`);
+			this.logger.info(`Fetching new remote user ${chalk.magenta(acct)} from ${self.href}`);
 			return await this.apPersonService.createPerson(self.href);
+		} catch (err) {
+			this.logger.warn(`Failed to resolve user ${acct}: ${renderInlineError(err)}`);
+			return null;
+		}
+	}
+
+	@bindThis
+	private async tryUpdateUser(user: MiRemoteUser, acctLower: string): Promise<MiRemoteUser> {
+		// Don't update unless the user is at least 24 hours outdated.
+		// ユーザー情報が古い場合は、WebFingerからやりなおして返す
+		if (user.lastFetchedAt != null && this.timeService.now - user.lastFetchedAt.getTime() <= 1000 * 60 * 60 * 24) {
+			return user;
 		}
 
-		// ユーザー情報が古い場合は、WebFingerからやりなおして返す
-		if (user.lastFetchedAt == null || Date.now() - user.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24) {
-			// 繋がらないインスタンスに何回も試行するのを防ぐ, 後続の同様処理の連続試行を防ぐ ため 試行前にも更新する
-			await this.usersRepository.update(user.id, {
-				lastFetchedAt: new Date(),
-			});
-
+		try {
+			// Resolve via webfinger
 			const self = await this.resolveSelf(acctLower);
 
-			if (user.uri !== self.href) {
-				// if uri mismatch, Fix (user@host <=> AP's Person id(RemoteUser.uri)) mapping.
-				this.logger.warn(`Detected URI mismatch for ${acctLower}`);
-
-				// validate uri
-				const uriHost = this.utilityService.extractDbHost(self.href);
-				if (uriHost !== host) {
-					throw new Error(`Failed to correct URI for ${acctLower}: new URI ${self.href} has different host from previous URI ${user.uri}`);
-				}
-
-				await this.usersRepository.update({
-					usernameLower,
-					host: host,
-				}, {
-					uri: self.href,
-				});
-			}
-
-			this.logger.info(`Corrected URI for ${acctLower} from ${user.uri} to ${self.href}`);
-
+			// Update the user
+			await this.tryUpdateUri(user, acctLower, self.href);
 			await this.apPersonService.updatePerson(self.href);
-
-			return await this.usersRepository.findOneByOrFail({ uri: self.href }) as MiLocalUser | MiRemoteUser;
+		} catch (err) {
+			this.logger.warn(`Could not update user ${acctLower}; will continue with outdated local copy: ${renderInlineError(err)}`);
+		} finally {
+			// Always mark as updated so we don't get stuck here for missing remote users.
+			// 繋がらないインスタンスに何回も試行するのを防ぐ, 後続の同様処理の連続試行を防ぐ ため 試行前にも更新する
+			await this.usersRepository.update(user.id, {
+				lastFetchedAt: this.timeService.date,
+			});
 		}
 
-		return user;
+		// Reload user
+		return await this.cacheService.findRemoteUserById(user.id);
+	}
+
+	@bindThis
+	private async tryUpdateUri(user: MiRemoteUser, acct: string, href: string): Promise<void> {
+		// Only update if there's actually a mismatch
+		if (user.uri === href) {
+			return;
+		}
+
+		// if uri mismatch, Fix (user@host <=> AP's Person id(RemoteUser.uri)) mapping.
+		this.logger.warn(`Detected URI mismatch for ${acct}`);
+
+		// validate uri
+		const uriHost = this.utilityService.extractDbHost(href);
+		if (uriHost !== user.host) {
+			throw new Error(`Failed to correct URI for ${acct}: new URI ${href} has different host from previous URI ${user.uri}`);
+		}
+
+		// Update URI
+		await this.usersRepository.update({ id: user.id }, { uri: href }); // Update the user
+		await this.apPersonService.uriPersonCache.delete(user.uri); // Unmap the old URI
+		await this.internalEventService.emit('remoteUserUpdated', { id: user.id }); // Update caches
+
+		this.logger.info(`Corrected URI for ${acct} from ${user.uri} to ${href}`);
 	}
 
 	@bindThis

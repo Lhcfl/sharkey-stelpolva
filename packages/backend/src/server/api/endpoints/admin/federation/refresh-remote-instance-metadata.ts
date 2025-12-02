@@ -42,7 +42,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new Error('instance not found');
 			}
 
-			this.fetchInstanceMetadataService.fetchInstanceMetadata(instance, true);
+			await this.fetchInstanceMetadataService.fetchInstanceMetadata(instance, true);
 		});
 	}
 }

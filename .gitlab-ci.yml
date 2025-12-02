@@ -1,13 +1,73 @@
 stages:
+  - build
   - test
   - deploy
 
-.test_common: &test_common
-  stage: test
-  image: docker.io/node:22
+variables:
+  # https://docs.gitlab.com/user/application_security/sast/gitlab_advanced_sast
+  GITLAB_ADVANCED_SAST_ENABLED: 'true'
+
+  # https://docs.gitlab.com/user/application_security/sast/#vulnerability-filters
+  # https://stackoverflow.com/a/71111784
+  SAST_EXCLUDED_PATHS: 'spec,test,test-d,test-federation,test-server,tests,tmp,cypress,coverage,node_modules,build,built,built-js,*.min.js,megalodon/lib,libopenmpt'
+  DS_EXCLUDED_PATHS: 'spec,test,test-d,test-federation,test-server,tests,tmp,cypress,coverage,node_modules,build,built,built-js,*.min.js,megalodon/lib,libopenmpt,packages/*/src' # save time: skip source directories
+
+  # https://docs.gitlab.com/user/application_security/dependency_scanning/migration_guide_to_sbom_based_scans/
+  DS_ENFORCE_NEW_ANALYZER: 'true'
+  DS_MAX_DEPTH: -1
+  # https://docs.gitlab.com/user/application_security/dependency_scanning/static_reachability/
+  DS_STATIC_REACHABILITY_ENABLED: true
+
+  # https://docs.gitlab.com/user/application_security/detect/security_configuration/#use-security-scanning-tools-with-merge-request-pipelines
+  AST_ENABLE_MR_PIPELINES: 'true'
+
+.common: &common
+  # "only" has been removed, so we use rules.
+  # This runs in MR pipelines *or* push to develop/stable
+  rules: &common-rules
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
+
+.deploy_common: &deploy_common
+  stage: deploy
+  # Only run when pushing to stable, develop, or tags
+  rules: &deploy-rules
+    - if: $CI_PIPELINE_SOURCE != 'push'
+      when: never
+    - if: $CI_COMMIT_BRANCH == 'develop'
+    - if: $CI_COMMIT_BRANCH == 'stable'
+    - if: $CI_COMMIT_TAG
+
+# https://docs.gitlab.com/user/application_security/sast/
+include:
+  - local: '.gitlab/ci_templates/dependency_scanning.yml'
+    rules: *common-rules
+  - local: '.gitlab/ci_templates/container_scanning.yml'
+    rules: *deploy-rules
+  - local: '.gitlab/ci_templates/sast.yml'
+    rules: *common-rules
+  - local: '.gitlab/ci_templates/secret_detection.yml'
+    rules: *common-rules
+  - local: '.gitlab/ci_templates/lib_behave.yml'
+    rules: *common-rules
+
+# Cache node_modules and share build artifacts for the pipeline.
+# This shares the same cache definition, but it's the only place that actually *pushes* to the cache.
+# https://docs.gitlab.com/ci/caching/
+# https://github.com/pnpm/pnpm/issues/1174#issuecomment-996719439
+# https://github.com/pnpm/pnpm/issues/1174#issuecomment-1641267133
+build: &build
+  <<: *common
+  stage: build
+  image:
+    name: docker.io/node:22
+    pull_policy: if-not-present
   variables:
-    POSTGRES_PASSWORD: ci
-    COREPACK_DEFAULT_TO_LATEST: 0
+    POSTGRES_PASSWORD: 'ci'
+    COREPACK_DEFAULT_TO_LATEST: '0'
+  # Arm64 is recommended for CI
+  tags:
+    - arm64
   before_script:
     - apt-get update && apt-get install -y git wget curl build-essential python3 ffmpeg libcairo2-dev libpango1.0-dev libpangocairo-1.0
     - 'echo "clusterLimit: $(nproc)" >> .config/ci.yml'
@@ -16,54 +76,119 @@ stages:
     - corepack enable
     - corepack install
     - git submodule update --init
+    - pnpm config set store-dir .pnpm-store
     - pnpm install --frozen-lockfile
+  script:
+    - pnpm run build
   cache:
-    key: test
-    policy: pull-push
-    when: on_success
-    paths:
-     - node_modules/
-     - packages/*/node_modules/
-  only:
-    - develop
-    - merge_requests
-    - stable
+    - &cache-pnpm
+      key:
+        files:
+          - 'pnpm-lock.yaml'
+          - 'pnpm-workspace.yaml'
+      paths:
+        - '.pnpm-store/'
+        - 'node_modules/'
+        - 'packages/*/node_modules/'
+        - 'packages/misskey-js/generator/node_modules/'
+      policy: pull-push
+      when: on_success
+    - &cache-build
+      key: "$CI_COMMIT_REF_SLUG"
+      paths:
+        - 'built/'
+        - 'packages/*/built/'
+        - 'packages/megalodon/lib/'
+      policy: pull-push
+      when: on_success
+
+.test_common: &test_common
+  <<: *common
+  <<: *build
+  stage: test
+  cache:
+    -
+      <<: *cache-pnpm
+      policy: pull
+    -
+      <<: *cache-build
+      policy: pull
 
 lint:
   <<: *test_common
   script:
-    - pnpm run build
+    - pnpm run build-assets
     - pnpm run eslint
 
 backend_tests:
   <<: *test_common
   services:
-    - postgres:15
-    - redis
+    - name: postgres:15
+      pull_policy: if-not-present
+    - name: redis
+      pull_policy: if-not-present
   script:
-    - >-
-      pnpm run build \
-        --filter=backend \
-        --filter=megalodon \
-        --filter=misskey-js
-    - pnpm run migrate
-    - pnpm run test --filter=backend
+    - pnpm run --filter backend build:pre
+    - pnpm run --filter backend build
+    - pnpm run --filter backend migrate
+    - pnpm run --filter backend test
+  # Same as common, but MRs are only run if they modify the backend.
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      changes:
+        - 'packages/backend/**/*'
+        - 'packages/megalodon/**/*'
+        - 'packages/misskey-js/**/*'
+        - 'packages/*' # single-star is intention - we don't want to recurse!
+        - 'scripts/**/*'
+        - 'eslint/**/*'
+        - 'chart/**/*'
+        - '.config/**/*'
 
 frontend_tests:
   <<: *test_common
   script:
-    - >-
-      pnpm run build \
-        --filter=frontend \
-        --filter=frontend-embed \
-        --filter=frontend-shared \
-        --filter=megalogon \
-        --filter=misskey-js
-    - pnpm run test --filter=frontend --filter=misskey-js
+    - pnpm run --filter frontend build:pre
+    - pnpm run --filter frontend build
+    - pnpm run --filter frontend test
+  # Same as common, but MRs are only run if they modify the frontend.
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      changes:
+        - 'packages/frontend/**/*'
+        - 'packages/frontend-embed/**/*'
+        - 'packages/frontend-shared/**/*'
+        - 'packages/misskey-js/**/*'
+        - 'packages/misskey-bubble-game/**/*'
+        - 'packages/misskey-reversi/**/*'
+        - 'packages/sw/**/*'
+        - 'packages/*' # single-star is intention - we don't want to recurse!
+        - 'scripts/**/*'
+        - 'eslint/**/*'
+        - 'locales/**/*'
+        - 'sharkey-locales/**/*'
+        - 'cypress/**/*'
+        - 'assets/**/*'
+
+misskey-js_tests:
+  <<: *test_common
+  script:
+    - pnpm run --filter misskey-js build
+    - pnpm run --filter misskey-js test
+
+megalodon_tests:
+  <<: *test_common
+  script:
+    - pnpm run --filter megalodon build
+    - pnpm run --filter megalodon test
 
 get_image_tag:
-  stage: deploy
-  image: docker.io/alpine:latest
+  <<: *deploy_common
+  image:
+    name: docker.io/alpine:latest
+    pull_policy: if-not-present
   script:
     - apk add jq
     - |
@@ -82,13 +207,9 @@ get_image_tag:
   artifacts:
     reports:
       dotenv: build.env
-  only:
-    - stable
-    - develop
-    - tags
 
 build_image:
-  stage: deploy
+  <<: *deploy_common
   needs:
     - job: get_image_tag
       artifacts: true
@@ -100,6 +221,7 @@ build_image:
     - ${ARCH}
   image:
     name: gcr.io/kaniko-project/executor:debug
+    pull_policy: if-not-present
     entrypoint: [""]
   script:
     - >-
@@ -108,13 +230,9 @@ build_image:
         --dockerfile "${CI_PROJECT_DIR}/Dockerfile" \
         --single-snapshot \
         --destination "${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_VERSION}-${ARCH}"
-  only:
-    - stable
-    - develop
-    - tags
 
 merge_image_manifests:
-  stage: deploy
+  <<: *deploy_common
   needs:
     - job: build_image
       artifacts: false
@@ -122,6 +240,7 @@ merge_image_manifests:
       artifacts: true
   image:
     name: mplatform/manifest-tool:alpine
+    pull_policy: if-not-present
     entrypoint: [""]
   script:
     - >-
@@ -133,7 +252,3 @@ merge_image_manifests:
         --tags ${REGISTRY_PUSH_VERSION} \
         --template ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_VERSION}-ARCH \
         --target ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_TAG}
-  only:
-    - stable
-    - develop
-    - tags

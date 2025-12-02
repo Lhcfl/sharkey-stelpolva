@@ -70,7 +70,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const announcements = await query.limit(ps.limit).getMany();
 
-			return this.announcementEntityService.packMany(announcements, me);
+			return await this.announcementEntityService.packMany(announcements, me);
 		});
 	}
 }

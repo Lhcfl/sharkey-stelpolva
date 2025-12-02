@@ -47,6 +47,27 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</div>
 	</div>
+	<div class="background">
+		<div class="label">Background queue<i v-if="current.background.waiting > 0" class="ti ti-alert-triangle icon"></i></div>
+		<div class="values">
+			<div>
+				<div>Process</div>
+				<div :class="{ inc: current.background.activeSincePrevTick > prev.deliver.activeSincePrevTick, dec: current.background.activeSincePrevTick < prev.deliver.activeSincePrevTick }" :title="`${current.background.activeSincePrevTick}`">{{ kmg(current.background.activeSincePrevTick, 2) }}</div>
+			</div>
+			<div>
+				<div>Active</div>
+				<div :class="{ inc: current.background.active > prev.deliver.active, dec: current.background.active < prev.deliver.active }" :title="`${current.background.active}`">{{ kmg(current.background.active, 2) }}</div>
+			</div>
+			<div>
+				<div>Delayed</div>
+				<div :class="{ inc: current.background.delayed > prev.deliver.delayed, dec: current.background.delayed < prev.deliver.delayed }" :title="`${current.background.delayed}`">{{ kmg(current.background.delayed, 2) }}</div>
+			</div>
+			<div>
+				<div>Waiting</div>
+				<div :class="{ inc: current.background.waiting > prev.deliver.waiting, dec: current.background.waiting < prev.deliver.waiting }" :title="`${current.background.waiting}`">{{ kmg(current.background.waiting, 2) }}</div>
+			</div>
+		</div>
+	</div>
 </div>
 </template>
 
@@ -99,6 +120,12 @@ const current = reactive({
 		waiting: 0,
 		delayed: 0,
 	},
+	background: {
+		activeSincePrevTick: 0,
+		active: 0,
+		waiting: 0,
+		delayed: 0,
+	},
 });
 const prev = reactive({} as typeof current);
 const jammedAudioBuffer = ref<AudioBuffer | null>(null);
@@ -111,12 +138,12 @@ if (prefer.s['sound.masterVolume']) {
 	});
 }
 
-for (const domain of ['inbox', 'deliver']) {
+for (const domain of ['inbox', 'deliver', 'background']) {
 	prev[domain] = deepClone(current[domain]);
 }
 
 const onStats = (stats) => {
-	for (const domain of ['inbox', 'deliver']) {
+	for (const domain of ['inbox', 'deliver', 'background']) {
 		prev[domain] = deepClone(current[domain]);
 		current[domain].activeSincePrevTick = stats[domain].activeSincePrevTick;
 		current[domain].active = stats[domain].active;

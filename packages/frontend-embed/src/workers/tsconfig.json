@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"lib": ["esnext", "webworker"],
+		"lib": ["ES2022", "WebWorker", "Webworker.Iterable"],
 		"incremental": true
 	}
 }

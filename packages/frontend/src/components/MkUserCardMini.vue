@@ -5,11 +5,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div v-adaptive-bg :class="[$style.root]">
-	<MkAvatar :class="$style.avatar" :user="user" indicator/>
-	<div :class="$style.body">
+	<MkAvatar :class="$style.avatar" :user="user" indicator :preview="withLink" :link="withLink"/>
+	<component :is="withLink ? MkA : 'div'" :class="$style.body" :to="userPage(user)">
 		<span :class="$style.name"><MkUserName :user="user"/></span>
 		<span :class="$style.sub"><span class="_monospace">@{{ acct(user) }}</span></span>
-	</div>
+	</component>
 	<MkMiniChart v-if="chartValues" :class="$style.chart" :src="chartValues"/>
 </div>
 </template>
@@ -18,14 +18,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 import * as Misskey from 'misskey-js';
 import { onMounted, ref } from 'vue';
 import MkMiniChart from '@/components/MkMiniChart.vue';
+import MkA from '@/components/global/MkA.vue';
 import { misskeyApiGet } from '@/utility/misskey-api.js';
-import { acct } from '@/filters/user.js';
+import { acct, userPage } from '@/filters/user.js';
 
 const props = withDefaults(defineProps<{
 	user: Misskey.entities.User;
 	withChart?: boolean;
+	withLink?: boolean;
 }>(), {
 	withChart: true,
+	withLink: false,
 });
 
 const chartValues = ref<number[] | null>(null);

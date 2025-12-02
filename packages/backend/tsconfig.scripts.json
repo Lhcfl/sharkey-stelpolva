@@ -1,0 +1,20 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "../shared/tsconfig.scripts.jsonc",
+	"include": [
+		"jest.*",
+		"eslint.*",
+		"scripts/**/*"
+	],
+	"exclude": [
+		"node_modules",
+		"built",
+		"built-test",
+		"js-built",
+		"temp",
+		"coverage",
+		"ormconfig.js",
+		"scripts/check_connect.js",
+		"scripts/generate_api_json.js"
+	]
+}

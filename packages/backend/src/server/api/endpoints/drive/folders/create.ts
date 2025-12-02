@@ -6,7 +6,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { DriveFoldersRepository } from '@/models/_.js';
+import type { DriveFoldersRepository, MiDriveFolder } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { DriveFolderEntityService } from '@/core/entities/DriveFolderEntityService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -61,7 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// If the parent folder is specified
-			let parent = null;
+			let parent: MiDriveFolder | null = null;
 			if (ps.parentId) {
 				// Fetch parent folder
 				parent = await this.driveFoldersRepository.findOneBy({

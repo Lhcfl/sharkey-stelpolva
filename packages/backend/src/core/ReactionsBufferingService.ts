@@ -6,6 +6,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { MiNote } from '@/models/Note.js';
 import { bindThis } from '@/decorators.js';
 import type { MiUser, NotesRepository } from '@/models/_.js';
@@ -31,6 +32,8 @@ export class ReactionsBufferingService implements OnApplicationShutdown {
 
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
+
+		private readonly timeService: TimeService,
 	) {
 		this.redisForSub.on('message', this.onMessage);
 	}
@@ -62,7 +65,7 @@ export class ReactionsBufferingService implements OnApplicationShutdown {
 		for (let i = 0; i < currentPairs.length; i++) {
 			pipeline.zadd(`${REDIS_PAIR_PREFIX}:${noteId}`, i, currentPairs[i]);
 		}
-		pipeline.zadd(`${REDIS_PAIR_PREFIX}:${noteId}`, Date.now(), `${userId}/${reaction}`);
+		pipeline.zadd(`${REDIS_PAIR_PREFIX}:${noteId}`, this.timeService.now, `${userId}/${reaction}`);
 		pipeline.zremrangebyrank(`${REDIS_PAIR_PREFIX}:${noteId}`, 0, -(PER_NOTE_REACTION_USER_PAIR_CACHE_MAX + 1));
 		await pipeline.exec();
 	}
@@ -144,7 +147,7 @@ export class ReactionsBufferingService implements OnApplicationShutdown {
 	// TODO: scanは重い可能性があるので、別途 bufferedNoteIds を直接Redis上に持っておいてもいいかもしれない
 	@bindThis
 	public async bake(): Promise<void> {
-		const bufferedNoteIds = [];
+		const bufferedNoteIds: string[] = [];
 		let cursor = '0';
 		do {
 			// https://github.com/redis/ioredis#transparent-key-prefixing

@@ -10,6 +10,15 @@ import { get, set } from '@/utility/idb-proxy.js';
 
 const storageCache = await get('emojis');
 export const customEmojis = shallowRef<Misskey.entities.EmojiSimple[]>(Array.isArray(storageCache) ? storageCache : []);
+export const customEmojiTags = computed(() => {
+	const tags = new Set<string>();
+	for (const emoji of customEmojis.value) {
+		for (const tag of emoji.aliases) {
+			tags.add(tag);
+		}
+	}
+	return Array.from(tags);
+});
 export const customEmojiCategories = computed<[ ...string[], null ]>(() => {
 	const categories = new Set<string>();
 	for (const emoji of customEmojis.value) {
@@ -45,32 +54,16 @@ export function removeCustomEmojis(emojis: Misskey.entities.EmojiSimple[]) {
 
 export async function fetchCustomEmojis(force = false) {
 	const now = Date.now();
+	const lastFetchedAt = await get('lastEmojisFetchedAt');
 
-	let res;
-	if (force) {
-		res = await misskeyApi('emojis', {});
-	} else {
-		const lastFetchedAt = await get('lastEmojisFetchedAt');
-		if (lastFetchedAt && (now - lastFetchedAt) < 1000 * 60 * 60) return;
-		res = await misskeyApiGet('emojis', {});
+	if (force || !lastFetchedAt || Date.now() - lastFetchedAt > 1000 * 60) {
+		const res = await misskeyApi('emojis', {});
+		customEmojis.value = res.emojis;
+		await set('emojis', res.emojis);
+		await set('lastEmojisFetchedAt', now);
 	}
-
-	customEmojis.value = res.emojis;
-	set('emojis', res.emojis);
-	set('lastEmojisFetchedAt', now);
 }
 
-let cachedTags;
 export function getCustomEmojiTags() {
-	if (cachedTags) return cachedTags;
-
-	const tags = new Set();
-	for (const emoji of customEmojis.value) {
-		for (const tag of emoji.aliases) {
-			tags.add(tag);
-		}
-	}
-	const res = Array.from(tags);
-	cachedTags = res;
-	return res;
+	return customEmojiTags.value;
 }

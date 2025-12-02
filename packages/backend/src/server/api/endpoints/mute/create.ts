@@ -10,6 +10,7 @@ import type { MutingsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { UserMutingService } from '@/core/UserMutingService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -67,6 +68,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private getterService: GetterService,
 		private userMutingService: UserMutingService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const muter = me;
@@ -94,7 +96,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.alreadyMuting);
 			}
 
-			if (ps.expiresAt && ps.expiresAt <= Date.now()) {
+			if (ps.expiresAt && ps.expiresAt <= this.timeService.now) {
 				return;
 			}
 

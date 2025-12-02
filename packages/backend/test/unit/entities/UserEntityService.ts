@@ -4,9 +4,8 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { FakeInternalEventService } from '../../misc/FakeInternalEventService.js';
-import { NoOpCacheService } from '../../misc/noOpCaches.js';
 import type { MiUser } from '@/models/User.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { CoreModule } from '@/core/CoreModule.js';
@@ -21,39 +20,6 @@ import {
 	UsersRepository,
 } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
-import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
-import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { PageEntityService } from '@/core/entities/PageEntityService.js';
-import { CustomEmojiService } from '@/core/CustomEmojiService.js';
-import { AnnouncementService } from '@/core/AnnouncementService.js';
-import { RoleService } from '@/core/RoleService.js';
-import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import { IdService } from '@/core/IdService.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { EmojiEntityService } from '@/core/entities/EmojiEntityService.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
-import { MetaService } from '@/core/MetaService.js';
-import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
-import { CacheService } from '@/core/CacheService.js';
-import { ApResolverService } from '@/core/activitypub/ApResolverService.js';
-import { ApNoteService } from '@/core/activitypub/models/ApNoteService.js';
-import { ApImageService } from '@/core/activitypub/models/ApImageService.js';
-import { ApMfmService } from '@/core/activitypub/ApMfmService.js';
-import { MfmService } from '@/core/MfmService.js';
-import { HashtagService } from '@/core/HashtagService.js';
-import UsersChart from '@/core/chart/charts/users.js';
-import { ChartLoggerService } from '@/core/chart/ChartLoggerService.js';
-import InstanceChart from '@/core/chart/charts/instance.js';
-import { ApLoggerService } from '@/core/activitypub/ApLoggerService.js';
-import { AccountMoveService } from '@/core/AccountMoveService.js';
-import { ReactionService } from '@/core/ReactionService.js';
-import { NotificationService } from '@/core/NotificationService.js';
-import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
-import { ChatService } from '@/core/ChatService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
 
 process.env.NODE_ENV = 'test';
 
@@ -69,6 +35,7 @@ describe('UserEntityService', () => {
 		let blockingRepository: BlockingsRepository;
 		let mutingRepository: MutingsRepository;
 		let renoteMutingsRepository: RenoteMutingsRepository;
+		let cacheManagementService: CacheManagementService;
 
 		async function createUser(userData: Partial<MiUser> = {}, profileData: Partial<MiUserProfile> = {}) {
 			const un = secureRndstr(16);
@@ -86,6 +53,7 @@ describe('UserEntityService', () => {
 				userId: user.id,
 			});
 
+			cacheManagementService.clear();
 			return user;
 		}
 
@@ -96,6 +64,7 @@ describe('UserEntityService', () => {
 				targetUserId: target.id,
 				memo,
 			});
+			cacheManagementService.clear();
 		}
 
 		async function follow(follower: MiUser, followee: MiUser) {
@@ -104,6 +73,7 @@ describe('UserEntityService', () => {
 				followerId: follower.id,
 				followeeId: followee.id,
 			});
+			cacheManagementService.clear();
 		}
 
 		async function requestFollow(requester: MiUser, requestee: MiUser) {
@@ -112,6 +82,7 @@ describe('UserEntityService', () => {
 				followerId: requester.id,
 				followeeId: requestee.id,
 			});
+			cacheManagementService.clear();
 		}
 
 		async function block(blocker: MiUser, blockee: MiUser) {
@@ -120,6 +91,7 @@ describe('UserEntityService', () => {
 				blockerId: blocker.id,
 				blockeeId: blockee.id,
 			});
+			cacheManagementService.clear();
 		}
 
 		async function mute(mutant: MiUser, mutee: MiUser) {
@@ -128,6 +100,7 @@ describe('UserEntityService', () => {
 				muterId: mutant.id,
 				muteeId: mutee.id,
 			});
+			cacheManagementService.clear();
 		}
 
 		async function muteRenote(mutant: MiUser, mutee: MiUser) {
@@ -136,6 +109,7 @@ describe('UserEntityService', () => {
 				muterId: mutant.id,
 				muteeId: mutee.id,
 			});
+			cacheManagementService.clear();
 		}
 
 		function randomIntRange(weight = 10) {
@@ -143,53 +117,11 @@ describe('UserEntityService', () => {
 		}
 
 		beforeAll(async () => {
-			const services = [
-				UserEntityService,
-				ApPersonService,
-				NoteEntityService,
-				PageEntityService,
-				CustomEmojiService,
-				AnnouncementService,
-				RoleService,
-				FederatedInstanceService,
-				IdService,
-				AvatarDecorationService,
-				UtilityService,
-				EmojiEntityService,
-				ModerationLogService,
-				GlobalEventService,
-				DriveFileEntityService,
-				MetaService,
-				FetchInstanceMetadataService,
-				CacheService,
-				ApResolverService,
-				ApNoteService,
-				ApImageService,
-				ApMfmService,
-				MfmService,
-				HashtagService,
-				UsersChart,
-				ChartLoggerService,
-				InstanceChart,
-				ApLoggerService,
-				AccountMoveService,
-				ReactionService,
-				ReactionsBufferingService,
-				NotificationService,
-				ChatService,
-				InternalEventService,
-			];
-
 			app = await Test.createTestingModule({
 				imports: [GlobalModule, CoreModule],
-				providers: [
-					...services,
-					...services.map(x => ({ provide: x.name, useExisting: x })),
-				],
 			})
-				.overrideProvider(InternalEventService).useClass(FakeInternalEventService)
-				.overrideProvider(CacheService).useClass(NoOpCacheService)
 				.compile();
+
 			await app.init();
 			app.enableShutdownHooks();
 
@@ -202,10 +134,23 @@ describe('UserEntityService', () => {
 			blockingRepository = app.get<BlockingsRepository>(DI.blockingsRepository);
 			mutingRepository = app.get<MutingsRepository>(DI.mutingsRepository);
 			renoteMutingsRepository = app.get<RenoteMutingsRepository>(DI.renoteMutingsRepository);
+			cacheManagementService = app.get(CacheManagementService);
 		});
 
 		afterAll(async () => {
 			await app.close();
+		});
+
+		afterEach(async () => {
+			await userProfileRepository.deleteAll();
+			await userMemosRepository.deleteAll();
+			await followingRepository.deleteAll();
+			await followingRequestRepository.deleteAll();
+			await blockingRepository.deleteAll();
+			await mutingRepository.deleteAll();
+			await renoteMutingsRepository.deleteAll();
+			await usersRepository.deleteAll();
+			cacheManagementService.clear();
 		});
 
 		test('UserLite', async() => {

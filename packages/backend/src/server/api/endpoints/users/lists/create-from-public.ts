@@ -96,17 +96,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const listExist = await this.userListsRepository.exists({
-				where: {
-					id: ps.listId,
-					isPublic: true,
-				},
-			});
+			const listExist = await this.userListService.userListsCache.fetchMaybe(ps.listId);
 			if (!listExist) throw new ApiError(meta.errors.noSuchList);
+			if (!listExist.isPublic && listExist.userId !== me.id) throw new ApiError(meta.errors.noSuchList);
 			const currentCount = await this.userListsRepository.countBy({
 				userId: me.id,
 			});
-			if (currentCount >= (await this.roleService.getUserPolicies(me.id)).userListLimit) {
+			if (currentCount >= (await this.roleService.getUserPolicies(me)).userListLimit) {
 				throw new ApiError(meta.errors.tooManyUserLists);
 			}
 
@@ -158,7 +154,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					throw err;
 				}
 			}
-			return await this.userListEntityService.pack(userList);
+			return await this.userListEntityService.pack(userList, me.id);
 		});
 	}
 }

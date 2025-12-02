@@ -35,6 +35,8 @@ import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
 import { notificationRecieveConfig } from '@/models/json-schema/user.js';
 import { userUnsignedFetchOptions } from '@/const.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
+import { QueueService } from '@/core/QueueService.js';
 import { ApiLoggerService } from '../../ApiLoggerService.js';
 import { ApiError } from '../../error.js';
 
@@ -317,6 +319,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private httpRequestService: HttpRequestService,
 		private avatarDecorationService: AvatarDecorationService,
 		private utilityService: UtilityService,
+		private readonly queueService: QueueService,
 	) {
 		super(meta, paramDef, async (ps, _user, token) => {
 			const user = await this.usersRepository.findOneByOrFail({ id: _user.id }) as MiLocalUser;
@@ -605,9 +608,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			updates.emojis = emojis;
 			updates.tags = tags;
-
-			// ハッシュタグ更新
-			this.hashtagService.updateUsertags(user, tags);
 			//#endregion
 
 			if (Object.keys(updates).length > 0) {
@@ -638,17 +638,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// Publish meUpdated event
 			this.globalEventService.publishMainStream(user.id, 'meUpdated', iObj);
 
+			// ハッシュタグ更新
+			await this.queueService.createUpdateUserTagsJob(user.id);
+
 			// 鍵垢を解除したとき、溜まっていたフォローリクエストがあるならすべて承認
 			if (user.isLocked && ps.isLocked === false) {
-				this.userFollowingService.acceptAllFollowRequests(user);
+				trackPromise(this.userFollowingService.acceptAllFollowRequests(user));
 			}
 
 			// フォロワーにUpdateを配信
 			if (this.userNeedsPublishing(user, updates) || this.profileNeedsPublishing(profile, updatedProfile)) {
-				this.accountUpdateService.publishToFollowers({
+				trackPromise(this.accountUpdateService.publishToFollowers({
 					...user,
 					...updates,
-				});
+				}));
 			}
 
 			return iObj;

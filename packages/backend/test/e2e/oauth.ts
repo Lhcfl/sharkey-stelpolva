@@ -153,13 +153,14 @@ async function assertDirectError(response: Response, status: number, error: stri
 }
 
 describe('OAuth', () => {
-    test('fake pass', () => {
-        assert.ok(true, 'fake pass');
-    });
+	test('fake pass', () => {
+		assert.ok(true, 'fake pass');
+	});
 });
 
 // these tests won't pass until we integrate Misskey's OAuth code with ours
-if (false) describe('OAuth', () => {
+/*
+describe('OAuth', () => {
 	let fastify: FastifyInstance;
 
 	let alice: misskey.entities.SignupResponse;
@@ -1025,3 +1026,4 @@ if (false) describe('OAuth', () => {
 		});
 	});
 });
+ */

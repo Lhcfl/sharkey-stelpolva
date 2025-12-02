@@ -50,7 +50,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.chatService.checkChatAvailability(me.id, 'read');
 
 			const rooms = await this.chatService.getOwnedRoomsWithPagination(me.id, ps.limit, ps.sinceId, ps.untilId);
-			return this.chatEntityService.packRooms(rooms, me);
+			return await this.chatEntityService.packRooms(rooms, me);
 		});
 	}
 }

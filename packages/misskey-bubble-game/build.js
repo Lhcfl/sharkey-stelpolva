@@ -61,7 +61,7 @@ function buildDts() {
 	return execa(
 		'tsc',
 		[
-			'--project', 'tsconfig.json',
+			'--project', 'tsconfig.game.json',
 			'--outDir', 'built',
 			'--declaration', 'true',
 			'--emitDeclarationOnly', 'true',

@@ -15,6 +15,7 @@ import { createTemp } from '@/misc/create-temp.js';
 import type { MiFollowing } from '@/models/Following.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { NotificationService } from '@/core/NotificationService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
@@ -38,6 +39,7 @@ export class ExportFollowingProcessorService {
 		private driveService: DriveService,
 		private queueLoggerService: QueueLoggerService,
 		private notificationService: NotificationService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-following');
 	}
@@ -91,7 +93,7 @@ export class ExportFollowingProcessorService {
 						continue;
 					}
 
-					if (job.data.excludeInactive && u.updatedAt && (Date.now() - u.updatedAt.getTime() > 1000 * 60 * 60 * 24 * 90)) {
+					if (job.data.excludeInactive && u.updatedAt && (this.timeService.now - u.updatedAt.getTime() > 1000 * 60 * 60 * 24 * 90)) {
 						continue;
 					}
 
@@ -112,7 +114,7 @@ export class ExportFollowingProcessorService {
 			stream.end();
 			this.logger.debug(`Exported to: ${path}`);
 
-			const fileName = 'following-' + dateFormat(new Date(), 'yyyy-MM-dd-HH-mm-ss') + '.csv';
+			const fileName = 'following-' + dateFormat(this.timeService.date, 'yyyy-MM-dd-HH-mm-ss') + '.csv';
 			const driveFile = await this.driveService.addFile({ user, path, name: fileName, force: true, ext: 'csv' });
 
 			this.logger.debug(`Exported to: ${driveFile.id}`);

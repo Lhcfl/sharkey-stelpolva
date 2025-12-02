@@ -4,12 +4,15 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
+import { ApiError } from '@/server/api/error.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AccessTokensRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { DI } from '@/di-symbols.js';
+import { TimeService } from '@/global/TimeService.js';
+import { CacheService } from '@/core/CacheService.js';
 
 export const meta = {
 	tags: ['auth'],
@@ -26,6 +29,19 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: false,
 			},
+		},
+	},
+
+	errors: {
+		noSuchUser: {
+			message: 'No such user.',
+			code: 'NO_SUCH_USER',
+			id: 'a89abd3d-f0bc-4cce-beb1-2f446f4f1e6a',
+		},
+		mustBeLocal: {
+			message: 'Grantee must be local',
+			code: 'MUST_BE_LOCAL',
+			id: '403c73e5-6f03-41b4-9394-ac128947f7ae',
 		},
 	},
 
@@ -46,6 +62,10 @@ export const paramDef = {
 		permission: { type: 'array', uniqueItems: true, items: {
 			type: 'string',
 		} },
+		grantees: { type: 'array', uniqueItems: true, items: {
+			type: 'string',
+		} },
+		rank: { type: 'string', enum: ['admin', 'mod', 'user'], nullable: true },
 	},
 	required: ['session', 'permission'],
 } as const;
@@ -58,12 +78,29 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private idService: IdService,
 		private notificationService: NotificationService,
+		private readonly timeService: TimeService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			// Validate grantees
+			if (ps.grantees && ps.grantees.length > 0) {
+				const grantees = await this.cacheService.findUsersById(ps.grantees);
+
+				if (grantees.size !== ps.grantees.length) {
+					throw new ApiError(meta.errors.noSuchUser);
+				}
+
+				for (const grantee of grantees.values()) {
+					if (grantee.host != null) {
+						throw new ApiError(meta.errors.mustBeLocal);
+					}
+				}
+			}
+
 			// Generate access token
 			const accessToken = secureRndstr(32);
 
-			const now = new Date();
+			const now = this.timeService.date;
 
 			// Insert access token doc
 			await this.accessTokensRepository.insert({
@@ -77,7 +114,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				description: ps.description,
 				iconUrl: ps.iconUrl,
 				permission: ps.permission,
+				rank: ps.rank,
+				granteeIds: ps.grantees,
 			});
+
+			if (ps.grantees) {
+				for (const granteeId of ps.grantees) {
+					this.notificationService.createNotification(granteeId, 'sharedAccessGranted', { permCount: ps.permission.length, rank: ps.rank ?? null }, me.id);
+				}
+			}
 
 			// アクセストークンが生成されたことを通知
 			this.notificationService.createNotification(me.id, 'createToken', {});

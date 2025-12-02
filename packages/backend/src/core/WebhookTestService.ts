@@ -14,16 +14,17 @@ import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { type UserWebhookPayload, UserWebhookService } from '@/core/UserWebhookService.js';
 import { QueueService } from '@/core/QueueService.js';
 import { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { ModeratorInactivityRemainingTime } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
 
 const oneDayMillis = 24 * 60 * 60 * 1000;
 
-function generateDummyUser(override?: Partial<MiUser>): MiUser {
+function generateDummyUser(now: number, override?: Partial<MiUser>): MiUser {
 	return {
 		id: 'dummy-user-1',
-		updatedAt: new Date(Date.now() - oneDayMillis * 7),
-		lastFetchedAt: new Date(Date.now() - oneDayMillis * 5),
-		lastActiveDate: new Date(Date.now() - oneDayMillis * 3),
+		updatedAt: new Date(now - oneDayMillis * 7),
+		lastFetchedAt: new Date(now - oneDayMillis * 5),
+		lastActiveDate: new Date(now - oneDayMillis * 3),
 		hideOnlineStatus: false,
 		username: 'dummy1',
 		usernameLower: 'dummy1',
@@ -132,31 +133,34 @@ function generateDummyNote(override?: Partial<MiNote>): MiNote {
 	};
 }
 
-const dummyUser1 = generateDummyUser();
-const dummyUser2 = generateDummyUser({
-	id: 'dummy-user-2',
-	updatedAt: new Date(Date.now() - oneDayMillis * 30),
-	lastFetchedAt: new Date(Date.now() - oneDayMillis),
-	lastActiveDate: new Date(Date.now() - oneDayMillis),
-	username: 'dummy2',
-	usernameLower: 'dummy2',
-	name: 'DummyUser2',
-	followersCount: 40,
-	followingCount: 50,
-	notesCount: 900,
-});
-const dummyUser3 = generateDummyUser({
-	id: 'dummy-user-3',
-	updatedAt: new Date(Date.now() - oneDayMillis * 15),
-	lastFetchedAt: new Date(Date.now() - oneDayMillis * 2),
-	lastActiveDate: new Date(Date.now() - oneDayMillis * 2),
-	username: 'dummy3',
-	usernameLower: 'dummy3',
-	name: 'DummyUser3',
-	followersCount: 60,
-	followingCount: 70,
-	notesCount: 15900,
-});
+function makeDummyUsers(now: number) {
+	const dummyUser1 = generateDummyUser(now);
+	const dummyUser2 = generateDummyUser(now, {
+		id: 'dummy-user-2',
+		updatedAt: new Date(now - oneDayMillis * 30),
+		lastFetchedAt: new Date(now - oneDayMillis),
+		lastActiveDate: new Date(now - oneDayMillis),
+		username: 'dummy2',
+		usernameLower: 'dummy2',
+		name: 'DummyUser2',
+		followersCount: 40,
+		followingCount: 50,
+		notesCount: 900,
+	});
+	const dummyUser3 = generateDummyUser(now, {
+		id: 'dummy-user-3',
+		updatedAt: new Date(now - oneDayMillis * 15),
+		lastFetchedAt: new Date(now - oneDayMillis * 2),
+		lastActiveDate: new Date(now - oneDayMillis * 2),
+		username: 'dummy3',
+		usernameLower: 'dummy3',
+		name: 'DummyUser3',
+		followersCount: 60,
+		followingCount: 70,
+		notesCount: 15900,
+	});
+	return { dummyUser1, dummyUser2, dummyUser3 };
+}
 
 @Injectable()
 export class WebhookTestService {
@@ -169,6 +173,7 @@ export class WebhookTestService {
 		private systemWebhookService: SystemWebhookService,
 		private queueService: QueueService,
 		private readonly idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -206,6 +211,8 @@ export class WebhookTestService {
 			// また、Jobの試行回数も1回だけ.
 			this.queueService.userWebhookDeliver(merged, type, contents, { attempts: 1 });
 		};
+
+		const { dummyUser1, dummyUser2, dummyUser3 } = makeDummyUsers(this.timeService.now);
 
 		const dummyNote1 = generateDummyNote({
 			userId: dummyUser1.id,
@@ -311,6 +318,8 @@ export class WebhookTestService {
 			this.queueService.systemWebhookDeliver(merged, type, contents, { attempts: 1 });
 		};
 
+		const { dummyUser1, dummyUser2, dummyUser3 } = makeDummyUsers(this.timeService.now);
+
 		switch (params.type) {
 			case 'abuseReport': {
 				send('abuseReport', await this.generateAbuseReport({
@@ -396,13 +405,13 @@ export class WebhookTestService {
 		return {
 			id: note.id,
 			threadId: note.threadId ?? note.id,
-			createdAt: new Date().toISOString(),
+			createdAt: this.timeService.date.toISOString(),
 			deletedAt: null,
 			text: note.text,
 			cw: note.cw,
 			userId: note.userId,
 			userHost: note.userHost ?? null,
-			user: await this.toPackedUserLite(note.user ?? generateDummyUser()),
+			user: await this.toPackedUserLite(note.user ?? generateDummyUser(this.timeService.now)),
 			replyId: note.replyId,
 			renoteId: note.renoteId,
 			isHidden: false,
@@ -485,8 +494,8 @@ export class WebhookTestService {
 			url: null,
 			uri: null,
 			movedTo: null,
-			alsoKnownAs: [],
-			createdAt: new Date().toISOString(),
+			movedToUri: null,
+			createdAt: this.timeService.date.toISOString(),
 			updatedAt: user.updatedAt?.toISOString() ?? null,
 			lastFetchedAt: user.lastFetchedAt?.toISOString() ?? null,
 			bannerUrl: user.bannerId == null ? null : user.bannerUrl,

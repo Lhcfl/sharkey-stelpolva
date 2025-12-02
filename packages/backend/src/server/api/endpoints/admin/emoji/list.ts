@@ -111,7 +111,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				emojis = await q.take(ps.limit).skip(ps.offset ?? 0).getMany();
 			}
 
-			return this.emojiEntityService.packDetailedMany(emojis);
+			return await this.emojiEntityService.packDetailedMany(emojis);
 		});
 	}
 }

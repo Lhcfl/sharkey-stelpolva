@@ -7,8 +7,10 @@ process.env.NODE_ENV = 'test';
 
 import { jest } from '@jest/globals';
 import { Test } from '@nestjs/testing';
-import { Redis } from 'ioredis';
+import { GodOfTimeService } from '../misc/GodOfTimeService.js';
+import { MockRedis } from '../misc/MockRedis.js';
 import type { TestingModule } from '@nestjs/testing';
+import type { InstancesRepository } from '@/models/_.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
@@ -16,67 +18,69 @@ import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { IdService } from '@/core/IdService.js';
-import { EnvService } from '@/core/EnvService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
+import { CoreModule } from '@/core/CoreModule.js';
 import { DI } from '@/di-symbols.js';
-
-function mockRedis() {
-	const hash = {} as any;
-	const set = jest.fn((key: string, value) => {
-		const ret = hash[key];
-		hash[key] = value;
-		return ret;
-	});
-	return set;
-}
+import { TimeService } from '@/global/TimeService.js';
 
 describe('FetchInstanceMetadataService', () => {
 	let app: TestingModule;
-	let fetchInstanceMetadataService: jest.Mocked<FetchInstanceMetadataService>;
+	let fetchInstanceMetadataService: FetchInstanceMetadataService;
 	let federatedInstanceService: jest.Mocked<FederatedInstanceService>;
 	let httpRequestService: jest.Mocked<HttpRequestService>;
-	let redisClient: jest.Mocked<Redis>;
+	let redisClient: MockRedis;
+	let instancesRepository: InstancesRepository;
+	let cacheManagementService: CacheManagementService;
+	let timeService: GodOfTimeService;
 
-	beforeEach(async () => {
+	beforeAll(async () => {
 		app = await Test
 			.createTestingModule({
 				imports: [
 					GlobalModule,
-				],
-				providers: [
-					FetchInstanceMetadataService,
-					LoggerService,
-					UtilityService,
-					IdService,
-					EnvService,
+					CoreModule,
 				],
 			})
-			.useMocker((token) => {
-				if (token === HttpRequestService) {
-					return { getJson: jest.fn(), getHtml: jest.fn(), send: jest.fn() };
-				} else if (token === FederatedInstanceService) {
-					return { fetchOrRegister: jest.fn() };
-				} else if (token === DI.redis) {
-					return mockRedis;
-				}
-				return null;
-			})
+			.overrideProvider(TimeService).useClass(GodOfTimeService)
+			.overrideProvider(HttpRequestService).useValue({ getJson: jest.fn(), getHtml: jest.fn(), send: jest.fn() })
+			.overrideProvider(FederatedInstanceService).useValue({ fetchOrRegister: jest.fn() })
+			.overrideProvider(DI.redis).useClass(MockRedis)
+			.overrideProvider(DI.redisForSub).useClass(MockRedis)
+			.overrideProvider(DI.redisForPub).useClass(MockRedis)
 			.compile();
 
+		await app.init();
 		app.enableShutdownHooks();
 
-		fetchInstanceMetadataService = app.get<FetchInstanceMetadataService>(FetchInstanceMetadataService) as jest.Mocked<FetchInstanceMetadataService>;
+		fetchInstanceMetadataService = app.get<FetchInstanceMetadataService>(FetchInstanceMetadataService);
 		federatedInstanceService = app.get<FederatedInstanceService>(FederatedInstanceService) as jest.Mocked<FederatedInstanceService>;
-		redisClient = app.get<Redis>(DI.redis) as jest.Mocked<Redis>;
 		httpRequestService = app.get<HttpRequestService>(HttpRequestService) as jest.Mocked<HttpRequestService>;
+		instancesRepository = app.get<InstancesRepository>(DI.instancesRepository);
+		cacheManagementService = app.get(CacheManagementService);
+		timeService = app.get(TimeService);
+		redisClient = app.get(DI.redis);
 	});
 
-	afterEach(async () => {
+	afterAll(async () => {
 		await app.close();
 	});
 
+	beforeEach(() => {
+		federatedInstanceService.fetchOrRegister.mockReset();
+		httpRequestService.getJson.mockReset();
+		httpRequestService.getHtml.mockReset();
+		httpRequestService.send.mockReset();
+		redisClient.mockReset();
+		timeService.resetToNow();
+	});
+
+	afterEach(async () => {
+		await instancesRepository.deleteAll();
+		cacheManagementService.clear();
+	});
+
 	test('Lock and update', async () => {
-		redisClient.set = mockRedis();
-		const now = Date.now();
+		const now = timeService.now;
 		federatedInstanceService.fetchOrRegister.mockResolvedValue({ infoUpdatedAt: { getTime: () => { return now - 10 * 1000 * 60 * 60 * 24; } } } as any);
 		httpRequestService.getJson.mockImplementation(() => { throw Error(); });
 		const tryLockSpy = jest.spyOn(fetchInstanceMetadataService, 'tryLock');
@@ -90,8 +94,7 @@ describe('FetchInstanceMetadataService', () => {
 	});
 
 	test('Lock and don\'t update', async () => {
-		redisClient.set = mockRedis();
-		const now = Date.now();
+		const now = timeService.now;
 		federatedInstanceService.fetchOrRegister.mockResolvedValue({ infoUpdatedAt: { getTime: () => now } } as any);
 		httpRequestService.getJson.mockImplementation(() => { throw Error(); });
 		const tryLockSpy = jest.spyOn(fetchInstanceMetadataService, 'tryLock');
@@ -105,8 +108,7 @@ describe('FetchInstanceMetadataService', () => {
 	});
 
 	test('Do nothing when lock not acquired', async () => {
-		redisClient.set = mockRedis();
-		const now = Date.now();
+		const now = timeService.now;
 		federatedInstanceService.fetchOrRegister.mockResolvedValue({ infoUpdatedAt: { getTime: () => now - 10 * 1000 * 60 * 60 * 24 } } as any);
 		httpRequestService.getJson.mockImplementation(() => { throw Error(); });
 		await fetchInstanceMetadataService.tryLock('example.com');
@@ -121,8 +123,7 @@ describe('FetchInstanceMetadataService', () => {
 	});
 
 	test('Do when lock not acquired but forced', async () => {
-		redisClient.set = mockRedis();
-		const now = Date.now();
+		const now = timeService.now;
 		federatedInstanceService.fetchOrRegister.mockResolvedValue({ infoUpdatedAt: { getTime: () => now - 10 * 1000 * 60 * 60 * 24 } } as any);
 		httpRequestService.getJson.mockImplementation(() => { throw Error(); });
 		await fetchInstanceMetadataService.tryLock('example.com');

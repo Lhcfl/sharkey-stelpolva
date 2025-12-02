@@ -9,6 +9,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { DriveFoldersRepository } from '@/models/_.js';
 import { DriveFolderEntityService } from '@/core/entities/DriveFolderEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { promiseMap } from '@/misc/promise-map.js';
 
 export const meta = {
 	tags: ['drive'],
@@ -58,7 +59,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				parentId: ps.parentId ?? IsNull(),
 			});
 
-			return await Promise.all(folders.map(folder => this.driveFolderEntityService.pack(folder)));
+			return await promiseMap(folders, async folder => await this.driveFolderEntityService.pack(folder), { limit: 4 });
 		});
 	}
 }

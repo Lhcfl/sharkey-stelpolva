@@ -1,0 +1,23 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./tsconfig.common.jsonc",
+	"compilerOptions": {
+		// Target
+		// ES2025 is the earliest that supports our API uses: https://node.green/#ES2025
+		// But TS doesn't implement it yet: https://github.com/microsoft/TypeScript/issues/61735
+		"target": "ESNext",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"lib": ["ESNext"],
+
+		// Checking
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"noUnusedLocals": false, // allow unused imports to avoid merge conflicts
+		"noUnusedParameters": false, // allow unused imports to avoid merge conflicts
+
+		// Output
+		"emitDecoratorMetadata": true,
+		"removeComments": false
+	}
+}

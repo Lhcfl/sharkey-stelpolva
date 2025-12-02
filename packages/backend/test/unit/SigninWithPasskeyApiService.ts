@@ -9,7 +9,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthenticationResponseJSON } from '@simplewebauthn/types';
 import { HttpHeader } from 'fastify/types/utils.js';
-import { MockFunctionMetadata, ModuleMocker } from 'jest-mock';
+import { MockMetadata, ModuleMocker } from 'jest-mock';
+import { FakeSkRateLimiterService } from '../misc/FakeSkRateLimiterService.js';
 import { MiUser } from '@/models/User.js';
 import { MiUserProfile, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -21,22 +22,10 @@ import { WebAuthnService } from '@/core/WebAuthnService.js';
 import { SigninService } from '@/server/api/SigninService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
-import { LimitInfo } from '@/misc/rate-limit-utils.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
+import { ServerModule } from '@/server/ServerModule.js';
 
 const moduleMocker = new ModuleMocker(global);
-
-class FakeLimiter {
-	public async limit(): Promise<LimitInfo> {
-		return {
-			blocked: false,
-			remaining: Number.MAX_SAFE_INTEGER,
-			resetMs: 0,
-			resetSec: 0,
-			fullResetMs: 0,
-			fullResetSec: 0,
-		};
-	}
-}
 
 class FakeSigninService {
 	public signin(..._args: any): any {
@@ -52,6 +41,7 @@ class DummyFastifyReply {
 	header(_key: HttpHeader, _value: any): void {
 	}
 }
+
 class DummyFastifyRequest {
 	public ip: string;
 	public body: { credential: any, context: string };
@@ -76,43 +66,46 @@ describe('SigninWithPasskeyApiService', () => {
 	let userProfilesRepository: UserProfilesRepository;
 	let webAuthnService: WebAuthnService;
 	let idService: IdService;
+	let cacheManagementService: CacheManagementService;
 	let FakeWebauthnVerify: ()=>Promise<string>;
 
 	async function createUser(data: Partial<MiUser> = {}) {
-		const user = await usersRepository
-			.save({
-				...data,
-			});
-		return user;
+		await usersRepository.insert(data);
+		return await usersRepository.findOneByOrFail({ id: data.id });
 	}
 
 	async function createUserProfile(data: Partial<MiUserProfile> = {}) {
-		const userProfile = await userProfilesRepository
-			.save({ ...data },
-			);
-		return userProfile;
+		await userProfilesRepository.insert(data);
+		return await userProfilesRepository.findOneByOrFail({ userId: data.userId });
 	}
 
 	beforeAll(async () => {
 		app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-			providers: [
-				SigninWithPasskeyApiService,
-				{ provide: SkRateLimiterService, useClass: FakeLimiter },
-				{ provide: SigninService, useClass: FakeSigninService },
-			],
+			imports: [GlobalModule, CoreModule, ServerModule],
 		}).useMocker((token) => {
 			if (typeof token === 'function') {
-				const mockMetadata = moduleMocker.getMetadata(token) as MockFunctionMetadata<any, any>;
+				const mockMetadata = moduleMocker.getMetadata(token) as MockMetadata<any, any>;
 				const Mock = moduleMocker.generateFromMetadata(mockMetadata);
 				return new Mock();
 			}
-		}).compile();
+		})
+			.overrideProvider(SkRateLimiterService).useClass(FakeSkRateLimiterService)
+			.overrideProvider(SigninService).useClass(FakeSigninService)
+			.compile();
+
+		await app.init();
+		app.enableShutdownHooks();
+
 		passkeyApiService = app.get<SigninWithPasskeyApiService>(SigninWithPasskeyApiService);
 		usersRepository = app.get<UsersRepository>(DI.usersRepository);
 		userProfilesRepository = app.get<UserProfilesRepository>(DI.userProfilesRepository);
 		webAuthnService = app.get<WebAuthnService>(WebAuthnService);
 		idService = app.get<IdService>(IdService);
+		cacheManagementService = app.get(CacheManagementService);
+	});
+
+	afterAll(async () => {
+		await app.close();
 	});
 
 	beforeEach(async () => {
@@ -124,7 +117,7 @@ describe('SigninWithPasskeyApiService', () => {
 
 		const dummyUser = {
 			id: uid, username: uid, usernameLower: uid.toLowerCase(), uri: null, host: null,
-		 };
+		};
 		const dummyProfile = {
 			userId: uid,
 			password: 'qwerty',
@@ -134,8 +127,10 @@ describe('SigninWithPasskeyApiService', () => {
 		await createUserProfile(dummyProfile);
 	});
 
-	afterAll(async () => {
-		await app.close();
+	afterEach(async () => {
+		await userProfilesRepository.deleteAll();
+		await usersRepository.deleteAll();
+		cacheManagementService.clear();
 	});
 
 	describe('Get Passkey Options', () => {

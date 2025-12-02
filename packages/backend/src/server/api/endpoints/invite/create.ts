@@ -10,6 +10,7 @@ import type { RegistrationTicketsRepository } from '@/models/_.js';
 import { InviteCodeEntityService } from '@/core/entities/InviteCodeEntityService.js';
 import { IdService } from '@/core/IdService.js';
 import { RoleService } from '@/core/RoleService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { generateInviteCode } from '@/misc/generate-invite-code.js';
 import { ApiError } from '../../error.js';
@@ -57,13 +58,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private inviteCodeEntityService: InviteCodeEntityService,
 		private idService: IdService,
 		private roleService: RoleService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me.id);
 
 			if (policies.inviteLimit) {
 				const count = await this.registrationTicketsRepository.countBy({
-					id: MoreThan(this.idService.gen(Date.now() - (policies.inviteLimitCycle * 1000 * 60))),
+					id: MoreThan(this.idService.gen(this.timeService.now - (policies.inviteLimitCycle * 1000 * 60))),
 					createdById: me.id,
 				});
 
@@ -76,8 +78,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				id: this.idService.gen(),
 				createdBy: me,
 				createdById: me.id,
-				expiresAt: policies.inviteExpirationTime ? new Date(Date.now() + (policies.inviteExpirationTime * 1000 * 60)) : null,
-				code: generateInviteCode(),
+				expiresAt: policies.inviteExpirationTime ? new Date(this.timeService.now + (policies.inviteExpirationTime * 1000 * 60)) : null,
+				code: generateInviteCode(this.timeService.now),
 			});
 
 			return await this.inviteCodeEntityService.pack(ticket, me);

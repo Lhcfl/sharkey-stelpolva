@@ -14,10 +14,11 @@ import type { MiNote } from '@/models/Note.js';
 import type { UsersRepository, NotesRepository, FollowingsRepository, PollsRepository, PollVotesRepository, NoteReactionsRepository, ChannelsRepository, MiMeta, MiPollVote, MiPoll, MiChannel, MiFollowing, NoteFavoritesRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { DebounceLoader } from '@/misc/loader.js';
-import { IdService } from '@/core/IdService.js';
-import type { Config } from '@/config.js';
-import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
+import type { IdService } from '@/core/IdService.js';
+import type { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
 import { QueryService } from '@/core/QueryService.js';
+import { TimeService } from '@/global/TimeService.js';
+import type { Config } from '@/config.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import type { NoteVisibilityData } from '@/core/NoteVisibilityService.js';
 import type { OnModuleInit } from '@nestjs/common';
@@ -106,6 +107,7 @@ export class NoteEntityService implements OnModuleInit {
 		public readonly noteVisibilityService: NoteVisibilityService,
 
 		private readonly queryService: QueryService,
+		private readonly timeService: TimeService,
 		//private userEntityService: UserEntityService,
 		//private driveFileEntityService: DriveFileEntityService,
 		//private customEmojiService: CustomEmojiService,
@@ -115,6 +117,7 @@ export class NoteEntityService implements OnModuleInit {
 	) {
 	}
 
+	@bindThis
 	onModuleInit() {
 		this.userEntityService = this.moduleRef.get('UserEntityService');
 		this.driveFileEntityService = this.moduleRef.get('DriveFileEntityService');
@@ -133,7 +136,7 @@ export class NoteEntityService implements OnModuleInit {
 			const followersOnlyBefore = packedNote.user.makeNotesFollowersOnlyBefore;
 			if ((followersOnlyBefore != null)
 				&& (
-					(followersOnlyBefore <= 0 && (Date.now() - new Date(packedNote.createdAt).getTime() > 0 - (followersOnlyBefore * 1000)))
+					(followersOnlyBefore <= 0 && (this.timeService.now - new Date(packedNote.createdAt).getTime() > 0 - (followersOnlyBefore * 1000)))
 					|| (followersOnlyBefore > 0 && (new Date(packedNote.createdAt).getTime() < followersOnlyBefore * 1000))
 				)
 			) {
@@ -388,7 +391,7 @@ export class NoteEntityService implements OnModuleInit {
 		}
 
 		// パフォーマンスのためノートが作成されてから2秒以上経っていない場合はリアクションを取得しない
-		if (this.idService.parse(note.id).date.getTime() + 2000 > Date.now()) {
+		if (this.idService.parse(note.id).date.getTime() + 2000 > this.timeService.now) {
 			return undefined;
 		}
 
@@ -489,7 +492,7 @@ export class NoteEntityService implements OnModuleInit {
 
 	@bindThis
 	public async packAttachedFiles(fileIds: MiNote['fileIds'], packedFiles: Map<MiNote['fileIds'][number], Packed<'DriveFile'> | null>): Promise<Packed<'DriveFile'>[]> {
-		const missingIds = [];
+		const missingIds: string[] = [];
 		for (const id of fileIds) {
 			if (!packedFiles.has(id)) missingIds.push(id);
 		}
@@ -508,6 +511,8 @@ export class NoteEntityService implements OnModuleInit {
 		me?: { id: MiUser['id'] } | null | undefined,
 		options?: {
 			detail?: boolean;
+			recurseReply?: boolean; // Defaults to the value of detail, which defaults to true.
+			recurseRenote?: boolean; // Defaults to the value of detail, which defaults to true.
 			skipHide?: boolean;
 			withReactionAndUserPairCache?: boolean;
 			bypassSilence?: boolean;
@@ -535,6 +540,8 @@ export class NoteEntityService implements OnModuleInit {
 			skipHide: false,
 			withReactionAndUserPairCache: false,
 		}, options);
+		opts.recurseRenote ??= opts.detail;
+		opts.recurseReply ??= opts.detail;
 
 		const meId = me ? me.id : null;
 		const note = typeof src === 'object' ? src : await this.noteLoader.load(src);
@@ -586,6 +593,7 @@ export class NoteEntityService implements OnModuleInit {
 
 		const bypassSilence = opts.bypassSilence || note.userId === meId;
 
+		// noinspection ES6MissingAwait
 		const packed: Packed<'Note'> = await awaitAll({
 			id: note.id,
 			threadId,
@@ -647,27 +655,30 @@ export class NoteEntityService implements OnModuleInit {
 			...(opts.detail ? {
 				clippedCount: note.clippedCount,
 				processErrors: note.processErrors,
-
-				reply: note.replyId ? this.pack(note.reply ?? opts._hint_?.notes.get(note.replyId) ?? note.replyId, me, {
-					detail: false,
-					skipHide: opts.skipHide,
-					withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
-					_hint_: options?._hint_,
-
-					// Don't silence target of self-reply, since the outer note will already be silenced.
-					bypassSilence: bypassSilence || note.userId === note.replyUserId,
-				}) : undefined,
-
-				renote: note.renoteId ? this.pack(note.renote ?? opts._hint_?.notes.get(note.renoteId) ?? note.renoteId, me, {
-					detail: true,
-					skipHide: opts.skipHide,
-					withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
-					_hint_: options?._hint_,
-
-					// Don't silence target of self-renote, since the outer note will already be silenced.
-					bypassSilence: bypassSilence || note.userId === note.renoteUserId,
-				}) : undefined,
 			} : {}),
+
+			reply: opts.recurseReply && note.replyId ? this.pack(note.reply ?? opts._hint_?.notes.get(note.replyId) ?? note.replyId, me, {
+				detail: false,
+				skipHide: opts.skipHide,
+				withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
+				_hint_: options?._hint_,
+
+				// Don't silence target of self-reply, since the outer note will already be silenced.
+				bypassSilence: bypassSilence || note.userId === note.replyUserId,
+			}) : undefined,
+
+			// The renote target needs to be packed with the reply, but we *must not* recurse any further.
+			// Pass detail=false and recurseReply=true to make sure we only include the right data.
+			renote: opts.recurseRenote && note.renoteId ? this.pack(note.renote ?? opts._hint_?.notes.get(note.renoteId) ?? note.renoteId, me, {
+				detail: false,
+				recurseReply: true,
+				skipHide: opts.skipHide,
+				withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
+				_hint_: options?._hint_,
+
+				// Don't silence target of self-renote, since the outer note will already be silenced.
+				bypassSilence: bypassSilence || note.userId === note.renoteUserId,
+			}) : undefined,
 		});
 
 		this.noteVisibilityService.syncVisibility(packed);

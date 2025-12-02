@@ -29,6 +29,7 @@
 			el.textContent = reload;
 		}
 
+		/** @type {NodeListOf<HTMLElement>} */
 		const i18nEls = document.querySelectorAll('[data-i18n]');
 		for (const el of i18nEls) {
 			const key = el.dataset.i18n;

@@ -20,11 +20,15 @@ import type {
 	RegistrationResponseJSON,
 } from '@simplewebauthn/types';
 import type * as misskey from 'misskey-js';
+import { NativeTimeService } from '@/global/TimeService.js';
+import { LoggerService } from '@/core/LoggerService.js';
+import { EnvService } from '@/global/EnvService.js';
 
 describe('2要素認証', () => {
 	let alice: misskey.entities.SignupResponse;
 
-	const config = loadConfig();
+	const loggerService = new LoggerService(console, new NativeTimeService(), new EnvService());
+	const config = loadConfig(loggerService);
 	const password = 'test';
 	const username = 'alice';
 

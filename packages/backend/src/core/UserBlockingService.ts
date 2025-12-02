@@ -19,7 +19,8 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { UserWebhookService } from '@/core/UserWebhookService.js';
 import { bindThis } from '@/decorators.js';
 import { CacheService } from '@/core/CacheService.js';
-import { UserFollowingService } from '@/core/UserFollowingService.js';
+import type { UserFollowingService } from '@/core/UserFollowingService.js';
+import { UserListService } from '@/core/UserListService.js';
 
 @Injectable()
 export class UserBlockingService implements OnModuleInit {
@@ -49,10 +50,12 @@ export class UserBlockingService implements OnModuleInit {
 		private webhookService: UserWebhookService,
 		private apRendererService: ApRendererService,
 		private loggerService: LoggerService,
+		private readonly userListService: UserListService,
 	) {
 		this.logger = this.loggerService.getLogger('user-block');
 	}
 
+	@bindThis
 	onModuleInit() {
 		this.userFollowingService = this.moduleRef.get('UserFollowingService');
 	}
@@ -139,16 +142,12 @@ export class UserBlockingService implements OnModuleInit {
 
 	@bindThis
 	private async removeFromList(listOwner: MiUser, user: MiUser) {
-		const userLists = await this.userListsRepository.findBy({
-			userId: listOwner.id,
+		const userLists = await this.userListsRepository.find({
+			where: { userId: listOwner.id },
+			select: { id: true },
 		});
 
-		for (const userList of userLists) {
-			await this.userListMembershipsRepository.delete({
-				userListId: userList.id,
-				userId: user.id,
-			});
-		}
+		await this.userListService.bulkRemoveMember(user, userLists.map(l => l.id));
 	}
 
 	@bindThis

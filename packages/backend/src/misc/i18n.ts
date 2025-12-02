@@ -3,10 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { LoggerService } from '@/core/LoggerService.js';
+import type Logger from '@/logger.js';
+
 export class I18n<T extends Record<string, any>> {
+	private readonly logger: Logger;
 	public locale: T;
 
-	constructor(locale: T) {
+	constructor(
+		loggerService: LoggerService,
+		locale: T,
+	) {
+		this.logger = loggerService.getLogger('i18n');
 		this.locale = locale;
 
 		//#region BIND
@@ -26,8 +34,8 @@ export class I18n<T extends Record<string, any>> {
 				}
 			}
 			return str;
-		} catch (e) {
-			console.warn(`missing localization '${key}'`);
+		} catch {
+			this.logger.warn(`missing localization '${key}'`);
 			return key;
 		}
 	}

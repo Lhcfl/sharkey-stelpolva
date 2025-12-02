@@ -5,13 +5,15 @@
 
 import { FORCE_RE_RENDER, FORCE_REMOUNT } from '@storybook/core-events';
 import { addons } from '@storybook/preview-api';
-import { type Preview, setup } from '@storybook/vue3';
+import { setup } from '@storybook/vue3';
 import isChromatic from 'chromatic/isChromatic';
 import { initialize, mswLoader } from 'msw-storybook-addon';
 import { userDetailed } from './fakes.js';
 import locale from './locale.js';
 import { commonHandlers, onUnhandledRequest } from './mocks.js';
 import themes from './themes.js';
+import type { Preview } from '@storybook/vue3';
+import type * as MisskeyOS from '../src/os.js';
 import '../src/style.scss';
 
 const appInitialized = Symbol();
@@ -19,13 +21,13 @@ const appInitialized = Symbol();
 let lastStory: string | null = null;
 let moduleInitialized = false;
 let unobserve = () => {};
-let misskeyOS = null;
+let misskeyOS: typeof MisskeyOS | null = null;
 
 function loadTheme(applyTheme: typeof import('../src/theme')['applyTheme']) {
 	unobserve();
-	const theme = themes[window.document.documentElement.dataset.misskeyTheme];
+	const theme = themes[window.document.documentElement.dataset.misskeyTheme as string];
 	if (theme) {
-		applyTheme(themes[window.document.documentElement.dataset.misskeyTheme]);
+		applyTheme(themes[window.document.documentElement.dataset.misskeyTheme as string]);
 	} else {
 		applyTheme(themes['l-light']);
 	}
@@ -33,9 +35,9 @@ function loadTheme(applyTheme: typeof import('../src/theme')['applyTheme']) {
 		for (const entry of entries) {
 			if (entry.attributeName === 'data-misskey-theme') {
 				const target = entry.target as HTMLElement;
-				const theme = themes[target.dataset.misskeyTheme];
+				const theme = themes[target.dataset.misskeyTheme as string];
 				if (theme) {
-					applyTheme(themes[target.dataset.misskeyTheme]);
+					applyTheme(themes[target.dataset.misskeyTheme as string]);
 				} else {
 					target.removeAttribute('style');
 				}
@@ -97,15 +99,14 @@ const preview = {
 			} else {
 				lastStory = context.id;
 				const channel = addons.getChannel();
-				const resetIndexedDBPromise = globalThis.indexedDB?.databases
+				const resetIndexedDBPromise = (globalThis.indexedDB as IDBFactory | undefined)?.databases
 					? indexedDB.databases().then((r) => {
-							for (var i = 0; i < r.length; i++) {
+							for (let i = 0; i < r.length; i++) {
 								indexedDB.deleteDatabase(r[i].name!);
 							}
 						}).catch(() => {})
 					: Promise.resolve();
 				const resetDefaultStorePromise = import('../src/store').then(({ store }) => {
-					// @ts-expect-error
 					store.init();
 				}).catch(() => {});
 				Promise.all([resetIndexedDBPromise, resetDefaultStorePromise]).then(() => {
@@ -122,12 +123,12 @@ const preview = {
 			}
 			return story;
 		},
-		(Story, context) => {
+		(_, context) => {
 			return {
 				setup() {
 					return {
 						context,
-						popups: misskeyOS.popups,
+						popups: misskeyOS?.popups,
 					};
 				},
 				template:

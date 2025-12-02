@@ -8,6 +8,7 @@ import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export type FanoutTimelineName = (
 	// home timeline
@@ -46,6 +47,7 @@ export class FanoutTimelineService {
 		private redisForTimelines: Redis.Redis,
 
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -53,7 +55,7 @@ export class FanoutTimelineService {
 	public push(tl: FanoutTimelineName, id: string, maxlen: number, pipeline: Redis.ChainableCommander) {
 		// リモートから遅れて届いた(もしくは後から追加された)投稿日時が古い投稿が追加されるとページネーション時に問題を引き起こすため、
 		// 3分以内に投稿されたものでない場合、Redisにある最古のIDより新しい場合のみ追加する
-		if (this.idService.parse(id).date.getTime() > Date.now() - 1000 * 60 * 3) {
+		if (this.idService.parse(id).date.getTime() > this.timeService.now - 1000 * 60 * 3) {
 			pipeline.lpush('list:' + tl, id);
 			if (Math.random() < 0.1) { // 10%の確率でトリム
 				pipeline.ltrim('list:' + tl, 0, maxlen - 1);

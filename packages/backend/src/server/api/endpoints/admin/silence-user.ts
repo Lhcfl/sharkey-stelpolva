@@ -10,7 +10,7 @@ import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -36,7 +36,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly cacheService: CacheService,
 		private readonly moderationLogService: ModerationLogService,
 		private readonly roleService: RoleService,
-		private readonly globalEventService: GlobalEventService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.cacheService.findUserById(ps.userId);
@@ -47,11 +47,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (user.isSilenced) return;
 
-			await this.usersRepository.update(user.id, {
+			await this.usersRepository.update({ id: user.id }, {
 				isSilenced: true,
 			});
-
-			this.globalEventService.publishInternalEvent(user.host == null ? 'localUserUpdated' : 'remoteUserUpdated', {
+			await this.internalEventService.emit(user.host == null ? 'localUserUpdated' : 'remoteUserUpdated', {
 				id: user.id,
 			});
 

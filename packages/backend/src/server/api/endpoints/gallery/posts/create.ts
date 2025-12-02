@@ -12,6 +12,8 @@ import type { MiDriveFile } from '@/models/DriveFile.js';
 import { IdService } from '@/core/IdService.js';
 import { GalleryPostEntityService } from '@/core/entities/GalleryPostEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { TimeService } from '@/global/TimeService.js';
+import { In } from 'typeorm';
 
 export const meta = {
 	tags: ['gallery'],
@@ -62,14 +64,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private galleryPostEntityService: GalleryPostEntityService,
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const files = (await Promise.all(ps.fileIds.map(fileId =>
-				this.driveFilesRepository.findOneBy({
-					id: fileId,
-					userId: me.id,
-				}),
-			))).filter(x => x != null);
+			const files = await this.driveFilesRepository.findBy({
+				id: In(ps.fileIds),
+				userId: me.id,
+			});
 
 			if (files.length === 0) {
 				throw new Error('no files specified');
@@ -77,7 +78,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const post = await this.galleryPostsRepository.insertOne(new MiGalleryPost({
 				id: this.idService.gen(),
-				updatedAt: new Date(),
+				updatedAt: this.timeService.date,
 				title: ps.title,
 				description: ps.description,
 				userId: me.id,

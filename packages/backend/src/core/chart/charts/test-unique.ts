@@ -6,6 +6,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { AppLockService } from '@/core/AppLockService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
@@ -23,9 +24,15 @@ export default class TestUniqueChart extends Chart<typeof schema> { // eslint-di
 		private db: DataSource,
 
 		private appLockService: AppLockService,
+		private readonly timeService: TimeService,
+
 		logger: Logger,
 	) {
 		super(db, (k) => appLockService.getChartInsertLock(k), logger, name, schema);
+	}
+
+	protected getCurrentDate(): Date {
+		return this.timeService.date;
 	}
 
 	protected async tickMajor(): Promise<Partial<KVs<typeof schema>>> {
@@ -37,8 +44,8 @@ export default class TestUniqueChart extends Chart<typeof schema> { // eslint-di
 	}
 
 	@bindThis
-	public async uniqueIncrement(key: string): Promise<void> {
-		await this.commit({
+	public uniqueIncrement(key: string): void {
+		this.commit({
 			foo: [key],
 		});
 	}

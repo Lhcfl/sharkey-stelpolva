@@ -22,6 +22,7 @@ import type { Config } from '@/config.js';
 import { UserListService } from '@/core/UserListService.js';
 import { FilterUnionByProperty, groupedNotificationTypes, obsoleteNotificationTypes } from '@/types.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class NotificationService implements OnApplicationShutdown {
@@ -43,6 +44,7 @@ export class NotificationService implements OnApplicationShutdown {
 		private pushNotificationService: PushNotificationService,
 		private cacheService: CacheService,
 		private userListService: UserListService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -70,9 +72,9 @@ export class NotificationService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private postReadAllNotifications(userId: MiUser['id']) {
+	private async postReadAllNotifications(userId: MiUser['id']) {
 		this.globalEventService.publishMainStream(userId, 'readAllNotifications');
-		this.pushNotificationService.pushNotification(userId, 'readAllNotifications', undefined);
+		await this.pushNotificationService.pushNotification(userId, 'readAllNotifications', undefined);
 	}
 
 	@bindThis
@@ -93,7 +95,10 @@ export class NotificationService implements OnApplicationShutdown {
 		data: Omit<FilterUnionByProperty<MiNotification, 'type', T>, 'type' | 'id' | 'createdAt' | 'notifierId'>,
 		notifierId?: MiUser['id'] | null,
 	): Promise<MiNotification | null> {
-		const profile = await this.cacheService.userProfileCache.fetch(notifieeId);
+		const [profile, notifiee] = await Promise.all([
+			this.cacheService.userProfileCache.fetch(notifieeId),
+			this.cacheService.findUserById(notifieeId),
+		]);
 
 		// 古いMisskeyバージョンのキャッシュが残っている可能性がある
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -139,14 +144,14 @@ export class NotificationService implements OnApplicationShutdown {
 					return null;
 				}
 			} else if (recieveConfig?.type === 'list') {
-				const isMember = await this.userListService.membersCache.fetch(recieveConfig.userListId).then(members => members.has(notifierId));
+				const isMember = await this.cacheService.listUserMembershipsCache.fetch(recieveConfig.userListId).then(members => members.has(notifierId));
 				if (!isMember) {
 					return null;
 				}
 			}
 		}
 
-		const createdAt = new Date();
+		const createdAt = this.timeService.date;
 		let notification: FilterUnionByProperty<MiNotification, 'type', T>;
 		let redisId: string;
 
@@ -177,7 +182,7 @@ export class NotificationService implements OnApplicationShutdown {
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		} while (true);
 
-		const packed = await this.notificationEntityService.pack(notification, notifieeId, {});
+		const packed = await this.notificationEntityService.pack(notification, notifiee, {});
 
 		if (packed == null) return null;
 
@@ -187,15 +192,15 @@ export class NotificationService implements OnApplicationShutdown {
 		// 2秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
 		// テスト通知の場合は即時発行
 		const interval = notification.type === 'test' ? 0 : 2000;
-		setTimeout(interval, 'unread notification', { signal: this.#shutdownController.signal }).then(async () => {
+		this.timeService.startPromiseTimer(interval, 'unread notification', { signal: this.#shutdownController.signal }).then(async () => {
 			const latestReadNotificationId = await this.redisClient.get(`latestReadNotification:${notifieeId}`);
 			if (latestReadNotificationId && (latestReadNotificationId >= redisId)) return;
 
 			this.globalEventService.publishMainStream(notifieeId, 'unreadNotification', packed);
 			this.pushNotificationService.pushNotification(notifieeId, 'notification', packed);
 
-			if (type === 'follow') this.emailNotificationFollow(notifieeId, await this.usersRepository.findOneByOrFail({ id: notifierId! }));
-			if (type === 'receiveFollowRequest') this.emailNotificationReceiveFollowRequest(notifieeId, await this.usersRepository.findOneByOrFail({ id: notifierId! }));
+			if (type === 'follow') this.emailNotificationFollow(notifieeId, await this.cacheService.findUserById(notifierId!));
+			if (type === 'receiveFollowRequest') this.emailNotificationReceiveFollowRequest(notifieeId, await this.cacheService.findUserById(notifierId!));
 		}, () => { /* aborted, ignore it */ });
 
 		return notification;

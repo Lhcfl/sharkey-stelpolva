@@ -118,12 +118,12 @@ export const miRepository = {
 		if (opt.replication) {
 			const queryRunner = this.manager.connection.createQueryRunner('master');
 			try {
-				return this.insertOneImpl(entity, findOptions, queryRunner);
+				return await this.insertOneImpl(entity, findOptions, queryRunner);
 			} finally {
 				await queryRunner.release();
 			}
 		} else {
-			return this.insertOneImpl(entity, findOptions);
+			return await this.insertOneImpl(entity, findOptions);
 		}
 	},
 	async insertOneImpl(entity, findOptions?, queryRunner?) {
@@ -326,5 +326,5 @@ export type ChatRoomInvitationsRepository = Repository<MiChatRoomInvitation> & M
 export type ChatApprovalsRepository = Repository<MiChatApproval> & MiRepository<MiChatApproval>;
 export type BubbleGameRecordsRepository = Repository<MiBubbleGameRecord> & MiRepository<MiBubbleGameRecord>;
 export type ReversiGamesRepository = Repository<MiReversiGame> & MiRepository<MiReversiGame>;
-export type NoteEditRepository = Repository<NoteEdit> & MiRepository<NoteEdit>;
-export type NoteScheduleRepository = Repository<MiNoteSchedule>;
+export type NoteEditsRepository = Repository<NoteEdit> & MiRepository<NoteEdit>;
+export type NoteScheduleRepository = Repository<MiNoteSchedule> & MiRepository<MiNoteSchedule>;

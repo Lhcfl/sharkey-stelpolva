@@ -3,12 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-/// <reference lib="esnext" />
-
 import { parse as vueSfcParse } from 'vue/compiler-sfc';
 import {
 	createLogger,
-	EnvironmentModuleGraph,
+	type EnvironmentModuleGraph,
 	type LogErrorOptions,
 	type LogOptions,
 	normalizePath,
@@ -20,7 +18,7 @@ import { glob } from 'glob';
 import JSON5 from 'json5';
 import MagicString, { SourceMap } from 'magic-string';
 import path from 'node:path'
-import { hash, toBase62 } from '../vite.config';
+import { hash, toBase62 } from '../vite.config.js';
 import { minimatch } from 'minimatch';
 import {
 	type AttributeNode,
@@ -63,7 +61,7 @@ interface MarkerRelation {
 let logger = {
 	info: (msg: string, options?: LogOptions) => { },
 	warn: (msg: string, options?: LogOptions) => { },
-	error: (msg: string, options?: LogErrorOptions | unknown) => { },
+	error: (msg: string, options?: LogErrorOptions) => { },
 };
 let loggerInitialized = false;
 
@@ -470,7 +468,11 @@ export function collectFileMarkers(id: string, code: string): SearchIndexItem[] 
 
 		return extractUsageInfoFromTemplateAst(descriptor.template?.ast, id);
 	} catch (error) {
-		logger.error(`Error analyzing file ${id}:`, error);
+		logger.error(`Error analyzing file ${id}:`, {
+			error: error instanceof Error
+				? error
+				: new Error(`Unknown error of type ${typeof(error)}`, { cause: error }),
+		});
 	}
 
 	return [];

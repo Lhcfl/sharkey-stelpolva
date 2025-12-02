@@ -1,7 +1,6 @@
-import './autogen/apiClientJSDoc.js';
-
 import { endpointReqTypes } from './autogen/endpoint.js';
-import type { SwitchCaseResponseType, Endpoints } from './api.types.js';
+import type { SwitchCaseResponseType, Endpoints, EndpointsWithOptionalParams } from './api.types.js';
+import type { EmptyRequest } from './autogen/entities.js';
 
 export type {
 	SwitchCaseResponseType,
@@ -18,15 +17,19 @@ export type APIError = {
 	info: Record<string, any>;
 };
 
-export function isAPIError(reason: Record<PropertyKey, unknown>): reason is APIError {
+export function isAPIError(reason: unknown): reason is APIError {
+	if (reason == null) return false;
+	if (typeof(reason) !== 'object') return false;
+	if (!(MK_API_ERROR in reason)) return false;
+	if (typeof(reason[MK_API_ERROR]) !== 'boolean') return false;
 	return reason[MK_API_ERROR] === true;
 }
 
 export type FetchLike = (input: string, init?: {
 	method?: string;
 	body?: Blob | FormData | string;
-	credentials?: RequestCredentials;
-	cache?: RequestCache;
+	credentials?: 'include' | 'omit' | 'same-origin';
+	cache?: 'default' | 'force-cache' | 'no-cache' | 'no-store' | 'only-if-cached' | 'reload';
 	headers: { [key in string]: string }
 }) => Promise<{
 	status: number;
@@ -60,6 +63,16 @@ export class APIClient {
 		return ep in endpointReqTypes;
 	}
 
+	public request<E extends keyof EndpointsWithOptionalParams>(
+		endpoint: E,
+		params?: Record<string, never>,
+		credential?: string | null,
+	): Promise<SwitchCaseResponseType<E, EmptyRequest>>;
+	public request<E extends keyof Endpoints, P extends Endpoints[E]['req']>(
+		endpoint: E,
+		params: P,
+		credential?: string | null,
+	): Promise<SwitchCaseResponseType<E, P>>;
 	public request<E extends keyof Endpoints, P extends Endpoints[E]['req']>(
 		endpoint: E,
 		params: P = {} as P,

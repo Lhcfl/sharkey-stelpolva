@@ -5,6 +5,9 @@
 
 import { execa } from 'execa';
 import { writeFileSync, existsSync } from "node:fs";
+import { LoggerService } from '../built/core/LoggerService.js';
+import { NativeTimeService } from '../built/global/TimeService.js';
+import { EnvService } from '../built/global/EnvService.js';
 
 async function main() {
 	if (!process.argv.includes('--no-build')) {
@@ -24,7 +27,8 @@ async function main() {
 	/** @type {import('../src/server/api/openapi/gen-spec.js')} */
 	const { genOpenapiSpec } = await import('../built/server/api/openapi/gen-spec.js');
 
-	const config = loadConfig();
+	const loggerService = new LoggerService(console, new NativeTimeService(), new EnvService());
+	const config = loadConfig(loggerService);
 	const spec = genOpenapiSpec(config, true);
 
 	writeFileSync('./built/api.json', JSON.stringify(spec), 'utf-8');

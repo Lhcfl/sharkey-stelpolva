@@ -17,16 +17,10 @@ import { RelationshipJobData } from '@/queue/types.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { isSystemAccount } from '@/misc/is-system-account.js';
 import { CacheService } from '@/core/CacheService.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import type Logger from '@/logger.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { trackPromise } from '@/misc/promise-tracker.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 
 @Injectable()
 export class UserSuspendService {
-	private readonly logger: Logger;
-
 	constructor(
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
@@ -47,11 +41,7 @@ export class UserSuspendService {
 		private moderationLogService: ModerationLogService,
 		private readonly cacheService: CacheService,
 		private readonly internalEventService: InternalEventService,
-
-		loggerService: LoggerService,
-	) {
-		this.logger = loggerService.getLogger('user-suspend');
-	}
+	) {}
 
 	@bindThis
 	public async suspend(user: MiUser, moderator: MiUser): Promise<void> {
@@ -69,10 +59,7 @@ export class UserSuspendService {
 			userHost: user.host,
 		});
 
-		trackPromise((async () => {
-			await this.postSuspend(user);
-			await this.freezeAll(user);
-		})().catch(e => this.logger.error(`Error suspending user ${user.id}: ${renderInlineError(e)}`)));
+		await this.queueService.createPostSuspendJob(user.id);
 	}
 
 	@bindThis
@@ -89,14 +76,11 @@ export class UserSuspendService {
 			userHost: user.host,
 		});
 
-		trackPromise((async () => {
-			await this.postUnsuspend(user);
-			await this.unFreezeAll(user);
-		})().catch(e => this.logger.error(`Error un-suspending for user ${user.id}: ${renderInlineError(e)}`)));
+		await this.queueService.createPostUnsuspendJob(user.id);
 	}
 
 	@bindThis
-	private async postSuspend(user: { id: MiUser['id']; host: MiUser['host'] }): Promise<void> {
+	public async postSuspend(user: MiUser): Promise<void> {
 		this.globalEventService.publishInternalEvent('userChangeSuspendedState', { id: user.id, isSuspended: true });
 
 		/*
@@ -132,10 +116,12 @@ export class UserSuspendService {
 
 			await this.queueService.deliverMany(user, content, queue);
 		}
+
+		await this.freezeAll(user);
 	}
 
 	@bindThis
-	private async postUnsuspend(user: MiUser): Promise<void> {
+	public async postUnsuspend(user: MiUser): Promise<void> {
 		this.globalEventService.publishInternalEvent('userChangeSuspendedState', { id: user.id, isSuspended: false });
 
 		if (this.userEntityService.isLocalUser(user)) {
@@ -162,6 +148,8 @@ export class UserSuspendService {
 
 			await this.queueService.deliverMany(user, content, queue);
 		}
+
+		await this.unFreezeAll(user);
 	}
 
 	@bindThis

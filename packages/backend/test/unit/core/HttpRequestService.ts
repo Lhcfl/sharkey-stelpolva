@@ -4,21 +4,24 @@
  */
 
 import { describe, jest } from '@jest/globals';
+import { MockConsole } from '../../misc/MockConsole.js';
 import type { Mock } from 'jest-mock';
 import type { PrivateNetwork } from '@/config.js';
 import type { Socket } from 'net';
 import { HttpRequestService, isAllowedPrivateIp, isPrivateUrl, resolveIp, validateSocketConnect } from '@/core/HttpRequestService.js';
 import { parsePrivateNetworks } from '@/config.js';
+import Logger from '@/logger.js';
 
 describe(HttpRequestService, () => {
 	let allowedPrivateNetworks: PrivateNetwork[] | undefined;
 
 	beforeEach(() => {
+		const logger = new Logger('mock', undefined, undefined, undefined, new MockConsole());
 		allowedPrivateNetworks = parsePrivateNetworks([
 			'10.0.0.1/32',
 			{ network: '127.0.0.1/32', ports: [1] },
 			{ network: '127.0.0.1/32', ports: [3, 4, 5] },
-		]);
+		], logger);
 	});
 
 	describe(isAllowedPrivateIp, () => {

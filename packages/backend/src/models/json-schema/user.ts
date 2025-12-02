@@ -310,18 +310,15 @@ export const packedUserDetailedNotMeOnlySchema = {
 		},
 		movedTo: {
 			type: 'string',
+			format: 'id',
+			nullable: true, optional: false,
+		},
+		movedToUri: {
+			type: 'string',
 			format: 'uri',
 			nullable: true, optional: false,
 		},
-		alsoKnownAs: {
-			type: 'array',
-			nullable: true, optional: false,
-			items: {
-				type: 'string',
-				format: 'id',
-				nullable: false, optional: false,
-			},
-		},
+		// alsoKnownAs moved to packedUserDetailedNotMeOnly for privacy
 		bannerUrl: {
 			type: 'string',
 			format: 'url',
@@ -739,6 +736,13 @@ export const packedMeDetailedOnlySchema = {
 			nullable: false, optional: false,
 			ref: 'RolePolicies',
 		},
+		permissions: {
+			type: 'array',
+			nullable: false, optional: false,
+			items: {
+				type: 'string',
+			},
+		},
 		twoFactorEnabled: {
 			type: 'boolean',
 			nullable: false, optional: false,
@@ -806,6 +810,36 @@ export const packedMeDetailedOnlySchema = {
 			type: 'string',
 			enum: userUnsignedFetchOptions,
 			nullable: false, optional: false,
+		},
+		// alsoKnownAs moved from packedUserDetailedNotMeOnly for privacy
+		alsoKnownAs: {
+			type: 'array',
+			nullable: true, optional: false,
+			items: {
+				type: 'string',
+				format: 'id',
+				nullable: false, optional: false,
+			},
+		},
+		skAlsoKnownAs: {
+			type: 'array',
+			nullable: true, optional: false,
+			items: {
+				type: 'object',
+				nullable: false, optional: false,
+				properties: {
+					uri: {
+						type: 'string',
+						format: 'uri',
+						nullable: false, optional: false,
+					},
+					id: {
+						type: 'string',
+						format: 'id',
+						nullable: true, optional: false,
+					},
+				},
+			},
 		},
 	},
 } as const;

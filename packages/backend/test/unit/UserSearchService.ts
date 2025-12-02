@@ -11,8 +11,10 @@ import { FollowingsRepository, InstancesRepository, MiUser, UserProfilesReposito
 import { IdService } from '@/core/IdService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { DI } from '@/di-symbols.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { genAidx } from '@/misc/id/aidx.js';
+import { CoreModule } from '@/core/CoreModule.js';
 
 describe('UserSearchService', () => {
 	let app: TestingModule;
@@ -22,6 +24,7 @@ describe('UserSearchService', () => {
 	let usersRepository: UsersRepository;
 	let followingsRepository: FollowingsRepository;
 	let idService: IdService;
+	let cacheManagementService: CacheManagementService;
 	let userProfilesRepository: UserProfilesRepository;
 
 	let root: MiUser;
@@ -103,20 +106,16 @@ describe('UserSearchService', () => {
 			.createTestingModule({
 				imports: [
 					GlobalModule,
+					CoreModule,
 				],
-				providers: [
-					UserSearchService,
-					{
-						provide: UserEntityService, useFactory: jest.fn(() => ({
-							// とりあえずIDが返れば確認が出来るので
-							packMany: (value: any) => value,
-						})),
-					},
-					IdService,
-				],
+			})
+			.overrideProvider(UserEntityService).useValue({
+				// とりあえずIDが返れば確認が出来るので
+				packMany: (value: any) => value,
 			})
 			.compile();
 
+		app.enableShutdownHooks();
 		await app.init();
 
 		instancesRepository = app.get<InstancesRepository>(DI.instancesRepository);
@@ -126,6 +125,7 @@ describe('UserSearchService', () => {
 
 		service = app.get(UserSearchService);
 		idService = app.get(IdService);
+		cacheManagementService = app.get(CacheManagementService);
 	});
 
 	beforeEach(async () => {
@@ -143,7 +143,8 @@ describe('UserSearchService', () => {
 	});
 
 	afterEach(async () => {
-		await usersRepository.delete({});
+		await usersRepository.deleteAll();
+		cacheManagementService.clear();
 	});
 
 	afterAll(async () => {

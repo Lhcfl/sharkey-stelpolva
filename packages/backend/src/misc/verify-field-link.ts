@@ -9,7 +9,7 @@ import type { HttpRequestService } from '@/core/HttpRequestService.js';
 type Field = { name: string, value: string };
 
 export async function verifyFieldLinks(fields: Field[], profileUrls: string[], httpRequestService: HttpRequestService): Promise<string[]> {
-	const verified_links = [];
+	const verified_links: string[] = [];
 	for (const field_url of fields) {
 		try {
 			// getHtml validates the input URL, so we can safely pass in untrusted values

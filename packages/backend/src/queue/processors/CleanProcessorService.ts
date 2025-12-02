@@ -12,6 +12,8 @@ import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 import type { Config } from '@/config.js';
 import { ReversiService } from '@/core/ReversiService.js';
+import { TimeService } from '@/global/TimeService.js';
+import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 
@@ -35,6 +37,8 @@ export class CleanProcessorService {
 		private queueLoggerService: QueueLoggerService,
 		private reversiService: ReversiService,
 		private idService: IdService,
+		private readonly timeService: TimeService,
+		private readonly collapsedQueueService: CollapsedQueueService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean');
 	}
@@ -43,14 +47,15 @@ export class CleanProcessorService {
 	public async process(): Promise<void> {
 		this.logger.info('Cleaning...');
 
-		this.userIpsRepository.delete({
-			createdAt: LessThan(new Date(Date.now() - (1000 * 60 * 60 * 24 * 90))),
+		await this.userIpsRepository.delete({
+			createdAt: LessThan(new Date(this.timeService.now - (1000 * 60 * 60 * 24 * 90))),
 		});
 
 		// 使われてないアンテナを停止
 		if (this.config.deactivateAntennaThreshold > 0) {
-			this.antennasRepository.update({
-				lastUsedAt: LessThan(new Date(Date.now() - this.config.deactivateAntennaThreshold)),
+			await this.collapsedQueueService.updateAntennaQueue.performAllNow();
+			await this.antennasRepository.update({
+				lastUsedAt: LessThan(new Date(this.timeService.now - this.config.deactivateAntennaThreshold)),
 			}, {
 				isActive: false,
 			});
@@ -58,7 +63,7 @@ export class CleanProcessorService {
 
 		const expiredRoleAssignments = await this.roleAssignmentsRepository.createQueryBuilder('assign')
 			.where('assign.expiresAt IS NOT NULL')
-			.andWhere('assign.expiresAt < :now', { now: new Date() })
+			.andWhere('assign.expiresAt < :now', { now: this.timeService.date })
 			.getMany();
 
 		if (expiredRoleAssignments.length > 0) {
@@ -67,7 +72,7 @@ export class CleanProcessorService {
 			});
 		}
 
-		this.reversiService.cleanOutdatedGames();
+		await this.reversiService.cleanOutdatedGames();
 
 		this.logger.info('Cleaned.');
 	}

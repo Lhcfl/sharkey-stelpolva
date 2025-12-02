@@ -17,8 +17,6 @@ export const meta = {
 	requireCredential: true,
 	requireModerator: true,
 	kind: 'write:admin:cw-user',
-
-	res: {},
 } as const;
 
 export const paramDef = {
@@ -63,6 +61,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				userUsername: user.username,
 				userHost: user.host,
 			});
+
+			return {};
 		});
 	}
 }

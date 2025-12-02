@@ -5,7 +5,6 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { IsNull, Not } from 'typeorm';
-import promiseLimit from 'promise-limit';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import type { NotesRepository, PollsRepository, NoteReactionsRepository, UsersRepository, FollowRequestsRepository, MiMeta, SkApFetchLog } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -23,6 +22,9 @@ import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { toArray } from '@/misc/prelude/array.js';
 import { isPureRenote } from '@/misc/is-renote.js';
 import { CacheService } from '@/core/CacheService.js';
+import { promiseMap } from '@/misc/promise-map.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { AnyCollection, getApId, getNullableApId, IObjectWithId, isCollection, isCollectionOrOrderedCollection, isCollectionPage, isOrderedCollection, isOrderedCollectionPage } from './type.js';
 import { ApDbResolverService } from './ApDbResolverService.js';
 import { ApRendererService } from './ApRendererService.js';
@@ -30,7 +32,7 @@ import { ApRequestService } from './ApRequestService.js';
 import type { IObject, ApObject, IAnonymousObject } from './type.js';
 
 export class Resolver {
-	private history: Set<string>;
+	protected readonly history: Set<string>;
 	private user?: MiLocalUser;
 	private logger: Logger;
 
@@ -52,7 +54,7 @@ export class Resolver {
 		private readonly apLogService: ApLogService,
 		private readonly apUtilityService: ApUtilityService,
 		private readonly cacheService: CacheService,
-		private recursionLimit = 256,
+		protected readonly recursionLimit = 256,
 	) {
 		this.history = new Set();
 		this.logger = this.loggerService.getLogger('ap-resolve');
@@ -68,27 +70,21 @@ export class Resolver {
 		return this.recursionLimit;
 	}
 
-	public async resolveCollection(value: string | IObjectWithId, allowAnonymous?: boolean, sentFromUri?: string): Promise<AnyCollection & IObjectWithId>;
-	public async resolveCollection(value: string | IObject, allowAnonymous: boolean | undefined, sentFromUri: string): Promise<AnyCollection & IObjectWithId>;
-	public async resolveCollection(value: string | IObject, allowAnonymous?: boolean, sentFromUri?: string): Promise<AnyCollection>;
 	@bindThis
 	public async resolveCollection(value: string | IObject, allowAnonymous?: boolean, sentFromUri?: string): Promise<AnyCollection> {
-		const collection = typeof value === 'string'
-			? sentFromUri
-				? await this.secureResolve(value, sentFromUri, allowAnonymous)
-				: await this.resolve(value, allowAnonymous)
-			: value; // TODO try and remove this eventually, as it's a major security foot-gun
+		const collection = sentFromUri
+			? await this.secureResolve(value, sentFromUri, allowAnonymous)
+			: allowAnonymous
+				? await this.resolveAnonymous(value)
+				: await this.resolve(value, allowAnonymous);
 
 		if (isCollectionOrOrderedCollection(collection)) {
 			return collection;
 		} else {
-			throw new IdentifiableError('f100eccf-f347-43fb-9b45-96a0831fb635', `collection ${getApId(value)} has unsupported type: ${collection.type}`);
+			throw new IdentifiableError('f100eccf-f347-43fb-9b45-96a0831fb635', `collection ${getNullableApId(value)} has unsupported type: ${collection.type}`);
 		}
 	}
 
-	public async resolveCollectionItems(collection: IAnonymousObject, limit?: number | null, allowAnonymousItems?: true, concurrency?: number): Promise<IAnonymousObject[]>;
-	public async resolveCollectionItems(collection: string | IObjectWithId, limit?: number | null, allowAnonymousItems?: boolean, concurrency?: number): Promise<IObjectWithId[]>;
-	public async resolveCollectionItems(collection: string | IObject, limit?: number | null, allowAnonymousItems?: boolean, concurrency?: number): Promise<IObject[]>;
 	/**
 	 * Recursively resolves items from a collection.
 	 * Stops when reaching the resolution limit or an optional item limit - whichever is lower.
@@ -96,11 +92,13 @@ export class Resolver {
 	 * Malformed collections (mixing Ordered and un-Ordered types) are also supported.
 	 * @param collection Collection to resolve from - can be a URL or object of any supported collection type.
 	 * @param limit Maximum number of items to resolve. If null or undefined (default), then items will be resolved until reaching the recursion limit.
-	 * @param allowAnonymousItems If true, collection items can be anonymous (lack an ID). If false (default), then an error is thrown when reaching an item without ID.
+	 * @param allowAnonymous If true, collection items can be anonymous (lack an ID). If false (default), then an error is thrown when reaching an item without ID.
+	 * @param sentFromUri If collection is an object, this is the URI where it was sent from.
 	 * @param concurrency Maximum number of items to resolve at once. (default: 4)
+	 * @param ignoreErrors If true (default), inaccessible items will be skipped instead of causing an exception. Inaccessible collections will still throw.
 	 */
 	@bindThis
-	public async resolveCollectionItems(collection: string | IObject, limit?: number | null, allowAnonymousItems?: boolean, concurrency = 4): Promise<IObject[]> {
+	public async resolveCollectionItems(collection: string | IObject, allowAnonymous = false, sentFromUri?: string, limit?: number | null, concurrency = 4, ignoreErrors = true): Promise<IObject[]> {
 		const resolvedItems: IObject[] = [];
 
 		// This is pulled up to avoid code duplication below
@@ -108,11 +106,10 @@ export class Resolver {
 			const sentFrom = current.id;
 			const itemArr = toArray(items);
 			const itemLimit = limit ?? Number.MAX_SAFE_INTEGER;
-			const allowAnonymous = allowAnonymousItems ?? false;
-			await this.resolveItemArray(itemArr, sentFrom, itemLimit, concurrency, allowAnonymous, resolvedItems);
+			await this.resolveItemArray(itemArr, sentFrom, itemLimit, concurrency, allowAnonymous, resolvedItems, ignoreErrors);
 		};
 
-		let current: AnyCollection | null = await this.resolveCollection(collection);
+		let current: AnyCollection | null = await this.resolveCollection(collection, allowAnonymous, sentFromUri);
 		do {
 			// Iterate all items in the current page
 			if (current.items) {
@@ -130,10 +127,10 @@ export class Resolver {
 				current = null;
 			} else if (isCollection(current) || isOrderedCollection(current)) {
 				// Continue to first page
-				current = current.first ? await this.resolveCollection(current.first, true, current.id) : null;
+				current = current.first ? await this.resolveCollection(current.first, allowAnonymous, current.id) : null;
 			} else if (isCollectionPage(current) || isOrderedCollectionPage(current)) {
 				// Continue to next page
-				current = current.next ? await this.resolveCollection(current.next, true, current.id) : null;
+				current = current.next ? await this.resolveCollection(current.next, allowAnonymous, current.id) : null;
 			} else {
 				// Stop in all other conditions
 				current = null;
@@ -143,17 +140,12 @@ export class Resolver {
 		return resolvedItems;
 	}
 
-	private async resolveItemArray(source: (string | IObject)[], sentFrom: undefined, itemLimit: number, concurrency: number, allowAnonymousItems: true, destination: IAnonymousObject[]): Promise<void>;
-	private async resolveItemArray(source: (string | IObject)[], sentFrom: string, itemLimit: number, concurrency: number, allowAnonymousItems: boolean, destination: IObjectWithId[]): Promise<void>;
-	private async resolveItemArray(source: (string | IObject)[], sentFrom: string | undefined, itemLimit: number, concurrency: number, allowAnonymousItems: boolean, destination: IObject[]): Promise<void>;
-	private async resolveItemArray(source: (string | IObject)[], sentFrom: string | undefined, itemLimit: number, concurrency: number, allowAnonymousItems: boolean, destination: IObject[]): Promise<void> {
+	private async resolveItemArray(source: (string | IObject)[], sentFrom: string | undefined, itemLimit: number, concurrency: number, allowAnonymousItems: boolean, destination: IObject[], ignoreErrors?: boolean): Promise<void> {
 		const recursionLimit = this.recursionLimit - this.history.size;
 		const batchLimit = Math.min(source.length, recursionLimit, itemLimit);
 
-		const limiter = promiseLimit<IObject>(concurrency);
-		const batch = await Promise.all(source
-			.slice(0, batchLimit)
-			.map(item => limiter(async () => {
+		const batch = await promiseMap(source.slice(0, batchLimit), async item => {
+			try {
 				if (sentFrom) {
 					// Use secureResolve to avoid re-fetching items that were included inline.
 					return await this.secureResolve(item, sentFrom, allowAnonymousItems);
@@ -164,9 +156,22 @@ export class Resolver {
 					const id = getApId(item);
 					return await this.resolve(id);
 				}
-			})));
+			} catch (err) {
+				if (ignoreErrors) {
+					this.logger.warn(`Ignoring error in collection item ${getNullableApId(item)}: ${renderInlineError(err)}`);
+					return null;
+				} else {
+					throw err;
+				}
+			}
+		}, {
+			limit: concurrency,
+		});
 
-		destination.push(...batch);
+		// Items will be null if a request fails and ignoreErrors is true
+		const batchItems = batch.filter(item => item != null);
+
+		destination.push(...batchItems);
 	};
 
 	/**
@@ -269,8 +274,8 @@ export class Resolver {
 			log.duration = calculateDurationSince(startTime);
 
 			// Save or finalize asynchronously
-			this.apLogService.saveFetchLog(log)
-				.catch(err => this.logger.error('Failed to record AP object fetch:', err));
+			trackPromise(this.apLogService.saveFetchLog(log)
+				.catch(err => this.logger.error('Failed to record AP object fetch:', err)));
 		}
 	}
 
@@ -410,36 +415,36 @@ export class Resolver {
 export class ApResolverService {
 	constructor(
 		@Inject(DI.config)
-		private config: Config,
+		protected readonly config: Config,
 
 		@Inject(DI.meta)
-		private meta: MiMeta,
+		protected readonly meta: MiMeta,
 
 		@Inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
+		protected readonly usersRepository: UsersRepository,
 
 		@Inject(DI.notesRepository)
-		private notesRepository: NotesRepository,
+		protected readonly notesRepository: NotesRepository,
 
 		@Inject(DI.pollsRepository)
-		private pollsRepository: PollsRepository,
+		protected readonly pollsRepository: PollsRepository,
 
 		@Inject(DI.noteReactionsRepository)
-		private noteReactionsRepository: NoteReactionsRepository,
+		protected readonly noteReactionsRepository: NoteReactionsRepository,
 
 		@Inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository,
+		protected readonly followRequestsRepository: FollowRequestsRepository,
 
-		private utilityService: UtilityService,
-		private systemAccountService: SystemAccountService,
-		private apRequestService: ApRequestService,
-		private httpRequestService: HttpRequestService,
-		private apRendererService: ApRendererService,
-		private apDbResolverService: ApDbResolverService,
-		private loggerService: LoggerService,
-		private readonly apLogService: ApLogService,
-		private readonly apUtilityService: ApUtilityService,
-		private readonly cacheService: CacheService,
+		protected readonly utilityService: UtilityService,
+		protected readonly systemAccountService: SystemAccountService,
+		protected readonly apRequestService: ApRequestService,
+		protected readonly httpRequestService: HttpRequestService,
+		protected readonly apRendererService: ApRendererService,
+		protected readonly apDbResolverService: ApDbResolverService,
+		protected readonly loggerService: LoggerService,
+		protected readonly apLogService: ApLogService,
+		protected readonly apUtilityService: ApUtilityService,
+		protected readonly cacheService: CacheService,
 	) {
 	}
 

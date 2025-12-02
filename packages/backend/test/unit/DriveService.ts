@@ -27,18 +27,20 @@ describe('DriveService', () => {
 	beforeAll(async () => {
 		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
-			providers: [DriveService],
 		}).compile();
-		app.enableShutdownHooks();
-		driveService = app.get<DriveService>(DriveService);
-	});
 
-	beforeEach(async () => {
-		s3Mock.reset();
+		await app.init();
+		app.enableShutdownHooks();
+
+		driveService = app.get<DriveService>(DriveService);
 	});
 
 	afterAll(async () => {
 		await app.close();
+	});
+
+	beforeEach(async () => {
+		s3Mock.reset();
 	});
 
 	describe('Object storage', () => {
@@ -53,7 +55,7 @@ describe('DriveService', () => {
 			s3Mock.on(DeleteObjectCommand)
 				.rejects(new InvalidObjectState({ $metadata: {}, message: '' }));
 
-			await expect(driveService.deleteObjectStorageFile('unexpected')).rejects.toThrowError(Error);
+			await expect(driveService.deleteObjectStorageFile('unexpected')).rejects.toBeInstanceOf(Error);
 		});
 
 		test('delete a file with no valid key', async () => {

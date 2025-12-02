@@ -5,6 +5,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	requireCredential: false,
@@ -38,10 +39,11 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async () => {
 			return {
-				pong: Date.now(),
+				pong: this.timeService.now,
 			};
 		});
 	}

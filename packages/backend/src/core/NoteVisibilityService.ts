@@ -4,15 +4,19 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { CacheService } from '@/core/CacheService.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiUser } from '@/models/User.js';
-import { bindThis } from '@/decorators.js';
+import type { MiFollowing } from '@/models/Following.js';
+import type { MiInstance } from '@/models/Instance.js';
+import type { MiUserListMembership } from '@/models/UserListMembership.js';
+import type { NotesRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
-import { IdService } from '@/core/IdService.js';
-import { awaitAll } from '@/misc/prelude/await-all.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import type { MiFollowing, MiInstance, NotesRepository } from '@/models/_.js';
+import { CacheService } from '@/core/CacheService.js';
+import { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/global/TimeService.js';
+import { bindThis } from '@/decorators.js';
+import { awaitAll } from '@/misc/prelude/await-all.js';
 import { DI } from '@/di-symbols.js';
 
 /**
@@ -55,6 +59,12 @@ export interface NoteVisibilityFilters {
 	 * If false (default), then silence is enforced for all notes.
 	 */
 	includeSilencedAuthor?: boolean;
+
+	/**
+	 * Set to an ID to apply visibility from the context of a specific user list.
+	 * Membership and "with replies" settings will be adopted from this list.
+	 */
+	listContext?: string | null;
 }
 
 @Injectable()
@@ -66,6 +76,7 @@ export class NoteVisibilityService {
 		private readonly cacheService: CacheService,
 		private readonly idService: IdService,
 		private readonly federatedInstanceService: FederatedInstanceService,
+		private readonly timeService: TimeService,
 	) {}
 
 	@bindThis
@@ -156,7 +167,7 @@ export class NoteVisibilityService {
 	}
 
 	@bindThis
-	public async populateData(user: PopulatedMe, hint?: Partial<NoteVisibilityData>): Promise<NoteVisibilityData> {
+	public async populateData(user: PopulatedMe, hint?: Partial<NoteVisibilityData>, filters?: NoteVisibilityFilters): Promise<NoteVisibilityData> {
 		// noinspection ES6MissingAwait
 		const [
 			userBlockers,
@@ -166,6 +177,7 @@ export class NoteVisibilityService {
 			userMutedUsers,
 			userMutedUserRenotes,
 			userMutedInstances,
+			userListMemberships,
 		] = await Promise.all([
 			user ? (hint?.userBlockers ?? this.cacheService.userBlockedCache.fetch(user.id)) : null,
 			user ? (hint?.userFollowings ?? this.cacheService.userFollowingsCache.fetch(user.id)) : null,
@@ -174,6 +186,7 @@ export class NoteVisibilityService {
 			user ? (hint?.userMutedUsers ?? this.cacheService.userMutingsCache.fetch(user.id)) : null,
 			user ? (hint?.userMutedUserRenotes ?? this.cacheService.renoteMutingsCache.fetch(user.id)) : null,
 			user ? (hint?.userMutedInstances ?? this.cacheService.userProfileCache.fetch(user.id).then(p => new Set(p.mutedInstances))) : null,
+			filters?.listContext ? (hint?.userListMemberships ?? this.cacheService.listUserMembershipsCache.fetch(filters.listContext)) : null,
 		]);
 
 		return {
@@ -184,6 +197,7 @@ export class NoteVisibilityService {
 			userMutedUsers,
 			userMutedUserRenotes,
 			userMutedInstances,
+			userListMemberships,
 		};
 	}
 
@@ -289,7 +303,7 @@ export class NoteVisibilityService {
 			const createdAt = new Date(note.createdAt).valueOf();
 
 			// I don't understand this logic, but I tried to break it out for readability
-			const followersOnlyOpt1 = followersOnlyBefore <= 0 && (Date.now() - createdAt > 0 - followersOnlyBefore);
+			const followersOnlyOpt1 = followersOnlyBefore <= 0 && (this.timeService.now - createdAt > 0 - followersOnlyBefore);
 			const followersOnlyOpt2 = followersOnlyBefore > 0 && (createdAt < followersOnlyBefore);
 			if (followersOnlyOpt1 || followersOnlyOpt2) {
 				note.visibility = 'followers';
@@ -319,7 +333,7 @@ export class NoteVisibilityService {
 			const createdAt = note.createdAt.valueOf();
 
 			// I don't understand this logic, but I tried to break it out for readability
-			const hiddenOpt1 = hiddenBefore <= 0 && (Date.now() - createdAt > 0 - hiddenBefore);
+			const hiddenOpt1 = hiddenBefore <= 0 && (this.timeService.now - createdAt > 0 - hiddenBefore);
 			const hiddenOpt2 = hiddenBefore > 0 && (createdAt < hiddenBefore);
 			if (hiddenOpt1 || hiddenOpt2) return { redact: true, reason: 'expired' };
 		}
@@ -404,6 +418,9 @@ export class NoteVisibilityService {
 		// Don't silence if we follow w/ replies
 		if (user && data.userFollowings?.get(user.id)?.withReplies) return false;
 
+		// Don't silence if we're viewing in a list with replies
+		if (data.userListMemberships?.get(note.userId)?.withReplies) return false;
+
 		// Silence otherwise
 		return true;
 	}
@@ -417,6 +434,9 @@ export interface NoteVisibilityData extends NotePopulationData {
 	userMutedUsers: Set<string> | null;
 	userMutedUserRenotes: Set<string> | null;
 	userMutedInstances: Set<string> | null;
+
+	// userId => membership (already scoped to listContext)
+	userListMemberships: Map<string, MiUserListMembership> | null;
 }
 
 export interface NotePopulationData {

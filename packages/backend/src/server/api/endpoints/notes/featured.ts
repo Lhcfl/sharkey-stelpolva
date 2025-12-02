@@ -10,10 +10,10 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
-import { CacheService } from '@/core/CacheService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { ApiError } from '@/server/api/error.js';
 import { RoleService } from '@/core/RoleService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -67,11 +67,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
-		private cacheService: CacheService,
 		private noteEntityService: NoteEntityService,
 		private featuredService: FeaturedService,
 		private queryService: QueryService,
 		private readonly roleService: RoleService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me ? me.id : null);
@@ -83,12 +83,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.channelId) {
 				noteIds = await this.featuredService.getInChannelNotesRanking(ps.channelId, 50);
 			} else {
-				if (this.globalNotesRankingCacheLastFetchedAt !== 0 && (Date.now() - this.globalNotesRankingCacheLastFetchedAt < 1000 * 60 * 30)) {
+				if (this.globalNotesRankingCacheLastFetchedAt !== 0 && (this.timeService.now - this.globalNotesRankingCacheLastFetchedAt < 1000 * 60 * 30)) {
 					noteIds = this.globalNotesRankingCache;
 				} else {
 					noteIds = await this.featuredService.getGlobalNotesRanking(100);
 					this.globalNotesRankingCache = noteIds;
-					this.globalNotesRankingCacheLastFetchedAt = Date.now();
+					this.globalNotesRankingCacheLastFetchedAt = this.timeService.now;
 				}
 			}
 

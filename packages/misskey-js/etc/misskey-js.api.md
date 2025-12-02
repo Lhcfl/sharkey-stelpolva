@@ -6,9 +6,8 @@
 
 import type { AuthenticationResponseJSON } from '@simplewebauthn/types';
 import { EventEmitter } from 'eventemitter3';
-import { Options } from 'reconnecting-websocket';
-import type { PublicKeyCredentialRequestOptionsJSON as PublicKeyCredentialRequestOptionsJSON_2 } from '@simplewebauthn/types';
-import _ReconnectingWebSocket from 'reconnecting-websocket';
+import type { Options } from 'reconnecting-websocket';
+import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/types';
 
 // Warning: (ae-forgotten-export) The symbol "components" needs to be exported by the entry point index.d.ts
 //
@@ -24,7 +23,7 @@ export type Acct = {
 declare namespace acct {
     export {
         parse,
-        toString_2 as toString,
+        toString,
         Acct
     }
 }
@@ -156,19 +155,10 @@ type AdminCaptchaSaveRequest = operations['admin___captcha___save']['requestBody
 type AdminCwInstanceRequest = operations['admin___cw-instance']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type AdminCwInstanceResponse = operations['admin___cw-instance']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
 type AdminCwNoteRequest = operations['admin___cw-note']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type AdminCwNoteResponse = operations['admin___cw-note']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
 type AdminCwUserRequest = operations['admin___cw-user']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type AdminCwUserResponse = operations['admin___cw-user']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type AdminDeclineUserRequest = operations['admin___decline-user']['requestBody']['content']['application/json'];
@@ -261,6 +251,9 @@ type AdminFederationUpdateInstanceRequest = operations['admin___federation___upd
 type AdminForwardAbuseUserReportRequest = operations['admin___forward-abuse-user-report']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type AdminGenVapidKeysResponse = operations['admin___gen-vapid-keys']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminGetIndexStatsResponse = operations['admin___get-index-stats']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
@@ -306,6 +299,9 @@ type AdminQueueInboxDelayedResponse = operations['admin___queue___inbox-delayed'
 type AdminQueueJobsRequest = operations['admin___queue___jobs']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type AdminQueueJobsResponse = operations['admin___queue___jobs']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminQueuePromoteJobsRequest = operations['admin___queue___promote-jobs']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -346,6 +342,18 @@ type AdminResetPasswordResponse = operations['admin___reset-password']['response
 
 // @public (undocumented)
 type AdminResolveAbuseUserReportRequest = operations['admin___resolve-abuse-user-report']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminRestartMigrationRequest = operations['admin___restart-migration']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminRestartMigrationResponse = operations['admin___restart-migration']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminRolesAnnotateConditionRequest = operations['admin___roles___annotate-condition']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminRolesAnnotateConditionResponse = operations['admin___roles___annotate-condition']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type AdminRolesAssignRequest = operations['admin___roles___assign']['requestBody']['content']['application/json'];
@@ -562,6 +570,12 @@ class APIClient {
     fetch: FetchLike;
     // (undocumented)
     origin: string;
+    // Warning: (ae-forgotten-export) The symbol "EndpointsWithOptionalParams" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    request<E extends keyof EndpointsWithOptionalParams>(endpoint: E, params?: Record<string, never>, credential?: string | null): Promise<SwitchCaseResponseType<E, EmptyRequest>>;
+    // (undocumented)
+    request<E extends keyof Endpoints, P extends Endpoints[E]['req']>(endpoint: E, params: P, credential?: string | null): Promise<SwitchCaseResponseType<E, P>>;
 }
 
 // @public (undocumented)
@@ -679,7 +693,7 @@ export type Channels = {
     main: {
         params: null;
         events: {
-            notification: (payload: Notification_2) => void;
+            notification: (payload: Notification) => void;
             mention: (payload: Note) => void;
             reply: (payload: Note) => void;
             renote: (payload: Note) => void;
@@ -693,7 +707,7 @@ export type Channels = {
                 file: DriveFile;
             }) => void;
             readAllNotifications: () => void;
-            unreadNotification: (payload: Notification_2) => void;
+            unreadNotification: (payload: Notification) => void;
             notificationFlushed: () => void;
             unreadAntenna: (payload: Antenna) => void;
             newChatMessage: (payload: ChatMessage) => void;
@@ -1564,11 +1578,8 @@ declare namespace entities {
         AdminCaptchaCurrentResponse,
         AdminCaptchaSaveRequest,
         AdminCwInstanceRequest,
-        AdminCwInstanceResponse,
         AdminCwNoteRequest,
-        AdminCwNoteResponse,
         AdminCwUserRequest,
-        AdminCwUserResponse,
         AdminDeclineUserRequest,
         AdminDeleteAccountRequest,
         AdminDeleteAllFilesOfAUserRequest,
@@ -1599,6 +1610,7 @@ declare namespace entities {
         AdminFederationRemoveAllFollowingRequest,
         AdminFederationUpdateInstanceRequest,
         AdminForwardAbuseUserReportRequest,
+        AdminGenVapidKeysResponse,
         AdminGetIndexStatsResponse,
         AdminGetTableStatsResponse,
         AdminGetUserIpsRequest,
@@ -1614,6 +1626,7 @@ declare namespace entities {
         AdminQueueDeliverDelayedResponse,
         AdminQueueInboxDelayedResponse,
         AdminQueueJobsRequest,
+        AdminQueueJobsResponse,
         AdminQueuePromoteJobsRequest,
         AdminQueueQueueStatsRequest,
         AdminQueueRemoveJobRequest,
@@ -1628,6 +1641,10 @@ declare namespace entities {
         AdminResetPasswordRequest,
         AdminResetPasswordResponse,
         AdminResolveAbuseUserReportRequest,
+        AdminRestartMigrationRequest,
+        AdminRestartMigrationResponse,
+        AdminRolesAnnotateConditionRequest,
+        AdminRolesAnnotateConditionResponse,
         AdminRolesAssignRequest,
         AdminRolesCloneRequest,
         AdminRolesCloneResponse,
@@ -1973,7 +1990,6 @@ declare namespace entities {
         IReadAnnouncementRequest,
         IRegenerateTokenRequest,
         IRegistryGetRequest,
-        IRegistryGetResponse,
         IRegistryGetAllRequest,
         IRegistryGetAllResponse,
         IRegistryGetDetailRequest,
@@ -1987,6 +2003,10 @@ declare namespace entities {
         IRegistryScopesWithDomainResponse,
         IRegistrySetRequest,
         IRevokeTokenRequest,
+        ISharedAccessListRequest,
+        ISharedAccessListResponse,
+        ISharedAccessLoginRequest,
+        ISharedAccessLoginResponse,
         ISigninHistoryRequest,
         ISigninHistoryResponse,
         IUnpinRequest,
@@ -2215,7 +2235,7 @@ declare namespace entities {
         Note,
         NoteReaction,
         NoteFavorite,
-        Notification_2 as Notification,
+        Notification,
         DriveFile,
         DriveFolder,
         Following,
@@ -2334,8 +2354,8 @@ type FetchExternalResourcesResponse = operations['fetch-external-resources']['re
 type FetchLike = (input: string, init?: {
     method?: string;
     body?: Blob | FormData | string;
-    credentials?: RequestCredentials;
-    cache?: RequestCache;
+    credentials?: 'include' | 'omit' | 'same-origin';
+    cache?: 'default' | 'force-cache' | 'no-cache' | 'no-store' | 'only-if-cached' | 'reload';
     headers: {
         [key in string]: string;
     };
@@ -2742,9 +2762,6 @@ type IRegistryGetDetailResponse = operations['i___registry___get-detail']['respo
 type IRegistryGetRequest = operations['i___registry___get']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-type IRegistryGetResponse = operations['i___registry___get']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
 type IRegistryGetUnsecureRequest = operations['i___registry___get-unsecure']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -2775,7 +2792,19 @@ type IResponse = operations['i']['responses']['200']['content']['application/jso
 type IRevokeTokenRequest = operations['i___revoke-token']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-function isAPIError(reason: Record<PropertyKey, unknown>): reason is APIError;
+function isAPIError(reason: unknown): reason is APIError;
+
+// @public (undocumented)
+type ISharedAccessListRequest = operations['i___shared-access___list']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type ISharedAccessListResponse = operations['i___shared-access___list']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type ISharedAccessLoginRequest = operations['i___shared-access___login']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type ISharedAccessLoginResponse = operations['i___shared-access___login']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type ISigninHistoryRequest = operations['i___signin-history']['requestBody']['content']['application/json'];
@@ -2988,6 +3017,9 @@ type ModerationLog = {
 } | {
     type: 'setMandatoryCWForInstance';
     info: ModerationLogPayloads['setMandatoryCWForInstance'];
+} | {
+    type: 'restartMigration';
+    info: ModerationLogPayloads['restartMigration'];
 } | {
     type: 'resetPassword';
     info: ModerationLogPayloads['resetPassword'];
@@ -3376,7 +3408,7 @@ type NotesVersionsResponse = operations['notes___versions']['responses']['200'][
 export const noteVisibilities: readonly ["public", "home", "followers", "specified"];
 
 // @public (undocumented)
-type Notification_2 = components['schemas']['Notification'];
+type Notification = components['schemas']['Notification'];
 
 // @public (undocumented)
 type NotificationsCreateRequest = operations['notifications___create']['requestBody']['content']['application/json'];
@@ -3445,7 +3477,7 @@ type PartialRolePolicyOverride = Partial<{
 }>;
 
 // @public (undocumented)
-export const permissions: readonly ["read:account", "write:account", "read:blocks", "write:blocks", "read:drive", "write:drive", "read:favorites", "write:favorites", "read:following", "write:following", "read:messaging", "write:messaging", "read:mutes", "write:mutes", "write:notes", "read:notes-schedule", "write:notes-schedule", "read:notifications", "write:notifications", "read:reactions", "write:reactions", "write:votes", "read:pages", "write:pages", "write:page-likes", "read:page-likes", "read:user-groups", "write:user-groups", "read:channels", "write:channels", "read:gallery", "write:gallery", "read:gallery-likes", "write:gallery-likes", "read:flash", "write:flash", "read:flash-likes", "write:flash-likes", "read:admin:abuse-user-reports", "write:admin:delete-account", "write:admin:delete-all-files-of-a-user", "read:admin:index-stats", "read:admin:table-stats", "read:admin:user-ips", "read:admin:meta", "write:admin:reset-password", "write:admin:resolve-abuse-user-report", "write:admin:send-email", "read:admin:server-info", "read:admin:show-moderation-log", "read:admin:show-user", "write:admin:suspend-user", "write:admin:approve-user", "write:admin:decline-user", "write:admin:nsfw-user", "write:admin:unnsfw-user", "write:admin:cw-user", "write:admin:cw-note", "write:admin:cw-instance", "write:admin:silence-user", "write:admin:unsilence-user", "write:admin:unset-user-avatar", "write:admin:unset-user-banner", "write:admin:unsuspend-user", "write:admin:reject-quotes", "write:admin:meta", "write:admin:user-note", "write:admin:roles", "read:admin:roles", "write:admin:relays", "read:admin:relays", "write:admin:invite-codes", "read:admin:invite-codes", "write:admin:announcements", "read:admin:announcements", "write:admin:avatar-decorations", "read:admin:avatar-decorations", "write:admin:federation", "write:admin:account", "read:admin:account", "write:admin:emoji", "read:admin:emoji", "write:admin:queue", "read:admin:queue", "write:admin:promo", "write:admin:drive", "read:admin:drive", "write:admin:ad", "read:admin:ad", "write:invite-codes", "read:invite-codes", "write:clip-favorite", "read:clip-favorite", "read:federation", "write:report-abuse", "write:chat", "read:chat"];
+export const permissions: readonly ["read:account", "write:account", "read:blocks", "write:blocks", "read:drive", "write:drive", "read:favorites", "write:favorites", "read:following", "write:following", "read:messaging", "write:messaging", "read:mutes", "write:mutes", "write:notes", "read:notes-schedule", "write:notes-schedule", "read:notifications", "write:notifications", "read:reactions", "write:reactions", "write:votes", "read:pages", "write:pages", "write:page-likes", "read:page-likes", "read:user-groups", "write:user-groups", "read:channels", "write:channels", "read:gallery", "write:gallery", "read:gallery-likes", "write:gallery-likes", "read:flash", "write:flash", "read:flash-likes", "write:flash-likes", "read:admin:abuse-user-reports", "write:admin:delete-account", "write:admin:delete-all-files-of-a-user", "read:admin:index-stats", "read:admin:table-stats", "read:admin:user-ips", "read:admin:meta", "write:admin:reset-password", "write:admin:resolve-abuse-user-report", "read:admin:abuse-report:notification-recipient", "write:admin:abuse-report:notification-recipient", "write:admin:send-email", "read:admin:server-info", "read:admin:show-moderation-log", "read:admin:show-user", "write:admin:suspend-user", "write:admin:approve-user", "write:admin:decline-user", "write:admin:nsfw-user", "write:admin:unnsfw-user", "write:admin:cw-user", "write:admin:cw-note", "write:admin:cw-instance", "write:admin:silence-user", "write:admin:unsilence-user", "write:admin:unset-user-avatar", "write:admin:unset-user-banner", "write:admin:unsuspend-user", "write:admin:reject-quotes", "write:admin:restart-migration", "write:admin:meta", "write:admin:user-note", "write:admin:roles", "read:admin:roles", "write:admin:relays", "read:admin:relays", "write:admin:invite-codes", "read:admin:invite-codes", "write:admin:announcements", "read:admin:announcements", "write:admin:avatar-decorations", "read:admin:avatar-decorations", "write:admin:federation", "write:admin:account", "read:admin:account", "write:admin:emoji", "read:admin:emoji", "write:admin:queue", "read:admin:queue", "write:admin:promo", "write:admin:drive", "read:admin:drive", "write:admin:ad", "read:admin:ad", "write:invite-codes", "read:invite-codes", "write:clip-favorite", "read:clip-favorite", "read:federation", "write:report-abuse", "write:chat", "read:chat"];
 
 // @public (undocumented)
 type PingResponse = operations['ping']['responses']['200']['content']['application/json'];
@@ -3480,6 +3512,12 @@ type QueueStats = {
         delayed: number;
     };
     inbox: {
+        activeSincePrevTick: number;
+        active: number;
+        waiting: number;
+        delayed: number;
+    };
+    background: {
         activeSincePrevTick: number;
         active: number;
         waiting: number;
@@ -3659,12 +3697,12 @@ type SigninFlowResponse = {
 } | {
     finished: false;
     next: 'passkey';
-    authRequest: PublicKeyCredentialRequestOptionsJSON_2;
+    authRequest: PublicKeyCredentialRequestOptionsJSON;
 };
 
 // @public (undocumented)
 type SigninWithPasskeyInitResponse = {
-    option: PublicKeyCredentialRequestOptionsJSON_2;
+    option: PublicKeyCredentialRequestOptionsJSON;
     context: string;
 };
 
@@ -3725,15 +3763,14 @@ type StpvReactionsStatRequest = operations['stpv___reactions-stat']['requestBody
 // @public (undocumented)
 type StpvReactionsStatResponse = operations['stpv___reactions-stat']['responses']['200']['content']['application/json'];
 
-// @public (undocumented)
+// @public
 export class Stream extends EventEmitter<StreamEvents> implements IStream {
     constructor(origin: string, user: {
         token: string;
     } | null, options?: {
         WebSocket?: Options['WebSocket'];
-        binaryType?: ReconnectingWebSocket['binaryType'];
+        binaryType?: 'arraybuffer' | 'blob';
     });
-    // (undocumented)
     close(): void;
     // (undocumented)
     disconnectToChannel(connection: NonSharedConnection): void;
@@ -3745,7 +3782,6 @@ export class Stream extends EventEmitter<StreamEvents> implements IStream {
     removeSharedConnection(connection: SharedConnection): void;
     // (undocumented)
     removeSharedConnectionPool(pool: Pool): void;
-    // (undocumented)
     send(typeOrPayload: string): void;
     // (undocumented)
     send(typeOrPayload: string, payload: unknown): void;
@@ -3803,7 +3839,7 @@ type TestRequest = operations['test']['requestBody']['content']['application/jso
 type TestResponse = operations['test']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
-function toString_2(acct: Acct): string;
+function toString(acct: Acct): string;
 
 // @public (undocumented)
 type User = components['schemas']['User'];
@@ -3999,10 +4035,9 @@ type V2AdminEmojiListResponse = operations['v2___admin___emoji___list']['respons
 
 // Warnings were encountered during analysis:
 //
-// src/entities.ts:51:2 - (ae-forgotten-export) The symbol "ModerationLogPayloads" needs to be exported by the entry point index.d.ts
-// src/streaming.ts:57:3 - (ae-forgotten-export) The symbol "ReconnectingWebSocket" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:234:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:244:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
+// built/entities.d.ts:32:5 - (ae-forgotten-export) The symbol "ModerationLogPayloads" needs to be exported by the entry point index.d.ts
+// built/streaming.types.d.ts:219:13 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
+// built/streaming.types.d.ts:233:13 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { BubbleGameRecordsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../error.js';
@@ -58,10 +59,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private bubbleGameRecordsRepository: BubbleGameRecordsRepository,
 
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const seedDate = new Date(parseInt(ps.seed, 10));
-			const now = new Date();
+			const now = this.timeService.date;
 
 			// シードが未来なのは通常のプレイではありえないので弾く
 			if (seedDate.getTime() > now.getTime()) {

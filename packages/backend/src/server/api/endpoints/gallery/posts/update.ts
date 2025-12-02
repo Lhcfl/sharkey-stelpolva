@@ -10,6 +10,7 @@ import type { DriveFilesRepository, GalleryPostsRepository } from '@/models/_.js
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import { GalleryPostEntityService } from '@/core/entities/GalleryPostEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	tags: ['gallery'],
@@ -60,6 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveFilesRepository: DriveFilesRepository,
 
 		private galleryPostEntityService: GalleryPostEntityService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			let files: Array<MiDriveFile> | undefined;
@@ -81,7 +83,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				id: ps.postId,
 				userId: me.id,
 			}, {
-				updatedAt: new Date(),
+				updatedAt: this.timeService.date,
 				title: ps.title,
 				description: ps.description,
 				isSensitive: ps.isSensitive,

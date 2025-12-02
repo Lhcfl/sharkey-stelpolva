@@ -10,11 +10,12 @@ import type { MiDriveFile, DriveFilesRepository } from '@/models/_.js';
 import { MiUser } from '@/models/_.js';
 import type Logger from '@/logger.js';
 import { DriveService } from '@/core/DriveService.js';
+import { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 import type { CleanRemoteFilesJobData } from '../types.js';
-import { IdService } from '@/core/IdService.js';
 
 @Injectable()
 export class CleanRemoteFilesProcessorService {
@@ -27,6 +28,7 @@ export class CleanRemoteFilesProcessorService {
 		private driveService: DriveService,
 		private queueLoggerService: QueueLoggerService,
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean-remote-files');
 	}
@@ -35,7 +37,7 @@ export class CleanRemoteFilesProcessorService {
 	public async process(job: Bull.Job<CleanRemoteFilesJobData>): Promise<void> {
 		this.logger.info('Deleting cached remote files...');
 
-		const olderThanTimestamp = Date.now() - (job.data.olderThanSeconds ?? 0) * 1000;
+		const olderThanTimestamp = this.timeService.now - (job.data.olderThanSeconds ?? 0) * 1000;
 		const olderThanDate = new Date(olderThanTimestamp);
 		const keepFilesInUse = job.data.keepFilesInUse ?? false;
 		let deletedCount = 0;

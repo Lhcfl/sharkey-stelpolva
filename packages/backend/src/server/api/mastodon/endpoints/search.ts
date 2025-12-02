@@ -6,6 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { MastodonClientService } from '@/server/api/mastodon/MastodonClientService.js';
 import { attachMinMaxPagination, attachOffsetPagination } from '@/server/api/mastodon/pagination.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import { MastodonConverters } from '../MastodonConverters.js';
 import { parseTimelineArgs, TimelineArgs, toBoolean, toInt } from '../argsUtils.js';
 import { ApiError } from '../../error.js';
@@ -52,8 +53,8 @@ export class ApiSearchMastodon {
 			const { data } = await client.search(request.query.q, { type, ...query });
 			const response = {
 				...data,
-				accounts: await Promise.all(data.accounts.map((account: Entity.Account) => this.mastoConverters.convertAccount(account))),
-				statuses: await Promise.all(data.statuses.map((status: Entity.Status) => this.mastoConverters.convertStatus(status, me))),
+				accounts: await promiseMap(data.accounts, (account: Entity.Account) => this.mastoConverters.convertAccount(account), { limit: 3 }),
+				statuses: await promiseMap(data.statuses, (status: Entity.Status) => this.mastoConverters.convertStatus(status, me), { limit: 3 }),
 			};
 
 			if (type === 'hashtags') {
@@ -89,8 +90,8 @@ export class ApiSearchMastodon {
 			const stat = !type || type === 'statuses' ? await client.search(request.query.q, { type: 'statuses', ...query }) : null;
 			const tags = !type || type === 'hashtags' ? await client.search(request.query.q, { type: 'hashtags', ...query }) : null;
 			const response = {
-				accounts: await Promise.all(acct?.data.accounts.map((account: Entity.Account) => this.mastoConverters.convertAccount(account)) ?? []),
-				statuses: await Promise.all(stat?.data.statuses.map((status: Entity.Status) => this.mastoConverters.convertStatus(status, me)) ?? []),
+				accounts: acct ? await promiseMap(acct.data.accounts, async (account: Entity.Account) => await this.mastoConverters.convertAccount(account), { limit: 3 }) : [],
+				statuses: acct ? await promiseMap(acct.data.statuses, async (status: Entity.Status) => this.mastoConverters.convertStatus(status, me), { limit: 3 }) : [],
 				hashtags: tags?.data.hashtags ?? [],
 			};
 
@@ -112,7 +113,7 @@ export class ApiSearchMastodon {
 				{
 					method: 'POST',
 					headers: {
-						...request.headers,
+						...request.headers as Record<string, string>,
 						'Accept': 'application/json',
 						'Content-Type': 'application/json',
 					},
@@ -123,7 +124,7 @@ export class ApiSearchMastodon {
 
 			const data = await res.json() as Entity.Status[];
 			const me = await this.clientService.getAuth(request);
-			const response = await Promise.all(data.map(status => this.mastoConverters.convertStatus(status, me)));
+			const response = await promiseMap(data, async status => await this.mastoConverters.convertStatus(status, me), { limit: 4 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);
@@ -135,7 +136,7 @@ export class ApiSearchMastodon {
 				{
 					method: 'POST',
 					headers: {
-						...request.headers,
+						...request.headers as Record<string, string>,
 						'Accept': 'application/json',
 						'Content-Type': 'application/json',
 					},
@@ -150,12 +151,12 @@ export class ApiSearchMastodon {
 			await verifyResponse(res);
 
 			const data = await res.json() as Entity.Account[];
-			const response = await Promise.all(data.map(async entry => {
-				return {
-					source: 'global',
-					account: await this.mastoConverters.convertAccount(entry),
-				};
-			}));
+			const response = await promiseMap(data, async entry => ({
+				source: 'global',
+				account: await this.mastoConverters.convertAccount(entry),
+			}), {
+				limit: 4,
+			});
 
 			attachOffsetPagination(request, reply, response);
 			return reply.send(response);

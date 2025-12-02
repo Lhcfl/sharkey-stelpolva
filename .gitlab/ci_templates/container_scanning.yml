@@ -1,0 +1,20 @@
+# https://docs.gitlab.com/user/application_security/sast/
+include:
+  - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
+
+# https://docs.gitlab.com/user/application_security/container_scanning/#scanning-archives-built-in-a-previous-job
+# https://docs.gitlab.com/user/application_security/detect/security_configuration/#error-chosen-stage-test-does-not-exist
+container_scanning:
+  stage: deploy
+
+  # SAST tools only support x64
+  tags:
+    - amd64
+
+  variables:
+    AST_ENABLE_MR_PIPELINES: 'false'
+    CS_IMAGE: "${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_TAG}"
+
+  needs:
+    - job: merge_image_manifests
+      artifacts: true

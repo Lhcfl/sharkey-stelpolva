@@ -489,6 +489,10 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			about: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			disableRegistration: {
 				type: 'boolean',
 				optional: false, nullable: false,

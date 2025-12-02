@@ -9,6 +9,7 @@ import type { GalleryPostsRepository } from '@/models/_.js';
 import { GalleryPostEntityService } from '@/core/entities/GalleryPostEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	tags: ['gallery'],
@@ -52,15 +53,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private galleryPostEntityService: GalleryPostEntityService,
 		private featuredService: FeaturedService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			let postIds: string[];
-			if (this.galleryPostsRankingCacheLastFetchedAt !== 0 && (Date.now() - this.galleryPostsRankingCacheLastFetchedAt < 1000 * 60 * 30)) {
+			if (this.galleryPostsRankingCacheLastFetchedAt !== 0 && (this.timeService.now - this.galleryPostsRankingCacheLastFetchedAt < 1000 * 60 * 30)) {
 				postIds = this.galleryPostsRankingCache;
 			} else {
 				postIds = await this.featuredService.getGalleryPostsRanking(100);
 				this.galleryPostsRankingCache = postIds;
-				this.galleryPostsRankingCacheLastFetchedAt = Date.now();
+				this.galleryPostsRankingCacheLastFetchedAt = this.timeService.now;
 			}
 
 			postIds.sort((a, b) => a > b ? -1 : 1);

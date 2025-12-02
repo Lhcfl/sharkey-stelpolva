@@ -1,0 +1,14 @@
+# https://docs.gitlab.com/user/application_security/sast/
+include:
+  - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+
+dependency-scanning:
+  stage: test
+
+  # SAST tools only support x64
+  tags:
+    - amd64
+
+  # Don't wait, since this has no dependencies.
+  # https://docs.gitlab.com/ci/yaml/#needs
+  needs: []

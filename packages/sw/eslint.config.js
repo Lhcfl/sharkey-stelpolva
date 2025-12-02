@@ -5,7 +5,7 @@ import sharedConfig from '../shared/eslint.config.js';
 export default [
 	...sharedConfig,
 	{
-		ignores: ['build.js'],
+		ignores: ['*.js'],
 		languageOptions: {
 			globals: {
 				...Object.fromEntries(Object.entries(globals.node).map(([key]) => [key, 'off'])),
@@ -17,14 +17,20 @@ export default [
 				_ENV_: false,
 				_PERF_PREFIX_: false,
 			},
+			parserOptions: {
+				parser: tsParser,
+				project: ['./tsconfig.scripts.json'],
+				sourceType: 'module',
+				tsconfigRootDir: import.meta.dirname,
+			},
 		},
 	},
 	{
-		files: ['**/*.ts', '**/*.tsx'],
+		files: ['src/**/*.ts', 'src/**/*.tsx'],
 		languageOptions: {
 			parserOptions: {
 				parser: tsParser,
-				project: ['./tsconfig.json'],
+				project: ['./tsconfig.sw.json'],
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
 			},

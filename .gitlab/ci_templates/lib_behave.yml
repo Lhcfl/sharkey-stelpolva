@@ -1,0 +1,20 @@
+# https://docs.gitlab.com/user/application_security/sast/
+include:
+  # https://docs.gitlab.com/user/application_security/dependency_scanning/experiment_libbehave_dependency/
+  - component: $CI_SERVER_FQDN/TransFem-org/libbehave/libbehave@v0.4.0
+    inputs:
+      include-lang: 'js'
+      stage: test
+
+
+.libbehave-experiment:
+  # SAST tools only support x64
+  tags:
+    - amd64
+
+  # Don't wait, since this has no dependencies.
+  # https://docs.gitlab.com/ci/yaml/#needs
+  needs: []
+
+  # Gitlab issue currently causes error when upload final artifacts
+  allow_failure: true

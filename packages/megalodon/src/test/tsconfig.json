@@ -1,0 +1,14 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "../../../shared/tsconfig.node.jsonc",
+	"compilerOptions": {
+		"outDir": "../../built/test",
+		"rootDir": "./",
+	},
+	"include": [
+		"**/*.ts",
+	],
+	"references": [
+		{ "path": "../lib/tsconfig.json" }
+	]
+}

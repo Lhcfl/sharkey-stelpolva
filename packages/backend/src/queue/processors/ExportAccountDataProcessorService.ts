@@ -22,6 +22,7 @@ import { Packed } from '@/misc/json-schema.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { EmailService } from '@/core/EmailService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
@@ -80,6 +81,7 @@ export class ExportAccountDataProcessorService {
 		private downloadService: DownloadService,
 		private emailService: EmailService,
 		private queueLoggerService: QueueLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-account-data');
 	}
@@ -125,7 +127,7 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeUser(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${new Date().toString()}","user":[`);
+		await writeUser(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","user":[`);
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { host, uri, sharedInbox, followersUri, lastFetchedAt, inbox, ...userTrimmed } = user;
@@ -160,7 +162,7 @@ export class ExportAccountDataProcessorService {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { emailVerifyCode, twoFactorBackupSecret, twoFactorSecret, password, twoFactorTempSecret, userHost, ...profileTrimmed } = profile;
 
-		await writeProfile(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${new Date().toString()}","profile":[`);
+		await writeProfile(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","profile":[`);
 
 		await writeProfile(JSON.stringify(profileTrimmed));
 
@@ -191,7 +193,7 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeIPs(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${new Date().toString()}","ips":[`);
+		await writeIPs(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","ips":[`);
 
 		for (const signin of signins) {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -226,7 +228,7 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeNotes(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${new Date().toString()}","notes":[`);
+		await writeNotes(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","notes":[`);
 
 		let noteCursor: MiNote['id'] | null = null;
 		let exportedNotesCount = 0;
@@ -287,7 +289,7 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeFollowing(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${new Date().toString()}","followings":[`);
+		await writeFollowing(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","followings":[`);
 
 		let followingsCursor: MiFollowing['id'] | null = null;
 		let exportedFollowingsCount = 0;
@@ -321,7 +323,7 @@ export class ExportAccountDataProcessorService {
 					continue;
 				}
 
-				if (u.updatedAt && (Date.now() - u.updatedAt.getTime() > 1000 * 60 * 60 * 24 * 90)) {
+				if (u.updatedAt && (this.timeService.now - u.updatedAt.getTime() > 1000 * 60 * 60 * 24 * 90)) {
 					continue;
 				}
 
@@ -357,7 +359,7 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeFollowers(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${new Date().toString()}","followers":[`);
+		await writeFollowers(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","followers":[`);
 
 		let followersCursor: MiFollowing['id'] | null = null;
 		let exportedFollowersCount = 0;
@@ -420,7 +422,7 @@ export class ExportAccountDataProcessorService {
 
 		fs.mkdirSync(`${path}/files`);
 
-		await writeDrive(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${new Date().toString()}","drive":[`);
+		await writeDrive(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","drive":[`);
 
 		const driveFiles = await this.driveFilesRepository.find({ where: { userId: user.id } });
 
@@ -476,7 +478,7 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeMuting(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${new Date().toString()}","mutings":[`);
+		await writeMuting(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","mutings":[`);
 
 		let exportedMutingCount = 0;
 		let mutingCursor: MiMuting['id'] | null = null;
@@ -539,7 +541,7 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeBlocking(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${new Date().toString()}","blockings":[`);
+		await writeBlocking(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","blockings":[`);
 
 		let exportedBlockingCount = 0;
 		let blockingCursor: MiBlocking['id'] | null = null;
@@ -601,7 +603,7 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeFavorite(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${new Date().toString()}","favorites":[`);
+		await writeFavorite(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","favorites":[`);
 
 		let exportedFavoritesCount = 0;
 		let favoriteCursor: MiNoteFavorite['id'] | null = null;
@@ -662,7 +664,7 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeAntenna(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${new Date().toString()}","antennas":[`);
+		await writeAntenna(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","antennas":[`);
 
 		const antennas = await this.antennasRepository.findBy({ userId: user.id });
 
@@ -749,7 +751,7 @@ export class ExportAccountDataProcessorService {
 			archiveStream.on('close', async () => {
 				this.logger.debug(`Exported to path: ${archivePath}`);
 
-				const fileName = 'data-request-' + dateFormat(new Date(), 'yyyy-MM-dd-HH-mm-ss') + '.zip';
+				const fileName = 'data-request-' + dateFormat(this.timeService.date, 'yyyy-MM-dd-HH-mm-ss') + '.zip';
 				const driveFile = await this.driveService.addFile({ user, path: archivePath, name: fileName, force: true });
 
 				this.logger.debug(`Exported to drive: ${driveFile.id}`);

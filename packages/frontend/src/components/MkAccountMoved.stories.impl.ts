@@ -33,6 +33,7 @@ export const Default = {
 	},
 	args: {
 		movedTo: userDetailed().id,
+		movedToUri: 'https://example.com',
 	},
 	parameters: {
 		layout: 'centered',

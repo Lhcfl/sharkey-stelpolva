@@ -10,7 +10,7 @@ import { GetterService } from '@/server/api/GetterService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { ChatService } from '@/core/ChatService.js';
-import type { DriveFilesRepository, MiUser } from '@/models/_.js';
+import type { DriveFilesRepository, MiUser, MiDriveFile } from '@/models/_.js';
 import type { Config } from '@/config.js';
 
 export const meta = {
@@ -96,7 +96,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchRoom);
 			}
 
-			let file = null;
+			let file: MiDriveFile | null = null;
 			if (ps.fileId != null) {
 				file = await this.driveFilesRepository.findOneBy({
 					id: ps.fileId,

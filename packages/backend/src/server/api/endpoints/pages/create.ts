@@ -5,11 +5,12 @@
 
 import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
-import type { DriveFilesRepository, PagesRepository } from '@/models/_.js';
+import type { DriveFilesRepository, PagesRepository, MiDriveFile } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { MiPage, pageNameSchema } from '@/models/Page.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { PageEntityService } from '@/core/entities/PageEntityService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../error.js';
 
@@ -79,9 +80,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private pageEntityService: PageEntityService,
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			let eyeCatchingImage = null;
+			let eyeCatchingImage: MiDriveFile | null = null;
 			if (ps.eyeCatchingImageId != null) {
 				eyeCatchingImage = await this.driveFilesRepository.findOneBy({
 					id: ps.eyeCatchingImageId,
@@ -104,7 +106,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const page = await this.pagesRepository.insertOne(new MiPage({
 				id: this.idService.gen(),
-				updatedAt: new Date(),
+				updatedAt: this.timeService.date,
 				title: ps.title,
 				name: ps.name,
 				summary: ps.summary,
@@ -119,7 +121,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				font: ps.font,
 			}));
 
-			return await this.pageEntityService.pack(page);
+			return await this.pageEntityService.pack(page, me);
 		});
 	}
 }

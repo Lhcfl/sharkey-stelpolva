@@ -4,9 +4,14 @@
  */
 
 declare module 'redis-lock' {
-	import type Redis from 'ioredis';
+	export interface NodeRedis {
+		readonly v4: true;
+		set(key: string, value: string | number, opts?: { PX?: number, NX?: boolean }): Promise<'OK' | null>;
+		del(key: string): Promise<number>;
+	}
 
-	type Lock = (lockName: string, timeout?: number, taskToPerform?: () => Promise<void>) => void;
+	export type Unlock = () => Promise<void>;
+	export type Lock = (lockName: string, timeout?: number) => Promise<Unlock>;
 	function redisLock(client: Redis.Redis, retryDelay: number): Lock;
 
 	export = redisLock;

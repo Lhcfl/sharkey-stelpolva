@@ -9,6 +9,7 @@ import type { MiGalleryPost, MiNote, MiUser } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 const GLOBAL_NOTES_RANKING_WINDOW = 1000 * 60 * 60 * 24 * 3; // 3日ごと
 export const GALLERY_POSTS_RANKING_WINDOW = 1000 * 60 * 60 * 24 * 3; // 3日ごと
@@ -24,12 +25,13 @@ export class FeaturedService {
 		private redisClient: Redis.Redis, // TODO: 専用のRedisサーバーを設定できるようにする
 
 		private readonly roleService: RoleService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
 	@bindThis
 	private getCurrentWindow(windowRange: number): number {
-		const passed = new Date().getTime() - featuredEpoc;
+		const passed = this.timeService.now - featuredEpoc;
 		return Math.floor(passed / windowRange);
 	}
 

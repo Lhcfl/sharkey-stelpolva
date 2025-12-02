@@ -66,7 +66,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveService: DriveService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const emoji = await this.emojisRepository.findOneBy({ id: ps.emojiId });
+			const emoji = await this.customEmojiService.emojisByIdCache.fetchMaybe(ps.emojiId);
 			if (emoji == null) {
 				throw new ApiError(meta.errors.noSuchEmoji);
 			}
@@ -100,7 +100,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				roleIdsThatCanBeUsedThisEmojiAsReaction: emoji.roleIdsThatCanBeUsedThisEmojiAsReaction,
 			}, me);
 
-			return this.emojiEntityService.packDetailed(addedEmoji);
+			return await this.emojiEntityService.packDetailed(addedEmoji);
 		});
 	}
 }

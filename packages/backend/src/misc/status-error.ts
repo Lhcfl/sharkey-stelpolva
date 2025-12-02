@@ -4,6 +4,9 @@
  */
 
 export class StatusError extends Error {
+	// Fix the error name in stack traces - https://stackoverflow.com/a/71573071
+	override name = this.constructor.name;
+
 	public statusCode: number;
 	public statusMessage?: string;
 	public isClientError: boolean;

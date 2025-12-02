@@ -24,6 +24,8 @@ export async function resetDb(db: DataSource) {
 			if (i === 3) {
 				throw e;
 			} else {
+				// Ignore rule - this is just testing code.
+				// eslint-disable-next-line no-restricted-globals
 				await new Promise(resolve => setTimeout(resolve, 1000));
 				continue;
 			}

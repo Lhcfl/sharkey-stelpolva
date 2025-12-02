@@ -4,6 +4,8 @@
  */
 
 export class FixIDXInstanceHostKey1748990662839 {
+	name = 'FixIDXInstanceHostKey1748990662839';
+
 	async up(queryRunner) {
 		// must include host for index-only scans: https://www.postgresql.org/docs/current/indexes-index-only-scans.html
 		await queryRunner.query(`DROP INDEX "public"."IDX_instance_host_key"`);

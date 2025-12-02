@@ -104,7 +104,8 @@ export class Pizzax<T extends StateDef> {
 		return value;
 	}
 
-	private async init(): Promise<void> {
+	// Must be public for Storybook
+	public async init(): Promise<void> {
 		await this.migrate();
 
 		const deviceState: State<T> = await get(this.deviceStateKeyName) || {};

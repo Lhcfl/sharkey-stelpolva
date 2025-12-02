@@ -35,6 +35,7 @@ export class BlockingEntityService {
 	): Promise<Packed<'Blocking'>> {
 		const blocking = typeof src === 'object' ? src : await this.blockingsRepository.findOneByOrFail({ id: src });
 
+		// noinspection ES6MissingAwait
 		return await awaitAll({
 			id: blocking.id,
 			createdAt: this.idService.parse(blocking.id).date.toISOString(),
@@ -53,6 +54,6 @@ export class BlockingEntityService {
 		const _blockees = blockings.map(({ blockee, blockeeId }) => blockee ?? blockeeId);
 		const _userMap = await this.userEntityService.packMany(_blockees, me, { schema: 'UserDetailedNotMe' })
 			.then(users => new Map(users.map(u => [u.id, u])));
-		return Promise.all(blockings.map(blocking => this.pack(blocking, me, { blockee: _userMap.get(blocking.blockeeId) })));
+		return await Promise.all(blockings.map(blocking => this.pack(blocking, me, { blockee: _userMap.get(blocking.blockeeId) })));
 	}
 }

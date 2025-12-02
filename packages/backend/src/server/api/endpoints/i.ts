@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { UserProfilesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../error.js';
 
@@ -54,11 +55,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userProfilesRepository: UserProfilesRepository,
 
 		private userEntityService: UserEntityService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, user, token) => {
 			const isSecure = token == null;
 
-			const now = new Date();
+			const now = this.timeService.date;
 			const today = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
 
 			// 渡ってきている user はキャッシュされていて古い可能性があるので改めて取得
@@ -66,7 +68,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				where: {
 					userId: user.id,
 				},
-				relations: ['user'],
 			});
 
 			if (userProfile == null) {
@@ -80,7 +81,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				userProfile.loggedInDates = [...userProfile.loggedInDates, today];
 			}
 
-			return await this.userEntityService.pack(userProfile.user!, userProfile.user!, {
+			return await this.userEntityService.pack(user, user, {
 				schema: 'MeDetailed',
 				includeSecrets: isSecure,
 				userProfile,

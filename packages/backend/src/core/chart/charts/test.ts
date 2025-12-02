@@ -9,6 +9,7 @@ import { AppLockService } from '@/core/AppLockService.js';
 import { DI } from '@/di-symbols.js';
 import Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
+import { TimeService } from '@/global/TimeService.js';
 import Chart from '../core.js';
 import { name, schema } from './entities/test.js';
 import type { KVs } from '../core.js';
@@ -25,9 +26,15 @@ export default class TestChart extends Chart<typeof schema> { // eslint-disable-
 		private db: DataSource,
 
 		private appLockService: AppLockService,
+		private readonly timeService: TimeService,
+
 		logger: Logger,
 	) {
 		super(db, (k) => appLockService.getChartInsertLock(k), logger, name, schema);
+	}
+
+	protected getCurrentDate(): Date {
+		return this.timeService.date;
 	}
 
 	protected async tickMajor(): Promise<Partial<KVs<typeof schema>>> {
@@ -41,20 +48,20 @@ export default class TestChart extends Chart<typeof schema> { // eslint-disable-
 	}
 
 	@bindThis
-	public async increment(): Promise<void> {
+	public increment(): void {
 		this.total++;
 
-		await this.commit({
+		this.commit({
 			'foo.total': 1,
 			'foo.inc': 1,
 		});
 	}
 
 	@bindThis
-	public async decrement(): Promise<void> {
+	public decrement(): void {
 		this.total--;
 
-		await this.commit({
+		this.commit({
 			'foo.total': -1,
 			'foo.dec': 1,
 		});

@@ -9,9 +9,11 @@ import { MiUser, type WebhooksRepository } from '@/models/_.js';
 import { MiWebhook, WebhookEventTypes } from '@/models/Webhook.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
-import { GlobalEvents } from '@/core/GlobalEventService.js';
+import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { QueueService } from '@/core/QueueService.js';
+import { CacheManagementService, type ManagedMemorySingleCache } from '@/global/CacheManagementService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
 export type UserWebhookPayload<T extends WebhookEventTypes> =
@@ -27,8 +29,7 @@ export type UserWebhookPayload<T extends WebhookEventTypes> =
 
 @Injectable()
 export class UserWebhookService implements OnApplicationShutdown {
-	private activeWebhooksFetched = false;
-	private activeWebhooks: MiWebhook[] = [];
+	private readonly activeWebhooks: ManagedMemorySingleCache<MiWebhook[]>;
 
 	constructor(
 		@Inject(DI.redisForSub)
@@ -36,20 +37,24 @@ export class UserWebhookService implements OnApplicationShutdown {
 		@Inject(DI.webhooksRepository)
 		private webhooksRepository: WebhooksRepository,
 		private queueService: QueueService,
+		private readonly internalEventService: InternalEventService,
+
+		cacheManagementService: CacheManagementService,
 	) {
-		this.redisForSub.on('message', this.onMessage);
+		this.activeWebhooks = cacheManagementService.createMemorySingleCache<MiWebhook[]>('userWebhooks', 1000 * 60 * 60 * 12); // 12h
+
+		this.internalEventService.on('webhookCreated', this.onWebhookEvent);
+		this.internalEventService.on('webhookUpdated', this.onWebhookEvent);
+		this.internalEventService.on('webhookDeleted', this.onWebhookEvent);
 	}
 
 	@bindThis
 	public async getActiveWebhooks() {
-		if (!this.activeWebhooksFetched) {
-			this.activeWebhooks = await this.webhooksRepository.findBy({
+		return await this.activeWebhooks.fetch(async () => {
+			return await this.webhooksRepository.findBy({
 				active: true,
 			});
-			this.activeWebhooksFetched = true;
-		}
-
-		return this.activeWebhooks;
+		});
 	}
 
 	/**
@@ -89,7 +94,7 @@ export class UserWebhookService implements OnApplicationShutdown {
 	) {
 		const webhooks = await this.getActiveWebhooks()
 			.then(webhooks => webhooks.filter(webhook => webhook.userId === userId && webhook.on.includes(type)));
-		return Promise.all(
+		return await Promise.all(
 			webhooks.map(webhook => {
 				return this.queueService.userWebhookDeliver(webhook, type, content);
 			}),
@@ -97,57 +102,51 @@ export class UserWebhookService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async onMessage(_: string, data: string): Promise<void> {
-		const obj = JSON.parse(data);
-		if (obj.channel !== 'internal') {
+	private async onWebhookEvent<E extends 'webhookCreated' | 'webhookUpdated' | 'webhookDeleted'>(body: InternalEventTypes[E], type: E): Promise<void> {
+		const cache = this.activeWebhooks.get();
+		if (!cache) {
 			return;
 		}
 
-		const { type, body } = obj.message as GlobalEvents['internal']['payload'];
 		switch (type) {
 			case 'webhookCreated': {
-				if (body.active) {
-					this.activeWebhooks.push({ // TODO: このあたりのデシリアライズ処理は各modelファイル内に関数としてexportしたい
-						...body,
-						latestSentAt: body.latestSentAt ? new Date(body.latestSentAt) : null,
-						user: null, // joinなカラムは通常取ってこないので
-					});
+				// Add
+				const webhook = await this.webhooksRepository.findOneBy({ id: body.id });
+				if (webhook) {
+					cache.push(webhook);
 				}
 				break;
 			}
 			case 'webhookUpdated': {
-				if (body.active) {
-					const i = this.activeWebhooks.findIndex(a => a.id === body.id);
-					if (i > -1) {
-						this.activeWebhooks[i] = { // TODO: このあたりのデシリアライズ処理は各modelファイル内に関数としてexportしたい
-							...body,
-							latestSentAt: body.latestSentAt ? new Date(body.latestSentAt) : null,
-							user: null, // joinなカラムは通常取ってこないので
-						};
-					} else {
-						this.activeWebhooks.push({ // TODO: このあたりのデシリアライズ処理は各modelファイル内に関数としてexportしたい
-							...body,
-							latestSentAt: body.latestSentAt ? new Date(body.latestSentAt) : null,
-							user: null, // joinなカラムは通常取ってこないので
-						});
-					}
-				} else {
-					this.activeWebhooks = this.activeWebhooks.filter(a => a.id !== body.id);
+				// Delete
+				const index = cache.findIndex(webhook => webhook.id === body.id);
+				if (index > -1) {
+					cache.splice(index, 1);
+				}
+
+				// Add
+				const webhook = await this.webhooksRepository.findOneBy({ id: body.id });
+				if (webhook) {
+					cache.push(webhook);
 				}
 				break;
 			}
 			case 'webhookDeleted': {
-				this.activeWebhooks = this.activeWebhooks.filter(a => a.id !== body.id);
+				// Delete
+				const index = cache.findIndex(webhook => webhook.id === body.id);
+				if (index > -1) {
+					cache.splice(index, 1);
+				}
 				break;
 			}
-			default:
-				break;
 		}
 	}
 
 	@bindThis
 	public dispose(): void {
-		this.redisForSub.off('message', this.onMessage);
+		this.internalEventService.off('webhookCreated', this.onWebhookEvent);
+		this.internalEventService.off('webhookUpdated', this.onWebhookEvent);
+		this.internalEventService.off('webhookDeleted', this.onWebhookEvent);
 	}
 
 	@bindThis

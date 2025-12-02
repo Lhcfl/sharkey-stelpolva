@@ -17,21 +17,24 @@
 	"scripts": {
 		"build": "node ./build.js",
 		"watch": "nodemon -w package.json -e json --exec \"node ./build.js --watch\"",
-		"eslint": "eslint --quiet \"{src,test,js,@types}/**/*.{js,jsx,ts,tsx,vue}\" --cache",
-		"typecheck": "tsc --noEmit",
+		"eslint": "eslint --quiet --cache -c eslint.config.js .",
+		"typecheck-all": "pnpm run --no-bail typecheck:game && pnpm run --no-bail typecheck:scripts",
+		"typecheck": "pnpm run typecheck:game && pnpm run typecheck:scripts",
+		"typecheck:game": "tsc -p tsconfig.game.json --noEmit",
+		"typecheck:scripts": "tsc -p tsconfig.scripts.json --noEmit",
 		"lint": "pnpm typecheck && pnpm eslint"
 	},
 	"devDependencies": {
-		"@types/matter-js": "0.19.8",
+		"@types/matter-js": "0.20.2",
+		"@types/node": "22.18.1",
 		"@types/seedrandom": "3.0.8",
-		"@types/node": "22.15.2",
-		"@typescript-eslint/eslint-plugin": "8.31.0",
-		"@typescript-eslint/parser": "8.31.0",
+		"@typescript-eslint/eslint-plugin": "8.44.1",
+		"@typescript-eslint/parser": "8.44.1",
+		"esbuild": "0.25.10",
+		"execa": "9.6.0",
+		"glob": "11.0.3",
 		"nodemon": "3.1.10",
-		"execa": "9.5.2",
-		"typescript": "5.8.3",
-		"esbuild": "0.25.3",
-		"glob": "11.0.2"
+		"typescript": "5.9.2"
 	},
 	"files": [
 		"built"

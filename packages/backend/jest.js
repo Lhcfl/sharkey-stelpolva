@@ -24,7 +24,11 @@ child.on('error', (err) => {
 });
 child.on('exit', (code, signal) => {
 	if (code === null) {
-		process.exit(128 + signal);
+		if (signal != null) {
+			process.exit(128 + signal);
+		} else {
+			process.exit(128);
+		}
 	} else {
 		process.exit(code);
 	}

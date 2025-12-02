@@ -7,7 +7,6 @@ import https from 'node:https';
 import { Inject, Injectable } from '@nestjs/common';
 import { summaly } from '@misskey-dev/summaly';
 import { SummalyResult } from '@misskey-dev/summaly/built/summary.js';
-import * as Redis from 'ioredis';
 import { IsNull, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -17,7 +16,6 @@ import { query } from '@/misc/prelude/url.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import { MiMeta } from '@/models/Meta.js';
-import { RedisKVCache } from '@/misc/cache.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import type { MiAccessToken, NotesRepository } from '@/models/_.js';
@@ -28,6 +26,7 @@ import { SystemAccountService } from '@/core/SystemAccountService.js';
 import { ApNoteService } from '@/core/activitypub/models/ApNoteService.js';
 import { AuthenticateService, AuthenticationError } from '@/server/api/AuthenticateService.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
+import { CacheManagementService, type ManagedRedisKVCache } from '@/global/CacheManagementService.js';
 import { BucketRateLimit, Keyed, sendRateLimitHeaders } from '@/misc/rate-limit-utils.js';
 import type { MiLocalUser } from '@/models/User.js';
 import { getIpHash } from '@/misc/get-ip-hash.js';
@@ -70,14 +69,11 @@ const previewLimit: Keyed<BucketRateLimit> = {
 @Injectable()
 export class UrlPreviewService {
 	private logger: Logger;
-	private previewCache: RedisKVCache<LocalSummalyResult>;
+	private previewCache: ManagedRedisKVCache<LocalSummalyResult>;
 
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
-
-		@Inject(DI.redis)
-		private readonly redisClient: Redis.Redis,
 
 		@Inject(DI.meta)
 		private readonly meta: MiMeta,
@@ -96,9 +92,11 @@ export class UrlPreviewService {
 		private readonly apNoteService: ApNoteService,
 		private readonly authenticateService: AuthenticateService,
 		private readonly rateLimiterService: SkRateLimiterService,
+
+		cacheManagementService: CacheManagementService,
 	) {
 		this.logger = this.loggerService.getLogger('url-preview');
-		this.previewCache = new RedisKVCache<LocalSummalyResult>(this.redisClient, 'summaly', {
+		this.previewCache = cacheManagementService.createRedisKVCache<LocalSummalyResult>('summaly', {
 			lifetime: 1000 * 60 * 60 * 24, // 1d
 			memoryCacheLifetime: 1000 * 60 * 10, // 10m
 			fetcher: () => { throw new Error('the UrlPreview cache should never fetch'); },

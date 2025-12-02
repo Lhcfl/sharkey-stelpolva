@@ -36,6 +36,7 @@ export class RenoteMutingEntityService {
 	): Promise<Packed<'RenoteMuting'>> {
 		const muting = typeof src === 'object' ? src : await this.renoteMutingsRepository.findOneByOrFail({ id: src });
 
+		// noinspection ES6MissingAwait
 		return await awaitAll({
 			id: muting.id,
 			createdAt: this.idService.parse(muting.id).date.toISOString(),
@@ -54,7 +55,7 @@ export class RenoteMutingEntityService {
 		const _users = mutings.map(({ mutee, muteeId }) => mutee ?? muteeId);
 		const _userMap = await this.userEntityService.packMany(_users, me, { schema: 'UserDetailedNotMe' })
 			.then(users => new Map(users.map(u => [u.id, u])));
-		return Promise.all(mutings.map(muting => this.pack(muting, me, { packedMutee: _userMap.get(muting.muteeId) })));
+		return await Promise.all(mutings.map(muting => this.pack(muting, me, { packedMutee: _userMap.get(muting.muteeId) })));
 	}
 }
 

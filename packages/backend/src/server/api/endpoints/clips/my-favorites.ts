@@ -56,7 +56,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const favorites = await query
 				.getMany();
 
-			return this.clipEntityService.packMany(favorites.map(x => x.clip!), me);
+			return await this.clipEntityService.packMany(favorites.map(x => x.clip!), me);
 		});
 	}
 }

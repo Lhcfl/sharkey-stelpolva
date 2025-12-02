@@ -11,7 +11,9 @@ import { bindThis } from '@/decorators.js';
 import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
 import { RoleService } from '@/core/RoleService.js';
 import { IdService } from '@/core/IdService.js';
+import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 import type { MiLocalUser } from '@/models/User.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class ClipService {
@@ -33,6 +35,8 @@ export class ClipService {
 
 		private roleService: RoleService,
 		private idService: IdService,
+		private readonly timeService: TimeService,
+		private readonly collapsedQueueService: CollapsedQueueService,
 	) {
 	}
 
@@ -125,10 +129,10 @@ export class ClipService {
 		}
 
 		this.clipsRepository.update(clip.id, {
-			lastClippedAt: new Date(),
+			lastClippedAt: this.timeService.date,
 		});
 
-		this.notesRepository.increment({ id: noteId }, 'clippedCount', 1);
+		await this.collapsedQueueService.updateNoteQueue.enqueue(noteId, { clippedCountDelta: 1 });
 	}
 
 	@bindThis
@@ -153,6 +157,6 @@ export class ClipService {
 			clipId: clip.id,
 		});
 
-		this.notesRepository.decrement({ id: noteId }, 'clippedCount', 1);
+		await this.collapsedQueueService.updateNoteQueue.enqueue(noteId, { clippedCountDelta: -1 });
 	}
 }

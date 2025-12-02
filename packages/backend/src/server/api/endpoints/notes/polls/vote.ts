@@ -15,6 +15,8 @@ import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
+import { TimeService } from '@/global/TimeService.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -101,9 +103,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private apRendererService: ApRendererService,
 		private globalEventService: GlobalEventService,
 		private userBlockingService: UserBlockingService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const createdAt = new Date();
+			const createdAt = this.timeService.date;
 
 			// Get votee
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {
@@ -170,11 +173,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (note.userHost != null) {
 				const pollOwner = await this.usersRepository.findOneByOrFail({ id: note.userId }) as MiRemoteUser;
 
-				this.queueService.deliver(me, this.apRendererService.addContext(await this.apRendererService.renderVote(me, vote, note, poll, pollOwner)), pollOwner.inbox, false);
+				this.queueService.deliver(me, this.apRendererService.addContext(this.apRendererService.renderVote(me, vote, note, poll, pollOwner)), pollOwner.inbox, false);
 			}
 
 			// リモートフォロワーにUpdate配信
-			this.pollService.deliverQuestionUpdate(note);
+			trackPromise(this.pollService.deliverQuestionUpdate(note));
 		});
 	}
 }

@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { GalleryPostsRepository, GalleryLikesRepository } from '@/models/_.js';
 import { FeaturedService, GALLERY_POSTS_RANKING_WINDOW } from '@/core/FeaturedService.js';
 import { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../../error.js';
 
@@ -60,6 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private featuredService: FeaturedService,
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const post = await this.galleryPostsRepository.findOneBy({ id: ps.postId });
@@ -80,7 +82,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.galleryLikesRepository.delete(exist.id);
 
 			// ランキング更新
-			if (Date.now() - this.idService.parse(post.id).date.getTime() < GALLERY_POSTS_RANKING_WINDOW) {
+			if (this.timeService.now - this.idService.parse(post.id).date.getTime() < GALLERY_POSTS_RANKING_WINDOW) {
 				await this.featuredService.updateGalleryPostsRanking(post, -1);
 			}
 

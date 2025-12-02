@@ -7,6 +7,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import type { FollowingsRepository, InstancesRepository, MiMeta } from '@/models/_.js';
 import { AppLockService } from '@/core/AppLockService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import Chart from '../core.js';
@@ -34,8 +35,13 @@ export default class FederationChart extends Chart<typeof schema> { // eslint-di
 
 		private appLockService: AppLockService,
 		private chartLoggerService: ChartLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		super(db, (k) => appLockService.getChartInsertLock(k), chartLoggerService.logger, name, schema);
+	}
+
+	protected getCurrentDate(): Date {
+		return this.timeService.date;
 	}
 
 	protected async tickMajor(): Promise<Partial<KVs<typeof schema>>> {
@@ -112,8 +118,8 @@ export default class FederationChart extends Chart<typeof schema> { // eslint-di
 	}
 
 	@bindThis
-	public async deliverd(host: string, succeeded: boolean): Promise<void> {
-		await this.commit(succeeded ? {
+	public deliverd(host: string, succeeded: boolean): void {
+		this.commit(succeeded ? {
 			'deliveredInstances': [host],
 		} : {
 			'stalled': [host],
@@ -121,8 +127,8 @@ export default class FederationChart extends Chart<typeof schema> { // eslint-di
 	}
 
 	@bindThis
-	public async inbox(host: string): Promise<void> {
-		await this.commit({
+	public inbox(host: string): void {
+		this.commit({
 			'inboxInstances': [host],
 		});
 	}

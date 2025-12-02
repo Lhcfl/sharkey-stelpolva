@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AdsRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
 import { DI } from '@/di-symbols.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -46,13 +47,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private adsRepository: AdsRepository,
 
 		private queryService: QueryService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.adsRepository.createQueryBuilder('ad'), ps.sinceId, ps.untilId);
 			if (ps.publishing === true) {
-				query.andWhere('ad.expiresAt > :now', { now: new Date() }).andWhere('ad.startsAt <= :now', { now: new Date() });
+				query.andWhere('ad.expiresAt > :now', { now: this.timeService.date }).andWhere('ad.startsAt <= :now', { now: this.timeService.date });
 			} else if (ps.publishing === false) {
-				query.andWhere('ad.expiresAt <= :now', { now: new Date() }).orWhere('ad.startsAt > :now', { now: new Date() });
+				query.andWhere('ad.expiresAt <= :now', { now: this.timeService.date }).orWhere('ad.startsAt > :now', { now: this.timeService.date });
 			}
 			const ads = await query.limit(ps.limit).getMany();
 

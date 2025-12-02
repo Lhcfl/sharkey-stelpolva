@@ -28,6 +28,11 @@ export class MiUser {
 	})
 	public lastFetchedAt: Date | null;
 
+	@Column('timestamp with time zone', {
+		nullable: true,
+	})
+	public lastFetchedFeaturedAt?: Date | null;
+
 	@Index()
 	@Column('timestamp with time zone', {
 		nullable: true,
@@ -430,6 +435,22 @@ export type MiPartialRemoteUser = Partial<MiUser> & {
 	host: string;
 	uri: string;
 };
+
+export function isRemoteUser(user: MiUser): user is MiRemoteUser;
+export function isRemoteUser<U extends PartialUser>(user: U): user is PartialRemoteUser<U>;
+export function isRemoteUser(user: { host: string | null }): user is { host: string } {
+	return user.host != null;
+}
+
+export function isLocalUser(user: MiUser): user is MiLocalUser;
+export function isLocalUser<U extends PartialUser>(user: U): user is PartialLocalUser<U>;
+export function isLocalUser(user: { host: string | null }): user is { host: null } {
+	return user.host == null;
+}
+
+type PartialUser = Partial<MiUser> & { host: string | null, uri?: string | null };
+type PartialLocalUser<U extends PartialUser> = U & { host: null, uri?: null };
+type PartialRemoteUser<U extends PartialUser> = U & { host: string, uri?: string };
 
 export const localUsernameSchema = { type: 'string', pattern: /^\w{1,20}$/.toString().slice(1, -1) } as const;
 export const passwordSchema = { type: 'string', minLength: 1 } as const;

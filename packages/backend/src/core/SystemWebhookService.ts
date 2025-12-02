@@ -18,6 +18,9 @@ import Logger from '@/logger.js';
 import { Packed } from '@/misc/json-schema.js';
 import { AbuseReportResolveType } from '@/models/AbuseUserReport.js';
 import { ModeratorInactivityRemainingTime } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
+import { CacheManagementService, type ManagedMemorySingleCache } from '@/global/CacheManagementService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
 export type AbuseReportPayload = {
@@ -50,8 +53,7 @@ export type SystemWebhookPayload<T extends SystemWebhookEventType> =
 
 @Injectable()
 export class SystemWebhookService implements OnApplicationShutdown {
-	private activeSystemWebhooksFetched = false;
-	private activeSystemWebhooks: MiSystemWebhook[] = [];
+	private readonly activeSystemWebhooks: ManagedMemorySingleCache<MiSystemWebhook[]>;
 
 	constructor(
 		@Inject(DI.redisForSub)
@@ -62,20 +64,25 @@ export class SystemWebhookService implements OnApplicationShutdown {
 		private queueService: QueueService,
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
+		private readonly internalEventService: InternalEventService,
+		private readonly timeService: TimeService,
+
+		cacheManagementService: CacheManagementService,
 	) {
-		this.redisForSub.on('message', this.onMessage);
+		this.activeSystemWebhooks = cacheManagementService.createMemorySingleCache<MiSystemWebhook[]>('systemWebhooks', 1000 * 60 * 60 * 12); // 12h
+
+		this.internalEventService.on('systemWebhookCreated', this.onWebhookEvent);
+		this.internalEventService.on('systemWebhookUpdated', this.onWebhookEvent);
+		this.internalEventService.on('systemWebhookDeleted', this.onWebhookEvent);
 	}
 
 	@bindThis
 	public async fetchActiveSystemWebhooks() {
-		if (!this.activeSystemWebhooksFetched) {
-			this.activeSystemWebhooks = await this.systemWebhooksRepository.findBy({
+		return await this.activeSystemWebhooks.fetch(async () => {
+			return await this.systemWebhooksRepository.findBy({
 				isActive: true,
 			});
-			this.activeSystemWebhooksFetched = true;
-		}
-
-		return this.activeSystemWebhooks;
+		});
 	}
 
 	/**
@@ -124,7 +131,7 @@ export class SystemWebhookService implements OnApplicationShutdown {
 		});
 
 		const webhook = await this.systemWebhooksRepository.findOneByOrFail({ id });
-		this.globalEventService.publishInternalEvent('systemWebhookCreated', webhook);
+		await this.internalEventService.emit('systemWebhookCreated', { id: webhook.id });
 		this.moderationLogService
 			.log(updater, 'createSystemWebhook', {
 				systemWebhookId: webhook.id,
@@ -151,7 +158,7 @@ export class SystemWebhookService implements OnApplicationShutdown {
 	): Promise<MiSystemWebhook> {
 		const beforeEntity = await this.systemWebhooksRepository.findOneByOrFail({ id: params.id });
 		await this.systemWebhooksRepository.update(beforeEntity.id, {
-			updatedAt: new Date(),
+			updatedAt: this.timeService.date,
 			isActive: params.isActive,
 			name: params.name,
 			on: params.on,
@@ -160,7 +167,7 @@ export class SystemWebhookService implements OnApplicationShutdown {
 		});
 
 		const afterEntity = await this.systemWebhooksRepository.findOneByOrFail({ id: beforeEntity.id });
-		this.globalEventService.publishInternalEvent('systemWebhookUpdated', afterEntity);
+		await this.internalEventService.emit('systemWebhookUpdated', { id: afterEntity.id });
 		this.moderationLogService
 			.log(updater, 'updateSystemWebhook', {
 				systemWebhookId: beforeEntity.id,
@@ -179,7 +186,7 @@ export class SystemWebhookService implements OnApplicationShutdown {
 		const webhook = await this.systemWebhooksRepository.findOneByOrFail({ id });
 		await this.systemWebhooksRepository.delete(id);
 
-		this.globalEventService.publishInternalEvent('systemWebhookDeleted', webhook);
+		await this.internalEventService.emit('systemWebhookDeleted', { id: webhook.id });
 		this.moderationLogService
 			.log(updater, 'deleteSystemWebhook', {
 				systemWebhookId: webhook.id,
@@ -211,45 +218,15 @@ export class SystemWebhookService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async onMessage(_: string, data: string): Promise<void> {
-		const obj = JSON.parse(data);
-		if (obj.channel !== 'internal') {
-			return;
-		}
-
-		const { type, body } = obj.message as GlobalEvents['internal']['payload'];
-		switch (type) {
-			case 'systemWebhookCreated': {
-				if (body.isActive) {
-					this.activeSystemWebhooks.push(MiSystemWebhook.deserialize(body));
-				}
-				break;
-			}
-			case 'systemWebhookUpdated': {
-				if (body.isActive) {
-					const i = this.activeSystemWebhooks.findIndex(a => a.id === body.id);
-					if (i > -1) {
-						this.activeSystemWebhooks[i] = MiSystemWebhook.deserialize(body);
-					} else {
-						this.activeSystemWebhooks.push(MiSystemWebhook.deserialize(body));
-					}
-				} else {
-					this.activeSystemWebhooks = this.activeSystemWebhooks.filter(a => a.id !== body.id);
-				}
-				break;
-			}
-			case 'systemWebhookDeleted': {
-				this.activeSystemWebhooks = this.activeSystemWebhooks.filter(a => a.id !== body.id);
-				break;
-			}
-			default:
-				break;
-		}
+	private onWebhookEvent(): void {
+		this.activeSystemWebhooks.delete();
 	}
 
 	@bindThis
 	public dispose(): void {
-		this.redisForSub.off('message', this.onMessage);
+		this.internalEventService.off('systemWebhookCreated', this.onWebhookEvent);
+		this.internalEventService.off('systemWebhookUpdated', this.onWebhookEvent);
+		this.internalEventService.off('systemWebhookDeleted', this.onWebhookEvent);
 	}
 
 	@bindThis

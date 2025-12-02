@@ -6,6 +6,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { In, IsNull } from 'typeorm';
 import { Feed } from 'feed';
+import { parse as mfmParse } from 'mfm-js';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository, NotesRepository, UserProfilesRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -15,7 +16,7 @@ import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.j
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 import { MfmService } from "@/core/MfmService.js";
-import { parse as mfmParse } from 'mfm-js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class FeedService {
@@ -36,6 +37,7 @@ export class FeedService {
 		private driveFileEntityService: DriveFileEntityService,
 		private idService: IdService,
 		private mfmService: MfmService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -107,7 +109,7 @@ export class FeedService {
 	private shouldHideNote(reference: number | null, createdAt: Date): boolean {
 		if ((reference !== null)
 				&& (
-					(reference <= 0 && (Date.now() - createdAt.getTime() > 0 - (reference * 1000)))
+					(reference <= 0 && (this.timeService.now - createdAt.getTime() > 0 - (reference * 1000)))
 						|| (reference > 0 && (createdAt.getTime() < reference * 1000))
 				)
 		) {

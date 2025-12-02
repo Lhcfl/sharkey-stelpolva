@@ -4,6 +4,8 @@
  */
 
 export class CreateStatistics1748992128683 {
+	name = 'CreateStatistics1748992128683';
+
 	async up(queryRunner) {
 		await queryRunner.query(`CREATE STATISTICS "STTS_instance_isBlocked_isBubbled" (mcv) ON "isBlocked", "isBubbled" FROM "instance"`);
 		await queryRunner.query(`CREATE STATISTICS "STTS_instance_isBlocked_isSilenced" (mcv) ON "isBlocked", "isSilenced" FROM "instance"`);

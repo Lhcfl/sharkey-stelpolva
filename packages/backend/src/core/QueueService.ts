@@ -4,7 +4,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { MetricsTime, type JobType } from 'bullmq';
 import { parse as parseRedisInfo } from 'redis-info';
 import type { IActivity } from '@/core/activitypub/type.js';
@@ -16,10 +16,13 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import type { Antenna } from '@/server/api/endpoints/i/import-antennas.js';
 import { ApRequestCreator } from '@/core/activitypub/ApRequestService.js';
-import { type SystemWebhookPayload } from '@/core/SystemWebhookService.js';
-import { MiNote } from '@/models/Note.js';
+import { TimeService } from '@/global/TimeService.js';
+import type { SystemWebhookPayload } from '@/core/SystemWebhookService.js';
+import type { MiNote } from '@/models/Note.js';
+import type { MinimalNote } from '@/misc/is-renote.js';
 import { type UserWebhookPayload } from './UserWebhookService.js';
 import type {
+	BackgroundTaskJobData,
 	DbJobData,
 	DeliverJobData,
 	RelationshipJobData,
@@ -38,6 +41,7 @@ import type {
 	SystemWebhookDeliverQueue,
 	UserWebhookDeliverQueue,
 	ScheduleNotePostQueue,
+	BackgroundTaskQueue,
 } from './QueueModule.js';
 import type httpSignature from '@peertube/http-signature';
 import type * as Bull from 'bullmq';
@@ -53,10 +57,11 @@ export const QUEUE_TYPES = [
 	'userWebhookDeliver',
 	'systemWebhookDeliver',
 	'scheduleNotePost',
+	'backgroundTask',
 ] as const;
 
 @Injectable()
-export class QueueService {
+export class QueueService implements OnModuleInit {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
@@ -71,63 +76,126 @@ export class QueueService {
 		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
 		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
 		@Inject('queue:scheduleNotePost') public ScheduleNotePostQueue: ScheduleNotePostQueue,
-	) {
-		this.systemQueue.add('tickCharts', {
-		}, {
-			repeat: { pattern: '55 * * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		@Inject('queue:backgroundTask') public readonly backgroundTaskQueue: BackgroundTaskQueue,
 
-		this.systemQueue.add('resyncCharts', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		private readonly timeService: TimeService,
+	) {}
 
-		this.systemQueue.add('cleanCharts', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+	@bindThis
+	public async onModuleInit() {
+		await this.systemQueue.upsertJobScheduler(
+			'tickCharts-scheduler',
+			{ pattern: '0 * * * *' }, // every hour at :00
+			{
+				name: 'tickCharts',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		this.systemQueue.add('aggregateRetention', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'resyncCharts-scheduler',
+			{ pattern: '20 0 * * *' }, // every day at 00:20 (wait for tickCharts)
+			{
+				name: 'resyncCharts',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		this.systemQueue.add('clean', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'cleanCharts-scheduler',
+			{ pattern: '40 0 * * *' }, // every day at 00:40 (wait for resyncCharts)
+			{
+				name: 'cleanCharts',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		this.systemQueue.add('checkExpiredMutings', {
-		}, {
-			repeat: { pattern: '*/5 * * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'aggregateRetention-scheduler',
+			{ pattern: '0 1 * * *' }, // every day at 01:00
+			{
+				name: 'aggregateRetention',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		this.systemQueue.add('bakeBufferedReactions', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'clean-scheduler',
+			{ pattern: '10 1 * * *' }, // every day at 01:10 (wait for aggregateRetention)
+			{
+				name: 'clean',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		this.systemQueue.add('checkModeratorsActivity', {
-		}, {
+		await this.systemQueue.upsertJobScheduler(
+			'checkExpiredMutings-scheduler',
+			{ pattern: '*/5 * * * *' }, // every 5 minutes
+			{
+				name: 'checkExpiredMutings',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
+
+		await this.systemQueue.upsertJobScheduler(
+			'bakeBufferedReactions-scheduler',
+			{ pattern: '20 1 * * *' }, // every day at 01:40 (wait for clean)
+			{
+				name: 'bakeBufferedReactions',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
+
+		await this.systemQueue.upsertJobScheduler(
+			'checkModeratorsActivity-scheduler',
 			// 毎時30分に起動
-			repeat: { pattern: '30 * * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+			{ pattern: '30 * * * *' }, // every hour at :30
+			{
+				name: 'checkModeratorsActivity',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
+
+		await this.systemQueue.upsertJobScheduler(
+			'cleanupApLogs-scheduler',
+			{ pattern: '*/10 * * *' }, // every 10 minutes
+			{
+				name: 'cleanupApLogs',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
+
+		await this.systemQueue.upsertJobScheduler(
+			'hibernateUsers-scheduler',
+			{ pattern: '30 1 * * *' }, // every day at 01:30 (avoid bakeBufferedReactions)
+			{
+				name: 'hibernateUsers',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
+
+		// Slot '40 1 * * *' is available for future work
+		// Slot '50 1 * * *' is available for future work
 	}
 
 	@bindThis
@@ -700,7 +768,13 @@ export class QueueService {
 	}
 
 	@bindThis
-	private generateRelationshipJobData(name: 'follow' | 'unfollow' | 'block' | 'unblock', data: RelationshipJobData, opts: Bull.JobsOptions = {}): {
+	public createMoveJob(from: ThinUser, to: ThinUser) {
+		const job = this.generateRelationshipJobData('move', { from, to });
+		return this.relationshipQueue.add(job.name, job.data, job.opts);
+	}
+
+	@bindThis
+	private generateRelationshipJobData(name: 'follow' | 'unfollow' | 'block' | 'unblock' | 'move', data: RelationshipJobData, opts: Bull.JobsOptions = {}): {
 		name: string,
 		data: RelationshipJobData,
 		opts: Bull.JobsOptions,
@@ -770,6 +844,107 @@ export class QueueService {
 		});
 	}
 
+	@bindThis
+	public async createUpdateUserJob(userId: string) {
+		return await this.createBackgroundTask({ type: 'update-user', userId }, userId);
+	}
+
+	@bindThis
+	public async createUpdateFeaturedJob(userId: string) {
+		return await this.createBackgroundTask({ type: 'update-featured', userId }, userId);
+	}
+
+	@bindThis
+	public async createUpdateInstanceJob(host: string) {
+		return await this.createBackgroundTask({ type: 'update-instance', host }, host);
+	}
+
+	@bindThis
+	public async createPostDeliverJob(host: string, result: 'success' | 'temp-fail' | 'perm-fail') {
+		return await this.createBackgroundTask({ type: 'post-deliver', host, result });
+	}
+
+	@bindThis
+	public async createPostInboxJob(host: string) {
+		return await this.createBackgroundTask({ type: 'post-inbox', host });
+	}
+
+	@bindThis
+	public async createPostNoteJob(noteId: string, silent: boolean, type: 'create' | 'edit') {
+		const edit = type === 'edit';
+		const duplication = `${noteId}_${type}`;
+
+		return await this.createBackgroundTask({ type: 'post-note', noteId, silent, edit }, duplication);
+	}
+
+	@bindThis
+	public async createUpdateUserTagsJob(userId: string) {
+		return await this.createBackgroundTask({ type: 'update-user-tags', userId }, userId);
+	}
+
+	@bindThis
+	public async createUpdateNoteTagsJob(noteId: string) {
+		return await this.createBackgroundTask({ type: 'update-note-tags', noteId }, noteId);
+	}
+
+	@bindThis
+	public async createDeleteFileJob(fileId: string, isExpired?: boolean, deleterId?: string) {
+		return await this.createBackgroundTask({ type: 'delete-file', fileId, isExpired, deleterId }, fileId);
+	}
+
+	@bindThis
+	public async createUpdateLatestNoteJob(note: MinimalNote) {
+		// Compact the note to avoid storing the entire thing in Redis, when all we need is minimal data for categorization
+		const minimizedNote: MinimalNote = {
+			id: note.id,
+			visibility: note.visibility,
+			userId: note.userId,
+			replyId: note.replyId,
+			renoteId: note.renoteId,
+			hasPoll: note.hasPoll,
+			text: note.text ? '1' : null,
+			cw: note.text ? '1' : null,
+			fileIds: note.fileIds.length > 0 ? ['1'] : [],
+		};
+
+		return await this.createBackgroundTask({ type: 'update-latest-note', note: minimizedNote }, note.id);
+	}
+
+	@bindThis
+	public async createPostSuspendJob(userId: string) {
+		return await this.createBackgroundTask({ type: 'post-suspend', userId }, userId);
+	}
+
+	@bindThis
+	public async createPostUnsuspendJob(userId: string) {
+		return await this.createBackgroundTask({ type: 'post-unsuspend', userId }, userId);
+	}
+
+	@bindThis
+	public async createDeleteApLogsJob(dataType: 'inbox' | 'object', data: string | string[]) {
+		return await this.createBackgroundTask({ type: 'delete-ap-logs', dataType, data });
+	}
+
+	private async createBackgroundTask<T extends BackgroundTaskJobData>(data: T, duplication?: string | { id: string, ttl?: number }) {
+		return await this.backgroundTaskQueue.add(
+			data.type,
+			data,
+			{
+				// https://docs.bullmq.io/guide/retrying-failing-jobs#custom-back-off-strategies
+				attempts: this.config.backgroundJobMaxAttempts ?? 8,
+				backoff: {
+					// Resolves to QueueProcessorService::HttpRelatedBackoff()
+					type: 'custom',
+				},
+
+				// https://docs.bullmq.io/guide/jobs/deduplication
+				deduplication: typeof(duplication) === 'string'
+					? { id: `${data.type}_${duplication}` }
+					: duplication,
+			},
+		);
+	};
+
 	/**
 	 * @see UserWebhookDeliverJobData
 	 * @see UserWebhookDeliverProcessorService
@@ -788,7 +963,7 @@ export class QueueService {
 			userId: webhook.userId,
 			to: webhook.url,
 			secret: webhook.secret,
-			createdAt: Date.now(),
+			createdAt: this.timeService.now,
 			eventId: randomUUID(),
 		};
 
@@ -825,7 +1000,7 @@ export class QueueService {
 			webhookId: webhook.id,
 			to: webhook.url,
 			secret: webhook.secret,
-			createdAt: Date.now(),
+			createdAt: this.timeService.now,
 			eventId: randomUUID(),
 		};
 
@@ -858,6 +1033,7 @@ export class QueueService {
 			case 'userWebhookDeliver': return this.userWebhookDeliverQueue;
 			case 'systemWebhookDeliver': return this.systemWebhookDeliverQueue;
 			case 'scheduleNotePost': return this.ScheduleNotePostQueue;
+			case 'backgroundTask': return this.backgroundTaskQueue;
 			default: throw new Error(`Unrecognized queue type: ${type}`);
 		}
 	}
@@ -890,7 +1066,7 @@ export class QueueService {
 	@bindThis
 	public async queueRetryJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
 		const queue = this.getQueue(queueType);
-		const job: Bull.Job | null = await queue.getJob(jobId);
+		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
 			if (job.finishedOn != null) {
 				await job.retry();
@@ -903,7 +1079,7 @@ export class QueueService {
 	@bindThis
 	public async queueRemoveJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
 		const queue = this.getQueue(queueType);
-		const job: Bull.Job | null = await queue.getJob(jobId);
+		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
 			await job.remove();
 		}
@@ -937,7 +1113,7 @@ export class QueueService {
 	@bindThis
 	public async queueGetJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
 		const queue = this.getQueue(queueType);
-		const job: Bull.Job | null = await queue.getJob(jobId);
+		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
 			return this.packJobData(job);
 		} else {

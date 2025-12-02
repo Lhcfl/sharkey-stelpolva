@@ -29,7 +29,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queueService: QueueService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			return this.queueService.queueGetQueues();
+			return await this.queueService.queueGetQueues();
 		});
 	}
 }

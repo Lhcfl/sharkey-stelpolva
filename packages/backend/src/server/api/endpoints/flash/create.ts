@@ -10,6 +10,7 @@ import { IdService } from '@/core/IdService.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import { FlashEntityService } from '@/core/entities/FlashEntityService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	tags: ['flash'],
@@ -57,12 +58,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private flashEntityService: FlashEntityService,
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const flash = await this.flashsRepository.insertOne({
 				id: this.idService.gen(),
 				userId: me.id,
-				updatedAt: new Date(),
+				updatedAt: this.timeService.date,
 				title: ps.title,
 				summary: ps.summary,
 				script: ps.script,
@@ -70,7 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				visibility: ps.visibility,
 			});
 
-			return await this.flashEntityService.pack(flash);
+			return await this.flashEntityService.pack(flash, me);
 		});
 	}
 }

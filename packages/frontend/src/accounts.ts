@@ -16,6 +16,7 @@ import { prefer } from '@/preferences.js';
 import { store } from '@/store.js';
 import { $i } from '@/i.js';
 import { signout } from '@/signout.js';
+import * as os from '@/os';
 
 type AccountWithToken = Misskey.entities.MeDetailed & { token: string };
 
@@ -39,7 +40,18 @@ export async function getAccounts(): Promise<{
 }
 
 async function addAccount(host: string, user: Misskey.entities.User, token: AccountWithToken['token']) {
-	if (!prefer.s.accounts.some(x => x[0] === host && x[1].id === user.id)) {
+	// Check for duplicate accounts
+	if (prefer.s.accounts.some(x => x[0] === host && x[1].id === user.id)) {
+		if (store.s.accountTokens[host + '/' + user.id] !== token) {
+			// Replace account if the token changed
+			await removeAccount(host, user.id);
+		} else {
+			console.debug(`Not adding account ${host}/${user.id}: already logged in with same token.`);
+			return;
+		}
+	}
+
+	{
 		store.set('accountTokens', { ...store.s.accountTokens, [host + '/' + user.id]: token });
 		store.set('accountInfos', { ...store.s.accountInfos, [host + '/' + user.id]: user });
 		prefer.commit('accounts', [...prefer.s.accounts, [host, { id: user.id, username: user.username }]]);
@@ -299,6 +311,15 @@ export async function openAccountMenu(opts: {
 						}
 					});
 				},
+			}, {
+				text: i18n.ts.sharedAccount,
+				action: () => {
+					getAccountWithSharedAccessDialog().then((res) => {
+						if (res != null) {
+							os.success();
+						}
+					});
+				},
 			}],
 		}, {
 			type: 'link',
@@ -321,6 +342,24 @@ export async function openAccountMenu(opts: {
 
 	popupMenu(menuItems, ev.currentTarget ?? ev.target, {
 		align: 'left',
+	});
+}
+
+export function getAccountWithSharedAccessDialog(): Promise<{ id: string, token: string } | null> {
+	return new Promise((resolve) => {
+		const { dispose } = popup(defineAsyncComponent(() => import('@/components/SkSigninSharedAccessDialog.vue')), {}, {
+			done: async (res: { id: string, i: string }) => {
+				const user = await fetchAccount(res.i, res.id, true);
+				await addAccount(host, user, res.i);
+				resolve({ id: res.id, token: res.i });
+			},
+			cancelled: () => {
+				resolve(null);
+			},
+			closed: () => {
+				dispose();
+			},
+		});
 	});
 }
 

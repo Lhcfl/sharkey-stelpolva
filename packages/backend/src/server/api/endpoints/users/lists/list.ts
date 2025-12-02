@@ -9,6 +9,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserListEntityService } from '@/core/entities/UserListEntityService.js';
 import { ApiError } from '@/server/api/error.js';
 import { DI } from '@/di-symbols.js';
+import { promiseMap } from '@/misc/promise-map.js';
 
 export const meta = {
 	tags: ['lists', 'account'],
@@ -88,7 +89,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				isPublic: true,
 			});
 
-			return await Promise.all(userLists.map(x => this.userListEntityService.pack(x)));
+			return await promiseMap(userLists, async x => await this.userListEntityService.pack(x, me?.id), { limit: 4 });
 		});
 	}
 }

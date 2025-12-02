@@ -258,10 +258,10 @@ export class SearchService {
 			case 'sqlTsvector': {
 				// ほとんど内容に差がないのでsqlLikeとsqlPgroongaを同じ処理にしている.
 				// 今後の拡張で差が出る用であれば関数を分ける.
-				return this.searchNoteByLike(q, me, opts, pagination);
+				return await this.searchNoteByLike(q, me, opts, pagination);
 			}
 			case 'meilisearch': {
-				return this.searchNoteByMeiliSearch(q, me, opts, pagination);
+				return await this.searchNoteByMeiliSearch(q, me, opts, pagination);
 			}
 			default: {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars

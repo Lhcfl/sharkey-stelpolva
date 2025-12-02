@@ -6,7 +6,7 @@
 import { PrimaryColumn, Entity, JoinColumn, Column, ManyToOne } from 'typeorm';
 import { MiUser } from '@/models/User.js';
 import { MiNote } from '@/models/Note.js';
-import { isQuote, isRenote } from '@/misc/is-renote.js';
+import { isQuote, isRenote, MinimalNote } from '@/misc/is-renote.js';
 
 /**
  * Maps a user to the most recent post by that user.
@@ -76,7 +76,7 @@ export class SkLatestNote {
 	/**
 	 * Generates a compound key matching a provided note.
 	 */
-	static keyFor(note: MiNote) {
+	static keyFor(note: MinimalNote) {
 		return {
 			userId: note.userId,
 			isPublic: note.visibility === 'public',
@@ -88,7 +88,7 @@ export class SkLatestNote {
 	/**
 	 * Checks if two notes would produce equivalent compound keys.
 	 */
-	static areEquivalent(first: MiNote, second: MiNote): boolean {
+	static areEquivalent(first: MinimalNote, second: MinimalNote): boolean {
 		const firstKey = SkLatestNote.keyFor(first);
 		const secondKey = SkLatestNote.keyFor(second);
 

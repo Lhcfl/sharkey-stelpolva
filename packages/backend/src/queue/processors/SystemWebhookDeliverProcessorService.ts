@@ -11,6 +11,7 @@ import type { Config } from '@/config.js';
 import type Logger from '@/logger.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { StatusError } from '@/misc/status-error.js';
+import { TimeService } from '@/global/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
@@ -29,6 +30,7 @@ export class SystemWebhookDeliverProcessorService {
 
 		private httpRequestService: HttpRequestService,
 		private queueLoggerService: QueueLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('webhook');
 	}
@@ -58,7 +60,7 @@ export class SystemWebhookDeliverProcessorService {
 			});
 
 			this.systemWebhooksRepository.update({ id: job.data.webhookId }, {
-				latestSentAt: new Date(),
+				latestSentAt: this.timeService.date,
 				latestStatus: res.status,
 			});
 
@@ -67,7 +69,7 @@ export class SystemWebhookDeliverProcessorService {
 			this.logger.error(`Failed to send webhook: ${renderInlineError(res)}`);
 
 			this.systemWebhooksRepository.update({ id: job.data.webhookId }, {
-				latestSentAt: new Date(),
+				latestSentAt: this.timeService.date,
 				latestStatus: res instanceof StatusError ? res.statusCode : 1,
 			});
 

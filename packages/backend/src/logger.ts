@@ -8,7 +8,8 @@ import chalk from 'chalk';
 import { default as convertColor } from 'color-convert';
 import { format as dateFormat } from 'date-fns';
 import { bindThis } from '@/decorators.js';
-import { envOption } from './env.js';
+import { TimeService, NativeTimeService } from '@/global/TimeService.js';
+import { EnvService } from '@/global/EnvService.js';
 import type { KEYWORD } from 'color-convert/conversions.js';
 
 type Context = {
@@ -23,45 +24,65 @@ export type DataElement = DataObject | Error | string | null;
 // https://stackoverflow.com/questions/61148466/typescript-type-that-matches-any-object-but-not-arrays
 export type DataObject = Record<string, unknown> | (object & { length?: never; });
 
+export type Console = Pick<typeof global.console, 'error' | 'warn' | 'info' | 'log' | 'debug'>;
+export const nativeConsole: Console = global.console;
+
+const fallbackTimeService = new NativeTimeService();
+const fallbackEnvService = new EnvService();
+
 const levelFuncs = {
 	error: 'error',
 	warning: 'warn',
 	success: 'info',
 	info: 'log',
 	debug: 'debug',
-} as const satisfies Record<Level, keyof typeof console>;
+} as const satisfies Record<Level, keyof Console>;
 
 // eslint-disable-next-line import/no-default-export
 export default class Logger {
 	private context: Context;
 	private parentLogger: Logger | null = null;
-	public readonly verbose: boolean;
+	private readonly timeService: TimeService;
+	private readonly envService: EnvService;
 
-	constructor(context: string, color?: KEYWORD, verbose?: boolean) {
+	/**
+	 * Where to send the actual log strings.
+	 * Defaults to the native global.console instance.
+	 */
+	private readonly console: Console;
+
+	constructor(context: string, color?: KEYWORD, envService?: EnvService, timeService?: TimeService, console?: Console) {
 		this.context = {
 			name: context,
 			color: color,
 		};
-		this.verbose = verbose ?? envOption.verbose;
+		this.envService = envService ?? fallbackEnvService;
+		this.console = console ?? nativeConsole;
+		this.timeService = timeService ?? fallbackTimeService;
 	}
 
 	@bindThis
 	public createSubLogger(context: string, color?: KEYWORD): Logger {
-		const logger = new Logger(context, color, this.verbose);
+		const logger = new Logger(context, color, this.envService, this.timeService, this.console);
 		logger.parentLogger = this;
 		return logger;
 	}
 
 	@bindThis
 	private log(level: Level, message: string, data?: Data, important = false, subContexts: Context[] = []): void {
-		if (envOption.quiet) return;
+		if (this.envService.options.quiet) return;
+
+		// Debugging logging is disabled in production unless MK_VERBOSE is set.
+		if (level === 'debug' && this.envService.env.NODE_ENV === 'production' && !this.envService.options.verbose) {
+			return;
+		}
 
 		if (this.parentLogger) {
 			this.parentLogger.log(level, message, data, important, [this.context].concat(subContexts));
 			return;
 		}
 
-		const time = dateFormat(new Date(), 'HH:mm:ss');
+		const time = dateFormat(this.timeService.date, 'HH:mm:ss');
 		const worker = cluster.isPrimary ? '*' : cluster.worker!.id;
 		const l =
 			level === 'error' ? important ? chalk.bgRed.white('ERR ') : chalk.red('ERR ') :
@@ -79,10 +100,10 @@ export default class Logger {
 			level === 'info' ? message :
 			null;
 
-		let log = envOption.hideWorkerId
+		let log = this.envService.options.hideWorkerId
 			? `${l}\t[${contexts.join(' ')}]\t\t${m}`
 			: `${l} ${worker}\t[${contexts.join(' ')}]\t\t${m}`;
-		if (envOption.withLogTime) log = chalk.gray(time) + ' ' + log;
+		if (this.envService.options.withLogTime) log = chalk.gray(time) + ' ' + log;
 
 		const args: unknown[] = [important ? chalk.bold(log) : log];
 		if (Array.isArray(data)) {
@@ -94,7 +115,7 @@ export default class Logger {
 		} else if (data != null) {
 			args.push(data);
 		}
-		console[levelFuncs[level]](...args);
+		this.console[levelFuncs[level]](...args);
 	}
 
 	@bindThis
@@ -122,9 +143,7 @@ export default class Logger {
 
 	@bindThis
 	public debug(message: string, data?: Data, important = false): void { // デバッグ用に使う(開発者に必要だが利用者に不要な情報)
-		if (process.env.NODE_ENV !== 'production' || this.verbose) {
-			this.log('debug', message, data, important);
-		}
+		this.log('debug', message, data, important);
 	}
 
 	@bindThis

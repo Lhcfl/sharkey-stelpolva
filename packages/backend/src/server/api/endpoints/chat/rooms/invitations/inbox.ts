@@ -50,7 +50,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.chatService.checkChatAvailability(me.id, 'read');
 
 			const invitations = await this.chatService.getReceivedRoomInvitationsWithPagination(me.id, ps.limit, ps.sinceId, ps.untilId);
-			return this.chatEntityService.packRoomInvitations(invitations, me);
+			return await this.chatEntityService.packRoomInvitations(invitations, me);
 		});
 	}
 }

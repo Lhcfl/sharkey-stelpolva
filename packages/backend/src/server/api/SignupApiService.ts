@@ -21,6 +21,7 @@ import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 import { RoleService } from '@/core/RoleService.js';
 import Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { SigninService } from './SigninService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
@@ -60,6 +61,7 @@ export class SignupApiService {
 		private emailService: EmailService,
 		private roleService: RoleService,
 		private loggerService: LoggerService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.loggerService.getLogger('Signup');
 	}
@@ -170,7 +172,7 @@ export class SignupApiService {
 				return;
 			}
 
-			if (ticket.expiresAt && ticket.expiresAt < new Date()) {
+			if (ticket.expiresAt && ticket.expiresAt < this.timeService.date) {
 				reply.code(400);
 				return;
 			}
@@ -184,7 +186,7 @@ export class SignupApiService {
 				}
 
 				// 認証しておらず、メール送信から30分以内ならエラー
-				if (ticket.usedAt && ticket.usedAt.getTime() + (1000 * 60 * 30) > Date.now()) {
+				if (ticket.usedAt && ticket.usedAt.getTime() + (1000 * 60 * 30) > this.timeService.now) {
 					reply.code(400);
 					return;
 				}
@@ -232,7 +234,7 @@ export class SignupApiService {
 
 			if (ticket) {
 				await this.registrationTicketsRepository.update(ticket.id, {
-					usedAt: new Date(),
+					usedAt: this.timeService.date,
 					pendingUserId: pendingUser.id,
 				});
 			}
@@ -252,7 +254,7 @@ export class SignupApiService {
 
 			if (ticket) {
 				await this.registrationTicketsRepository.update(ticket.id, {
-					usedAt: new Date(),
+					usedAt: this.timeService.date,
 					usedBy: account,
 					usedById: account.id,
 				});
@@ -289,7 +291,7 @@ export class SignupApiService {
 
 				if (ticket) {
 					await this.registrationTicketsRepository.update(ticket.id, {
-						usedAt: new Date(),
+						usedAt: this.timeService.date,
 						usedBy: account,
 						usedById: account.id,
 					});
@@ -318,7 +320,7 @@ export class SignupApiService {
 		try {
 			const pendingUser = await this.userPendingsRepository.findOneByOrFail({ code });
 
-			if (this.idService.parse(pendingUser.id).date.getTime() + (1000 * 60 * 30) < Date.now()) {
+			if (this.idService.parse(pendingUser.id).date.getTime() + (1000 * 60 * 30) < this.timeService.now) {
 				throw new FastifyReplyError(400, 'EXPIRED');
 			}
 
@@ -390,7 +392,7 @@ export class SignupApiService {
 	private logIp(ip: string, ipDate: Date | null, userId: MiLocalUser['id']) {
 		try {
 			this.userIpsRepository.createQueryBuilder().insert().values({
-				createdAt: ipDate ?? new Date(),
+				createdAt: ipDate ?? this.timeService.date,
 				userId,
 				ip,
 			}).orIgnore(true).execute();

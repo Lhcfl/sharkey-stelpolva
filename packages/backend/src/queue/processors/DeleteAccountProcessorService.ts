@@ -4,9 +4,9 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { In, MoreThan } from 'typeorm';
+import { In, IsNull, MoreThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { DriveFilesRepository, NoteReactionsRepository, NotesRepository, UserProfilesRepository, UsersRepository, NoteScheduleRepository, MiNoteSchedule, FollowingsRepository, FollowRequestsRepository, BlockingsRepository, MutingsRepository, ClipsRepository, ClipNotesRepository, LatestNotesRepository, NoteEditRepository, NoteFavoritesRepository, PollVotesRepository, PollsRepository, SigninsRepository, UserIpsRepository, RegistryItemsRepository } from '@/models/_.js';
+import type { DriveFilesRepository, NoteReactionsRepository, NotesRepository, UserProfilesRepository, UsersRepository, NoteScheduleRepository, MiNoteSchedule, FollowingsRepository, FollowRequestsRepository, BlockingsRepository, MutingsRepository, ClipsRepository, ClipNotesRepository, LatestNotesRepository, NoteEditsRepository, NoteFavoritesRepository, PollVotesRepository, PollsRepository, SigninsRepository, UserIpsRepository, RegistryItemsRepository, MiUser } from '@/models/_.js';
 import type Logger from '@/logger.js';
 import { DriveService } from '@/core/DriveService.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
@@ -19,7 +19,10 @@ import { ApLogService } from '@/core/ApLogService.js';
 import { ReactionService } from '@/core/ReactionService.js';
 import { QueueService } from '@/core/QueueService.js';
 import { CacheService } from '@/core/CacheService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
+import { NoteDeleteService } from '@/core/NoteDeleteService.js';
+import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
+import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
+import * as Acct from '@/misc/acct.js';
 import type * as Bull from 'bullmq';
 import type { DbUserDeleteJobData } from '../types.js';
 
@@ -67,8 +70,8 @@ export class DeleteAccountProcessorService {
 		@Inject(DI.latestNotesRepository)
 		private readonly latestNotesRepository: LatestNotesRepository,
 
-		@Inject(DI.noteEditRepository)
-		private readonly noteEditRepository: NoteEditRepository,
+		@Inject(DI.noteEditsRepository)
+		private readonly noteEditsRepository: NoteEditsRepository,
 
 		@Inject(DI.noteFavoritesRepository)
 		private readonly noteFavoritesRepository: NoteFavoritesRepository,
@@ -96,6 +99,8 @@ export class DeleteAccountProcessorService {
 		private reactionService: ReactionService,
 		private readonly apLogService: ApLogService,
 		private readonly cacheService: CacheService,
+		private readonly apPersonService: ApPersonService,
+		private readonly noteDeleteService: NoteDeleteService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('delete-account');
 	}
@@ -152,10 +157,14 @@ export class DeleteAccountProcessorService {
 			await this.cacheService.hibernatedUserCache.delete(user.id);
 			await this.cacheService.renoteMutingsCache.delete(user.id);
 			await this.cacheService.userProfileCache.delete(user.id);
-			this.cacheService.userByIdCache.delete(user.id);
-			this.cacheService.localUserByIdCache.delete(user.id);
+			await this.cacheService.userByIdCache.delete(user.id);
+			await this.cacheService.userByAcctCache.delete(Acct.toString({ username: user.usernameLower, host: user.host }));
+			await this.cacheService.userFollowStatsCache.delete(user.id);
 			if (user.token) {
-				this.cacheService.localUserByNativeTokenCache.delete(user.token);
+				await this.cacheService.nativeTokenCache.delete(user.token);
+			}
+			if (user.uri) {
+				await this.apPersonService.uriPersonCache.delete(user.uri);
 			}
 
 			await this.followingsRepository.delete({
@@ -286,11 +295,12 @@ export class DeleteAccountProcessorService {
 				const notes = await this.notesRepository.find({
 					where: {
 						userId: user.id,
+						replyId: IsNull(),
 						...(cursor ? { id: MoreThan(cursor) } : {}),
 					},
 					take: 100,
 					order: {
-						id: 1,
+						id: 'desc',
 					},
 				}) as MiNote[];
 
@@ -311,7 +321,17 @@ export class DeleteAccountProcessorService {
 
 				const ids = notes.map(note => note.id);
 
-				await this.noteEditRepository.delete({
+				const replies = await this.notesRepository.find({
+					where: { replyId: In(ids) },
+					relations: { user: true },
+				});
+
+				// Delete replies through the usual service to ensure we get all "cascading notes" logic.
+				for (const reply of replies) {
+					await this.noteDeleteService.delete(reply.user as MiUser, reply, undefined, true);
+				}
+
+				await this.noteEditsRepository.delete({
 					noteId: In(ids),
 				});
 				await this.notesRepository.delete({
@@ -325,8 +345,7 @@ export class DeleteAccountProcessorService {
 				// Delete note AP logs
 				const noteUris = notes.map(n => n.uri).filter(u => !!u) as string[];
 				if (noteUris.length > 0) {
-					await this.apLogService.deleteObjectLogs(noteUris)
-						.catch(err => this.logger.error(err, `Failed to delete AP logs for notes of user '${user.uri ?? user.id}'`));
+					await this.apLogService.deleteObjectLogs(noteUris);
 				}
 			}
 
@@ -364,12 +383,10 @@ export class DeleteAccountProcessorService {
 
 		{ // Delete actor logs
 			if (user.uri) {
-				await this.apLogService.deleteObjectLogs(user.uri)
-					.catch(err => this.logger.error(err, `Failed to delete AP logs for user '${user.uri}'`));
+				await this.apLogService.deleteObjectLogs(user.uri);
 			}
 
-			await this.apLogService.deleteInboxLogs(user.id)
-				.catch(err => this.logger.error(err, `Failed to delete AP logs for user '${user.uri}'`));
+			await this.apLogService.deleteInboxLogs(user.id);
 
 			this.logger.info('All AP logs deleted');
 		}

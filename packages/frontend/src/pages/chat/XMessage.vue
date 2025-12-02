@@ -262,6 +262,9 @@ function showMenu(ev: MouseEvent, contextmenu = false) {
 
 .body {
 	margin: 0 12px;
+
+	// https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container
+	min-width: 0;
 }
 
 .header {

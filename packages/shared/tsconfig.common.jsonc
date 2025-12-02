@@ -1,0 +1,41 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"compilerOptions": {
+		// Input
+		"allowJs": true,
+		"checkJs": true,
+		"noLib": false,
+
+		// Checking
+		"skipLibCheck": true,
+		"skipDefaultLibCheck": true,
+		"strict": true,
+		"noImplicitReturns": true,
+		"noUnusedParameters": true,
+		"noUnusedLocals": true,
+		"noFallthroughCasesInSwitch": true,
+		"experimentalDecorators": true,
+		"verbatimModuleSyntax": true,
+		"isolatedModules": true,
+		"forceConsistentCasingInFileNames": true,
+		"allowUnreachableCode": false,
+		"noImplicitOverride": true,
+		"allowSyntheticDefaultImports": false,
+		"resolveJsonModule": false,
+
+		// Output
+		"esModuleInterop": true,
+		"noEmitOnError": true,
+		"incremental": true,
+		"removeComments": true,
+	},
+	"compileOnSave": false,
+	"exclude": [
+		"**/node_modules",
+		"**/built",
+		"**/built-test",
+		"**/js-built",
+		"**/temp",
+		"**/coverage"
+	]
+}

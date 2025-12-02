@@ -11,6 +11,7 @@ import type { Config } from '@/config.js';
 import type Logger from '@/logger.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { StatusError } from '@/misc/status-error.js';
+import { TimeService } from '@/global/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import { UserWebhookDeliverJobData } from '../types.js';
@@ -28,6 +29,7 @@ export class UserWebhookDeliverProcessorService {
 
 		private httpRequestService: HttpRequestService,
 		private queueLoggerService: QueueLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('webhook');
 	}
@@ -58,14 +60,14 @@ export class UserWebhookDeliverProcessorService {
 			});
 
 			this.webhooksRepository.update({ id: job.data.webhookId }, {
-				latestSentAt: new Date(),
+				latestSentAt: this.timeService.date,
 				latestStatus: res.status,
 			});
 
 			return 'Success';
 		} catch (res) {
 			this.webhooksRepository.update({ id: job.data.webhookId }, {
-				latestSentAt: new Date(),
+				latestSentAt: this.timeService.date,
 				latestStatus: res instanceof StatusError ? res.statusCode : 1,
 			});
 

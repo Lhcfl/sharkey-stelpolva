@@ -23,7 +23,7 @@ interface ImportDeclaration extends estree.ImportDeclaration {
 
 const generator = {
 	...GENERATOR,
-	ImportDeclaration(node: ImportDeclaration, state: State) {
+	ImportDeclaration(node: ImportDeclaration, state: State): void {
 		state.write('import ');
 		if (node.kind === 'type') state.write('type ');
 		const { specifiers } = node;
@@ -63,7 +63,7 @@ const generator = {
 
 		state.write(';');
 	},
-	SatisfiesExpression(node: SatisfiesExpression, state: State) {
+	SatisfiesExpression(node: SatisfiesExpression, state: State): void {
 		switch (node.expression.type) {
 			case 'ArrowFunctionExpression': {
 				state.write('(');
@@ -72,7 +72,7 @@ const generator = {
 				break;
 			}
 			default: {
-				// @ts-ignore
+				// @ts-expect-error Produces "Expression produces a union type that is too complex to represent" for some reason
 				this[node.expression.type](node.expression, state);
 				break;
 			}
@@ -94,7 +94,6 @@ type SplitCamel<
 		: SplitCamel<XR, `${YC}${XH}`, YN>
 	: YN;
 
-// @ts-ignore
 type SplitKebab<T extends string> = T extends `${infer XH}-${infer XR}`
 	? [XH, ...SplitKebab<XR>]
 	: [T];
@@ -110,7 +109,6 @@ type ToKebab<T extends readonly string[]> = T extends readonly [
 	? `${XH}${XR extends readonly string[] ? `-${ToKebab<XR>}` : ''}`
 	: '';
 
-// @ts-ignore
 type ToPascal<T extends readonly string[]> = T extends readonly [
 	infer XH extends string,
 	...infer XR extends readonly string[]
@@ -126,6 +124,7 @@ function h<T extends estree.Node>(
 	return Object.assign(props || {}, { type }) as T;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace h.JSX {
 	type Element = estree.Node;
 	type IntrinsicElements = {
@@ -474,5 +473,5 @@ function toStories(component: string): Promise<string> {
 	await Promise.all(components.map(async (component) => {
 		const stories = component.replace(/\.vue$/, '.stories.ts');
 		await writeFile(stories, await toStories(component));
-	}))
+	}));
 })();

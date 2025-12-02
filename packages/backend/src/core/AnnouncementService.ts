@@ -17,6 +17,7 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import type { Config } from '@/config.js';
 import { RoleService } from '@/core/RoleService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class AnnouncementService {
@@ -38,6 +39,7 @@ export class AnnouncementService {
 		private moderationLogService: ModerationLogService,
 		private announcementEntityService: AnnouncementEntityService,
 		private roleService: RoleService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -143,7 +145,7 @@ export class AnnouncementService {
 		}
 
 		await this.announcementsRepository.update(announcement.id, {
-			updatedAt: new Date(),
+			updatedAt: this.timeService.date,
 			title: values.title,
 			text: values.text,
 			/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- 空の文字列の場合、nullを渡すようにするため */
@@ -216,9 +218,9 @@ export class AnnouncementService {
 				announcementId: announcement.id,
 				userId: me.id,
 			});
-			return this.announcementEntityService.pack({ ...announcement, isRead: read !== null }, me);
+			return await this.announcementEntityService.pack({ ...announcement, isRead: read !== null }, me);
 		} else {
-			return this.announcementEntityService.pack(announcement, null);
+			return await this.announcementEntityService.pack(announcement, null);
 		}
 	}
 

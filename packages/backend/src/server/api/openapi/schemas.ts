@@ -13,6 +13,22 @@ export function convertSchemaToOpenApiSchema(schema: Schema, type: 'param' | 're
 	const { optional, nullable, ref, selfRef, ..._res }: any = schema;
 	const res = deepClone(_res);
 
+	// "required" must be an array of strings, or undefined.
+	if (res.required !== undefined) {
+		// Single-item must be wrapped in array
+		if (!Array.isArray(res.required)) {
+			res.required = [res.required];
+		}
+
+		// Array must contain only strings
+		res.required = res.required.filter((required: unknown) => typeof(required) === 'string');
+
+		// Can't be an empty array
+		if (res.required.length === 0) {
+			delete res.required;
+		}
+	}
+
 	if (schema.type === 'object' && schema.properties) {
 		if (type === 'res') {
 			const required = Object.entries(schema.properties).filter(([k, v]) => !v.optional).map(([k]) => k);
@@ -32,20 +48,26 @@ export function convertSchemaToOpenApiSchema(schema: Schema, type: 'param' | 're
 	}
 
 	for (const o of ['anyOf', 'oneOf', 'allOf'] as const) {
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		if (o in schema) res[o] = schema[o]!.map(schema => convertSchemaToOpenApiSchema(schema, type, includeSelfRef));
+		if (type === 'param') {
+			// params cannot contain oneOf/allOf/anyOf/etc.
+			// https://stackoverflow.com/a/29708580
+			delete res[o];
+		} else {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			if (o in schema) res[o] = schema[o]!.map(schema => convertSchemaToOpenApiSchema(schema, type, includeSelfRef));
+		}
 	}
 
 	if (type === 'res' && schema.ref && (!schema.selfRef || includeSelfRef)) {
 		const $ref = `#/components/schemas/${schema.ref}`;
+		// https://stackoverflow.com/a/23737104
 		if (schema.nullable || schema.optional) {
-			res.allOf = [{ $ref }];
+			res.oneOf = [{ $ref }, { type: 'null' }];
 		} else {
 			res.$ref = $ref;
 		}
-	}
-
-	if (schema.nullable) {
+		delete res.type;
+	} else if (schema.nullable) {
 		if (Array.isArray(schema.type) && !schema.type.includes('null')) {
 			res.type.push('null');
 		} else if (typeof schema.type === 'string') {

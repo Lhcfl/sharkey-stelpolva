@@ -35,7 +35,8 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import { JsonLdService } from './JsonLdService.js';
+import { TimeService } from '@/global/TimeService.js';
+import { JsonLdService, type Signed } from './JsonLdService.js';
 import { ApMfmService } from './ApMfmService.js';
 import { CONTEXT } from './misc/contexts.js';
 import { getApId, ILink, IOrderedCollection, IOrderedCollectionPage } from './type.js';
@@ -80,6 +81,7 @@ export class ApRendererService {
 		private readonly queryService: QueryService,
 		private readonly cacheService: CacheService,
 		private readonly federatedInstanceService: FederatedInstanceService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -174,7 +176,7 @@ export class ApRendererService {
 			type: 'Delete',
 			actor: this.userEntityService.genLocalUserUri(user.id),
 			object,
-			published: new Date().toISOString(),
+			published: this.timeService.date.toISOString(),
 		};
 	}
 
@@ -196,7 +198,7 @@ export class ApRendererService {
 			id: `${this.config.url}/emojis/${emoji.name}`,
 			type: 'Emoji',
 			name: `:${emoji.name}:`,
-			updated: emoji.updatedAt != null ? emoji.updatedAt.toISOString() : new Date().toISOString(),
+			updated: emoji.updatedAt != null ? emoji.updatedAt.toISOString() : this.timeService.date.toISOString(),
 			icon: {
 				type: 'Image',
 				mediaType: emoji.type ?? 'image/png',
@@ -359,7 +361,7 @@ export class ApRendererService {
 
 		if (reaction.startsWith(':')) {
 			const name = reaction.replaceAll(':', '');
-			const emoji = (await this.customEmojiService.localEmojisCache.fetch()).get(name);
+			const emoji = await this.customEmojiService.emojisByKeyCache.fetchMaybe(name);
 
 			if (emoji && !emoji.localOnly) object.tag = [this.renderEmoji(emoji)];
 		}
@@ -539,7 +541,7 @@ export class ApRendererService {
 
 		const asPoll = poll ? {
 			type: 'Question',
-			[poll.expiresAt && poll.expiresAt < new Date() ? 'closed' : 'endTime']: poll.expiresAt,
+			[poll.expiresAt && poll.expiresAt < this.timeService.date ? 'closed' : 'endTime']: poll.expiresAt,
 			[poll.multiple ? 'anyOf' : 'oneOf']: poll.choices.map((text, i) => ({
 				type: 'Note',
 				name: text,
@@ -760,21 +762,21 @@ export class ApRendererService {
 			...(id ? { id } : {}),
 			actor: this.userEntityService.genLocalUserUri(user.id),
 			object,
-			published: new Date().toISOString(),
+			published: this.timeService.date.toISOString(),
 		};
 	}
 
 	@bindThis
 	public renderUpdate(object: IObject, user: { id: MiUser['id'] }): IUpdate {
 		// Deterministic activity IDs to allow de-duplication by remote instances
-		const updatedAt = object.updated ? new Date(object.updated).getTime() : Date.now();
+		const updatedAt = object.updated ? new Date(object.updated).getTime() : this.timeService.now;
 		return {
 			id: `${this.config.url}/users/${user.id}#updates/${updatedAt}`,
 			actor: this.userEntityService.genLocalUserUri(user.id),
 			type: 'Update',
 			to: ['https://www.w3.org/ns/activitystreams#Public'],
 			object,
-			published: new Date().toISOString(),
+			published: this.timeService.date.toISOString(),
 		};
 	}
 
@@ -785,7 +787,7 @@ export class ApRendererService {
 			actor: this.userEntityService.genLocalUserUri(user.id),
 			type: 'Create',
 			to: [pollOwner.uri],
-			published: new Date().toISOString(),
+			published: this.timeService.date.toISOString(),
 			object: {
 				id: `${this.config.url}/users/${user.id}#votes/${vote.id}`,
 				type: 'Note',
@@ -807,7 +809,7 @@ export class ApRendererService {
 	}
 
 	@bindThis
-	public async attachLdSignature(activity: any, user: { id: MiUser['id']; host: null; }): Promise<IActivity> {
+	public async attachLdSignature<T extends IActivity>(activity: T, user: { id: MiUser['id']; host: null; }): Promise<T | Signed<T>> {
 		// Linked Data signatures are cryptographic signatures attached to each activity to provide proof of authenticity.
 		// When using authorized fetch, this is often undesired as any signed activity can be forwarded to a blocked instance by relays and other instances.
 		// This setting allows admins to disable LD signatures for increased privacy, at the expense of fewer relayed activities and additional inbound fetch (GET) requests.
@@ -953,12 +955,10 @@ export class ApRendererService {
 	}
 
 	@bindThis
-	private async getEmojis(names: string[]): Promise<MiEmoji[]> {
+	private async getEmojis(names: string[]): Promise<readonly MiEmoji[]> {
 		if (names.length === 0) return [];
 
-		const allEmojis = await this.customEmojiService.localEmojisCache.fetch();
-		const emojis = names.map(name => allEmojis.get(name)).filter(x => x != null);
-
-		return emojis;
+		const emojis = await this.customEmojiService.emojisByKeyCache.fetchMany(names);
+		return emojis.values;
 	}
 }

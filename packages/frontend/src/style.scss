@@ -238,7 +238,7 @@ rt {
 	max-width: min(var(--MI_SPACER-w, 100%), calc(100% - (var(--MI_SPACER-max, 24px) * 2)));
 
 	/* marginを使って余白を表現すると、margin特有の親突き抜け仕様などが厄介になってくるので上下はpaddingを使う */
-	padding: var(--MI_SPACER-max, 24px) 0;
+	padding: var(--MI_SPACER-h, var(--MI_SPACER-max, 24px)) 0;
 	margin: 0 auto;
 
 	box-sizing: border-box;

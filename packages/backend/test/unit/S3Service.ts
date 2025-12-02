@@ -14,28 +14,38 @@ import {
 	UploadPartCommand,
 } from '@aws-sdk/client-s3';
 import { mockClient } from 'aws-sdk-client-mock';
+import { MockInternalEventService } from '../misc/MockInternalEventService.js';
+import type { TestingModule } from '@nestjs/testing';
 import { GlobalModule } from '@/GlobalModule.js';
 import { CoreModule } from '@/core/CoreModule.js';
 import { S3Service } from '@/core/S3Service.js';
 import { MiMeta } from '@/models/_.js';
-import type { TestingModule } from '@nestjs/testing';
+import { HttpRequestService } from '@/core/HttpRequestService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import { DI } from '@/di-symbols.js';
 
 describe('S3Service', () => {
 	let app: TestingModule;
 	let s3Service: S3Service;
+	let fakeMeta: MiMeta;
 	const s3Mock = mockClient(S3Client);
 
 	beforeAll(async () => {
 		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
-			providers: [S3Service],
-		}).compile();
+		})
+			.overrideProvider(InternalEventService).useClass(MockInternalEventService)
+			.compile();
+
+		await app.init();
 		app.enableShutdownHooks();
-		s3Service = app.get<S3Service>(S3Service);
 	});
 
 	beforeEach(async () => {
 		s3Mock.reset();
+
+		fakeMeta = Object.create(app.get<MiMeta>(DI.meta));
+		s3Service = new S3Service(fakeMeta, app.get(HttpRequestService), app.get(InternalEventService));
 	});
 
 	afterAll(async () => {
@@ -45,8 +55,9 @@ describe('S3Service', () => {
 	describe('upload', () => {
 		test('upload a file', async () => {
 			s3Mock.on(PutObjectCommand).resolves({});
+			fakeMeta.objectStorageRegion = 'us-east-1';
 
-			await s3Service.upload({ objectStorageRegion: 'us-east-1' } as MiMeta, {
+			await s3Service.upload({
 				Bucket: 'fake',
 				Key: 'fake',
 				Body: 'x',
@@ -58,7 +69,7 @@ describe('S3Service', () => {
 			s3Mock.on(UploadPartCommand).resolves({ ETag: '1' });
 			s3Mock.on(CompleteMultipartUploadCommand).resolves({ Bucket: 'fake', Key: 'fake' });
 
-			await s3Service.upload({} as MiMeta, {
+			await s3Service.upload({
 				Bucket: 'fake',
 				Key: 'fake',
 				Body: 'x'.repeat(8 * 1024 * 1024 + 1), // デフォルトpartSizeにしている 8 * 1024 * 1024 を越えるサイズ
@@ -67,22 +78,23 @@ describe('S3Service', () => {
 
 		test('upload a file error', async () => {
 			s3Mock.on(PutObjectCommand).rejects({ name: 'Fake Error' });
+			fakeMeta.objectStorageRegion = 'us-east-1';
 
-			await expect(s3Service.upload({ objectStorageRegion: 'us-east-1' } as MiMeta, {
+			await expect(s3Service.upload({
 				Bucket: 'fake',
 				Key: 'fake',
 				Body: 'x',
-			})).rejects.toThrowError(Error);
+			})).rejects.toThrow();
 		});
 
 		test('upload a large file error', async () => {
 			s3Mock.on(UploadPartCommand).rejects();
 
-			await expect(s3Service.upload({} as MiMeta, {
+			await expect(s3Service.upload({
 				Bucket: 'fake',
 				Key: 'fake',
 				Body: 'x'.repeat(8 * 1024 * 1024 + 1), // デフォルトpartSizeにしている 8 * 1024 * 1024 を越えるサイズ
-			})).rejects.toThrowError(Error);
+			})).rejects.toThrow();
 		});
 	});
 });

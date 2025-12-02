@@ -18,6 +18,7 @@ export const QUEUE = {
 	USER_WEBHOOK_DELIVER: 'userWebhookDeliver',
 	SYSTEM_WEBHOOK_DELIVER: 'systemWebhookDeliver',
 	SCHEDULE_NOTE_POST: 'scheduleNotePost',
+	BACKGROUND_TASK: 'backgroundTask',
 };
 
 export function baseQueueOptions(config: Config, queueName: typeof QUEUE[keyof typeof QUEUE]): Bull.QueueOptions {

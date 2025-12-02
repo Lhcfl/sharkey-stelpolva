@@ -4,7 +4,7 @@
  */
 
 import type { IObject } from '@/core/activitypub/type.js';
-import type { EnvService } from '@/core/EnvService.js';
+import type { EnvService } from '@/global/EnvService.js';
 import type { MiMeta } from '@/models/Meta.js';
 import type { Config } from '@/config.js';
 import type { LoggerService } from '@/core/LoggerService.js';

@@ -24,6 +24,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<X2fa/>
 
+		<SearchMarker :keywords="['shared', 'access']">
+			<FormSection>
+				<template #label><SearchLabel>{{ i18n.ts.sharedAccess }}</SearchLabel></template>
+				<template #description>{{ i18n.ts.sharedAccessDescription2 }}</template>
+
+				<div class="_gaps_m">
+					<MkButton primary @click="grantSharedAccess">{{ i18n.ts.grantSharedAccessButton }}</MkButton>
+
+					<XApps ref="apps" :onlySharedAccess="true" :limit="10"/>
+				</div>
+			</FormSection>
+		</SearchMarker>
+
 		<FormSection>
 			<template #label>{{ i18n.ts.signinHistory }}</template>
 			<MkPagination :pagination="pagination" disableAutoLoad>
@@ -53,8 +66,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, defineAsyncComponent, useTemplateRef } from 'vue';
 import X2fa from './2fa.vue';
+import XApps from '@/pages/settings/apps.vue';
 import FormSection from '@/components/form/section.vue';
 import FormSlot from '@/components/form/slot.vue';
 import MkButton from '@/components/MkButton.vue';
@@ -110,6 +124,36 @@ async function regenerateToken() {
 	misskeyApi('i/regenerate-token', {
 		password: auth.result.password,
 		token: auth.result.token,
+	});
+}
+
+const apps = useTemplateRef('apps');
+
+function grantSharedAccess() {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkTokenGenerateWindow.vue')), {
+		withSharedAccess: true,
+	}, {
+		done: async result => {
+			const { name, permissions, grantees, rank } = result;
+			await os.promiseDialog(async () => {
+				await misskeyApi('miauth/gen-token', {
+					session: null,
+					name: name,
+					permission: permissions,
+					grantees: grantees,
+					rank: rank,
+				});
+
+				await apps.value?.reload();
+			});
+
+			await os.alert({
+				type: 'success',
+				title: i18n.ts.grantSharedAccessSuccess,
+				text: i18n.tsx.grantSharedAccessSuccess2({ num: grantees.length }),
+			});
+		},
+		closed: () => dispose(),
 	});
 }
 

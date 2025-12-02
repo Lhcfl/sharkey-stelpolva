@@ -92,10 +92,11 @@ export class ImportCustomEmojisProcessorService {
 					continue;
 				}
 				const emojiPath = outputPath + '/' + record.fileName;
-				await this.emojisRepository.delete({
-					name: nameNfc,
-					host: IsNull(),
-				});
+
+				const existing = await this.customEmojiService.emojisByIdCache.fetchMaybe(nameNfc);
+				if (existing) {
+					await this.customEmojiService.delete(existing.id, job.data.user);
+				}
 
 				try {
 					const driveFile = await this.driveService.addFile({

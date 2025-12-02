@@ -4,6 +4,8 @@
  */
 
 export class CreateIDXInstanceHostFilters1748992017688 {
+	name = 'CreateIDXInstanceHostFilters1748992017688';
+
 	async up(queryRunner) {
 		await queryRunner.query(`
 			create index "IDX_instance_host_filters"

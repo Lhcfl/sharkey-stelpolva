@@ -472,7 +472,7 @@ const proxyAccountForm = useForm({
 			description: state.description,
 		});
 	}
-	if (state.enabled !== proxyAccount.enabled) {
+	if (state.enabled !== meta.enableProxyAccount) {
 		await os.apiWithDialog('admin/update-meta', {
 			enableProxyAccount: state.enabled,
 		});

@@ -61,7 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				description: ps.description,
 			});
 
-			return this.chatEntityService.packRoom(updated, me);
+			return await this.chatEntityService.packRoom(updated, me);
 		});
 	}
 }

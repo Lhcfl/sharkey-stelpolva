@@ -18,6 +18,7 @@ import { bindThis } from '@/decorators.js';
 import { MiUser } from '@/models/_.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { TimeService } from '@/global/TimeService.js';
 import Logger from '@/logger.js';
 import type {
 	AuthenticationResponseJSON,
@@ -44,6 +45,9 @@ export class WebAuthnService {
 
 		@Inject(DI.userSecurityKeysRepository)
 		private userSecurityKeysRepository: UserSecurityKeysRepository,
+
+		private readonly timeService: TimeService,
+
 		loggerService: LoggerService,
 	) {
 		this.logger = loggerService.getLogger('web-authn');
@@ -239,7 +243,7 @@ export class WebAuthnService {
 		await this.userSecurityKeysRepository.update({
 			id: response.id,
 		}, {
-			lastUsed: new Date(),
+			lastUsed: this.timeService.date,
 			counter: authenticationInfo.newCounter,
 			credentialDeviceType: authenticationInfo.credentialDeviceType,
 			credentialBackedUp: authenticationInfo.credentialBackedUp,
@@ -321,7 +325,7 @@ export class WebAuthnService {
 			id: response.id,
 			userId: userId,
 		}, {
-			lastUsed: new Date(),
+			lastUsed: this.timeService.date,
 			counter: authenticationInfo.newCounter,
 			credentialDeviceType: authenticationInfo.credentialDeviceType,
 			credentialBackedUp: authenticationInfo.credentialBackedUp,

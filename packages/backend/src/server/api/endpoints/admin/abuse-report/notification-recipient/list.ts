@@ -49,7 +49,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async (ps) => {
 			const recipients = await this.abuseReportNotificationService.fetchRecipients({ method: ps.method });
-			return this.abuseReportNotificationRecipientEntityService.packMany(recipients);
+			return await this.abuseReportNotificationRecipientEntityService.packMany(recipients);
 		});
 	}
 }

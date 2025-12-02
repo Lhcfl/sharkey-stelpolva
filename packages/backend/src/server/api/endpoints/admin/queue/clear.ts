@@ -32,9 +32,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queueService: QueueService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			this.queueService.queueClear(ps.queue, ps.state);
+			await this.queueService.queueClear(ps.queue, ps.state);
 
-			this.moderationLogService.log(me, 'clearQueue');
+			await this.moderationLogService.log(me, 'clearQueue');
 		});
 	}
 }

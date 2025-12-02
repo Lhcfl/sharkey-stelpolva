@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { createReadStream } from 'node:fs';
+import { Readable } from 'node:stream';
 import { Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 import { getErrorData, getErrorException, getErrorStatus, MastodonLogger } from '@/server/api/mastodon/MastodonLogger.js';
@@ -21,6 +23,7 @@ import { parseTimelineArgs, TimelineArgs, toBoolean } from './argsUtils.js';
 import { convertAnnouncement, convertAttachment, MastodonConverters, convertRelationship } from './MastodonConverters.js';
 import type { Entity } from 'megalodon';
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
+import { promiseMap } from '@/misc/promise-map.js';
 
 @Injectable()
 export class MastodonApiServerService {
@@ -118,7 +121,10 @@ export class MastodonApiServerService {
 			}
 
 			const client = this.clientService.getClient(_request);
-			const data = await client.uploadMedia(multipartData);
+			const data = await client.uploadMedia({
+				...multipartData,
+				stream: Readable.toWeb(createReadStream(multipartData.filepath)),
+			});
 			const response = convertAttachment(data.data as Entity.Attachment);
 
 			return reply.send(response);
@@ -131,7 +137,10 @@ export class MastodonApiServerService {
 			}
 
 			const client = this.clientService.getClient(_request);
-			const data = await client.uploadMedia(multipartData, _request.body);
+			const data = await client.uploadMedia({
+				...multipartData,
+				stream: Readable.toWeb(createReadStream(multipartData.filepath)),
+			}, _request.body);
 			const response = convertAttachment(data.data as Entity.Attachment);
 
 			return reply.send(response);
@@ -170,7 +179,7 @@ export class MastodonApiServerService {
 			const { client, me } = await this.clientService.getAuthClient(_request);
 
 			const data = await client.getBookmarks(parseTimelineArgs(_request.query));
-			const response = await Promise.all(data.data.map((status) => this.mastoConverters.convertStatus(status, me)));
+			const response = await promiseMap(data.data, async (status) => await this.mastoConverters.convertStatus(status, me), { limit: 4 });
 
 			return reply.send(response);
 		});
@@ -192,7 +201,7 @@ export class MastodonApiServerService {
 				userId: me.id,
 			};
 			const data = await client.getFavourites(args);
-			const response = await Promise.all(data.data.map((status) => this.mastoConverters.convertStatus(status, me)));
+			const response = await promiseMap(data.data, async (status) => await this.mastoConverters.convertStatus(status, me), { limit: 4 });
 
 			return reply.send(response);
 		});
@@ -201,7 +210,7 @@ export class MastodonApiServerService {
 			const client = this.clientService.getClient(_request);
 
 			const data = await client.getMutes(parseTimelineArgs(_request.query));
-			const response = await Promise.all(data.data.map((account) => this.mastoConverters.convertAccount(account)));
+			const response = await promiseMap(data.data, async (account) => await this.mastoConverters.convertAccount(account), { limit: 4 });
 
 			return reply.send(response);
 		});
@@ -210,7 +219,7 @@ export class MastodonApiServerService {
 			const client = this.clientService.getClient(_request);
 
 			const data = await client.getBlocks(parseTimelineArgs(_request.query));
-			const response = await Promise.all(data.data.map((account) => this.mastoConverters.convertAccount(account)));
+			const response = await promiseMap(data.data, async (account) => await this.mastoConverters.convertAccount(account), { limit: 4 });
 
 			return reply.send(response);
 		});
@@ -220,7 +229,7 @@ export class MastodonApiServerService {
 
 			const limit = _request.query.limit ? parseInt(_request.query.limit) : 20;
 			const data = await client.getFollowRequests(limit);
-			const response = await Promise.all(data.data.map((account) => this.mastoConverters.convertAccount(account as Entity.Account)));
+			const response = await promiseMap(data.data, async (account) => await this.mastoConverters.convertAccount(account), { limit: 4 });
 
 			return reply.send(response);
 		});

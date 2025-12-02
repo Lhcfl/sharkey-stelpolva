@@ -8,6 +8,9 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { MetaService } from '@/core/MetaService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { RoleService } from '@/core/RoleService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { ApiError } from '../../../error.js';
 
 export const meta = {
 	tags: ['admin', 'role'],
@@ -15,6 +18,14 @@ export const meta = {
 	requireCredential: true,
 	requireAdmin: true,
 	kind: 'write:admin:roles',
+
+	errors: {
+		badValues: {
+			message: 'Invalid policy values',
+			code: 'BAD_POLICY_VALUES',
+			id: '39d78ad7-0f00-4bff-b2e2-2e7db889e05d',
+		},
+	},
 } as const;
 
 export const paramDef = {
@@ -35,8 +46,23 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private metaService: MetaService,
 		private globalEventService: GlobalEventService,
 		private moderationLogService: ModerationLogService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			try {
+				this.roleService.assertValidDefaultPolicies(ps.policies);
+			} catch (e) {
+				if (e instanceof IdentifiableError) {
+					if (e.id === '39d78ad7-0f00-4bff-b2e2-2e7db889e05d') {
+						throw new ApiError(
+							meta.errors.badValues,
+							e.cause,
+						);
+					}
+				}
+				throw e;
+			}
+
 			const before = await this.metaService.fetch(true);
 
 			await this.metaService.update({

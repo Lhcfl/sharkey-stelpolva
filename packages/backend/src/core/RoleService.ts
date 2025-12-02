@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { In } from 'typeorm';
 import { ModuleRef } from '@nestjs/core';
+import Ajv from 'ajv';
 import type {
 	MiMeta,
 	MiRole,
@@ -17,20 +18,28 @@ import type {
 } from '@/models/_.js';
 import { MemoryKVCache, MemorySingleCache } from '@/misc/cache.js';
 import type { MiUser } from '@/models/User.js';
+import { isLocalUser, isRemoteUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
-import { CacheService } from '@/core/CacheService.js';
-import type { FollowStats } from '@/core/CacheService.js';
+import type { CacheService, FollowStats } from '@/core/CacheService.js';
 import type { RoleCondFormulaValue } from '@/models/Role.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { IdService } from '@/core/IdService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
-import { NotificationService } from '@/core/NotificationService.js';
+import type { NotificationService } from '@/core/NotificationService.js';
+import { TimeService } from '@/global/TimeService.js';
+import {
+	CacheManagementService,
+	type ManagedMemorySingleCache,
+	type ManagedMemoryKVCache,
+} from '@/global/CacheManagementService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { getCallerId } from '@/misc/attach-caller-id.js';
 import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import type { JSONSchemaType, ValidateFunction } from 'ajv';
 
 export type RolePolicies = {
 	gtlAvailable: boolean;
@@ -114,11 +123,97 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	canViewFederation: true,
 };
 
+// TODO cache sync fixes (and maybe events too?)
+
+const DefaultPoliciesSchema: JSONSchemaType<RolePolicies> = {
+	type: 'object',
+	additionalProperties: false,
+	required: [],
+	properties: {
+		gtlAvailable: { type: 'boolean' },
+		ltlAvailable: { type: 'boolean' },
+		btlAvailable: { type: 'boolean' },
+		canPublicNote: { type: 'boolean' },
+		scheduleNoteMax: { type: 'integer', minimum: 0 },
+		mentionLimit: { type: 'integer', minimum: 0 },
+		canInvite: { type: 'boolean' },
+		inviteLimit: { type: 'integer', minimum: 0 },
+		inviteLimitCycle: { type: 'integer', minimum: 0 },
+		inviteExpirationTime: { type: 'integer', minimum: 0 },
+		canManageCustomEmojis: { type: 'boolean' },
+		canManageAvatarDecorations: { type: 'boolean' },
+		canSearchNotes: { type: 'boolean' },
+		canUseTranslator: { type: 'boolean' },
+		canHideAds: { type: 'boolean' },
+
+		// these can be less than 1 MB
+		// (test/unit/server/api/drive/files/create.ts depends on this)
+		driveCapacityMb: { type: 'number', minimum: 0 },
+		maxFileSizeMb: { type: 'number', minimum: 0 },
+
+		alwaysMarkNsfw: { type: 'boolean' },
+		canUpdateBioMedia: { type: 'boolean' },
+		pinLimit: { type: 'integer', minimum: 0 },
+		antennaLimit: { type: 'integer', minimum: 0 },
+		wordMuteLimit: { type: 'integer', minimum: 0 },
+		webhookLimit: { type: 'integer', minimum: 0 },
+		clipLimit: { type: 'integer', minimum: 0 },
+		noteEachClipsLimit: { type: 'integer', minimum: 0 },
+		userListLimit: { type: 'integer', minimum: 0 },
+		userEachUserListsLimit: { type: 'integer', minimum: 0 },
+		rateLimitFactor: { type: 'number', minimum: 0.01 },
+		canImportNotes: { type: 'boolean' },
+		avatarDecorationLimit: { type: 'integer', minimum: 0 },
+		canImportAntennas: { type: 'boolean' },
+		canImportBlocking: { type: 'boolean' },
+		canImportFollowing: { type: 'boolean' },
+		canImportMuting: { type: 'boolean' },
+		canImportUserLists: { type: 'boolean' },
+		chatAvailability: { type: 'string', enum: ['available', 'readonly', 'unavailable'] },
+		canTrend: { type: 'boolean' },
+		canViewFederation: { type: 'boolean' },
+	},
+};
+
+const RoleSchema: JSONSchemaType<MiRole['policies']> = {
+	type: 'object',
+	additionalProperties: false,
+	required: [],
+	properties: Object.fromEntries(
+		Object.entries(DefaultPoliciesSchema.properties!).map(
+			(
+				// I picked `canTrend` here, but any policy name is fine, the
+				// type of their bit of the schema is all the same
+				[policy, value]: [string, JSONSchemaType<RolePolicies>['properties']['canTrend']]
+			) => [
+				policy,
+				{
+					type: 'object',
+					additionalProperties: false,
+					// we can't require `value` because the MiRole says `value:
+					// any` which includes undefined, so technically `value` is
+					// not really required
+					required: ['priority', 'useDefault'],
+					properties: {
+						priority: { type: 'integer', minimum: 0, maximum: 2 },
+						useDefault: { type: 'boolean' },
+						value,
+					},
+				},
+			],
+		),
+	),
+};
+
 @Injectable()
 export class RoleService implements OnApplicationShutdown, OnModuleInit {
-	private rolesCache: MemorySingleCache<MiRole[]>;
-	private roleAssignmentByUserIdCache: MemoryKVCache<MiRoleAssignment[]>;
+	private readonly rolesCache: ManagedMemorySingleCache<MiRole[]>;
+	private readonly roleAssignmentByUserIdCache: ManagedMemoryKVCache<MiRoleAssignment[]>;
+
+	private cacheService: CacheService;
 	private notificationService: NotificationService;
+	private defaultPoliciesValidator: ValidateFunction<RolePolicies>;
+	private roleValidator: ValidateFunction<MiRole['policies']>;
 
 	public static AlreadyAssignedError = class extends Error {};
 	public static NotAssignedError = class extends Error {};
@@ -144,22 +239,33 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		@Inject(DI.roleAssignmentsRepository)
 		private roleAssignmentsRepository: RoleAssignmentsRepository,
 
-		private cacheService: CacheService,
-		private userEntityService: UserEntityService,
 		private globalEventService: GlobalEventService,
 		private idService: IdService,
 		private moderationLogService: ModerationLogService,
 		private fanoutTimelineService: FanoutTimelineService,
+		private readonly timeService: TimeService,
+
+		cacheManagementService: CacheManagementService,
 	) {
-		this.rolesCache = new MemorySingleCache<MiRole[]>(1000 * 60 * 60); // 1h
-		this.roleAssignmentByUserIdCache = new MemoryKVCache<MiRoleAssignment[]>(1000 * 60 * 5); // 5m
+		this.rolesCache = cacheManagementService.createMemorySingleCache<MiRole[]>('roles', 1000 * 60 * 60); // 1h
+		this.roleAssignmentByUserIdCache = cacheManagementService.createMemoryKVCache<MiRoleAssignment[]>('roleAssignment', 1000 * 60 * 5); // 5m
 		// TODO additional cache for final calculation?
 
 		this.redisForSub.on('message', this.onMessage);
+
+		// this is copied from server/api/endpoint-base.ts
+		const ajv = new Ajv.default({
+			useDefaults: true,
+			allErrors: true,
+		});
+		this.defaultPoliciesValidator = ajv.compile(DefaultPoliciesSchema);
+		this.roleValidator = ajv.compile(RoleSchema);
 	}
 
+	@bindThis
 	async onModuleInit() {
-		this.notificationService = this.moduleRef.get(NotificationService.name);
+		this.notificationService = this.moduleRef.get('NotificationService');
+		this.cacheService = this.moduleRef.get('CacheService');
 	}
 
 	@bindThis
@@ -248,11 +354,11 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 				}
 				// ローカルユーザのみ
 				case 'isLocal': {
-					return this.userEntityService.isLocalUser(user);
+					return isLocalUser(user);
 				}
 				// リモートユーザのみ
 				case 'isRemote': {
-					return this.userEntityService.isRemoteUser(user);
+					return isRemoteUser(user);
 				}
 				// User is from a specific instance
 				case 'isFromInstance': {
@@ -293,11 +399,11 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 				}
 				// ユーザが作成されてから指定期間経過した
 				case 'createdLessThan': {
-					return this.idService.parse(user.id).date.getTime() > (Date.now() - (value.sec * 1000));
+					return this.idService.parse(user.id).date.getTime() > (this.timeService.now - (value.sec * 1000));
 				}
 				// ユーザが作成されてから指定期間経っていない
 				case 'createdMoreThan': {
-					return this.idService.parse(user.id).date.getTime() < (Date.now() - (value.sec * 1000));
+					return this.idService.parse(user.id).date.getTime() < (this.timeService.now - (value.sec * 1000));
 				}
 				// フォロワー数が指定値以下
 				case 'followersLessThanOrEq': {
@@ -397,7 +503,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 
 	@bindThis
 	public async getUserAssigns(userOrId: MiUser | MiUser['id']) {
-		const now = Date.now();
+		const now = this.timeService.now;
 		const userId = typeof(userOrId) === 'object' ? userOrId.id : userOrId;
 		let assigns = await this.roleAssignmentByUserIdCache.fetch(userId, () => this.roleAssignmentsRepository.findBy({ userId }));
 		// 期限切れのロールを除外
@@ -414,7 +520,21 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		const assignedRoles = roles.filter(r => assigns.map(x => x.roleId).includes(r.id));
 		const user = typeof(userOrId) === 'object' ? userOrId : roles.some(r => r.target === 'conditional') ? await this.cacheService.findUserById(userOrId) : null;
 		const matchedCondRoles = roles.filter(r => r.target === 'conditional' && this.evalCond(user!, assignedRoles, r.condFormula, followStats));
-		return [...assignedRoles, ...matchedCondRoles];
+
+		let allRoles = [...assignedRoles, ...matchedCondRoles];
+
+		// Check for dropped token permissions
+		const rank = user ? getCallerId(user)?.accessToken?.rank : null;
+		if (rank != null) {
+			// Copy roles, since they come from a cache
+			allRoles = allRoles.map(role => ({
+				...role,
+				isModerator: role.isModerator && (rank === 'admin' || rank === 'mod'),
+				isAdministrator: role.isAdministrator && rank === 'admin',
+			}));
+		}
+
+		return allRoles;
 	}
 
 	/**
@@ -422,7 +542,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	 */
 	@bindThis
 	public async getUserBadgeRoles(userOrId: MiUser | MiUser['id']) {
-		const now = Date.now();
+		const now = this.timeService.now;
 		const userId = typeof(userOrId) === 'object' ? userOrId.id : userOrId;
 		let assigns = await this.roleAssignmentByUserIdCache.fetch(userId, () => this.roleAssignmentsRepository.findBy({ userId }));
 		// 期限切れのロールを除外
@@ -514,12 +634,22 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	@bindThis
 	public async isModerator(user: { id: MiUser['id'] } | null): Promise<boolean> {
 		if (user == null) return false;
+
+		// Check for dropped token permissions
+		const rank = getCallerId(user)?.accessToken?.rank;
+		if (rank != null && rank !== 'admin' && rank !== 'mod') return false;
+
 		return (this.meta.rootUserId === user.id) || (await this.getUserRoles(user.id)).some(r => r.isModerator || r.isAdministrator);
 	}
 
 	@bindThis
 	public async isAdministrator(user: { id: MiUser['id'] } | null): Promise<boolean> {
 		if (user == null) return false;
+
+		// Check for dropped token permissions
+		const rank = getCallerId(user)?.accessToken?.rank;
+		if (rank != null && rank !== 'admin') return false;
+
 		return (this.meta.rootUserId === user.id) || (await this.getUserRoles(user.id)).some(r => r.isAdministrator);
 	}
 
@@ -558,7 +688,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			: [];
 
 		// Setを経由して重複を除去（ユーザIDは重複する可能性があるので）
-		const now = Date.now();
+		const now = this.timeService.now;
 		const resultSet = new Set(
 			assigns
 				.filter(it =>
@@ -612,7 +742,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 
 	@bindThis
 	public async assign(userId: MiUser['id'], roleId: MiRole['id'], expiresAt: Date | null = null, moderator?: MiUser): Promise<void> {
-		const now = Date.now();
+		const now = this.timeService.now;
 
 		const role = await this.rolesRepository.findOneByOrFail({ id: roleId });
 
@@ -640,7 +770,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		});
 
 		this.rolesRepository.update(roleId, {
-			lastUsedAt: new Date(),
+			lastUsedAt: this.timeService.date,
 		});
 
 		this.globalEventService.publishInternalEvent('userRoleAssigned', created);
@@ -667,7 +797,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 
 	@bindThis
 	public async unassign(userId: MiUser['id'], roleId: MiRole['id'], moderator?: MiUser): Promise<void> {
-		const now = new Date();
+		const now = this.timeService.date;
 
 		const existing = await this.roleAssignmentsRepository.findOneBy({ roleId, userId });
 		if (existing == null) {
@@ -714,12 +844,14 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			this.globalEventService.publishRoleTimelineStream(role.id, 'note', note);
 		}
 
-		redisPipeline.exec();
+		await redisPipeline.exec();
 	}
 
 	@bindThis
 	public async create(values: Partial<MiRole>, moderator?: MiUser): Promise<MiRole> {
-		const date = new Date();
+		this.assertValidRole(values);
+
+		const date = this.timeService.date;
 		const created = await this.rolesRepository.insertOne({
 			id: this.idService.gen(date.getTime()),
 			updatedAt: date,
@@ -755,7 +887,9 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 
 	@bindThis
 	public async update(role: MiRole, params: Partial<MiRole>, moderator?: MiUser): Promise<void> {
-		const date = new Date();
+		this.assertValidRole(params);
+
+		const date = this.timeService.date;
 		await this.rolesRepository.update(role.id, {
 			updatedAt: date,
 			...params,
@@ -800,11 +934,36 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	@bindThis
 	public dispose(): void {
 		this.redisForSub.off('message', this.onMessage);
-		this.roleAssignmentByUserIdCache.dispose();
 	}
 
 	@bindThis
 	public onApplicationShutdown(signal?: string | undefined): void {
 		this.dispose();
+	}
+
+	@bindThis
+	public assertValidRole(role: Partial<MiRole>): void {
+		if (!role.policies) return;
+
+		if (this.roleValidator(role.policies)) return;
+
+		throw new IdentifiableError(
+			'39d78ad7-0f00-4bff-b2e2-2e7db889e05d',
+			'invalid policy values',
+			false,
+			this.roleValidator.errors,
+		);
+	}
+
+	@bindThis
+	public assertValidDefaultPolicies(policies: object): void {
+		if (this.defaultPoliciesValidator(policies)) return;
+
+		throw new IdentifiableError(
+			'39d78ad7-0f00-4bff-b2e2-2e7db889e05d',
+			'invalid policy values',
+			false,
+			this.defaultPoliciesValidator.errors,
+		);
 	}
 }

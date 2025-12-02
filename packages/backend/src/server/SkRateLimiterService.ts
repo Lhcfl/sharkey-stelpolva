@@ -5,13 +5,27 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
-import type { TimeService } from '@/core/TimeService.js';
-import type { EnvService } from '@/core/EnvService.js';
-import { BucketRateLimit, LegacyRateLimit, LimitInfo, RateLimit, hasMinLimit, isLegacyRateLimit, Keyed, hasMaxLimit, disabledLimitInfo, MaxLegacyLimit, MinLegacyLimit } from '@/misc/rate-limit-utils.js';
-import { DI } from '@/di-symbols.js';
-import { MemoryKVCache } from '@/misc/cache.js';
 import type { MiUser } from '@/models/_.js';
-import type { RoleService } from '@/core/RoleService.js';
+import { TimeService } from '@/global/TimeService.js';
+import { EnvService } from '@/global/EnvService.js';
+import {
+	type BucketRateLimit,
+	type LegacyRateLimit,
+	type LimitInfo,
+	type RateLimit,
+	type Keyed,
+	type MaxLegacyLimit,
+	type MinLegacyLimit,
+	hasMinLimit,
+	isLegacyRateLimit,
+	hasMaxLimit,
+	disabledLimitInfo,
+} from '@/misc/rate-limit-utils.js';
+import { RoleService } from '@/core/RoleService.js';
+import { CacheManagementService, type ManagedMemoryKVCache } from '@/global/CacheManagementService.js';
+import { ConflictError } from '@/misc/errors/ConflictError.js';
+import { DI } from '@/di-symbols.js';
+import { bindThis } from '@/decorators.js';
 
 // Sentinel value used for caching the default role template.
 // Required because MemoryKVCache doesn't support null keys.
@@ -29,26 +43,24 @@ interface ParsedLimit {
 
 @Injectable()
 export class SkRateLimiterService {
-	// 1-minute cache interval
-	private readonly factorCache = new MemoryKVCache<number>(1000 * 60);
-	// 10-second cache interval
-	private readonly lockoutCache = new MemoryKVCache<number>(1000 * 10);
+	private readonly factorCache: ManagedMemoryKVCache<number>;
+	private readonly lockoutCache: ManagedMemoryKVCache<number>;
 	private readonly requestCounts = new Map<string, number>();
 	private readonly disabled: boolean;
 
 	constructor(
-		@Inject('TimeService')
-		private readonly timeService: TimeService,
 
 		@Inject(DI.redisForRateLimit)
 		private readonly redisClient: Redis.Redis,
 
-		@Inject('RoleService')
 		private readonly roleService: RoleService,
+		private readonly timeService: TimeService,
 
-		@Inject('EnvService')
 		envService: EnvService,
+		cacheManagementService: CacheManagementService,
 	) {
+		this.factorCache = cacheManagementService.createMemoryKVCache<number>('rateLimitFactor', 1000 * 60); // 1m
+		this.lockoutCache = cacheManagementService.createMemoryKVCache<number>('rateLimitLockout', 1000 * 10); // 10s
 		this.disabled = envService.env.NODE_ENV === 'test';
 	}
 
@@ -65,6 +77,7 @@ export class SkRateLimiterService {
 	 * @param limit The limit definition
 	 * @param actorOrUser authenticated client user or IP hash
 	 */
+	@bindThis
 	public async limit(limit: Keyed<RateLimit>, actorOrUser: string | MiUser): Promise<LimitInfo> {
 		if (this.disabled) {
 			return disabledLimitInfo;
@@ -388,8 +401,6 @@ type RedisCommand = [command: string, ...args: unknown[]];
 function createLimitKey(limit: ParsedLimit, actor: string, value: string): string {
 	return `rl_${actor}_${limit.key}_${value}`;
 }
-
-export class ConflictError extends Error {}
 
 interface LimitCounter {
 	timestamp: number;

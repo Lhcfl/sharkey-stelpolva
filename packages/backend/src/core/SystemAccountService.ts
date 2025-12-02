@@ -19,12 +19,16 @@ import { bindThis } from '@/decorators.js';
 import { generateNativeUserToken } from '@/misc/token.js';
 import { IdService } from '@/core/IdService.js';
 import { genRsaKeyPair } from '@/misc/gen-key-pair.js';
+import { CacheManagementService, type ManagedMemoryKVCache } from '@/global/CacheManagementService.js';
+import { CacheService } from '@/core/CacheService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const SYSTEM_ACCOUNT_TYPES = ['actor', 'relay', 'proxy'] as const;
 
 @Injectable()
 export class SystemAccountService implements OnApplicationShutdown {
-	private cache: MemoryKVCache<MiLocalUser>;
+	private readonly cache: ManagedMemoryKVCache<string>;
 
 	constructor(
 		@Inject(DI.redisForSub)
@@ -46,8 +50,13 @@ export class SystemAccountService implements OnApplicationShutdown {
 		private userProfilesRepository: UserProfilesRepository,
 
 		private idService: IdService,
+		private readonly cacheService: CacheService,
+		private readonly internalEventService: InternalEventService,
+		private readonly timeService: TimeService,
+
+		cacheManagementService: CacheManagementService,
 	) {
-		this.cache = new MemoryKVCache<MiLocalUser>(1000 * 60 * 10); // 10m
+		this.cache = cacheManagementService.createMemoryKVCache<string>('systemAccount', 1000 * 60 * 10); // 10m
 
 		this.redisForSub.on('message', this.onMessage);
 	}
@@ -84,25 +93,26 @@ export class SystemAccountService implements OnApplicationShutdown {
 
 	@bindThis
 	public async fetch(type: typeof SYSTEM_ACCOUNT_TYPES[number]): Promise<MiLocalUser> {
-		const cached = this.cache.get(type);
-		if (cached) return cached;
+		// Use local cache to find userId for type
+		const userId = await this.cache.fetch(type, async () => {
+			const systemAccount = await this.systemAccountsRepository.findOne({
+				where: { type: type },
+				select: { userId: true },
+			}) as { userId: string } | null;
 
-		const systemAccount = await this.systemAccountsRepository.findOne({
-			where: { type: type },
-			relations: ['user'],
+			if (systemAccount) {
+				return systemAccount.userId;
+			} else {
+				const created = await this.createCorrespondingUser(type, {
+					username: `system.${type}`, // NOTE: (できれば避けたいが) . が含まれるかどうかでシステムアカウントかどうかを判定している処理もあるので変えないように
+					name: this.meta.name,
+				});
+				return created.id;
+			}
 		});
 
-		if (systemAccount) {
-			this.cache.set(type, systemAccount.user as MiLocalUser);
-			return systemAccount.user as MiLocalUser;
-		} else {
-			const created = await this.createCorrespondingUser(type, {
-				username: `system.${type}`, // NOTE: (できれば避けたいが) . が含まれるかどうかでシステムアカウントかどうかを判定している処理もあるので変えないように
-				name: this.meta.name,
-			});
-			this.cache.set(type, created);
-			return created;
-		}
+		// Get the actual user entity from shared caches.
+		return await this.cacheService.findLocalUserById(userId);
 	}
 
 	@bindThis
@@ -166,7 +176,7 @@ export class SystemAccountService implements OnApplicationShutdown {
 			});
 
 			await transactionalEntityManager.insert(MiUsedUsername, {
-				createdAt: new Date(),
+				createdAt: this.timeService.date,
 				username: extra.username.toLowerCase(),
 			});
 
@@ -192,6 +202,7 @@ export class SystemAccountService implements OnApplicationShutdown {
 
 		if (Object.keys(updates).length > 0) {
 			await this.usersRepository.update(user.id, updates);
+			await this.internalEventService.emit('localUserUpdated', { id: user.id });
 		}
 
 		const profileUpdates = {} as Partial<MiUserProfile>;
@@ -199,12 +210,10 @@ export class SystemAccountService implements OnApplicationShutdown {
 
 		if (Object.keys(profileUpdates).length > 0) {
 			await this.userProfilesRepository.update(user.id, profileUpdates);
+			await this.internalEventService.emit('updateUserProfile', { userId: user.id });
 		}
 
-		const updated = await this.usersRepository.findOneByOrFail({ id: user.id }) as MiLocalUser;
-		this.cache.set(type, updated);
-
-		return updated;
+		return await this.cacheService.findLocalUserById(user.id);
 	}
 
 	public async getInstanceActor() {
@@ -222,7 +231,6 @@ export class SystemAccountService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		this.redisForSub.off('message', this.onMessage);
-		this.cache.dispose();
 	}
 
 	@bindThis

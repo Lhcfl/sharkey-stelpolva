@@ -204,6 +204,7 @@ const QUEUE_TYPES = [
 	'userWebhookDeliver',
 	'systemWebhookDeliver',
 	'scheduleNotePost',
+	'backgroundTask',
 ] as const;
 
 const tab: Ref<typeof QUEUE_TYPES[number] | '-'> = ref('-');

@@ -116,7 +116,10 @@ export class FanoutTimelineEndpointService {
 
 				const parentFilter = filter;
 				filter = (note, populated) => {
-					const { accessible, silence } = this.noteVisibilityService.checkNoteVisibility(populated, me, { data, filters: { includeSilencedAuthor: ps.ignoreAuthorFromUserSilence } });
+					const { accessible, silence } = this.noteVisibilityService.checkNoteVisibility(populated, me, { data, filters: {
+						includeSilencedAuthor: ps.ignoreAuthorFromUserSilence,
+						includeReplies: true, // Include replies because we check them elsewhere
+					} });
 					if (!accessible || silence) return false;
 
 					return parentFilter(note, populated);
@@ -276,7 +279,7 @@ export class FanoutTimelineEndpointService {
 
 		// Fetch everything and populate users
 		const [users, instances] = await Promise.all([
-			this.cacheService.getUsers(usersToFetch),
+			this.cacheService.findUsersById(usersToFetch),
 			this.federatedInstanceService.federatedInstanceCache.fetchMany(instancesToFetch).then(i => new Map(i)),
 		]);
 		for (const [id, user] of Array.from(users)) {

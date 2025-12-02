@@ -7,6 +7,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import type { MiUser } from '@/models/User.js';
 import { AppLockService } from '@/core/AppLockService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import Chart from '../core.js';
@@ -25,8 +26,13 @@ export default class PerUserPvChart extends Chart<typeof schema> { // eslint-dis
 
 		private appLockService: AppLockService,
 		private chartLoggerService: ChartLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		super(db, (k) => appLockService.getChartInsertLock(k), chartLoggerService.logger, name, schema, true);
+	}
+
+	protected getCurrentDate(): Date {
+		return this.timeService.date;
 	}
 
 	protected async tickMajor(): Promise<Partial<KVs<typeof schema>>> {
@@ -38,16 +44,16 @@ export default class PerUserPvChart extends Chart<typeof schema> { // eslint-dis
 	}
 
 	@bindThis
-	public async commitByUser(user: { id: MiUser['id'] }, key: string): Promise<void> {
-		await this.commit({
+	public commitByUser(user: { id: MiUser['id'] }, key: string): void {
+		this.commit({
 			'upv.user': [key],
 			'pv.user': 1,
 		}, user.id);
 	}
 
 	@bindThis
-	public async commitByVisitor(user: { id: MiUser['id'] }, key: string): Promise<void> {
-		await this.commit({
+	public commitByVisitor(user: { id: MiUser['id'] }, key: string): void {
+		this.commit({
 			'upv.visitor': [key],
 			'pv.visitor': 1,
 		}, user.id);

@@ -27,17 +27,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { useTemplateRef } from 'vue';
 import type { PostFormProps } from '@/types/post-form.js';
+import type * as Misskey from 'misskey-js';
 import MkModal from '@/components/MkModal.vue';
 import MkPostForm from '@/components/MkPostForm.vue';
-import * as Misskey from 'misskey-js';
 
 const props = withDefaults(defineProps<PostFormProps & {
-	instant?: boolean;
 	fixed?: boolean;
 	autofocus?: boolean;
-	editId?: Misskey.entities.Note["id"];
+	editId?: Misskey.entities.Note['id'];
 }>(), {
 	initialLocalOnly: undefined,
+	editId: undefined,
 });
 
 const emit = defineEmits<{

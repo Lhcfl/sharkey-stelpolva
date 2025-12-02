@@ -12,8 +12,8 @@ import type { Packed } from '@/misc/json-schema.js';
 import { getNoteSummary } from '@/misc/get-note-summary.js';
 import type { MiMeta, MiSwSubscription, SwSubscriptionsRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
-import { QuantumKVCache } from '@/misc/QuantumKVCache.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/CacheManagementService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 // Defined also packages/sw/types.ts#L13
 type PushNotificationsTypes = {
@@ -48,8 +48,8 @@ function truncateBody<T extends keyof PushNotificationsTypes>(type: T, body: Pus
 }
 
 @Injectable()
-export class PushNotificationService implements OnApplicationShutdown {
-	private subscriptionsCache: QuantumKVCache<MiSwSubscription[]>;
+export class PushNotificationService {
+	private readonly subscriptionsCache: ManagedQuantumKVCache<MiSwSubscription[]>;
 
 	constructor(
 		@Inject(DI.config)
@@ -63,11 +63,16 @@ export class PushNotificationService implements OnApplicationShutdown {
 
 		@Inject(DI.swSubscriptionsRepository)
 		private swSubscriptionsRepository: SwSubscriptionsRepository,
-		private readonly internalEventService: InternalEventService,
+
+		private readonly timeService: TimeService,
+
+		cacheManagementService: CacheManagementService,
 	) {
-		this.subscriptionsCache = new QuantumKVCache<MiSwSubscription[]>(this.internalEventService, 'userSwSubscriptions', {
+		this.subscriptionsCache = cacheManagementService.createQuantumKVCache<MiSwSubscription[]>('userSwSubscriptions', {
 			lifetime: 1000 * 60 * 60 * 1, // 1h
-			fetcher: (key) => this.swSubscriptionsRepository.findBy({ userId: key }),
+			fetcher: async userId => await this.swSubscriptionsRepository.findBy({ userId }),
+			// optionalFetcher not needed
+			// bulkFetcher not needed
 		});
 	}
 
@@ -99,7 +104,7 @@ export class PushNotificationService implements OnApplicationShutdown {
 				type,
 				body: (type === 'notification' || type === 'unreadAntennaNote') ? truncateBody(type, body) : body,
 				userId,
-				dateTime: Date.now(),
+				dateTime: this.timeService.now,
 			}), {
 				proxy: this.config.proxy,
 			}).catch((err: any) => {
@@ -124,15 +129,5 @@ export class PushNotificationService implements OnApplicationShutdown {
 	@bindThis
 	public async refreshCache(userId: string): Promise<void> {
 		await this.subscriptionsCache.refresh(userId);
-	}
-
-	@bindThis
-	public dispose(): void {
-		this.subscriptionsCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

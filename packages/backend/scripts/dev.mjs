@@ -5,7 +5,7 @@
 
 import { execa, execaNode } from 'execa';
 
-/** @type {import('execa').ExecaChildProcess | undefined} */
+/** @type {import('execa').ResultPromise | undefined} */
 let backendProcess;
 
 async function execBuildAssets() {
@@ -13,7 +13,7 @@ async function execBuildAssets() {
 		cwd: '../../',
 		stdout: process.stdout,
 		stderr: process.stderr,
-	})
+	});
 }
 
 function execStart() {
@@ -32,8 +32,8 @@ async function killProc() {
 	if (backendProcess) {
 		backendProcess.catch(() => {}); // backendProcess.kill()によって発生する例外を無視するためにcatch()を呼び出す
 		backendProcess.kill();
-		await new Promise(resolve => backendProcess.on('exit', resolve));
-		backendProcess = undefined;
+		await new Promise(resolve => backendProcess?.on('exit', resolve))
+			.finally(() => backendProcess = undefined);
 	}
 }
 
@@ -49,7 +49,7 @@ async function killProc() {
 			stdio: [process.stdin, process.stdout, process.stderr, 'ipc'],
 			serialization: "json",
 		})
-		.on('message', async (message) => {
+		.on('message', /** @param {{type: string}} message */ async (message) => {
 			if (message.type === 'exit') {
 				// かならずbuild->build-assetsの順番で呼び出したいので、
 				// 少々トリッキーだがnodemonからのexitイベントを利用してbuild-assets->startを行う。
@@ -59,5 +59,5 @@ async function killProc() {
 				await execBuildAssets();
 				execStart();
 			}
-		})
+		});
 })();

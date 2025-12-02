@@ -15,6 +15,8 @@ import { IdService } from '@/core/IdService.js';
 import { DI } from '@/di-symbols.js';
 import { QueueService } from '@/core/QueueService.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
+import { CoreModule } from '@/core/CoreModule.js';
 
 describe('WebhookTestService', () => {
 	let app: TestingModule;
@@ -28,6 +30,7 @@ describe('WebhookTestService', () => {
 	let userWebhookService: jest.Mocked<UserWebhookService>;
 	let systemWebhookService: jest.Mocked<SystemWebhookService>;
 	let idService: IdService;
+	let cacheManagementService: CacheManagementService;
 
 	let root: MiUser;
 	let alice: MiUser;
@@ -53,44 +56,40 @@ describe('WebhookTestService', () => {
 		app = await Test.createTestingModule({
 			imports: [
 				GlobalModule,
+				CoreModule,
 			],
-			providers: [
-				WebhookTestService,
-				IdService,
-				{
-					provide: CustomEmojiService, useFactory: () => ({
-						populateEmojis: jest.fn(),
-					}),
-				},
-				{
-					provide: QueueService, useFactory: () => ({
-						systemWebhookDeliver: jest.fn(),
-						userWebhookDeliver: jest.fn(),
-					}),
-				},
-				{
-					provide: UserWebhookService, useFactory: () => ({
-						fetchWebhooks: jest.fn(),
-					}),
-				},
-				{
-					provide: SystemWebhookService, useFactory: () => ({
-						fetchSystemWebhooks: jest.fn(),
-					}),
-				},
-			],
-		}).compile();
+		})
+			.overrideProvider(CustomEmojiService).useValue({
+				populateEmojis: jest.fn(),
+			})
+			.overrideProvider(QueueService).useValue({
+				systemWebhookDeliver: jest.fn(),
+				userWebhookDeliver: jest.fn(),
+			})
+			.overrideProvider(UserWebhookService).useValue({
+				fetchWebhooks: jest.fn(),
+			})
+			.overrideProvider(SystemWebhookService).useValue({
+				fetchSystemWebhooks: jest.fn(),
+			})
+			.compile();
+
+		await app.init();
+		app.enableShutdownHooks();
 
 		usersRepository = app.get(DI.usersRepository);
 		userProfilesRepository = app.get(DI.userProfilesRepository);
 
 		service = app.get(WebhookTestService);
 		idService = app.get(IdService);
+		cacheManagementService = app.get(CacheManagementService);
 		queueService = app.get(QueueService) as jest.Mocked<QueueService>;
 		userWebhookService = app.get(UserWebhookService) as jest.Mocked<UserWebhookService>;
 		systemWebhookService = app.get(SystemWebhookService) as jest.Mocked<SystemWebhookService>;
+	});
 
-		app.enableShutdownHooks();
+	afterAll(async () => {
+		await app.close();
 	});
 
 	beforeEach(async () => {
@@ -111,12 +110,9 @@ describe('WebhookTestService', () => {
 		userWebhookService.fetchWebhooks.mockClear();
 		systemWebhookService.fetchSystemWebhooks.mockClear();
 
-		await usersRepository.delete({});
-		await userProfilesRepository.delete({});
-	});
-
-	afterAll(async () => {
-		await app.close();
+		await userProfilesRepository.deleteAll();
+		await usersRepository.deleteAll();
+		cacheManagementService.clear();
 	});
 
 	// --------------------------------------------------------------------------------------

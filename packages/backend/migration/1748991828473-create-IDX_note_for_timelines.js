@@ -4,6 +4,8 @@
  */
 
 export class CreateIDXNoteForTimelines1748991828473 {
+	name = 'CreateIDXNoteForTimelines1748991828473';
+
 	async up(queryRunner) {
 		await queryRunner.query(`
 			create index "IDX_note_for_timelines"

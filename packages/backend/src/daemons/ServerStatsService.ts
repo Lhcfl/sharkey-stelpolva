@@ -11,6 +11,7 @@ import { bindThis } from '@/decorators.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 import { MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 
 export interface Stats {
 	cpu: number,
@@ -37,13 +38,14 @@ const round = (num: number) => Math.round(num * 10) / 10;
 
 @Injectable()
 export class ServerStatsService implements OnApplicationShutdown {
-	private intervalId: NodeJS.Timeout | null = null;
+	private intervalId: TimerHandle | null = null;
 
 	private log: Stats[] = [];
 
 	constructor(
 		@Inject(DI.meta)
 		private meta: MiMeta,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -90,13 +92,13 @@ export class ServerStatsService implements OnApplicationShutdown {
 
 		tick();
 
-		this.intervalId = setInterval(tick, interval);
+		this.intervalId = this.timeService.startTimer(tick, interval, { repeated: true });
 	}
 
 	@bindThis
 	public dispose(): void {
 		if (this.intervalId) {
-			clearInterval(this.intervalId);
+			this.timeService.stopTimer(this.intervalId);
 		}
 
 		this.log = [];

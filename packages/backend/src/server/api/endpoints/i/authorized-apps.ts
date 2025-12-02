@@ -9,6 +9,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AccessTokensRepository } from '@/models/_.js';
 import { AppEntityService } from '@/core/entities/AppEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { promiseMap } from '@/misc/promise-map.js';
 
 export const meta = {
 	requireCredential: true,
@@ -88,9 +89,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				},
 			});
 
-			return await Promise.all(tokens.map(token => this.appEntityService.pack(token.appId!, me, {
+			return await promiseMap(tokens, async token => await this.appEntityService.pack(token.appId!, me, {
 				detail: true,
-			})));
+			}), {
+				limit: 4,
+			});
 		});
 	}
 }

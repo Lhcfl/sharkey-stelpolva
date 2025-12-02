@@ -5,12 +5,12 @@
 
 import { UnrecoverableError } from 'bullmq';
 import { AbortError } from 'node-fetch';
-import { isRetryableError } from '@/misc/is-retryable-error.js';
+import { isRetryableError, isRetryableSymbol } from '@/misc/is-retryable-error.js';
 import { StatusError } from '@/misc/status-error.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { CaptchaError, captchaErrorCodes } from '@/core/CaptchaService.js';
 import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
-import { ConflictError } from '@/server/SkRateLimiterService.js';
+import { CaptchaError, captchaErrorCodes } from '@/misc/captcha-error.js';
+import { ConflictError } from '@/misc/errors/ConflictError.js';
 
 describe(isRetryableError, () => {
 	it('should return true for retryable StatusError', () => {
@@ -130,6 +130,54 @@ describe(isRetryableError, () => {
 		expect(result).toBeFalsy();
 	});
 
+	it('should return true for an object with [isRetryableSymbol]=true', () => {
+		const error = {
+			[isRetryableSymbol]: true,
+		};
+		const result = isRetryableError(error);
+		expect(result).toBe(true);
+	});
+
+	it('should return true for an object with [isRetryableSymbol]=false', () => {
+		const error = {
+			[isRetryableSymbol]: false,
+		};
+		const result = isRetryableError(error);
+		expect(result).toBe(false);
+	});
+
+	it('should return true for a retryable error with [isRetryableSymbol]=null', () => {
+		const error = Object.assign(new IdentifiableError('id', 'message', true), {
+			[isRetryableSymbol]: null,
+		});
+		const result = isRetryableError(error);
+		expect(result).toBe(true);
+	});
+
+	it('should return false for a permanent error with [isRetryableSymbol]=null', () => {
+		const error = Object.assign(new IdentifiableError('id', 'message', false), {
+			[isRetryableSymbol]: null,
+		});
+		const result = isRetryableError(error);
+		expect(result).toBe(false);
+	});
+
+	it('should return true for an ambiguous error with retryable cause', () => {
+		const error = new Error('error', {
+			cause: new IdentifiableError('id', 'cause', true),
+		});
+		const result = isRetryableError(error);
+		expect(result).toBe(true);
+	});
+
+	it('should return false for an ambiguous error with permanent cause', () => {
+		const error = new Error('error', {
+			cause: new IdentifiableError('id', 'cause', false),
+		});
+		const result = isRetryableError(error);
+		expect(result).toBe(false);
+	});
+
 	const nonErrorInputs = [
 		[null, 'null'],
 		[undefined, 'undefined'],
@@ -138,6 +186,9 @@ describe(isRetryableError, () => {
 		[true, 'boolean'],
 		[[], 'array'],
 		[{}, 'object'],
+		[{ [isRetryableSymbol]: null }, 'null isRetryableSymbol'],
+		[{ [isRetryableSymbol]: undefined }, 'undefined isRetryableSymbol'],
+		[{ [isRetryableSymbol]: '0' }, 'falsy isRetryableSymbol'],
 	];
 	for (const [input, label] of nonErrorInputs) {
 		it(`should return true for ${label} input`, () => {

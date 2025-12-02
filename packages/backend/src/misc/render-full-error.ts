@@ -8,7 +8,7 @@ import { AbortError, FetchError } from 'node-fetch';
 import { StatusError } from '@/misc/status-error.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
-import { CaptchaError, captchaErrorCodes } from '@/core/CaptchaService.js';
+import { CaptchaError, captchaErrorCodes } from '@/misc/captcha-error.js';
 
 export function renderFullError(e?: unknown): unknown {
 	if (e === undefined) return 'undefined';

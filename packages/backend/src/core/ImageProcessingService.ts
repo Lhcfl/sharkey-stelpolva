@@ -58,7 +58,7 @@ export class ImageProcessingService {
 	 */
 	@bindThis
 	public async convertToWebp(path: string, width: number, height: number, options: sharp.WebpOptions = webpDefault): Promise<IImage> {
-		return this.convertSharpToWebp(sharp(path), width, height, options);
+		return await this.convertSharpToWebp(sharp(path), width, height, options);
 	}
 
 	@bindThis
@@ -100,7 +100,7 @@ export class ImageProcessingService {
 	 */
 	@bindThis
 	public async convertToAvif(path: string, width: number, height: number, options: sharp.AvifOptions = avifDefault): Promise<IImage> {
-		return this.convertSharpToAvif(sharp(path), width, height, options);
+		return await this.convertSharpToAvif(sharp(path), width, height, options);
 	}
 
 	@bindThis
@@ -142,7 +142,7 @@ export class ImageProcessingService {
 	 */
 	@bindThis
 	public async convertToPng(path: string, width: number, height: number): Promise<IImage> {
-		return this.convertSharpToPng(sharp(path), width, height);
+		return await this.convertSharpToPng(sharp(path), width, height);
 	}
 
 	@bindThis

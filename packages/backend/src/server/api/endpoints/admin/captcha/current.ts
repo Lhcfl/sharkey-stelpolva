@@ -63,7 +63,11 @@ export const meta = {
 	},
 } as const;
 
-export const paramDef = {} as const;
+export const paramDef = {
+	type: 'object',
+	properties: {},
+	required: [],
+} as const;
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
@@ -71,7 +75,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private captchaService: CaptchaService,
 	) {
 		super(meta, paramDef, async () => {
-			return this.captchaService.get();
+			return await this.captchaService.get();
 		});
 	}
 }

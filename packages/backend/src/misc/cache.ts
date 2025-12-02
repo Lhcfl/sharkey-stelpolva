@@ -3,10 +3,24 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as Redis from 'ioredis';
+import type * as Redis from 'ioredis';
 import { bindThis } from '@/decorators.js';
+import type { TimeService } from '@/global/TimeService.js';
+
+export interface RedisCacheServices extends MemoryCacheServices {
+	readonly redisClient: Redis.Redis
+}
+
+export interface RedisKVCacheOpts<T> {
+	lifetime: number;
+	memoryCacheLifetime: number;
+	fetcher?: RedisKVCache<T>['fetcher'];
+	toRedisConverter?: RedisKVCache<T>['toRedisConverter'];
+	fromRedisConverter?: RedisKVCache<T>['fromRedisConverter'];
+}
 
 export class RedisKVCache<T> {
+	private readonly redisClient: Redis.Redis;
 	private readonly lifetime: number;
 	private readonly memoryCache: MemoryKVCache<T>;
 	public readonly fetcher: (key: string) => Promise<T>;
@@ -14,18 +28,15 @@ export class RedisKVCache<T> {
 	public readonly fromRedisConverter: (value: string) => T | undefined;
 
 	constructor(
-		private redisClient: Redis.Redis,
-		private name: string,
-		opts: {
-			lifetime: RedisKVCache<T>['lifetime'];
-			memoryCacheLifetime: number;
-			fetcher?: RedisKVCache<T>['fetcher'];
-			toRedisConverter?: RedisKVCache<T>['toRedisConverter'];
-			fromRedisConverter?: RedisKVCache<T>['fromRedisConverter'];
-		},
+		public name: string,
+		services: RedisCacheServices,
+		opts: RedisKVCacheOpts<T>,
 	) {
+		this.redisClient = services.redisClient;
 		this.lifetime = opts.lifetime;
-		this.memoryCache = new MemoryKVCache(opts.memoryCacheLifetime);
+		// OK: we forward all management calls to the inner cache.
+		// eslint-disable-next-line no-restricted-syntax
+		this.memoryCache = new MemoryKVCache(name + ':mem', services, { lifetime: opts.memoryCacheLifetime });
 		this.fetcher = opts.fetcher ?? (() => { throw new Error('fetch not supported - use get/set directly'); });
 		this.toRedisConverter = opts.toRedisConverter ?? ((value) => JSON.stringify(value));
 		this.fromRedisConverter = opts.fromRedisConverter ?? ((value) => JSON.parse(value));
@@ -39,7 +50,7 @@ export class RedisKVCache<T> {
 				`kvcache:${this.name}:${key}`,
 				this.toRedisConverter(value),
 			);
-		} else {
+		} else if (this.lifetime > 0) {
 			await this.redisClient.set(
 				`kvcache:${this.name}:${key}`,
 				this.toRedisConverter(value),
@@ -115,7 +126,16 @@ export class RedisKVCache<T> {
 	}
 }
 
+export interface RedisSingleCacheOpts<T> {
+	lifetime: number;
+	memoryCacheLifetime: number;
+	fetcher?: RedisSingleCache<T>['fetcher'];
+	toRedisConverter?: RedisSingleCache<T>['toRedisConverter'];
+	fromRedisConverter?: RedisSingleCache<T>['fromRedisConverter'];
+}
+
 export class RedisSingleCache<T> {
+	private readonly redisClient: Redis.Redis;
 	private readonly lifetime: number;
 	private readonly memoryCache: MemorySingleCache<T>;
 	public readonly fetcher: () => Promise<T>;
@@ -123,18 +143,15 @@ export class RedisSingleCache<T> {
 	public readonly fromRedisConverter: (value: string) => T | undefined;
 
 	constructor(
-		private redisClient: Redis.Redis,
-		private name: string,
-		opts: {
-			lifetime: number;
-			memoryCacheLifetime: number;
-			fetcher?: RedisSingleCache<T>['fetcher'];
-			toRedisConverter?: RedisSingleCache<T>['toRedisConverter'];
-			fromRedisConverter?: RedisSingleCache<T>['fromRedisConverter'];
-		},
+		public name: string,
+		services: RedisCacheServices,
+		opts: RedisSingleCacheOpts<T>,
 	) {
+		this.redisClient = services.redisClient;
 		this.lifetime = opts.lifetime;
-		this.memoryCache = new MemorySingleCache(opts.memoryCacheLifetime);
+		// OK: we forward all management calls to the inner cache.
+		// eslint-disable-next-line no-restricted-syntax
+		this.memoryCache = new MemorySingleCache(name + ':mem', services, { lifetime: opts.memoryCacheLifetime });
 
 		this.fetcher = opts.fetcher ?? (() => { throw new Error('fetch not supported - use get/set directly'); });
 		this.toRedisConverter = opts.toRedisConverter ?? ((value) => JSON.stringify(value));
@@ -149,7 +166,7 @@ export class RedisSingleCache<T> {
 				`singlecache:${this.name}`,
 				this.toRedisConverter(value),
 			);
-		} else {
+		} else if (this.lifetime > 0) {
 			await this.redisClient.set(
 				`singlecache:${this.name}`,
 				this.toRedisConverter(value),
@@ -175,9 +192,19 @@ export class RedisSingleCache<T> {
 	}
 
 	@bindThis
+	public gc(): void {
+		this.memoryCache.gc();
+	}
+
+	@bindThis
 	public async delete(): Promise<void> {
 		this.memoryCache.delete();
 		await this.redisClient.del(`singlecache:${this.name}`);
+	}
+
+	@bindThis
+	public clear(): void {
+		this.memoryCache.clear();
 	}
 
 	/**
@@ -208,17 +235,37 @@ export class RedisSingleCache<T> {
 
 		// TODO: イベント発行して他プロセスのメモリキャッシュも更新できるようにする
 	}
+
+	@bindThis
+	public dispose(): void {
+		this.clear();
+		this.memoryCache.dispose();
+	}
+}
+
+export interface MemoryCacheServices {
+	readonly timeService: TimeService;
+}
+
+export interface MemoryCacheOpts {
+	lifetime: number;
 }
 
 // TODO: メモリ節約のためあまり参照されないキーを定期的に削除できるようにする？
 
 export class MemoryKVCache<T> {
 	private readonly cache = new Map<string, { date: number; value: T; }>();
-	private readonly gcIntervalHandle = setInterval(() => this.gc(), 1000 * 60 * 3); // 3m
+	private readonly timeService: TimeService;
+	private readonly lifetime: number;
 
 	constructor(
-		private readonly lifetime: number,
-	) {}
+		public readonly name: string,
+		services: MemoryCacheServices,
+		opts: MemoryCacheOpts,
+	) {
+		this.timeService = services.timeService;
+		this.lifetime = opts.lifetime;
+	}
 
 	@bindThis
 	/**
@@ -227,7 +274,7 @@ export class MemoryKVCache<T> {
 	 */
 	public set(key: string, value: T): void {
 		this.cache.set(key, {
-			date: Date.now(),
+			date: this.timeService.now,
 			value,
 		});
 	}
@@ -236,7 +283,7 @@ export class MemoryKVCache<T> {
 	public get(key: string): T | undefined {
 		const cached = this.cache.get(key);
 		if (cached == null) return undefined;
-		if ((Date.now() - cached.date) > this.lifetime) {
+		if ((this.timeService.now - cached.date) > this.lifetime) {
 			this.cache.delete(key);
 			return undefined;
 		}
@@ -246,7 +293,7 @@ export class MemoryKVCache<T> {
 	public has(key: string): boolean {
 		const cached = this.cache.get(key);
 		if (cached == null) return false;
-		if ((Date.now() - cached.date) > this.lifetime) {
+		if ((this.timeService.now - cached.date) > this.lifetime) {
 			this.cache.delete(key);
 			return false;
 		}
@@ -312,7 +359,7 @@ export class MemoryKVCache<T> {
 
 	@bindThis
 	public gc(): void {
-		const now = Date.now();
+		const now = this.timeService.now;
 
 		for (const [key, { date }] of this.cache.entries()) {
 			// The map is ordered from oldest to youngest.
@@ -335,7 +382,6 @@ export class MemoryKVCache<T> {
 	@bindThis
 	public dispose(): void {
 		this.clear();
-		clearInterval(this.gcIntervalHandle);
 	}
 
 	public get size() {
@@ -348,27 +394,46 @@ export class MemoryKVCache<T> {
 }
 
 export class MemorySingleCache<T> {
+	private readonly timeService: TimeService;
+	private readonly lifetime: number;
+
 	private cachedAt: number | null = null;
 	private value: T | undefined;
 
 	constructor(
-		private lifetime: number,
-	) {}
+		public readonly name: string,
+		services: MemoryCacheServices,
+		opts: MemoryCacheOpts,
+	) {
+		this.timeService = services.timeService;
+		this.lifetime = opts.lifetime;
+	}
 
 	@bindThis
 	public set(value: T): void {
-		this.cachedAt = Date.now();
+		this.cachedAt = this.timeService.now;
 		this.value = value;
 	}
 
 	@bindThis
-	public get(): T | undefined {
-		if (this.cachedAt == null) return undefined;
-		if ((Date.now() - this.cachedAt) > this.lifetime) {
-			this.value = undefined;
-			this.cachedAt = null;
-			return undefined;
+	public gc(): void {
+		// Check if we have a valid, non-expired value.
+		// This is a little convoluted but protects against edge cases and invalid states.
+		if (this.value !== undefined && this.cachedAt != null) {
+			const age = this.timeService.now - this.cachedAt;
+			if (Number.isSafeInteger(age) && age <= this.lifetime) {
+				return;
+			}
 		}
+
+		// If we get here, then it's expired or otherwise invalid.
+		// Whatever the case, we should clear everything back to zeros.
+		this.delete();
+	}
+
+	@bindThis
+	public get(): T | undefined {
+		this.gc();
 		return this.value;
 	}
 
@@ -376,6 +441,11 @@ export class MemorySingleCache<T> {
 	public delete() {
 		this.value = undefined;
 		this.cachedAt = null;
+	}
+
+	@bindThis
+	public clear() {
+		this.delete();
 	}
 
 	/**
@@ -428,5 +498,10 @@ export class MemorySingleCache<T> {
 			this.set(value);
 		}
 		return value;
+	}
+
+	@bindThis
+	public dispose() {
+		this.clear();
 	}
 }

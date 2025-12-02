@@ -48,7 +48,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps) => {
-			const user = await this.cacheService.findRemoteUserById(ps.userId);
+			const user = await this.cacheService.findOptionalRemoteUserById(ps.userId);
 
 			if (!user) {
 				throw new ApiError(meta.errors.noSuchUser);

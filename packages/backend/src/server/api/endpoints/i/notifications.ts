@@ -95,7 +95,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				this.notificationService.readAllNotification(me.id);
 			}
 
-			return await this.notificationEntityService.packMany(notifications, me.id);
+			return await this.notificationEntityService.packMany(notifications, me);
 		});
 	}
 }

@@ -17,13 +17,18 @@ export const packedUserListSchema = {
 			optional: false, nullable: false,
 			format: 'date-time',
 		},
+		createdBy: {
+			type: 'string',
+			optional: false, nullable: false,
+			format: 'id',
+		},
 		name: {
 			type: 'string',
 			optional: false, nullable: false,
 		},
 		userIds: {
 			type: 'array',
-			nullable: false, optional: true,
+			nullable: false, optional: false,
 			items: {
 				type: 'string',
 				nullable: false, optional: false,
@@ -34,6 +39,16 @@ export const packedUserListSchema = {
 			type: 'boolean',
 			nullable: false,
 			optional: false,
+		},
+		isLiked: {
+			type: 'boolean',
+			nullable: false,
+			optional: true,
+		},
+		likedCount: {
+			type: 'number',
+			nullable: false,
+			optional: true,
 		},
 	},
 } as const;

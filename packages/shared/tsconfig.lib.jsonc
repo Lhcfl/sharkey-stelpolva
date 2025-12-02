@@ -1,0 +1,22 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./tsconfig.common.jsonc",
+	"compilerOptions": {
+		// Target
+		// NodeNext should be used even for non-node libraries: https://stackoverflow.com/a/78087127
+		"target": "ES2022",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"lib": ["ES2022"],
+
+		// Output
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"inlineSources": true,
+		"removeComments": false,
+		"noEmitOnError": false,
+		"noEmit": false,
+		"composite": true
+	}
+}

@@ -5,8 +5,9 @@
 
 import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
-import * as lolex from '@sinonjs/fake-timers';
 import { addHours, addSeconds, subDays, subHours, subSeconds } from 'date-fns';
+import { GodOfTimeService } from '../../../misc/GodOfTimeService.js';
+import { MockConsole } from '../../../misc/MockConsole.js';
 import { CheckModeratorsActivityProcessorService } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
 import { MiSystemWebhook, MiUser, MiUserProfile, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -19,12 +20,16 @@ import { EmailService } from '@/core/EmailService.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
 import { SystemWebhookEventType } from '@/models/SystemWebhook.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
+import { TimeService } from '@/global/TimeService.js';
+import { CoreModule } from '@/core/CoreModule.js';
+import { QueueProcessorModule } from '@/queue/QueueProcessorModule.js';
 
 const baseDate = new Date(Date.UTC(2000, 11, 15, 12, 0, 0));
 
 describe('CheckModeratorsActivityProcessorService', () => {
 	let app: TestingModule;
-	let clock: lolex.InstalledClock;
+	let timeService: GodOfTimeService;
 	let service: CheckModeratorsActivityProcessorService;
 
 	// --------------------------------------------------------------------------------------
@@ -32,6 +37,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 	let usersRepository: UsersRepository;
 	let userProfilesRepository: UserProfilesRepository;
 	let idService: IdService;
+	let cacheManagementService: CacheManagementService;
 	let roleService: jest.Mocked<RoleService>;
 	let announcementService: jest.Mocked<AnnouncementService>;
 	let emailService: jest.Mocked<EmailService>;
@@ -89,61 +95,44 @@ describe('CheckModeratorsActivityProcessorService', () => {
 			.createTestingModule({
 				imports: [
 					GlobalModule,
-				],
-				providers: [
-					CheckModeratorsActivityProcessorService,
-					IdService,
-					{
-						provide: RoleService, useFactory: () => ({ getModerators: jest.fn() }),
-					},
-					{
-						provide: MetaService, useFactory: () => ({ fetch: jest.fn() }),
-					},
-					{
-						provide: AnnouncementService, useFactory: () => ({ create: jest.fn() }),
-					},
-					{
-						provide: EmailService, useFactory: () => ({ sendEmail: jest.fn() }),
-					},
-					{
-						provide: SystemWebhookService, useFactory: () => ({
-							fetchActiveSystemWebhooks: jest.fn(),
-							enqueueSystemWebhook: jest.fn(),
-						}),
-					},
-					{
-						provide: QueueLoggerService, useFactory: () => ({
-							logger: ({
-								createSubLogger: () => ({
-									info: jest.fn(),
-									warn: jest.fn(),
-									succ: jest.fn(),
-								}),
-							}),
-						}),
-					},
+					CoreModule,
+					QueueProcessorModule,
 				],
 			})
+			.overrideProvider(TimeService).useClass(GodOfTimeService)
+			.overrideProvider(RoleService).useValue({ getModerators: jest.fn() })
+			.overrideProvider(MetaService).useValue({ fetch: jest.fn() })
+			.overrideProvider(AnnouncementService).useValue({ create: jest.fn() })
+			.overrideProvider(EmailService).useValue({ sendEmail: jest.fn() })
+			.overrideProvider(SystemWebhookService).useValue({
+				fetchActiveSystemWebhooks: jest.fn(),
+				enqueueSystemWebhook: jest.fn(),
+			})
+			.overrideProvider(DI.console).useClass(MockConsole)
 			.compile();
+
+		await app.init();
+		app.enableShutdownHooks();
 
 		usersRepository = app.get(DI.usersRepository);
 		userProfilesRepository = app.get(DI.userProfilesRepository);
 
 		service = app.get(CheckModeratorsActivityProcessorService);
 		idService = app.get(IdService);
+		cacheManagementService = app.get(CacheManagementService);
+		timeService = app.get<GodOfTimeService>(TimeService);
 		roleService = app.get(RoleService) as jest.Mocked<RoleService>;
 		announcementService = app.get(AnnouncementService) as jest.Mocked<AnnouncementService>;
 		emailService = app.get(EmailService) as jest.Mocked<EmailService>;
 		systemWebhookService = app.get(SystemWebhookService) as jest.Mocked<SystemWebhookService>;
+	});
 
-		app.enableShutdownHooks();
+	afterAll(async () => {
+		await app.close();
 	});
 
 	beforeEach(async () => {
-		clock = lolex.install({
-			now: new Date(baseDate),
-			shouldClearNativeTimers: true,
-		});
+		timeService.resetTo(baseDate.getTime());
 
 		systemWebhook1 = crateSystemWebhook({ on: ['inactiveModeratorsWarning'] });
 		systemWebhook2 = crateSystemWebhook({ on: ['inactiveModeratorsWarning', 'inactiveModeratorsInvitationOnlyChanged'] });
@@ -156,17 +145,13 @@ describe('CheckModeratorsActivityProcessorService', () => {
 	});
 
 	afterEach(async () => {
-		clock.uninstall();
-		await usersRepository.delete({});
-		await userProfilesRepository.delete({});
+		await usersRepository.deleteAll();
+		await userProfilesRepository.deleteAll();
 		roleService.getModerators.mockReset();
 		announcementService.create.mockReset();
 		emailService.sendEmail.mockReset();
 		systemWebhookService.enqueueSystemWebhook.mockReset();
-	});
-
-	afterAll(async () => {
-		await app.close();
+		cacheManagementService.clear();
 	});
 
 	// --------------------------------------------------------------------------------------

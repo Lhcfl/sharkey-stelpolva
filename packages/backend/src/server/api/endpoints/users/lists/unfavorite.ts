@@ -8,6 +8,8 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { UserListFavoritesRepository, UserListsRepository } from '@/models/_.js';
 import { ApiError } from '@/server/api/error.js';
 import { DI } from '@/di-symbols.js';
+import { CacheService } from '@/core/CacheService.js';
+import { UserListService } from '@/core/UserListService.js';
 
 export const meta = {
 	requireCredential: true,
@@ -49,29 +51,37 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 		@Inject(DI.userListFavoritesRepository)
 		private userListFavoritesRepository: UserListFavoritesRepository,
+
+		private readonly cacheService: CacheService,
+		private readonly userListService: UserListService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const userListExist = await this.userListsRepository.exists({
-				where: {
-					id: ps.listId,
-					isPublic: true,
-				},
-			});
+			const [userListExist, myFavorites, listFavorites] = await Promise.all([
+				this.userListService.userListsCache.fetchMaybe(ps.listId),
+				this.cacheService.userListFavoritesCache.fetch(me.id),
+				this.cacheService.listUserFavoritesCache.fetch(ps.listId),
+			]);
 
 			if (!userListExist) {
 				throw new ApiError(meta.errors.noSuchList);
 			}
 
-			const exist = await this.userListFavoritesRepository.findOneBy({
-				userListId: ps.listId,
-				userId: me.id,
-			});
+			if (!userListExist.isPublic && userListExist.userId !== me.id) {
+				throw new ApiError(meta.errors.noSuchList);
+			}
 
-			if (exist === null) {
+			if (!myFavorites.has(ps.listId) && !listFavorites.has(me.id)) {
 				throw new ApiError(meta.errors.notFavorited);
 			}
 
-			await this.userListFavoritesRepository.delete({ id: exist.id });
+			await this.userListFavoritesRepository.delete({
+				userId: me.id,
+				userListId: ps.listId,
+			});
+
+			// Update caches directly since the Set instances are shared
+			myFavorites.delete(ps.listId);
+			listFavorites.delete(me.id);
 		});
 	}
 }

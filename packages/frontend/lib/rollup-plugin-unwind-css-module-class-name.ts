@@ -8,6 +8,7 @@ import { walk } from '../node_modules/estree-walker/src/index.js';
 import type * as estree from 'estree';
 import type * as estreeWalker from 'estree-walker';
 import type { Plugin } from 'vite';
+import type { Identifier } from 'estree';
 
 function isFalsyIdentifier(identifier: estree.Identifier): boolean {
 	return identifier.name === 'undefined' || identifier.name === 'NaN';
@@ -382,7 +383,7 @@ export function unwindCssModuleClassName(ast: estree.Node): void {
 						if (childNode.name !== ident) return;
 						this.replace({
 							type: 'Identifier',
-							name: node.declarations[0].id.name,
+							name: (node.declarations[0].id as Identifier).name,
 						});
 					},
 				});
@@ -432,6 +433,7 @@ export function unwindCssModuleClassName(ast: estree.Node): void {
 								type: 'ArrayExpression',
 								elements: node.declarations[0].init.arguments[1].elements.slice(0, __cssModulesIndex).concat(node.declarations[0].init.arguments[1].elements.slice(__cssModulesIndex + 1)),
 							}],
+							optional: false,
 						},
 					}],
 					kind: 'const',

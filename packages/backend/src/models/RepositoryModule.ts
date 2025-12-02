@@ -519,7 +519,7 @@ const $userMemosRepository: Provider = {
 };
 
 const $noteEditRepository: Provider = {
-	provide: DI.noteEditRepository,
+	provide: DI.noteEditsRepository,
 	useFactory: (db: DataSource) => db.getRepository(NoteEdit),
 	inject: [DI.db],
 };

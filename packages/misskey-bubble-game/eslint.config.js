@@ -6,32 +6,33 @@ export default [
 	...sharedConfig,
 	{
 		ignores: [
-			'**/node_modules',
-			'built',
-			'coverage',
-			'jest.config.ts',
-			'test',
-			'test-d',
+			'**/lib/',
+			'**/temp/',
+			'**/built/',
+			'**/coverage/',
+			'**/node_modules/',
 		],
 	},
 	{
-		files: ['**/*.ts', '**/*.tsx'],
+		files: ['src/**/*.ts', 'src/**/*.tsx'],
 		languageOptions: {
 			parserOptions: {
 				parser: tsParser,
-				project: ['./tsconfig.json'],
+				project: ['./tsconfig.game.json'],
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
 	},
 	{
-		ignores: [
-			"**/lib/",
-			"**/temp/",
-			"**/built/",
-			"**/coverage/",
-			"**/node_modules/",
-		]
+		files: ['*.js', '*.ts'],
+		languageOptions: {
+			parserOptions: {
+				parser: tsParser,
+				project: ['./tsconfig.scripts.json'],
+				sourceType: 'module',
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
 	},
 ];

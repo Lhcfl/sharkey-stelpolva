@@ -5,8 +5,9 @@
 
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import { captchaErrorCodes, CaptchaService, supportedCaptchaProviders } from '@/core/CaptchaService.js';
+import { CaptchaService, supportedCaptchaProviders } from '@/core/CaptchaService.js';
 import { ApiError } from '@/server/api/error.js';
+import { captchaErrorCodes } from '@/misc/captcha-error.js';
 
 export const meta = {
 	tags: ['admin', 'captcha'],

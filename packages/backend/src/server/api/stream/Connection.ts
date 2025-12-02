@@ -16,6 +16,7 @@ import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
 import { isJsonObject } from '@/misc/json-value.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 import type Logger from '@/logger.js';
 import { QueryService } from '@/core/QueryService.js';
 import type { ChannelsService } from './ChannelsService.js';
@@ -48,7 +49,7 @@ export default class Connection {
 	public myRecentReactions: Map<string, string> = new Map();
 	public myRecentRenotes: Set<string> = new Set();
 	public myRecentFavorites: Set<string> = new Set();
-	private fetchIntervalId: NodeJS.Timeout | null = null;
+	private fetchIntervalId: TimerHandle | null = null;
 	private closingConnection = false;
 	private logger: Logger;
 
@@ -61,6 +62,8 @@ export default class Connection {
 		private notificationService: NotificationService,
 		public readonly cacheService: CacheService,
 		private channelFollowingService: ChannelFollowingService,
+		private readonly timeService: TimeService,
+
 		loggerService: LoggerService,
 
 		user: MiUser | null | undefined,
@@ -80,7 +83,7 @@ export default class Connection {
 		const [userProfile, following, followingChannels, userIdsWhoMeMuting, userIdsWhoBlockingMe, userIdsWhoMeMutingRenotes, threadMutings, noteMutings, myRecentReactions, myRecentFavorites, myRecentRenotes] = await Promise.all([
 			this.cacheService.userProfileCache.fetch(this.user.id),
 			this.cacheService.userFollowingsCache.fetch(this.user.id),
-			this.channelFollowingService.userFollowingChannelsCache.fetch(this.user.id),
+			this.cacheService.userFollowingChannelsCache.fetch(this.user.id),
 			this.cacheService.userMutingsCache.fetch(this.user.id),
 			this.cacheService.userBlockedCache.fetch(this.user.id),
 			this.cacheService.renoteMutingsCache.fetch(this.user.id),
@@ -126,7 +129,7 @@ export default class Connection {
 			await this.fetch();
 
 			if (!this.fetchIntervalId) {
-				this.fetchIntervalId = setInterval(this.fetch, 1000 * 10);
+				this.fetchIntervalId = this.timeService.startTimer(this.fetch, 1000 * 10, { repeated: true });
 			}
 		}
 	}
@@ -376,7 +379,7 @@ export default class Connection {
 	 */
 	@bindThis
 	public dispose() {
-		if (this.fetchIntervalId) clearInterval(this.fetchIntervalId);
+		if (this.fetchIntervalId) this.timeService.stopTimer(this.fetchIntervalId);
 		for (const c of this.channels.values()) {
 			if (c.dispose) c.dispose();
 		}

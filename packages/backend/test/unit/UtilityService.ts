@@ -1,30 +1,38 @@
-import * as assert from 'assert';
-import { Test } from '@nestjs/testing';
-import { jest } from '@jest/globals';
+/*
+ * SPDX-FileCopyrightText: dakkar and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
 
-import { CoreModule } from '@/core/CoreModule.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { MetaService } from '@/core/MetaService.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { MiMeta } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
+import * as assert from 'assert';
+import type { MiMeta } from '@/models/_.js';
+import type { Config } from '@/config.js';
 import type { SoftwareSuspension } from '@/models/Meta.js';
 import type { MiInstance } from '@/models/Instance.js';
+import { UtilityService } from '@/core/UtilityService.js';
+import { EnvService } from '@/global/EnvService.js';
 
 describe('UtilityService', () => {
 	let utilityService: UtilityService;
-	let meta: jest.Mocked<MiMeta>;
+	let meta: MiMeta;
 
-	beforeAll(async () => {
-		const app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-			providers: [MetaService],
-		})
-			.overrideProvider(MetaService).useValue({ fetch: jest.fn() })
-			.compile();
+	beforeEach(() => {
+		const config = {
+			url: 'https://example.com',
+			host: 'example.com',
+		} as unknown as Config;
 
-		utilityService = app.get<UtilityService>(UtilityService);
-		meta = app.get<MiMeta>(DI.meta) as jest.Mocked<MiMeta>;
+		meta = {
+			blockedHosts: [],
+			silencedHosts: [],
+			mediaSilencedHosts: [],
+			federationHosts: [],
+			bubbleInstances: [],
+			deliverSuspendedSoftware: [],
+			federation: 'all',
+		} as unknown as MiMeta;
+
+		const envService = new EnvService();
+		utilityService = new UtilityService(config, meta, envService);
 	});
 
 	describe('punyHost', () => {
@@ -149,7 +157,7 @@ describe('UtilityService', () => {
 			checkThis(
 				[{ software: 'Test', versionRange: '1.2.3' }],
 				{ softwareName: 'Test', softwareVersion: '1-2-3' },
-				false, "semver can't parse softwareVersion",
+				false, 'semver can\'t parse softwareVersion',
 			);
 			checkThis(
 				[{ software: 'Test', versionRange: '*' }],

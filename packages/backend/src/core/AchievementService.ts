@@ -9,6 +9,7 @@ import type { MiUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { NotificationService } from '@/core/NotificationService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { ACHIEVEMENT_TYPES } from '@/models/UserProfile.js';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class AchievementService {
 		private userProfilesRepository: UserProfilesRepository,
 
 		private notificationService: NotificationService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -28,7 +30,7 @@ export class AchievementService {
 	): Promise<void> {
 		if (!ACHIEVEMENT_TYPES.includes(type)) return;
 
-		const date = Date.now();
+		const date = this.timeService.now;
 
 		const profile = await this.userProfilesRepository.findOneByOrFail({ userId: userId });
 

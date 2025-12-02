@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import Xev from 'xev';
 import * as Bull from 'bullmq';
 import { QueueService } from '@/core/QueueService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -23,6 +24,7 @@ export interface StatsEntry {
 export interface Stats {
 	deliver: StatsEntry,
 	inbox: StatsEntry,
+	background: StatsEntry,
 }
 
 const ev = new Xev();
@@ -31,12 +33,14 @@ const interval = 10000;
 
 @Injectable()
 export class QueueStatsService implements OnApplicationShutdown {
-	private intervalId?: NodeJS.Timeout;
+	private intervalId?: TimerHandle;
 	private activeDeliverJobs = 0;
 	private activeInboxJobs = 0;
+	private activeBackgroundJobs = 0;
 
 	private deliverQueueEvents?: Bull.QueueEvents;
 	private inboxQueueEvents?: Bull.QueueEvents;
+	private backgroundQueueEvents?: Bull.QueueEvents;
 
 	private log?: Stats[];
 
@@ -45,6 +49,7 @@ export class QueueStatsService implements OnApplicationShutdown {
 		private config: Config,
 
 		private queueService: QueueService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -56,6 +61,11 @@ export class QueueStatsService implements OnApplicationShutdown {
 	@bindThis
 	private onInboxActive() {
 		this.activeInboxJobs++;
+	}
+
+	@bindThis
+	private onBackgroundActive() {
+		this.activeBackgroundJobs++;
 	}
 
 	@bindThis
@@ -78,13 +88,16 @@ export class QueueStatsService implements OnApplicationShutdown {
 
 		this.deliverQueueEvents = new Bull.QueueEvents(QUEUE.DELIVER, baseQueueOptions(this.config, QUEUE.DELIVER));
 		this.inboxQueueEvents = new Bull.QueueEvents(QUEUE.INBOX, baseQueueOptions(this.config, QUEUE.INBOX));
+		this.backgroundQueueEvents = new Bull.QueueEvents(QUEUE.BACKGROUND_TASK, baseQueueOptions(this.config, QUEUE.BACKGROUND_TASK));
 
 		this.deliverQueueEvents.on('active', this.onDeliverActive);
 		this.inboxQueueEvents.on('active', this.onInboxActive);
+		this.backgroundQueueEvents.on('active', this.onBackgroundActive);
 
 		const tick = async () => {
 			const deliverJobCounts = await this.queueService.deliverQueue.getJobCounts();
 			const inboxJobCounts = await this.queueService.inboxQueue.getJobCounts();
+			const backgroundJobCounts = await this.queueService.backgroundTaskQueue.getJobCounts();
 
 			const stats = {
 				deliver: {
@@ -99,6 +112,12 @@ export class QueueStatsService implements OnApplicationShutdown {
 					waiting: inboxJobCounts.waiting,
 					delayed: inboxJobCounts.delayed,
 				},
+				background: {
+					activeSincePrevTick: this.activeBackgroundJobs,
+					active: backgroundJobCounts.active,
+					waiting: backgroundJobCounts.waiting,
+					delayed: backgroundJobCounts.delayed,
+				},
 			};
 
 			ev.emit('queueStats', stats);
@@ -110,17 +129,18 @@ export class QueueStatsService implements OnApplicationShutdown {
 
 			this.activeDeliverJobs = 0;
 			this.activeInboxJobs = 0;
+			this.activeBackgroundJobs = 0;
 		};
 
 		tick();
 
-		this.intervalId = setInterval(tick, interval);
+		this.intervalId = this.timeService.startTimer(tick, interval, { repeated: true });
 	}
 
 	@bindThis
-	public async stop() {
+	public async stop(): Promise<void> {
 		if (this.intervalId) {
-			clearInterval(this.intervalId);
+			this.timeService.stopTimer(this.intervalId);
 		}
 
 		this.log = undefined;
@@ -128,12 +148,15 @@ export class QueueStatsService implements OnApplicationShutdown {
 
 		this.deliverQueueEvents?.off('active', this.onDeliverActive);
 		this.inboxQueueEvents?.off('active', this.onInboxActive);
+		this.backgroundQueueEvents?.off('active', this.onBackgroundActive);
 
 		await this.deliverQueueEvents?.close();
 		await this.inboxQueueEvents?.close();
+		await this.backgroundQueueEvents?.close();
 
 		this.activeDeliverJobs = 0;
 		this.activeInboxJobs = 0;
+		this.activeBackgroundJobs = 0;
 	}
 
 	@bindThis

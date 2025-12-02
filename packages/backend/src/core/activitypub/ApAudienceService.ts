@@ -8,6 +8,7 @@ import promiseLimit from 'promise-limit';
 import type { MiRemoteUser, MiUser } from '@/models/User.js';
 import { concat, unique } from '@/misc/prelude/array.js';
 import { bindThis } from '@/decorators.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import { getApIds } from './type.js';
 import { ApPersonService } from './models/ApPersonService.js';
 import type { ApObject } from './type.js';
@@ -37,10 +38,25 @@ export class ApAudienceService {
 
 		const others = unique(concat([toGroups.other, ccGroups.other]));
 
-		const limit = promiseLimit<MiUser | null>(2);
-		const mentionedUsers = (await Promise.all(
-			others.map(id => limit(() => this.apPersonService.resolvePerson(id, resolver).catch(() => null))),
-		)).filter(x => x != null);
+		const resolved = await promiseMap(others, async x => {
+			return await this.apPersonService.resolvePerson(x, resolver).catch(() => null) as MiUser | null;
+		}, {
+			limit: 2,
+		});
+		const mentionedUsers = resolved.filter(x => x != null);
+
+		// If no audience is specified, then assume public
+		if (
+			toGroups.public.length === 0 && toGroups.followers.length === 0 &&
+			ccGroups.public.length === 0 && ccGroups.followers.length === 0 &&
+			others.length === 0
+		) {
+			return {
+				visibility: 'public',
+				mentionedUsers: [],
+				visibleUsers: [],
+			};
+		}
 
 		if (toGroups.public.length > 0) {
 			return {

@@ -9,6 +9,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { BubbleGameRecordsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	allowGet: true,
@@ -63,12 +64,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private bubbleGameRecordsRepository: BubbleGameRecordsRepository,
 
 		private userEntityService: UserEntityService,
+		private readonly timeService: TimeService,
 	) {
-		super(meta, paramDef, async (ps) => {
+		super(meta, paramDef, async (ps, me) => {
 			const records = await this.bubbleGameRecordsRepository.find({
 				where: {
 					gameMode: ps.gameMode,
-					seededAt: MoreThan(new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)),
+					seededAt: MoreThan(new Date(this.timeService.now - 1000 * 60 * 60 * 24 * 7)),
 				},
 				order: {
 					score: 'DESC',
@@ -77,7 +79,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				relations: ['user'],
 			});
 
-			const users = await this.userEntityService.packMany(records.map(r => r.user!), null);
+			const users = await this.userEntityService.packMany(records.map(r => r.user!), me);
 
 			return records.map(r => ({
 				id: r.id,

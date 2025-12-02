@@ -4,19 +4,27 @@
 	"description": "Misskey TypeGenerator",
 	"type": "module",
 	"scripts": {
-		"generate": "tsx src/generator.ts && eslint ./built/**/*.ts --fix --cache"
+		"generate": "tsx src/generator.ts && eslint ./built/**/*.ts --fix --cache",
+		"eslint": "eslint --quiet --cache -c eslint.config.js .",
+		"typecheck-all": "pnpm run --no-bail typecheck:generator && pnpm run --no-bail typecheck:autogen && pnpm run --no-bail typecheck:scripts",
+		"typecheck": "pnpm run typecheck:generator && pnpm run typecheck:autogen && pnpm run typecheck:scripts",
+		"typecheck:generator": "tsc -p tsconfig.generator.json --noEmit",
+		"typecheck:autogen": "tsc -p tsconfig.autogen.json --noEmit",
+		"typecheck:scripts": "tsc -p tsconfig.scripts.json --noEmit",
+		"lint": "pnpm typecheck && pnpm eslint"
 	},
 	"devDependencies": {
-		"@readme/openapi-parser": "2.7.0",
-		"@types/node": "22.15.2",
-		"@typescript-eslint/eslint-plugin": "8.31.0",
-		"@typescript-eslint/parser": "8.31.0",
-		"eslint": "9.25.1",
+		"@readme/openapi-parser": "5.0.1",
+		"@redocly/openapi-core": "1.34.5",
+		"@types/node": "22.18.1",
+		"@typescript-eslint/eslint-plugin": "8.44.1",
+		"@typescript-eslint/parser": "8.44.1",
+		"eslint": "9.36.0",
 		"openapi-types": "12.1.3",
-		"openapi-typescript": "6.7.6",
+		"openapi-typescript": "7.9.1",
 		"ts-case-convert": "2.1.0",
-		"tsx": "4.19.3",
-		"typescript": "5.8.3"
+		"tsx": "4.20.5",
+		"typescript": "5.9.2"
 	},
 	"files": [
 		"built"

@@ -299,7 +299,7 @@ export class MfmService {
 							(note that the `rp` are to be ignored, they only exist
 							for browsers who don't understand ruby)
 						*/
-						let nonRtNodes = [];
+						let nonRtNodes: ChildNode[] = [];
 						// scan children, ignore `rp`, split on `rt`
 						for (const child of node.childNodes) {
 							if (isText(child)) {

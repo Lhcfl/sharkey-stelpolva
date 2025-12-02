@@ -20,8 +20,6 @@ export const meta = {
 		},
 	},
 
-	res: {},
-
 	// 10 calls per 5 seconds
 	limit: {
 		duration: 1000 * 5,

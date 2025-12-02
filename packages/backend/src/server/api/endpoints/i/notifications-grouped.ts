@@ -191,7 +191,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// this matches the logic in NotificationService and it's what MkPagination expects
 			if (ps.sinceId && !ps.untilId) groupedNotifications.reverse();
 
-			return await this.notificationEntityService.packGroupedMany(groupedNotifications.slice(0, ps.limit), me.id);
+			return await this.notificationEntityService.packGroupedMany(groupedNotifications, me);
 		});
 	}
 }

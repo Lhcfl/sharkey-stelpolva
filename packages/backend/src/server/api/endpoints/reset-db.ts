@@ -66,6 +66,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			logger.info('---- Database reset complete.');
 
+			// Ignore rule - this is just testing code.
+			// eslint-disable-next-line no-restricted-globals
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		});
 	}

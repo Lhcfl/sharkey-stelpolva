@@ -1,0 +1,25 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "../shared/tsconfig.webworker.jsonc",
+	"compilerOptions": {
+		"declaration": true,
+		"declarationMap": true,
+		"removeComments": false,
+		"baseUrl": ".",
+		"outDir": "../../built/_sw_dist_",
+		"paths": {
+			"@/*": ["./src/*"],
+			"@@/*": ["../frontend-shared/*"]
+		},
+		"typeRoots": [
+			"./node_modules/@types",
+			"./src/@types"
+		]
+	},
+	"include": [
+		"src/**/*.ts"
+	],
+	"exclude": [
+		"node_modules"
+	]
+}

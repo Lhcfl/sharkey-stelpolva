@@ -4,10 +4,13 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import type { EmojisRepository } from '@/models/_.js';
+import { IsNull } from 'typeorm';
+import type { EmojisRepository, MiEmoji } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { EmojiEntityService } from '@/core/entities/EmojiEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { CacheManagementService, type ManagedMemorySingleCache } from '@/global/CacheManagementService.js';
+import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -32,10 +35,11 @@ export const meta = {
 		},
 	},
 
-	// 2 calls per second
+	// Up to 20 calls, then 5 / second
 	limit: {
-		duration: 1000,
-		max: 2,
+		type: 'bucket',
+		size: 20,
+		dripRate: 200,
 	},
 } as const;
 
@@ -48,21 +52,41 @@ export const paramDef = {
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+	// Short (2 second) cache to handle rapid bursts of fetching the emoji list.
+	// This just stores the IDs - the actual emojis are cached by CustomEmojiService
+	private readonly localEmojiIdsCache: ManagedMemorySingleCache<MiEmoji['id'][]>;
+
 	constructor(
 		@Inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
 
 		private emojiEntityService: EmojiEntityService,
+		private readonly customEmojiService: CustomEmojiService,
+
+		cacheManagementService: CacheManagementService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const emojis = await this.emojisRepository.createQueryBuilder()
-				.where('host IS NULL')
-				.orderBy('LOWER(category)', 'ASC')
-				.addOrderBy('LOWER(name)', 'ASC')
-				.getMany();
+			// Fetch the latest emoji list
+			const emojiIds = await this.localEmojiIdsCache.fetch(async () => {
+				const emojis = await this.emojisRepository.createQueryBuilder('emoji')
+					.select('emoji.id')
+					.where({ host: IsNull() })
+					.orderBy('LOWER(emoji.category)', 'ASC')
+					.addOrderBy('LOWER(emoji.name)', 'ASC')
+					.getMany() as { id: MiEmoji['id'] }[];
+
+				return emojis.map(e => e.id);
+			});
+
+			// Fetch the latest version of each emoji
+			const emojis = await this.customEmojiService.emojisByIdCache.fetchMany(emojiIds);
+
+			// Pack and return everything
 			return {
-				emojis: await this.emojiEntityService.packSimpleMany(emojis),
+				emojis: await this.emojiEntityService.packSimpleMany(emojis.values),
 			};
 		});
+
+		this.localEmojiIdsCache = cacheManagementService.createMemorySingleCache<MiEmoji['id'][]>('localEmojis', 1000 * 2);
 	}
 }

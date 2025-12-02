@@ -15,6 +15,9 @@ import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { jobQueue } from '@/boot/common.js';
 import { api, castAsError, initTestDb, signup, successfulApiCall, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
+import { LoggerService } from '@/core/LoggerService.js';
+import { NativeTimeService } from '@/global/TimeService.js';
+import { EnvService } from '@/global/EnvService.js';
 
 describe('Account Move', () => {
 	let jq: INestApplicationContext;
@@ -33,7 +36,8 @@ describe('Account Move', () => {
 	beforeAll(async () => {
 		jq = await jobQueue();
 
-		const config = loadConfig();
+		const loggerService = new LoggerService(console, new NativeTimeService(), new EnvService());
+		const config = loadConfig(loggerService);
 		url = new URL(config.url);
 		const connection = await initTestDb(false);
 		root = await signup({ username: 'root' });

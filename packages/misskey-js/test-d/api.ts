@@ -5,7 +5,7 @@ describe('API', () => {
 	test('success', async () => {
 		const cli = new Misskey.api.APIClient({
 			origin: 'https://misskey.test',
-			credential: 'TOKEN'
+			credential: 'TOKEN',
 		});
 		const res = await cli.request('meta', { detail: true });
 		expectType<Misskey.entities.MetaResponse>(res);
@@ -14,7 +14,7 @@ describe('API', () => {
 	test('conditional response type (meta)', async () => {
 		const cli = new Misskey.api.APIClient({
 			origin: 'https://misskey.test',
-			credential: 'TOKEN'
+			credential: 'TOKEN',
 		});
 
 		const res = await cli.request('meta', { detail: true });
@@ -33,7 +33,7 @@ describe('API', () => {
 	test('conditional response type (users/show)', async () => {
 		const cli = new Misskey.api.APIClient({
 			origin: 'https://misskey.test',
-			credential: 'TOKEN'
+			credential: 'TOKEN',
 		});
 
 		const res = await cli.request('users/show', { userId: 'xxxxxxxx' });

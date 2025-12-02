@@ -15,6 +15,8 @@ import { QueryService } from '@/core/QueryService.js';
 import { Packed } from '@/misc/json-schema.js';
 import { noteVisibilities } from '@/types.js';
 import { bindThis } from '@/decorators.js';
+import { promiseMap } from '@/misc/promise-map.js';
+import { In } from 'typeorm';
 
 export const meta = {
 	tags: ['notes'],
@@ -95,6 +97,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const query = this.queryService.makePaginationQuery(this.noteScheduleRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
 				.andWhere('note.userId = :userId', { userId: me.id });
 			const scheduleNotes = await query.limit(ps.limit).getMany();
+			const refNoteIds = scheduleNotes.flatMap(s => [s.note.reply, s.note.renote]).filter(id => id != null);
+			const refNotesList = await this.notesRepository.findBy({ id: In(refNoteIds) });
+			const refNotesMap = new Map(refNotesList.map(n => [n.id, n]));
 			const user = await this.userEntityService.pack(me, me);
 			const scheduleNotesPack: {
 				id: string;
@@ -111,9 +116,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				};
 				userId: string;
 				scheduledAt: string;
-			}[] = await Promise.all(scheduleNotes.map(async (item: MiNoteSchedule) => {
-				const renote = await this.fetchNote(item.note.renote, me);
-				const reply = await this.fetchNote(item.note.reply, me);
+			}[] = await promiseMap(scheduleNotes, async (item: MiNoteSchedule) => {
+				const renote = await this.fetchNote(item.note.renote, me, refNotesMap);
+				const reply = await this.fetchNote(item.note.reply, me, refNotesMap);
 
 				return {
 					...item,
@@ -136,7 +141,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						poll: item.note.poll ? await this.fillPoll(item.note.poll) : undefined,
 					},
 				};
-			}));
+			}, {
+				limit: 4,
+			});
 
 			return scheduleNotesPack;
 		});
@@ -146,12 +153,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	private async fetchNote(
 		id: MiNote['id'] | null | undefined,
 		me: MiUser,
+		hint?: Map<string, MiNote>,
 	): Promise<Packed<'Note'> | null> {
 		if (id) {
-			const note = await this.notesRepository.findOneBy({ id });
+			const note = hint?.get(id) ?? await this.notesRepository.findOneBy({ id });
 			if (note) {
 				note.reactionAndUserPairCache ??= [];
-				return this.noteEntityService.pack(note, me);
+				return await this.noteEntityService.pack(note, me);
 			}
 		}
 		return null;

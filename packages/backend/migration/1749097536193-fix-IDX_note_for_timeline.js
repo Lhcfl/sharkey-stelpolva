@@ -4,6 +4,8 @@
  */
 
 export class FixIDXNoteForTimeline1749097536193 {
+	name = 'FixIDXNoteForTimeline1749097536193';
+
 	async up(queryRunner) {
 		await queryRunner.query('drop index "IDX_note_for_timelines"');
 		await queryRunner.query(`

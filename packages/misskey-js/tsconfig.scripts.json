@@ -1,0 +1,18 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "../shared/tsconfig.scripts.jsonc",
+	"compilerOptions": {
+		"rootDirs": [
+			"./scripts",
+			"."
+		]
+	},
+	"include": [
+		"*.ts",
+		"*.js",
+		"scripts/**/*.ts",
+		"scripts/**/*.js",
+		"scripts/**/*.mjs",
+		"scripts/**/*.cjs"
+	]
+}

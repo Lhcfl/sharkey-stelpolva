@@ -15,7 +15,9 @@ import { dateUTC, isTimeSame, isTimeBefore, subtractTime, addTime } from '@/misc
 import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 import { MiRepository, miRepository } from '@/models/_.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import type { DataSource, Repository } from 'typeorm';
+import type { Lock } from 'redis-lock';
 
 const COLUMN_PREFIX = '___' as const;
 const UNIQUE_TEMP_COLUMN_PREFIX = 'unique_temp___' as const;
@@ -202,9 +204,7 @@ export default abstract class Chart<T extends Schema> {
 		return [y, m, d, h, _m, _s, _ms];
 	}
 
-	private static getCurrentDate() {
-		return Chart.parseDate(new Date());
-	}
+	protected abstract getCurrentDate(): Date;
 
 	public static schemaToEntity(name: string, schema: Schema, grouped = false): {
 		hour: EntitySchema,
@@ -260,11 +260,11 @@ export default abstract class Chart<T extends Schema> {
 		};
 	}
 
-	private lock: (key: string) => Promise<() => void>;
+	private lock: Lock;
 
 	constructor(
 		db: DataSource,
-		lock: (key: string) => Promise<() => void>,
+		lock: Lock,
 		logger: Logger,
 		name: string,
 		schema: T,
@@ -324,7 +324,7 @@ export default abstract class Chart<T extends Schema> {
 	 */
 	@bindThis
 	private async claimCurrentLog(group: string | null, span: 'hour' | 'day'): Promise<RawRecord<T>> {
-		const [y, m, d, h] = Chart.getCurrentDate();
+		const [y, m, d, h] = Chart.parseDate(this.getCurrentDate());
 
 		const current = dateUTC(
 			span === 'hour' ? [y, m, d, h] :
@@ -402,7 +402,7 @@ export default abstract class Chart<T extends Schema> {
 
 			return log;
 		} finally {
-			unlock();
+			await unlock();
 		}
 	}
 
@@ -527,13 +527,13 @@ export default abstract class Chart<T extends Schema> {
 
 		const groups = removeDuplicates(this.buffer.map(log => log.group));
 
-		await Promise.all(
-			groups.map(group =>
-				Promise.all([
-					this.claimCurrentLog(group, 'hour'),
-					this.claimCurrentLog(group, 'day'),
-				]).then(([logHour, logDay]) =>
-					update(logHour, logDay))));
+		await promiseMap(groups, async group => {
+			const logHour = await this.claimCurrentLog(group, 'hour');
+			const logDay = await this.claimCurrentLog(group, 'day');
+			await update(logHour, logDay);
+		}, {
+			limit: 2,
+		});
 	}
 
 	@bindThis
@@ -565,7 +565,7 @@ export default abstract class Chart<T extends Schema> {
 			]);
 		};
 
-		return Promise.all([
+		return await Promise.all([
 			this.claimCurrentLog(group, 'hour'),
 			this.claimCurrentLog(group, 'day'),
 		]).then(([logHour, logDay]) =>
@@ -579,7 +579,7 @@ export default abstract class Chart<T extends Schema> {
 
 	@bindThis
 	public async clean(): Promise<void> {
-		const current = dateUTC(Chart.getCurrentDate());
+		const current = this.getCurrentDate();
 
 		// 一日以上前かつ三日以内
 		const gt = Chart.dateToTimestamp(current) - (60 * 60 * 24 * 3);
@@ -615,7 +615,7 @@ export default abstract class Chart<T extends Schema> {
 
 	@bindThis
 	public async getChartRaw(span: 'hour' | 'day', amount: number, cursor: Date | null, group: string | null = null): Promise<ChartResult<T>> {
-		const [y, m, d, h, _m, _s, _ms] = cursor ? Chart.parseDate(subtractTime(addTime(cursor, 1, span), 1)) : Chart.getCurrentDate();
+		const [y, m, d, h, _m, _s, _ms] = cursor ? Chart.parseDate(subtractTime(addTime(cursor, 1, span), 1)) : Chart.parseDate(this.getCurrentDate());
 		const [y2, m2, d2, h2] = cursor ? Chart.parseDate(addTime(cursor, 1, span)) : [] as never;
 
 		const lt = dateUTC([y, m, d, h, _m, _s, _ms]);

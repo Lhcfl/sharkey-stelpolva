@@ -12,6 +12,7 @@ import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 import { MiInstance } from '@/models/Instance.js';
 import { diffArrays } from '@/misc/diff-arrays.js';
 import type { MetasRepository } from '@/models/_.js';
@@ -20,7 +21,7 @@ import type { OnApplicationShutdown } from '@nestjs/common';
 @Injectable()
 export class MetaService implements OnApplicationShutdown {
 	private cache: MiMeta | undefined;
-	private intervalId: NodeJS.Timeout;
+	private intervalId: TimerHandle;
 
 	constructor(
 		@Inject(DI.redisForSub)
@@ -34,16 +35,17 @@ export class MetaService implements OnApplicationShutdown {
 
 		private featuredService: FeaturedService,
 		private globalEventService: GlobalEventService,
+		private readonly timeService: TimeService,
 	) {
 		//this.onMessage = this.onMessage.bind(this);
 
 		if (process.env.NODE_ENV !== 'test') {
-			this.intervalId = setInterval(() => {
+			this.intervalId = this.timeService.startTimer(() => {
 				this.fetch(true).then(meta => {
 					// fetch内でもセットしてるけど仕様変更の可能性もあるため一応
 					this.cache = meta;
 				});
-			}, 1000 * 60 * 5);
+			}, 1000 * 60 * 5, { repeated: true });
 		}
 
 		this.redisForSub.on('message', this.onMessage);
@@ -161,7 +163,7 @@ export class MetaService implements OnApplicationShutdown {
 
 	@bindThis
 	public dispose(): void {
-		clearInterval(this.intervalId);
+		this.timeService.stopTimer(this.intervalId);
 		this.redisForSub.off('message', this.onMessage);
 	}
 

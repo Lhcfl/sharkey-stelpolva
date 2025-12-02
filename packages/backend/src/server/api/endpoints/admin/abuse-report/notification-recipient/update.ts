@@ -122,7 +122,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				me,
 			);
 
-			return this.abuseReportNotificationRecipientEntityService.pack(result);
+			return await this.abuseReportNotificationRecipientEntityService.pack(result);
 		});
 	}
 }

@@ -62,12 +62,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch the list
-			const userList = await this.userListsRepository.findOneBy({
-				id: ps.listId,
-				userId: me.id,
-			});
+			const userList = await this.userListService.userListsCache.fetchMaybe(ps.listId);
 
-			if (userList == null) {
+			if (userList == null || userList.userId !== me.id) {
 				throw new ApiError(meta.errors.noSuchList);
 			}
 

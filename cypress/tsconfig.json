@@ -1,9 +1,8 @@
 {
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "../packages/shared/tsconfig.web.jsonc",
 	"compilerOptions": {
-		"lib": ["dom", "es5"],
-		"target": "es5",
 		"types": ["cypress", "node"],
-		"incremental": true
 	},
 	"include": ["./**/*.ts"]
 }

@@ -63,7 +63,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			const invitations = await this.chatService.getSentRoomInvitationsWithPagination(ps.roomId, ps.limit, ps.sinceId, ps.untilId);
-			return this.chatEntityService.packRoomInvitations(invitations, me);
+			return await this.chatEntityService.packRoomInvitations(invitations, me);
 		});
 	}
 }

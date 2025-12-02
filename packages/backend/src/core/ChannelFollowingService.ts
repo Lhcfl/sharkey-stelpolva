@@ -9,16 +9,13 @@ import { DI } from '@/di-symbols.js';
 import type { ChannelFollowingsRepository } from '@/models/_.js';
 import { MiChannel } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
-import { GlobalEvents, GlobalEventService, InternalEventTypes } from '@/core/GlobalEventService.js';
+import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { bindThis } from '@/decorators.js';
 import type { MiLocalUser } from '@/models/User.js';
-import { QuantumKVCache } from '@/misc/QuantumKVCache.js';
-import { InternalEventService } from './InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 
 @Injectable()
-export class ChannelFollowingService implements OnModuleInit {
-	public userFollowingChannelsCache: QuantumKVCache<Set<string>>;
-
+export class ChannelFollowingService {
 	constructor(
 		@Inject(DI.redis)
 		private redisClient: Redis.Redis,
@@ -29,21 +26,7 @@ export class ChannelFollowingService implements OnModuleInit {
 		private idService: IdService,
 		private globalEventService: GlobalEventService,
 		private readonly internalEventService: InternalEventService,
-	) {
-		this.userFollowingChannelsCache = new QuantumKVCache<Set<string>>(this.internalEventService, 'userFollowingChannels', {
-			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: (key) => this.channelFollowingsRepository.find({
-				where: { followerId: key },
-				select: ['followeeId'],
-			}).then(xs => new Set(xs.map(x => x.followeeId))),
-		});
-
-		this.internalEventService.on('followChannel', this.onMessage);
-		this.internalEventService.on('unfollowChannel', this.onMessage);
-	}
-
-	onModuleInit() {
-	}
+	) {}
 
 	@bindThis
 	public async follow(
@@ -56,7 +39,7 @@ export class ChannelFollowingService implements OnModuleInit {
 			followeeId: targetChannel.id,
 		});
 
-		this.globalEventService.publishInternalEvent('followChannel', {
+		await this.internalEventService.emit('followChannel', {
 			userId: requestUser.id,
 			channelId: targetChannel.id,
 		});
@@ -72,37 +55,9 @@ export class ChannelFollowingService implements OnModuleInit {
 			followeeId: targetChannel.id,
 		});
 
-		this.globalEventService.publishInternalEvent('unfollowChannel', {
+		await this.internalEventService.emit('unfollowChannel', {
 			userId: requestUser.id,
 			channelId: targetChannel.id,
 		});
-	}
-
-	@bindThis
-	private async onMessage<E extends 'followChannel' | 'unfollowChannel'>(body: InternalEventTypes[E], type: E): Promise<void> {
-		{
-			switch (type) {
-				case 'followChannel': {
-					await this.userFollowingChannelsCache.delete(body.userId);
-					break;
-				}
-				case 'unfollowChannel': {
-					await this.userFollowingChannelsCache.delete(body.userId);
-					break;
-				}
-			}
-		}
-	}
-
-	@bindThis
-	public dispose(): void {
-		this.internalEventService.off('followChannel', this.onMessage);
-		this.internalEventService.off('unfollowChannel', this.onMessage);
-		this.userFollowingChannelsCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

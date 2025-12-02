@@ -4,6 +4,8 @@
  */
 
 export class RemoveIDXInstanceHostFilters1749267016885 {
+	name = 'RemoveIDXInstanceHostFilters1749267016885';
+
 	async up(queryRunner) {
 		await queryRunner.query(`DROP INDEX IF EXISTS "IDX_instance_host_filters"`);
 	}

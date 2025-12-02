@@ -5,6 +5,7 @@
 
 import { afterEach, beforeAll, describe, test } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
+import { DataSource } from 'typeorm';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { EmojiEntityService } from '@/core/entities/EmojiEntityService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -17,7 +18,6 @@ import { EmojisRepository } from '@/models/_.js';
 import { MiEmoji } from '@/models/Emoji.js';
 import { CoreModule } from '@/core/CoreModule.js';
 import { DriveService } from '@/core//DriveService.js';
-import { DataSource } from 'typeorm';
 
 describe('CustomEmojiService', () => {
 	let app: TestingModule;
@@ -33,23 +33,20 @@ describe('CustomEmojiService', () => {
 					GlobalModule,
 					CoreModule,
 				],
-				providers: [
-					CustomEmojiService,
-					UtilityService,
-					IdService,
-					EmojiEntityService,
-					ModerationLogService,
-					GlobalEventService,
-					DriveService,
-				],
 			})
 			.compile();
+
+		await app.init();
 		app.enableShutdownHooks();
 
 		service = app.get<CustomEmojiService>(CustomEmojiService);
 		emojisRepository = app.get<EmojisRepository>(DI.emojisRepository);
 		idService = app.get<IdService>(IdService);
-		await app.get<DataSource>(DI.db).query("set session time zone 'UTC'");
+		await app.get<DataSource>(DI.db).query('set session time zone \'UTC\'');
+	});
+
+	afterAll(async () => {
+		await app.close();
 	});
 
 	describe('fetchEmojis', () => {
@@ -92,7 +89,7 @@ describe('CustomEmojiService', () => {
 		}
 
 		afterEach(async () => {
-			await emojisRepository.delete({});
+			await emojisRepository.deleteAll();
 		});
 
 		describe('単独', () => {

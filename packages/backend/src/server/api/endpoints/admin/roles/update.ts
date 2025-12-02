@@ -9,6 +9,7 @@ import type { RolesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { RoleService } from '@/core/RoleService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
 
 export const meta = {
 	tags: ['admin', 'role'],
@@ -22,6 +23,12 @@ export const meta = {
 			message: 'No such role.',
 			code: 'NO_SUCH_ROLE',
 			id: 'cd23ef55-09ad-428a-ac61-95a45e124b32',
+		},
+
+		badValues: {
+			message: 'Invalid policy values',
+			code: 'BAD_POLICY_VALUES',
+			id: '39d78ad7-0f00-4bff-b2e2-2e7db889e05d',
 		},
 	},
 } as const;
@@ -67,23 +74,35 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchRole);
 			}
 
-			await this.roleService.update(role, {
-				name: ps.name,
-				description: ps.description,
-				color: ps.color,
-				iconUrl: ps.iconUrl,
-				target: ps.target,
-				condFormula: ps.condFormula,
-				isPublic: ps.isPublic,
-				isModerator: ps.isModerator,
-				isAdministrator: ps.isAdministrator,
-				isExplorable: ps.isExplorable,
-				asBadge: ps.asBadge,
-				preserveAssignmentOnMoveAccount: ps.preserveAssignmentOnMoveAccount,
-				canEditMembersByModerator: ps.canEditMembersByModerator,
-				displayOrder: ps.displayOrder,
-				policies: ps.policies,
-			}, me);
+			try {
+				await this.roleService.update(role, {
+					name: ps.name,
+					description: ps.description,
+					color: ps.color,
+					iconUrl: ps.iconUrl,
+					target: ps.target,
+					condFormula: ps.condFormula,
+					isPublic: ps.isPublic,
+					isModerator: ps.isModerator,
+					isAdministrator: ps.isAdministrator,
+					isExplorable: ps.isExplorable,
+					asBadge: ps.asBadge,
+					preserveAssignmentOnMoveAccount: ps.preserveAssignmentOnMoveAccount,
+					canEditMembersByModerator: ps.canEditMembersByModerator,
+					displayOrder: ps.displayOrder,
+					policies: ps.policies,
+				}, me);
+			} catch (e) {
+				if (e instanceof IdentifiableError) {
+					if (e.id === '39d78ad7-0f00-4bff-b2e2-2e7db889e05d') {
+						throw new ApiError(
+							meta.errors.badValues,
+							e.cause,
+						);
+					}
+				}
+				throw e;
+			}
 		});
 	}
 }

@@ -16,6 +16,7 @@ export default [
 	...pluginVue.configs['flat/recommended'],
 	{
 		files: ['{src,test,js,@types}/**/*.{ts,vue}'],
+		ignores: ['*.*'],
 		plugins: { sharkey: { rules: { locale: localeRule } } },
 		languageOptions: {
 			globals: {
@@ -43,7 +44,7 @@ export default [
 			parserOptions: {
 				extraFileExtensions: ['.vue'],
 				parser: tsParser,
-				project: ['./tsconfig.json'],
+				project: ['tsconfig.vue.json'],
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
 			},
@@ -162,23 +163,120 @@ export default [
 				autofix: true,
 			}],
 			'vue/attribute-hyphenation': ['error', 'never'],
+			'import/no-default-export': 'off',
 		},
 	},
 	{
 		files: ['src/**/*.stories.ts'],
 		rules: {
 			'no-restricted-globals': 'off',
-		}
+		},
+	},
+	{
+		files: ['.storybook/**/*.ts', '.storybook/**/*.tsx', '.storybook/**/*.js', '.storybook/**/*.jsx'],
+		rules: {
+			'import/no-default-export': 'off',
+			'no-restricted-globals': 'off',
+		},
+	},
+	{
+		files: ['.storybook/**/*.ts', '.storybook/**/*.tsx', '.storybook/**/*.js', '.storybook/**/*.jsx'],
+		ignores: [
+			'.storybook/changes.ts',
+			'.storybook/main.ts',
+			'.storybook/generate.tsx',
+			'.storybook/preload-locale.ts',
+			'.storybook/preload-theme.ts',
+		],
+		languageOptions: {
+			parserOptions: {
+				parser: tsParser,
+				project: ['tsconfig.vue.storybook.json'],
+				sourceType: 'module',
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
+		rules: {
+			'import/no-default-export': 'off',
+		},
+	},
+	{
+		files: [
+			'.storybook/changes.ts',
+			'.storybook/main.ts',
+			'.storybook/generate.tsx',
+			'.storybook/preload-locale.ts',
+			'.storybook/preload-theme.ts',
+		],
+		languageOptions: {
+			parserOptions: {
+				parser: tsParser,
+				project: ['tsconfig.storybook.json'],
+				sourceType: 'module',
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
+		rules: {
+			'import/no-default-export': 'off',
+		},
+	},
+	{
+		files: ['test/**/*.ts', 'test/**/*.js'],
+		languageOptions: {
+			parserOptions: {
+				parser: tsParser,
+				project: ['test/tsconfig.json'],
+				sourceType: 'module',
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
+	},
+	{
+		files: [
+			'*.js',
+			'*.ts',
+			'lib/**/*.ts',
+			'lib/**/*.js',
+			'scripts/**/*.ts',
+			'scripts/**/*.js',
+			'scripts/**/*.mjs',
+			'scripts/**/*.cjs',
+		],
+		ignores: [
+			'node_modules',
+			'.storybook',
+			'vue-shims.d.ts',
+			'src',
+			'test',
+			'@types',
+			'assets',
+		],
+		languageOptions: {
+			globals: {
+				...globals.node,
+			},
+			parserOptions: {
+				parser: tsParser,
+				project: ['tsconfig.scripts.json'],
+				sourceType: 'module',
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
+		rules: {
+			'import/no-default-export': 'off',
+		},
 	},
 	{
 		ignores: [
-			"**/lib/",
-			"**/temp/",
-			"**/built/",
-			"**/coverage/",
-			"**/node_modules/",
-			"**/libopenmpt/",
-			"**/storybook-static/"
-		]
+			'**/lib',
+			'**/temp',
+			'**/built',
+			'**/coverage',
+			'**/node_modules',
+			'**/libopenmpt',
+			'**/storybook-static',
+			'vue-shims.d.ts',
+			'assets',
+		],
 	},
 ];

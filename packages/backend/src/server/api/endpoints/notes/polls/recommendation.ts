@@ -12,6 +12,7 @@ import { DI } from '@/di-symbols.js';
 import { QueryService } from '@/core/QueryService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { ApiError } from '@/server/api/error.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -77,6 +78,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteEntityService: NoteEntityService,
 		private readonly queryService: QueryService,
 		private readonly roleService: RoleService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.pollsRepository.createQueryBuilder('poll')
@@ -96,16 +98,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.expired) {
 				query.andWhere('poll.expiresAt IS NOT NULL');
 				query.andWhere('poll.expiresAt <= :expiresMax', {
-					expiresMax: new Date(),
+					expiresMax: this.timeService.date,
 				});
 				query.andWhere('poll.expiresAt >= :expiresMin', {
-					expiresMin: new Date(Date.now() - (1000 * 60 * 60 * 24 * 7)),
+					expiresMin: new Date(this.timeService.now - (1000 * 60 * 60 * 24 * 7)),
 				});
 			} else {
 				query.andWhere(new Brackets(qb => {
 					qb
 						.where('poll.expiresAt IS NULL')
-						.orWhere('poll.expiresAt > :now', { now: new Date() });
+						.orWhere('poll.expiresAt > :now', { now: this.timeService.date });
 				}));
 			}
 

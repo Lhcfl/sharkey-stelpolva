@@ -20,6 +20,7 @@ import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.j
 import { Packed } from '@/misc/json-schema.js';
 import { IdService } from '@/core/IdService.js';
 import { NotificationService } from '@/core/NotificationService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 import type { DbJobDataWithUser } from '../types.js';
@@ -45,6 +46,7 @@ export class ExportClipsProcessorService {
 		private queueLoggerService: QueueLoggerService,
 		private idService: IdService,
 		private notificationService: NotificationService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-clips');
 	}
@@ -78,7 +80,7 @@ export class ExportClipsProcessorService {
 
 			this.logger.debug(`Exported to: ${path}`);
 
-			const fileName = 'clips-' + dateFormat(new Date(), 'yyyy-MM-dd-HH-mm-ss') + '.json';
+			const fileName = 'clips-' + dateFormat(this.timeService.date, 'yyyy-MM-dd-HH-mm-ss') + '.json';
 			const driveFile = await this.driveService.addFile({ user, path, name: fileName, force: true, ext: 'json' });
 
 			this.logger.debug(`Exported to: ${driveFile.id}`);

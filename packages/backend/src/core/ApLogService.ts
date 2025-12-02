@@ -12,8 +12,11 @@ import type { ApContextsRepository, ApFetchLogsRepository, ApInboxLogsRepository
 import type { Config } from '@/config.js';
 import { JsonValue } from '@/misc/json-value.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { IdService } from '@/core/IdService.js';
-import { IActivity, IObject } from './activitypub/type.js';
+import { IActivity, IObject } from '@/core/activitypub/type.js';
+import { bindThis } from '@/decorators.js';
+import { QueueService } from '@/core/QueueService.js';
 
 @Injectable()
 export class ApLogService {
@@ -22,7 +25,7 @@ export class ApLogService {
 		private readonly config: Config,
 
 		@Inject(DI.apContextsRepository)
-		private apContextsRepository: ApContextsRepository,
+		private readonly apContextsRepository: ApContextsRepository,
 
 		@Inject(DI.apInboxLogsRepository)
 		private readonly apInboxLogsRepository: ApInboxLogsRepository,
@@ -32,6 +35,8 @@ export class ApLogService {
 
 		private readonly utilityService: UtilityService,
 		private readonly idService: IdService,
+		private readonly timeService: TimeService,
+		private readonly queueService: QueueService,
 	) {}
 
 	/**
@@ -46,7 +51,7 @@ export class ApLogService {
 
 		const log = new SkApInboxLog({
 			id: this.idService.gen(),
-			at: new Date(),
+			at: this.timeService.date,
 			verified: false,
 			accepted: false,
 			host,
@@ -85,7 +90,7 @@ export class ApLogService {
 	}): Promise<SkApFetchLog> {
 		const log = new SkApFetchLog({
 			id: this.idService.gen(),
-			at: new Date(),
+			at: this.timeService.date,
 			accepted: false,
 			...data,
 		});
@@ -119,6 +124,16 @@ export class ApLogService {
 			.values(context)
 			.orIgnore('md5')
 			.execute();
+	}
+
+	@bindThis
+	public async deleteObjectLogsDeferred(objectUris: string | string[]): Promise<void> {
+		await this.queueService.createDeleteApLogsJob('object', objectUris);
+	}
+
+	@bindThis
+	public async deleteInboxLogsDeferred(userIds: string | string[]): Promise<void> {
+		await this.queueService.createDeleteApLogsJob('inbox', userIds);
 	}
 
 	/**
@@ -163,7 +178,7 @@ export class ApLogService {
 	 */
 	public async deleteExpiredLogs(): Promise<number> {
 		// This is the date in UTC of the oldest log to KEEP
-		const oldestAllowed = new Date(Date.now() - this.config.activityLogging.maxAge);
+		const oldestAllowed = new Date(this.timeService.now - this.config.activityLogging.maxAge);
 
 		// Delete all logs older than the threshold.
 		const inboxDeleted = await this.deleteExpiredInboxLogs(oldestAllowed);

@@ -5,7 +5,7 @@
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
-import { In, IsNull } from 'typeorm';
+import { In, IsNull, Not } from 'typeorm';
 import { EmojiEntityService } from '@/core/entities/EmojiEntityService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { IdService } from '@/core/IdService.js';
@@ -14,12 +14,30 @@ import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
 import { MemoryKVCache, RedisSingleCache } from '@/misc/cache.js';
 import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
-import type { DriveFilesRepository, EmojisRepository, MiRole, MiUser } from '@/models/_.js';
+import type { DriveFilesRepository, EmojisRepository, MiRole, MiUser, MiDriveFile, NotesRepository } from '@/models/_.js';
 import type { MiEmoji } from '@/models/Emoji.js';
 import type { Serialized } from '@/types.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import type { Config } from '@/config.js';
-import { DriveService } from './DriveService.js';
+import { DriveService } from '@/core/DriveService.js';
+import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/CacheManagementService.js';
+import { TimeService } from '@/global/TimeService.js';
+import { LoggerService } from '@/core/LoggerService.js';
+import { promiseMap } from '@/misc/promise-map.js';
+import { isRetryableSymbol } from '@/misc/is-retryable-error.js';
+import type Logger from '@/logger.js';
+import { KeyNotFoundError } from '@/misc/errors/KeyNotFoundError.js';
+
+// TODO move to sk-types.d.ts when merged
+type MinEntity<T> = Omit<T, NullableProps<T>> & {
+	[K in NullableProps<T>]?: T[K] | undefined;
+};
+type SemiPartial<T, P extends keyof T> = Omit<T, P> & {
+	[Key in P]?: T[Key] | undefined;
+};
+type NullableProps<T> = {
+	[K in keyof T]: null extends T[K] ? K : never;
+}[keyof T];
 
 const parseEmojiStrRegexp = /^([-\w]+)(?:@([\w.-]+))?$/;
 
@@ -60,9 +78,15 @@ export const fetchEmojisSortKeys = [
 export type FetchEmojisSortKeys = typeof fetchEmojisSortKeys[number];
 
 @Injectable()
-export class CustomEmojiService implements OnApplicationShutdown {
-	private emojisCache: MemoryKVCache<MiEmoji | null>;
-	public localEmojisCache: RedisSingleCache<Map<string, MiEmoji>>;
+export class CustomEmojiService {
+	// id -> MiEmoji
+	public readonly emojisByIdCache: ManagedQuantumKVCache<MiEmoji>;
+
+	// key ("name host") -> MiEmoji (for remote emojis)
+	// key ("name") -> MiEmoji (for local emojis)
+	public readonly emojisByKeyCache: ManagedQuantumKVCache<MiEmoji>;
+
+	private readonly logger: Logger;
 
 	constructor(
 		@Inject(DI.redis)
@@ -73,29 +97,55 @@ export class CustomEmojiService implements OnApplicationShutdown {
 		private emojisRepository: EmojisRepository,
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
+
+		@Inject(DI.notesRepository)
+		private notesRepository: NotesRepository,
+
 		private utilityService: UtilityService,
 		private idService: IdService,
 		private emojiEntityService: EmojiEntityService,
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
 		private driveService: DriveService,
-	) {
-		this.emojisCache = new MemoryKVCache<MiEmoji | null>(1000 * 60 * 60 * 12); // 12h
+		private readonly timeService: TimeService,
 
-		this.localEmojisCache = new RedisSingleCache<Map<string, MiEmoji>>(this.redisClient, 'localEmojis', {
-			lifetime: 1000 * 60 * 30, // 30m
-			memoryCacheLifetime: 1000 * 60 * 3, // 3m
-			fetcher: () => this.emojisRepository.find({ where: { host: IsNull() } }).then(emojis => new Map(emojis.map(emoji => [emoji.name, emoji]))),
-			toRedisConverter: (value) => JSON.stringify(Array.from(value.values())),
-			fromRedisConverter: (value) => {
-				return new Map(JSON.parse(value).map((x: Serialized<MiEmoji>) => [x.name, {
-					...x,
-					updatedAt: x.updatedAt ? new Date(x.updatedAt) : null,
-				}]));
+		cacheManagementService: CacheManagementService,
+		loggerService: LoggerService,
+	) {
+		this.logger = loggerService.getLogger('custom-emoji');
+
+		this.emojisByIdCache = cacheManagementService.createQuantumKVCache<MiEmoji>('emojisById', {
+			lifetime: 1000 * 60 * 60, // 1h
+			fetcher: async (id) => await this.emojisRepository.findOneByOrFail({ id }),
+			optionalFetcher: async (id) => await this.emojisRepository.findOneBy({ id }),
+			bulkFetcher: async (ids) => {
+				const emojis = await this.emojisRepository.findBy({ id: In(ids) });
+				return emojis.map(emoji => [emoji.id, emoji]);
+			},
+		});
+
+		this.emojisByKeyCache = cacheManagementService.createQuantumKVCache<MiEmoji>('emojisByKey', {
+			lifetime: 1000 * 60 * 60, // 1h
+			fetcher: async (key) => {
+				const { host, name } = decodeEmojiKey(key);
+				return await this.emojisRepository.findOneByOrFail({ host: host ?? IsNull(), name });
+			},
+			optionalFetcher: async (key) => {
+				const { host, name } = decodeEmojiKey(key);
+				return await this.emojisRepository.findOneBy({ host: host ?? IsNull(), name });
+			},
+			bulkFetcher: async (keys) => {
+				const queries = keys.map(key => {
+					const { host, name } = decodeEmojiKey(key);
+					return { host: host ?? IsNull(), name };
+				});
+				const emojis = await this.emojisRepository.findBy(queries);
+				return emojis.map(emoji => [encodeEmojiKey(emoji), emoji]);
 			},
 		});
 	}
 
+	/** @deprecated use createEmoji for new code */
 	@bindThis
 	public async add(data: {
 		originalUrl: string;
@@ -110,31 +160,39 @@ export class CustomEmojiService implements OnApplicationShutdown {
 		localOnly: boolean;
 		roleIdsThatCanBeUsedThisEmojiAsReaction: MiRole['id'][];
 	}, moderator?: MiUser): Promise<MiEmoji> {
-		const emoji = await this.emojisRepository.insertOne({
-			id: this.idService.gen(),
-			updatedAt: new Date(),
-			name: data.name,
-			category: data.category,
-			host: data.host,
-			aliases: data.aliases,
-			originalUrl: data.originalUrl,
-			publicUrl: data.publicUrl,
-			type: data.fileType,
-			license: data.license,
-			isSensitive: data.isSensitive,
-			localOnly: data.localOnly,
-			roleIdsThatCanBeUsedThisEmojiAsReaction: data.roleIdsThatCanBeUsedThisEmojiAsReaction,
-		});
+		return await this.createEmoji(data, { moderator });
+	}
 
-		if (data.host == null) {
-			this.localEmojisCache.refresh();
+	public async createEmoji(
+		data: SemiPartial<MinEntity<MiEmoji>, 'id' | 'updatedAt' | 'aliases' | 'roleIdsThatCanBeUsedThisEmojiAsReaction'>,
+		opts?: { moderator?: { id: string } },
+	): Promise<MiEmoji> {
+		// Set defaults
+		data.id ??= this.idService.gen();
+		data.updatedAt ??= this.timeService.date;
+		data.aliases ??= [];
+		data.roleIdsThatCanBeUsedThisEmojiAsReaction ??= [];
 
-			this.globalEventService.publishBroadcastStream('emojiAdded', {
-				emoji: await this.emojiEntityService.packDetailed(emoji.id),
+		// Add to logs
+		this.logger.info(`Creating emoji name=${data.name} host=${data.host}...`);
+
+		// Add to database
+		await this.emojisRepository.insert(data);
+
+		// Add to cache
+		const emoji = await this.emojisByIdCache.fetch(data.id);
+		const emojiKey = encodeEmojiKey({ name: emoji.name, host: emoji.host });
+		this.emojisByIdCache.add(emojiKey, emoji); // This is a new entity, so we can use add() which does not emit sync events.
+
+		if (emoji.host == null) {
+			// Add to clients
+			await this.globalEventService.publishBroadcastStream('emojiAdded', {
+				emoji: await this.emojiEntityService.packDetailed(emoji),
 			});
 
-			if (moderator) {
-				this.moderationLogService.log(moderator, 'addCustomEmoji', {
+			// Add to mod logs
+			if (opts?.moderator) {
+				await this.moderationLogService.log(opts.moderator, 'addCustomEmoji', {
 					emojiId: emoji.id,
 					emoji: emoji,
 				});
@@ -144,6 +202,7 @@ export class CustomEmojiService implements OnApplicationShutdown {
 		return emoji;
 	}
 
+	/** @deprecated Use updateEmoji for new code */
 	@bindThis
 	public async update(data: (
 		{ id: MiEmoji['id'], name?: string; } | { name: string; id?: MiEmoji['id'], }
@@ -161,91 +220,161 @@ export class CustomEmojiService implements OnApplicationShutdown {
 		null
 		| 'NO_SUCH_EMOJI'
 		| 'SAME_NAME_EMOJI_EXISTS'
-	> {
-		const emoji = data.id
-			? await this.getEmojiById(data.id)
-			: await this.getEmojiByName(data.name!);
-		if (emoji === null) return 'NO_SUCH_EMOJI';
-		const id = emoji.id;
+		> {
+		try {
+			const criteria = data.id
+				? { id: data.id as string }
+				: { name: data.name as string, host: null };
 
-		// IDと絵文字名が両方指定されている場合は絵文字名の変更を行うため重複チェックが必要
-		const doNameUpdate = data.id && data.name && (data.name !== emoji.name);
+			const updates = {
+				...data,
+				id: undefined,
+				host: undefined,
+			};
+
+			const opts = {
+				moderator,
+			};
+
+			await this.updateEmoji(criteria, updates, opts);
+			return null;
+		} catch (err) {
+			if (err instanceof KeyNotFoundError) return 'NO_SUCH_EMOJI';
+			if (err instanceof DuplicateEmojiError) return 'SAME_NAME_EMOJI_EXISTS';
+			throw err;
+		}
+	}
+
+	@bindThis
+	public async updateEmoji(
+		criteria: { id: string } | { name: string, host: string | null },
+		data: Omit<Partial<MiEmoji>, 'id' | 'host'>,
+		opts?: { moderator?: { id: string } },
+	): Promise<MiEmoji> {
+		const emoji = 'id' in criteria
+			? await this.emojisByIdCache.fetch(criteria.id)
+			: await this.emojisByKeyCache.fetch(encodeEmojiKey(criteria));
+
+		// Update the system logs
+		this.logger.info(`Updating emoji name=${emoji.name} host=${emoji.host}...`);
+
+		// If changing the name, then make sure we don't have a conflict.
+		const doNameUpdate = data.name !== undefined && data.name !== emoji.name;
 		if (doNameUpdate) {
-			const isDuplicate = await this.checkDuplicate(data.name!);
-			if (isDuplicate) return 'SAME_NAME_EMOJI_EXISTS';
+			const isDuplicate = await this.checkDuplicate(data.name as string, emoji.host);
+			if (isDuplicate) throw new DuplicateEmojiError(data.name as string, emoji.host);
 		}
 
-		await this.emojisRepository.update(emoji.id, {
-			updatedAt: new Date(),
-			name: data.name,
-			category: data.category,
-			aliases: data.aliases,
-			license: data.license,
-			isSensitive: data.isSensitive,
-			localOnly: data.localOnly,
-			originalUrl: data.originalUrl,
-			publicUrl: data.publicUrl,
-			type: data.fileType,
-			roleIdsThatCanBeUsedThisEmojiAsReaction: data.roleIdsThatCanBeUsedThisEmojiAsReaction ?? undefined,
-		});
+		// Make sure we always set the updated date!
+		data.updatedAt ??= this.timeService.date;
 
-		this.localEmojisCache.refresh();
+		// Update the database
+		await this.emojisRepository.update({ id: emoji.id }, data);
 
-		// If we're changing the file, then we need to delete the old one
-		if (data.originalUrl != null && data.originalUrl !== emoji.originalUrl) {
-			const oldFile = await this.driveFilesRepository.findOneBy({ url: emoji.originalUrl, userHost: emoji.host ? emoji.host : IsNull() });
-			const newFile = await this.driveFilesRepository.findOneBy({ url: data.originalUrl, userHost: emoji.host ? emoji.host : IsNull() });
+		// Update the caches
+		const updated = await this.emojisByIdCache.refresh(emoji.id);
+		const updatedKey = encodeEmojiKey({ name: emoji.name, host: emoji.host });
+		await this.emojisByKeyCache.set(updatedKey, updated);
 
-			// But DON'T delete if this is the same file reference, otherwise we'll break the emoji!
-			if (oldFile && newFile && oldFile.id !== newFile.id) {
-				await this.driveService.deleteFile(oldFile, false, moderator ? moderator : undefined);
-			}
+		// Update the file
+		await this.updateEmojiFile(emoji, updated);
+
+		// If it's a remote emoji, then we're done.
+		// The remaining logic applies only to local emojis.
+		if (updated.host != null) {
+			return updated;
 		}
 
-		const packed = await this.emojiEntityService.packDetailed(emoji.id);
-
+		// Update the clients
 		if (!doNameUpdate) {
-			this.globalEventService.publishBroadcastStream('emojiUpdated', {
+			// If name is the same, then we can update in-place
+			const packed = await this.emojiEntityService.packDetailed(updated);
+			await this.globalEventService.publishBroadcastStream('emojiUpdated', {
 				emojis: [packed],
 			});
 		} else {
-			this.globalEventService.publishBroadcastStream('emojiDeleted', {
-				emojis: [await this.emojiEntityService.packDetailed(emoji)],
+			// If name has changed, we need to delete and recreate
+			const [oldPacked, newPacked] = await Promise.all([
+				this.emojiEntityService.packDetailed(emoji),
+				this.emojiEntityService.packDetailed(updated),
+			]);
+
+			await this.globalEventService.publishBroadcastStream('emojiDeleted', {
+				emojis: [oldPacked],
 			});
 
-			this.globalEventService.publishBroadcastStream('emojiAdded', {
-				emoji: packed,
+			await this.globalEventService.publishBroadcastStream('emojiAdded', {
+				emoji: newPacked,
 			});
 		}
 
-		if (moderator) {
-			const updated = await this.emojisRepository.findOneByOrFail({ id: id });
-			this.moderationLogService.log(moderator, 'updateCustomEmoji', {
+		// Update the mod logs
+		if (opts?.moderator) {
+			await this.moderationLogService.log(opts.moderator, 'updateCustomEmoji', {
 				emojiId: emoji.id,
 				before: emoji,
 				after: updated,
 			});
 		}
-		return null;
+
+		return updated;
+	}
+
+	@bindThis
+	private async updateEmojiFile(before: MiEmoji, after: MiEmoji, moderator?: { id: string }): Promise<void> {
+		// Nothing to do
+		if (after.originalUrl === before.originalUrl) {
+			return;
+		}
+
+		// If we're changing the file, then we need to delete the old one.
+		const [oldFile, newFile] = await Promise.all([
+			this.driveFilesRepository.findOneBy({ url: before.originalUrl, userHost: before.host ?? IsNull() }),
+			this.driveFilesRepository.findOneBy({ url: after.originalUrl, userHost: after.host ?? IsNull() }),
+		]);
+
+		// But DON'T delete if this is the same file reference, otherwise we'll break the emoji!
+		if (!oldFile || !newFile || oldFile.id === newFile.id) {
+			return;
+		}
+
+		await this.safeDeleteEmojiFile(before, oldFile, moderator);
+	}
+
+	@bindThis
+	private async safeDeleteEmojiFile(emoji: MiEmoji, file: MiDriveFile, moderator?: { id: string }): Promise<void> {
+		const [hasNoteReferences, hasEmojiReferences] = await Promise.all([
+			// Any note using this file ID is a reference.
+			this.notesRepository
+				.createQueryBuilder('note')
+				.where(':fileId <@ note.fileIds', { fileId: file.id })
+				.getExists(),
+			// Any *other* emoji using this file URL is a reference.
+			this.emojisRepository.existsBy({
+				originalUrl: file.url,
+				id: Not(emoji.id),
+			}),
+		]);
+
+		if (hasNoteReferences) {
+			this.logger.debug(`Not removing old file ${file.id} (${file.url}) - file is referenced by one or more notes.`);
+		} else if (hasEmojiReferences) {
+			this.logger.debug(`Not removing old file ${file.id} (${file.url}) - file is reference by another emoji.`);
+		} else {
+			this.logger.info(`Removing old file ${file.id} (${file.url}).`);
+			await this.driveService.deleteFile(file, false, moderator);
+		}
 	}
 
 	@bindThis
 	public async addAliasesBulk(ids: MiEmoji['id'][], aliases: string[]) {
-		const emojis = await this.emojisRepository.findBy({
-			id: In(ids),
-		});
-
-		for (const emoji of emojis) {
-			await this.emojisRepository.update(emoji.id, {
-				updatedAt: new Date(),
-				aliases: [...new Set(emoji.aliases.concat(aliases))],
-			});
-		}
-
-		this.localEmojisCache.refresh();
-
-		this.globalEventService.publishBroadcastStream('emojiUpdated', {
-			emojis: await this.emojiEntityService.packDetailedMany(ids),
+		await this.bulkUpdateEmojis(ids, async emojis => {
+			for (const emoji of emojis) {
+				await this.emojisRepository.update(emoji.id, {
+					updatedAt: this.timeService.date,
+					aliases: [...new Set(emoji.aliases.concat(aliases))],
+				});
+			}
 		});
 	}
 
@@ -254,34 +383,22 @@ export class CustomEmojiService implements OnApplicationShutdown {
 		await this.emojisRepository.update({
 			id: In(ids),
 		}, {
-			updatedAt: new Date(),
+			updatedAt: this.timeService.date,
 			aliases: aliases,
 		});
 
-		this.localEmojisCache.refresh();
-
-		this.globalEventService.publishBroadcastStream('emojiUpdated', {
-			emojis: await this.emojiEntityService.packDetailedMany(ids),
-		});
+		await this.bulkUpdateEmojis(ids);
 	}
 
 	@bindThis
 	public async removeAliasesBulk(ids: MiEmoji['id'][], aliases: string[]) {
-		const emojis = await this.emojisRepository.findBy({
-			id: In(ids),
-		});
-
-		for (const emoji of emojis) {
-			await this.emojisRepository.update(emoji.id, {
-				updatedAt: new Date(),
-				aliases: emoji.aliases.filter(x => !aliases.includes(x)),
-			});
-		}
-
-		this.localEmojisCache.refresh();
-
-		this.globalEventService.publishBroadcastStream('emojiUpdated', {
-			emojis: await this.emojiEntityService.packDetailedMany(ids),
+		await this.bulkUpdateEmojis(ids, async emojis => {
+			for (const emoji of emojis) {
+				await this.emojisRepository.update(emoji.id, {
+					updatedAt: this.timeService.date,
+					aliases: emoji.aliases.filter(x => !aliases.includes(x)),
+				});
+			}
 		});
 	}
 
@@ -290,15 +407,11 @@ export class CustomEmojiService implements OnApplicationShutdown {
 		await this.emojisRepository.update({
 			id: In(ids),
 		}, {
-			updatedAt: new Date(),
+			updatedAt: this.timeService.date,
 			category: category,
 		});
 
-		this.localEmojisCache.refresh();
-
-		this.globalEventService.publishBroadcastStream('emojiUpdated', {
-			emojis: await this.emojiEntityService.packDetailedMany(ids),
-		});
+		await this.bulkUpdateEmojis(ids);
 	}
 
 	@bindThis
@@ -306,71 +419,115 @@ export class CustomEmojiService implements OnApplicationShutdown {
 		await this.emojisRepository.update({
 			id: In(ids),
 		}, {
-			updatedAt: new Date(),
+			updatedAt: this.timeService.date,
 			license: license,
 		});
 
-		this.localEmojisCache.refresh();
+		await this.bulkUpdateEmojis(ids);
+	}
 
-		this.globalEventService.publishBroadcastStream('emojiUpdated', {
-			emojis: await this.emojiEntityService.packDetailedMany(ids),
+	@bindThis
+	private async bulkUpdateEmojis(ids: MiEmoji['id'][], updater?: (emojis: readonly MiEmoji[]) => Promise<void>): Promise<void> {
+		// Update the database
+		if (updater) {
+			const emojis = await this.emojisByIdCache.fetchMany(ids);
+			await updater(emojis.values);
+		}
+
+		// Update the caches
+		const updated = await this.emojisByIdCache.refreshMany(ids);
+		const keyUpdates = updated.values.map(emoji => [encodeEmojiKey(emoji), emoji] as const);
+		await this.emojisByKeyCache.setMany(keyUpdates);
+
+		// Update the clients
+		await this.globalEventService.publishBroadcastStream('emojiUpdated', {
+			emojis: await this.emojiEntityService.packDetailedMany(updated.values),
 		});
 	}
 
 	@bindThis
-	public async delete(id: MiEmoji['id'], moderator?: MiUser) {
-		const emoji = await this.emojisRepository.findOneByOrFail({ id: id });
+	public async delete(id: MiEmoji['id'], moderator?: { id: string }) {
+		const emoji = await this.emojisByIdCache.fetch(id);
 
-		await this.emojisRepository.delete(emoji.id);
+		await Promise.all([
+			this.emojisRepository.delete(emoji.id),
+			this.emojisByIdCache.delete(emoji.id),
+			this.emojisByKeyCache.delete(encodeEmojiKey(emoji)),
+		]);
 
-		this.localEmojisCache.refresh();
-
-		const file = await this.driveFilesRepository.findOneBy({ url: emoji.originalUrl, userHost: emoji.host ? emoji.host : IsNull() });
+		const file = await this.driveFilesRepository.findOneBy({ url: emoji.originalUrl, userHost: emoji.host ?? IsNull() });
 
 		if (file) {
-			await this.driveService.deleteFile(file, false, moderator ? moderator : undefined);
+			await this.safeDeleteEmojiFile(emoji, file, moderator);
 		}
 
-		this.globalEventService.publishBroadcastStream('emojiDeleted', {
-			emojis: [await this.emojiEntityService.packDetailed(emoji)],
-		});
-
-		if (moderator) {
-			this.moderationLogService.log(moderator, 'deleteCustomEmoji', {
-				emojiId: emoji.id,
-				emoji: emoji,
+		if (emoji.host == null) {
+			await this.globalEventService.publishBroadcastStream('emojiDeleted', {
+				emojis: [await this.emojiEntityService.packDetailed(emoji)],
 			});
-		}
-	}
-
-	@bindThis
-	public async deleteBulk(ids: MiEmoji['id'][], moderator?: MiUser) {
-		const emojis = await this.emojisRepository.findBy({
-			id: In(ids),
-		});
-
-		for (const emoji of emojis) {
-			await this.emojisRepository.delete(emoji.id);
-
-			const file = await this.driveFilesRepository.findOneBy({ url: emoji.originalUrl, userHost: emoji.host ? emoji.host : IsNull() });
-
-			if (file) {
-				await this.driveService.deleteFile(file, false, moderator ? moderator : undefined);
-			}
 
 			if (moderator) {
-				this.moderationLogService.log(moderator, 'deleteCustomEmoji', {
+				await this.moderationLogService.log(moderator, 'deleteCustomEmoji', {
 					emojiId: emoji.id,
 					emoji: emoji,
 				});
 			}
 		}
+	}
 
-		this.localEmojisCache.refresh();
+	@bindThis
+	public async deleteBulk(ids: MiEmoji['id'][], moderator?: MiUser) {
+		const emojis = await this.emojisByIdCache.fetchMany(ids);
 
-		this.globalEventService.publishBroadcastStream('emojiDeleted', {
-			emojis: await this.emojiEntityService.packDetailedMany(emojis),
-		});
+		const filesQueries = emojis.values.map(emoji => ({
+			url: emoji.originalUrl,
+			userHost: emoji.host ?? IsNull(),
+		}));
+		const files = await this.driveFilesRepository.findBy(filesQueries);
+
+		const emojiFiles = emojis.values
+			.map(emoji => {
+				const file = files.find(file => file.url === emoji.originalUrl && file.userHost === emoji.host);
+				return [emoji, file];
+			})
+			.filter(ef => ef[1] != null) as [MiEmoji, MiDriveFile][];
+
+		const localDeleted = emojis.values.filter(emoji => emoji.host == null);
+		const deletedKeys = emojis.values.map(emoji => encodeEmojiKey(emoji));
+		await Promise.all([
+			// Delete from database
+			this.emojisRepository.delete({ id: In(ids) }),
+			this.emojisByIdCache.deleteMany(ids),
+
+			// Delete from cache
+			this.emojisByKeyCache.deleteMany(deletedKeys),
+
+			// Delete from clients
+			localDeleted.length > 0
+				? this.emojiEntityService.packDetailedMany(localDeleted).then(async packed => {
+					await this.globalEventService.publishBroadcastStream('emojiDeleted', {
+						emojis: packed,
+					});
+				})
+				: null,
+
+			// Delete from mod logs
+			localDeleted.length > 0 && moderator != null
+				? Promise.all(localDeleted.map(async emoji => {
+					await this.moderationLogService.log(moderator, 'deleteCustomEmoji', {
+						emojiId: emoji.id,
+						emoji: emoji,
+					});
+				}))
+				: null,
+
+			// Delete from drive
+			emojiFiles.length > 0
+				? Promise.all(emojiFiles.map(async ([emoji, file]) => {
+					await this.safeDeleteEmojiFile(emoji, file, moderator);
+				}))
+				: null,
+		]);
 	}
 
 	@bindThis
@@ -407,18 +564,10 @@ export class CustomEmojiService implements OnApplicationShutdown {
 	 */
 	@bindThis
 	public async populateEmoji(emojiName: string, noteUserHost: string | null): Promise<string | null> {
-		const { name, host } = this.parseEmojiStr(emojiName, noteUserHost);
-		if (name == null) return null;
-		if (host == null) return null;
+		const emojiKey = this.translateEmojiKey(emojiName, noteUserHost);
+		if (emojiKey == null) return null;
 
-		const newHost = host === this.config.host ? null : host;
-
-		const queryOrNull = async () => (await this.emojisRepository.findOneBy({
-			name,
-			host: newHost ?? IsNull(),
-		})) ?? null;
-
-		const emoji = await this.emojisCache.fetch(`${name} ${host}`, queryOrNull);
+		const emoji = await this.emojisByKeyCache.fetchMaybe(emojiKey);
 
 		if (emoji == null) return null;
 		return emoji.publicUrl || emoji.originalUrl; // || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
@@ -429,7 +578,7 @@ export class CustomEmojiService implements OnApplicationShutdown {
 	 */
 	@bindThis
 	public async populateEmojis(emojiNames: string[], noteUserHost: string | null): Promise<Record<string, string>> {
-		const emojis = await Promise.all(emojiNames.map(x => this.populateEmoji(x, noteUserHost)));
+		const emojis = await promiseMap(emojiNames, async x => await this.populateEmoji(x, noteUserHost), { limit: 4 });
 		const res = {} as Record<string, string>;
 		for (let i = 0; i < emojiNames.length; i++) {
 			const resolvedEmoji = emojis[i];
@@ -440,47 +589,45 @@ export class CustomEmojiService implements OnApplicationShutdown {
 		return res;
 	}
 
+	@bindThis
+	private translateEmojiKey(emojiName: string, noteUserHost: string | null): string | null {
+		const { name, host } = this.parseEmojiStr(emojiName, noteUserHost);
+		if (name == null) return null;
+		if (host == null) return null;
+
+		const newHost = host === this.config.host ? null : host;
+		return encodeEmojiKey({ name, host: newHost });
+	}
+
 	/**
 	 * 与えられた絵文字のリストをデータベースから取得し、キャッシュに追加します
 	 */
 	@bindThis
 	public async prefetchEmojis(emojis: { name: string; host: string | null; }[]): Promise<void> {
-		const notCachedEmojis = emojis.filter(emoji => this.emojisCache.get(`${emoji.name} ${emoji.host}`) == null);
-		const emojisQuery: any[] = [];
-		const hosts = new Set(notCachedEmojis.map(e => e.host));
-		for (const host of hosts) {
-			if (host == null) continue;
-			emojisQuery.push({
-				name: In(notCachedEmojis.filter(e => e.host === host).map(e => e.name)),
-				host: host,
-			});
-		}
-		const _emojis = emojisQuery.length > 0 ? await this.emojisRepository.find({
-			where: emojisQuery,
-			select: ['name', 'host', 'originalUrl', 'publicUrl'],
-		}) : [];
-		for (const emoji of _emojis) {
-			this.emojisCache.set(`${emoji.name} ${emoji.host}`, emoji);
-		}
+		const emojiKeys = emojis.map(emoji => encodeEmojiKey(emoji));
+		await this.emojisByKeyCache.fetchMany(emojiKeys);
 	}
 
 	/**
 	 * ローカル内の絵文字に重複がないかチェックします
 	 * @param name 絵文字名
+	 * @param host Emoji hostname
 	 */
 	@bindThis
-	public checkDuplicate(name: string): Promise<boolean> {
-		return this.emojisRepository.exists({ where: { name, host: IsNull() } });
+	public async checkDuplicate(name: string, host: string | null = null): Promise<boolean> {
+		const emoji = await this.getEmojiByName(name, host);
+		return emoji != null;
 	}
 
 	@bindThis
-	public getEmojiById(id: string): Promise<MiEmoji | null> {
-		return this.emojisRepository.findOneBy({ id });
+	public async getEmojiById(id: string): Promise<MiEmoji | null> {
+		return await this.emojisByIdCache.fetchMaybe(id) ?? null;
 	}
 
 	@bindThis
-	public getEmojiByName(name: string): Promise<MiEmoji | null> {
-		return this.emojisRepository.findOneBy({ name, host: IsNull() });
+	public async getEmojiByName(name: string, host: string | null = null): Promise<MiEmoji | null> {
+		const emojiKey = encodeEmojiKey({ name, host });
+		return await this.emojisByKeyCache.fetchMaybe(emojiKey) ?? null;
 	}
 
 	@bindThis
@@ -627,14 +774,97 @@ export class CustomEmojiService implements OnApplicationShutdown {
 			allPages: Math.ceil(count / limit),
 		};
 	}
+}
 
-	@bindThis
-	public dispose(): void {
-		this.emojisCache.dispose();
+export class InvalidEmojiError extends Error {
+	// Fix the error name in stack traces - https://stackoverflow.com/a/71573071
+	override name = this.constructor.name;
+
+	public readonly [isRetryableSymbol] = false;
+}
+
+export class InvalidEmojiKeyError extends InvalidEmojiError {
+	constructor(
+		public readonly key: string,
+		message?: string,
+	) {
+		const actualMessage = message
+			? `Invalid emoji key "${key}": ${message}`
+			: `Invalid emoji key "${key}".`;
+		super(actualMessage);
+	}
+}
+
+export class InvalidEmojiNameError extends InvalidEmojiError {
+	constructor(
+		public readonly name: string,
+		message?: string,
+	) {
+		const actualMessage = message
+			? `Invalid emoji name "${name}": ${message}`
+			: `Invalid emoji name "${name}".`;
+		super(actualMessage);
+	}
+}
+
+export class InvalidEmojiHostError extends InvalidEmojiError {
+	constructor(
+		public readonly host: string | null,
+		message?: string,
+	) {
+		const hostString = host == null ? 'null' : `"${host}"`;
+		const actualMessage = message
+			? `Invalid emoji name ${hostString}: ${message}`
+			: `Invalid emoji name ${hostString}.`;
+		super(actualMessage);
+	}
+}
+
+export class DuplicateEmojiError extends InvalidEmojiError {
+	constructor(
+		public readonly name: string,
+		public readonly host: string | null,
+		message?: string,
+	) {
+		const hostString = host == null ? 'null' : `"${host}"`;
+		const actualMessage = message
+			? `Duplicate emoji name "${name}" for host ${hostString}: ${message}`
+			: `Duplicate emoji name "${name}" for host ${hostString}.`;
+		super(actualMessage);
+	}
+}
+
+export function isValidEmojiName(name: string): boolean {
+	return name !== '' && !name.includes(' ');
+}
+
+export function isValidEmojiHost(host: string): boolean {
+	return host !== '' && !host.includes(' ');
+}
+
+// TODO unit tests
+export function encodeEmojiKey(emoji: { name: string, host: string | null }): string {
+	if (emoji.name === '') throw new InvalidEmojiNameError(emoji.name, 'Name cannot be empty.');
+	if (emoji.name.includes(' ')) throw new InvalidEmojiNameError(emoji.name, 'Name cannot contain a space.');
+
+	// Local emojis are just the name.
+	if (emoji.host == null) {
+		return emoji.name;
 	}
 
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
+	if (emoji.host === '') throw new InvalidEmojiHostError(emoji.host, 'Host cannot be empty.');
+	if (emoji.host.includes(' ')) throw new InvalidEmojiHostError(emoji.host, 'Host cannot contain a space.');
+	return `${emoji.name} ${emoji.host}`;
+}
+
+// TODO unit tests
+export function decodeEmojiKey(key: string): { name: string, host: string | null } {
+	const match = key.match(/^([^ ]+)(?: ([^ ]+))?$/);
+	if (!match) {
+		throw new InvalidEmojiKeyError(key);
 	}
+
+	const name = match[1];
+	const host = match[2] || null;
+	return { name, host };
 }

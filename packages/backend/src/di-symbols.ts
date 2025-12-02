@@ -14,6 +14,7 @@ export const DI = {
 	redisForTimelines: Symbol('redisForTimelines'),
 	redisForReactions: Symbol('redisForReactions'),
 	redisForRateLimit: Symbol('redisForRateLimit'),
+	console: Symbol('console'),
 
 	//#region Repositories
 	usersRepository: Symbol('usersRepository'),
@@ -92,7 +93,7 @@ export const DI = {
 	chatRoomsRepository: Symbol('chatRoomsRepository'),
 	chatRoomMembershipsRepository: Symbol('chatRoomMembershipsRepository'),
 	chatRoomInvitationsRepository: Symbol('chatRoomInvitationsRepository'),
-	noteEditRepository: Symbol('noteEditRepository'),
+	noteEditsRepository: Symbol('noteEditsRepository'),
 	bubbleGameRecordsRepository: Symbol('bubbleGameRecordsRepository'),
 	reversiGamesRepository: Symbol('reversiGamesRepository'),
 	noteScheduleRepository: Symbol('noteScheduleRepository'),

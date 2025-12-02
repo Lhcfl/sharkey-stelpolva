@@ -5,20 +5,18 @@
 
 import * as assert from 'assert';
 import * as mfm from 'mfm-js';
-import { Test } from '@nestjs/testing';
-
-import { CoreModule } from '@/core/CoreModule.js';
+import type { Config } from '@/config.js';
 import { MfmService } from '@/core/MfmService.js';
-import { GlobalModule } from '@/GlobalModule.js';
 
 describe('MfmService', () => {
+	let config: Config;
 	let mfmService: MfmService;
 
-	beforeAll(async () => {
-		const app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-		}).compile();
-		mfmService = app.get<MfmService>(MfmService);
+	beforeEach(() => {
+		config = {
+			url: 'https://example.com',
+		} as unknown as Config;
+		mfmService = new MfmService(config);
 	});
 
 	describe('toHtml', () => {
@@ -72,22 +70,22 @@ describe('MfmService', () => {
 	});
 
 	describe('toMastoApiHtml', () => {
-		test('br', async () => {
+		test('br', () => {
 			const input = 'foo\nbar\nbaz';
 			const output = '<p><span>foo<br>bar<br>baz</span></p>';
-			assert.equal(await mfmService.toMastoApiHtml(mfm.parse(input)), output);
+			assert.equal(mfmService.toMastoApiHtml(mfm.parse(input)), output);
 		});
 
-		test('br alt', async () => {
+		test('br alt', () => {
 			const input = 'foo\r\nbar\rbaz';
 			const output = '<p><span>foo<br>bar<br>baz</span></p>';
-			assert.equal(await mfmService.toMastoApiHtml(mfm.parse(input)), output);
+			assert.equal(mfmService.toMastoApiHtml(mfm.parse(input)), output);
 		});
 
-		test('escape', async () => {
+		test('escape', () => {
 			const input = '```\n<p>Hello, world!</p>\n```';
 			const output = '<p><pre><code>&lt;p&gt;Hello, world!&lt;/p&gt;</code></pre></p>';
-			assert.equal(await mfmService.toMastoApiHtml(mfm.parse(input)), output);
+			assert.equal(mfmService.toMastoApiHtml(mfm.parse(input)), output);
 		});
 
 		test('ruby', async () => {
@@ -168,7 +166,7 @@ describe('MfmService', () => {
 			assert.deepStrictEqual(mfmService.fromHtml('<p>a <ruby>Misskey<rp>(</rp><rt>ミス キー</rt><rp>)</rp> b</ruby> c</p>'), 'a $[ruby $[group Misskey] ミス キー] b c');
 			assert.deepStrictEqual(
 				mfmService.fromHtml('<p>a <ruby>Misskey<rp>(</rp><rt>ミスキー</rt><rp>)</rp>Misskey<rp>(</rp><rt>ミス キー</rt><rp>)</rp>Misskey<rp>(</rp><rt>ミスキー</rt><rp>)</rp></ruby> b</p>'),
-				'a $[ruby Misskey ミスキー]$[ruby $[group Misskey] ミス キー]$[ruby Misskey ミスキー] b'
+				'a $[ruby Misskey ミスキー]$[ruby $[group Misskey] ミス キー]$[ruby Misskey ミスキー] b',
 			);
 		});
 
@@ -187,7 +185,7 @@ describe('MfmService', () => {
 		test('ruby', () => {
 			assert.deepStrictEqual(
 				mfmService.fromHtml('<ruby> <i>some</i> text <rp>(</rp><rt>ignore me</rt><rp>)</rp> and <rt>more</rt></ruby>'),
-				'$[ruby $[group  <i>some</i> text ] ignore me]$[ruby $[group  and ] more]'
+				'$[ruby $[group  <i>some</i> text ] ignore me]$[ruby $[group  and ] more]',
 			);
 		});
 	});

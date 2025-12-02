@@ -13,6 +13,7 @@ import { NotificationService } from '@/core/NotificationService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import type { MiScheduleNoteType } from '@/models/NoteSchedule.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
+import { TimeService } from '@/global/TimeService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 import type { ScheduleNotePostJobData } from '../types.js';
@@ -37,6 +38,7 @@ export class ScheduleNotePostProcessorService {
 		private noteCreateService: NoteCreateService,
 		private queueLoggerService: QueueLoggerService,
 		private notificationService: NotificationService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('schedule-note-post');
 	}
@@ -118,7 +120,7 @@ export class ScheduleNotePostProcessorService {
 
 				const createdNote = await this.noteCreateService.create(me, {
 					...note,
-					createdAt: new Date(),
+					createdAt: this.timeService.date,
 					files,
 					poll: note.poll ? {
 						choices: note.poll.choices,

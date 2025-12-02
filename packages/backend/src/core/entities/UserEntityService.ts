@@ -5,6 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
+import * as Misskey from 'misskey-js';
 import _Ajv from 'ajv';
 import { ModuleRef } from '@nestjs/core';
 import { In } from 'typeorm';
@@ -43,17 +44,19 @@ import type {
 	UsersRepository,
 } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
-import { RolePolicies, RoleService } from '@/core/RoleService.js';
-import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
-import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import { IdService } from '@/core/IdService.js';
+import { isSystemAccount } from '@/misc/is-system-account.js';
+import type { RolePolicies, RoleService } from '@/core/RoleService.js';
+import type { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
+import type { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
+import type { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { AnnouncementService } from '@/core/AnnouncementService.js';
 import type { CustomEmojiService } from '@/core/CustomEmojiService.js';
-import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
-import { ChatService } from '@/core/ChatService.js';
-import { isSystemAccount } from '@/misc/is-system-account.js';
-import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
+import type { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
+import type { ChatService } from '@/core/ChatService.js';
+import type { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import type { CacheService } from '@/core/CacheService.js';
+import { getCallerId } from '@/misc/attach-caller-id.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { NoteEntityService } from './NoteEntityService.js';
 import type { PageEntityService } from './PageEntityService.js';
@@ -151,9 +154,12 @@ export class UserEntityService implements OnModuleInit {
 
 		@Inject(DI.userMemosRepository)
 		private userMemosRepository: UserMemoRepository,
+
+		private readonly timeService: TimeService,
 	) {
 	}
 
+	@bindThis
 	onModuleInit() {
 		this.apPersonService = this.moduleRef.get('ApPersonService');
 		this.noteEntityService = this.moduleRef.get('NoteEntityService');
@@ -180,7 +186,9 @@ export class UserEntityService implements OnModuleInit {
 	public validateListenBrainz = ajv.compile(listenbrainzSchema);
 	//#endregion
 
+	/** @deprecated use export from MiUser */
 	public isLocalUser = isLocalUser;
+	/** @deprecated use export from MiUser */
 	public isRemoteUser = isRemoteUser;
 
 	@bindThis
@@ -282,7 +290,7 @@ export class UserEntityService implements OnModuleInit {
 			this.cacheService.userBlockingCache.fetch(me),
 			this.cacheService.userMutingsCache.fetch(me),
 			this.cacheService.renoteMutingsCache.fetch(me),
-			this.cacheService.getUsers(targets)
+			this.cacheService.findUsersById(targets)
 				.then(users => {
 					const record: Record<string, string | null> = {};
 					for (const [id, user] of users) {
@@ -394,12 +402,36 @@ export class UserEntityService implements OnModuleInit {
 	public getOnlineStatus(user: MiUser): 'unknown' | 'online' | 'active' | 'offline' {
 		if (user.hideOnlineStatus) return 'unknown';
 		if (user.lastActiveDate == null) return 'unknown';
-		const elapsed = Date.now() - user.lastActiveDate.getTime();
+		const elapsed = this.timeService.now - user.lastActiveDate.getTime();
 		return (
 			elapsed < USER_ONLINE_THRESHOLD ? 'online' :
 			elapsed < USER_ACTIVE_THRESHOLD ? 'active' :
 			'offline'
 		);
+	}
+
+	@bindThis
+	public async resolveAlsoKnownAs(user: MiUser): Promise<{ uri: string, id: string | null }[] | null> {
+		if (!user.alsoKnownAs) {
+			return null;
+		}
+
+		const alsoKnownAs: { uri: string, id: string | null }[] = [];
+		for (const uri of new Set(user.alsoKnownAs)) {
+			try {
+				const resolved = await this.apPersonService.resolvePerson(uri);
+				alsoKnownAs.push({ uri, id: resolved.id });
+			} catch {
+				// ignore errors - we expect some users to be deleted or unavailable
+				alsoKnownAs.push({ uri, id: null });
+			}
+		}
+
+		if (alsoKnownAs.length < 1) {
+			return null;
+		}
+
+		return alsoKnownAs;
 	}
 
 	@bindThis
@@ -433,6 +465,7 @@ export class UserEntityService implements OnModuleInit {
 			userMemos?: Map<MiUser['id'], string | null>,
 			pinNotes?: Map<MiUser['id'], MiUserNotePining[]>,
 			iAmModerator?: boolean,
+			iAmAdmin?: boolean,
 			userIdsByUri?: Map<string, string>,
 			instances?: Map<string, MiInstance | null>,
 			securityKeyCounts?: Map<string, number>,
@@ -453,7 +486,7 @@ export class UserEntityService implements OnModuleInit {
 		if (user.avatarId != null && user.avatarUrl === null) {
 			const avatar = await this.driveFilesRepository.findOneByOrFail({ id: user.avatarId });
 			user.avatarUrl = this.driveFileEntityService.getPublicUrl(avatar, 'avatar');
-			this.usersRepository.update(user.id, {
+			await this.usersRepository.update(user.id, {
 				avatarUrl: user.avatarUrl,
 				avatarBlurhash: avatar.blurhash,
 			});
@@ -461,7 +494,7 @@ export class UserEntityService implements OnModuleInit {
 		if (user.bannerId != null && user.bannerUrl === null) {
 			const banner = await this.driveFilesRepository.findOneByOrFail({ id: user.bannerId });
 			user.bannerUrl = this.driveFileEntityService.getPublicUrl(banner);
-			this.usersRepository.update(user.id, {
+			await this.usersRepository.update(user.id, {
 				bannerUrl: user.bannerUrl,
 				bannerBlurhash: banner.blurhash,
 			});
@@ -469,7 +502,7 @@ export class UserEntityService implements OnModuleInit {
 		if (user.backgroundId != null && user.backgroundUrl === null) {
 			const background = await this.driveFilesRepository.findOneByOrFail({ id: user.backgroundId });
 			user.backgroundUrl = this.driveFileEntityService.getPublicUrl(background);
-			this.usersRepository.update(user.id, {
+			await this.usersRepository.update(user.id, {
 				backgroundUrl: user.backgroundUrl,
 				backgroundBlurhash: background.blurhash,
 			});
@@ -478,7 +511,8 @@ export class UserEntityService implements OnModuleInit {
 		const isDetailed = opts.schema !== 'UserLite';
 		const meId = me ? me.id : null;
 		const isMe = meId === user.id;
-		const iAmModerator = opts.iAmModerator ?? (me ? await this.roleService.isModerator(me as MiUser) : false);
+		const iAmModerator = opts.iAmModerator ?? (me ? await this.roleService.isModerator(me) : false);
+		const iAmAdmin = opts.iAmAdmin ?? (me ? await this.roleService.isAdministrator(me) : false);
 
 		const profile = isDetailed
 			? (opts.userProfile ?? user.userProfile ?? await this.userProfilesRepository.findOneByOrFail({ userId: user.id }))
@@ -530,8 +564,6 @@ export class UserEntityService implements OnModuleInit {
 			(profile.followersVisibility === 'followers') && (relation && relation.isFollowing) ? user.followersCount :
 			null;
 
-		const isModerator = isMe && isDetailed ? this.roleService.isModerator(user) : null;
-		const isAdmin = isMe && isDetailed ? this.roleService.isAdministrator(user) : null;
 		const unreadAnnouncements = isMe && isDetailed ?
 			(await this.announcementService.getUnreadAnnouncements(user)).map((announcement) => ({
 				createdAt: this.idService.parse(announcement.id).date.toISOString(),
@@ -564,8 +596,13 @@ export class UserEntityService implements OnModuleInit {
 		let fetchPoliciesPromise: Promise<RolePolicies> | null = null;
 		const fetchPolicies = () => fetchPoliciesPromise ??= this.roleService.getUserPolicies(user);
 
+		// This has a cache so it's fine to await here
+		const alsoKnownAs = await this.resolveAlsoKnownAs(user);
+		const alsoKnownAsIds = alsoKnownAs?.map(aka => aka.id).filter(id => id != null) ?? null;
+
 		const bypassSilence = isMe || (myFollowings ? myFollowings.has(user.id) : false);
 
+		// noinspection ES6MissingAwait
 		const packed = {
 			id: user.id,
 			name: user.name,
@@ -621,11 +658,10 @@ export class UserEntityService implements OnModuleInit {
 			...(isDetailed ? {
 				url: profile!.url,
 				uri: user.uri,
+				// TODO hints for all of this
 				movedTo: user.movedToUri ? Promise.resolve(opts.userIdsByUri?.get(user.movedToUri) ?? this.apPersonService.resolvePerson(user.movedToUri).then(user => user.id).catch(() => null)) : null,
-				alsoKnownAs: user.alsoKnownAs
-					? Promise.all(user.alsoKnownAs.map(uri => Promise.resolve(opts.userIdsByUri?.get(uri) ?? this.apPersonService.fetchPerson(uri).then(user => user?.id).catch(() => null))))
-						.then(xs => xs.length === 0 ? null : xs.filter(x => x != null))
-					: null,
+				movedToUri: user.movedToUri,
+				// alsoKnownAs moved from packedUserDetailedNotMeOnly for privacy
 				bannerUrl: user.bannerId == null ? null : user.bannerUrl,
 				bannerBlurhash: user.bannerId == null ? null : user.bannerBlurhash,
 				backgroundUrl: user.backgroundId == null ? null : user.backgroundUrl,
@@ -676,8 +712,8 @@ export class UserEntityService implements OnModuleInit {
 				bannerId: user.bannerId,
 				backgroundId: user.backgroundId,
 				followedMessage: profile!.followedMessage,
-				isModerator: isModerator,
-				isAdmin: isAdmin,
+				isModerator: iAmModerator,
+				isAdmin: iAmAdmin,
 				isSystem: isSystemAccount(user),
 				injectFeaturedNote: profile!.injectFeaturedNote,
 				receiveAnnouncementEmail: profile!.receiveAnnouncementEmail,
@@ -712,9 +748,13 @@ export class UserEntityService implements OnModuleInit {
 				achievements: profile!.achievements,
 				loggedInDays: profile!.loggedInDates.length,
 				policies: fetchPolicies(),
+				permissions: this.getPermissions(user, iAmModerator, iAmAdmin),
 				defaultCW: profile!.defaultCW,
 				defaultCWPriority: profile!.defaultCWPriority,
 				allowUnsignedFetch: user.allowUnsignedFetch,
+				// alsoKnownAs moved from packedUserDetailedNotMeOnly for privacy
+				alsoKnownAs: alsoKnownAsIds,
+				skAlsoKnownAs: alsoKnownAs,
 			} : {}),
 
 			...(opts.includeSecrets ? {
@@ -780,7 +820,10 @@ export class UserEntityService implements OnModuleInit {
 		}
 		const _userIds = _users.map(u => u.id);
 
-		const iAmModerator = await this.roleService.isModerator(me as MiUser);
+		// Sync with ApiCallService
+		const iAmAdmin = me ? await this.roleService.isAdministrator(me) : false;
+		const iAmModerator = me ? await this.roleService.isModerator(me) : false;
+
 		const meId = me ? me.id : null;
 		const isDetailed = options && options.schema !== 'UserLite';
 		const isDetailedAndMod = isDetailed && iAmModerator;
@@ -866,7 +909,7 @@ export class UserEntityService implements OnModuleInit {
 			myFollowingsPromise,
 		]);
 
-		return Promise.all(
+		return await Promise.all(
 			_users.map(u => this.pack(
 				u,
 				me,
@@ -877,6 +920,7 @@ export class UserEntityService implements OnModuleInit {
 					userMemos: userMemos,
 					pinNotes: pinNotes,
 					iAmModerator,
+					iAmAdmin,
 					userIdsByUri,
 					instances,
 					securityKeyCounts,
@@ -884,5 +928,17 @@ export class UserEntityService implements OnModuleInit {
 				},
 			)),
 		);
+	}
+
+	@bindThis
+	private getPermissions(user: MiUser, isModerator: boolean, isAdmin: boolean): readonly string[] {
+		const token = getCallerId(user);
+		let permissions = token?.accessToken?.permission ?? Misskey.permissions;
+
+		if (!isModerator && !isAdmin) {
+			permissions = permissions.filter(perm => !perm.startsWith('read:admin') && !perm.startsWith('write:admin'));
+		}
+
+		return permissions;
 	}
 }

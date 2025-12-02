@@ -8,6 +8,7 @@ import type { UserListsRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserListEntityService } from '@/core/entities/UserListEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { UserListService } from '@/core/UserListService.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -57,23 +58,24 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userListsRepository: UserListsRepository,
 
 		private userListEntityService: UserListEntityService,
+		private readonly userListService: UserListService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const userList = await this.userListsRepository.findOneBy({
-				id: ps.listId,
-				userId: me.id,
-			});
+			const userList = await this.userListService.userListsCache.fetchMaybe(ps.listId);
 
-			if (userList == null) {
+			if (userList == null || userList.userId !== me.id) {
 				throw new ApiError(meta.errors.noSuchList);
 			}
 
-			await this.userListsRepository.update(userList.id, {
-				name: ps.name,
-				isPublic: ps.isPublic,
-			});
+			await Promise.all([
+				this.userListsRepository.update(userList.id, {
+					name: ps.name,
+					isPublic: ps.isPublic,
+				}),
+				this.userListService.userListsCache.delete(userList.id),
+			]);
 
-			return await this.userListEntityService.pack(userList.id);
+			return await this.userListEntityService.pack(userList.id, me.id);
 		});
 	}
 }

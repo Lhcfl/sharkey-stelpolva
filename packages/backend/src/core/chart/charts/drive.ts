@@ -7,6 +7,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import { AppLockService } from '@/core/AppLockService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import Chart from '../core.js';
@@ -25,8 +26,13 @@ export default class DriveChart extends Chart<typeof schema> { // eslint-disable
 
 		private appLockService: AppLockService,
 		private chartLoggerService: ChartLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		super(db, (k) => appLockService.getChartInsertLock(k), chartLoggerService.logger, name, schema);
+	}
+
+	protected getCurrentDate(): Date {
+		return this.timeService.date;
 	}
 
 	protected async tickMajor(): Promise<Partial<KVs<typeof schema>>> {
@@ -38,9 +44,9 @@ export default class DriveChart extends Chart<typeof schema> { // eslint-disable
 	}
 
 	@bindThis
-	public async update(file: MiDriveFile, isAdditional: boolean): Promise<void> {
+	public update(file: MiDriveFile, isAdditional: boolean): void {
 		const fileSizeKb = file.size / 1000;
-		await this.commit(file.userHost === null ? {
+		this.commit(file.userHost === null ? {
 			'local.incCount': isAdditional ? 1 : 0,
 			'local.incSize': isAdditional ? fileSizeKb : 0,
 			'local.decCount': isAdditional ? 0 : 1,

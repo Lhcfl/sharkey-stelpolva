@@ -24,6 +24,7 @@ import { QueueService } from '@/core/QueueService.js';
 import { IdService } from '@/core/IdService.js';
 import { MiScheduleNoteType } from '@/models/NoteSchedule.js';
 import { RoleService } from '@/core/RoleService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -211,6 +212,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queueService: QueueService,
 		private roleService: RoleService,
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const scheduleNoteCount = await this.noteScheduleRepository.countBy({ userId: me.id });
@@ -301,7 +303,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.poll) {
-				let scheduleNote_scheduledAt = Date.now();
+				let scheduleNote_scheduledAt = this.timeService.now;
 				if (typeof ps.scheduleNote.scheduledAt === 'number') {
 					scheduleNote_scheduledAt = moment.utc(ps.scheduleNote.scheduledAt).local().valueOf();
 				}
@@ -314,7 +316,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}
 			}
 			if (typeof ps.scheduleNote.scheduledAt === 'number') {
-				if (moment.utc(ps.scheduleNote.scheduledAt).local().valueOf() < Date.now()) {
+				if (moment.utc(ps.scheduleNote.scheduledAt).local().valueOf() < this.timeService.now) {
 					throw new ApiError(meta.errors.cannotCreateAlreadyExpiredSchedule);
 				}
 			} else {
@@ -342,7 +344,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.scheduleNote.scheduledAt) {
 				me.token = null;
-				const noteId = this.idService.gen(new Date().getTime());
+				const noteId = this.idService.gen(this.timeService.now);
 				const schedNoteLocalTime = moment.utc(ps.scheduleNote.scheduledAt).local().valueOf();
 				await this.noteScheduleRepository.insert({
 					id: noteId,
@@ -351,7 +353,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					scheduledAt: new Date(schedNoteLocalTime),
 				});
 
-				const delay = new Date(schedNoteLocalTime).getTime() - Date.now();
+				const delay = new Date(schedNoteLocalTime).getTime() - this.timeService.now;
 				await this.queueService.ScheduleNotePostQueue.add(String(delay), {
 					scheduleNoteId: noteId,
 				}, {

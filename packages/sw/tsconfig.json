@@ -1,45 +1,9 @@
 {
-	"compilerOptions": {
-		"allowJs": true,
-		"noEmitOnError": false,
-		"noImplicitAny": false,
-		"noImplicitReturns": true,
-		"noUnusedParameters": false,
-		"noUnusedLocals": true,
-		"noFallthroughCasesInSwitch": true,
-		"declaration": false,
-		"sourceMap": false,
-		"target": "ES2022",
-		"module": "nodenext",
-		"moduleResolution": "nodenext",
-		"removeComments": false,
-		"noLib": false,
-		"strict": true,
-		"strictNullChecks": true,
-		"experimentalDecorators": true,
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"skipLibCheck": true,
-		"incremental": true,
-		"baseUrl": ".",
-		"paths": {
-			"@/*": ["./src/*"],
-			"@@/*": ["../frontend-shared/*"]
-		},
-		"typeRoots": [
-			"./node_modules/@types",
-			"./src/@types"
-		],
-		"lib": [
-			"esnext",
-			"webworker"
-		]
-	},
-	"compileOnSave": false,
-	"include": [
-		"./**/*.ts"
-	],
-	"exclude": [
-		"node_modules"
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"files": [],
+	// WebStorm only reads one tsconfig per directory, so this tricks it into loading both.
+	"references": [
+		{ "path":  "./tsconfig.sw.json" },
+		{ "path": "./tsconfig.scripts.json"}
 	]
 }

@@ -14,6 +14,7 @@ import { bindThis } from '@/decorators.js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 import { IdService } from '@/core/IdService.js';
 import { Packed } from '@/misc/json-schema.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class RoleEntityService {
@@ -25,6 +26,7 @@ export class RoleEntityService {
 		private roleAssignmentsRepository: RoleAssignmentsRepository,
 
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -40,7 +42,7 @@ export class RoleEntityService {
 			.andWhere(new Brackets(qb => {
 				qb
 					.where('assign.expiresAt IS NULL')
-					.orWhere('assign.expiresAt > :now', { now: new Date() });
+					.orWhere('assign.expiresAt > :now', { now: this.timeService.date });
 			}))
 			.getCount();
 

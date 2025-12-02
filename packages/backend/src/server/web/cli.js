@@ -6,9 +6,15 @@
 'use strict';
 
 window.onload = async () => {
-	const account = JSON.parse(localStorage.getItem('account'));
-	const i = account.token;
+	const accountRaw = localStorage.getItem('account');
+	const account = accountRaw ? JSON.parse(accountRaw) : null;
+	const i = account?.token;
 
+	/**
+	 * @param {string} endpoint
+	 * @param {Record<string, unknown>} data
+	 * @returns {Promise<any>}
+	 */
 	const api = (endpoint, data = {}) => {
 		const promise = new Promise((resolve, reject) => {
 			// Append a credential
@@ -17,19 +23,19 @@ window.onload = async () => {
 			// Send request
 			fetch(endpoint.indexOf('://') > -1 ? endpoint : `/api/${endpoint}`, {
 				headers: {
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
 				},
 				method: 'POST',
 				body: JSON.stringify(data),
 				credentials: 'omit',
-				cache: 'no-cache'
+				cache: 'no-cache',
 			}).then(async (res) => {
 				const body = res.status === 204 ? null : await res.json();
 
 				if (res.status === 200) {
 					resolve(body);
 				} else if (res.status === 204) {
-					resolve();
+					resolve({});
 				} else {
 					reject(body.error);
 				}
@@ -39,9 +45,9 @@ window.onload = async () => {
 		return promise;
 	};
 
-	document.getElementById('submit').addEventListener('click', () => {
+	document.getElementById('submit')?.addEventListener('click', () => {
 		api('notes/create', {
-			text: document.getElementById('text').value
+			text: (/** @type {HTMLInputElement} */(document.getElementById('text'))).value
 		}).then(() => {
 			location.reload();
 		});
@@ -49,6 +55,7 @@ window.onload = async () => {
 
 	api('notes/timeline').then(notes => {
 		const tl = document.getElementById('tl');
+		if (!tl) return;
 		for (const note of notes) {
 			const el = document.createElement('div');
 			const name = document.createElement('header');

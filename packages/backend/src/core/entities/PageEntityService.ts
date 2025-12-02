@@ -83,11 +83,12 @@ export class PageEntityService {
 		};
 		migrate(page.content);
 		if (migrated) {
-			this.pagesRepository.update(page.id, {
+			await this.pagesRepository.update(page.id, {
 				content: page.content,
 			});
 		}
 
+		// noinspection ES6MissingAwait
 		return await awaitAll({
 			id: page.id,
 			createdAt: this.idService.parse(page.id).date.toISOString(),
@@ -104,10 +105,13 @@ export class PageEntityService {
 			font: page.font,
 			script: page.script,
 			eyeCatchingImageId: page.eyeCatchingImageId,
-			eyeCatchingImage: page.eyeCatchingImageId ? await this.driveFileEntityService.pack(page.eyeCatchingImageId) : null,
-			attachedFiles: this.driveFileEntityService.packMany((await Promise.all(attachedFiles)).filter(x => x != null)),
+			eyeCatchingImage: page.eyeCatchingImageId ? this.driveFileEntityService.pack(page.eyeCatchingImageId) : null,
+			attachedFiles: Promise
+				.all(attachedFiles)
+				.then(fs => fs.filter(x => x != null))
+				.then(fs => this.driveFileEntityService.packMany(fs)),
 			likedCount: page.likedCount,
-			isLiked: meId ? await this.pageLikesRepository.exists({ where: { pageId: page.id, userId: meId } }) : undefined,
+			isLiked: meId ? this.pageLikesRepository.exists({ where: { pageId: page.id, userId: meId } }) : undefined,
 		});
 	}
 
@@ -119,7 +123,7 @@ export class PageEntityService {
 		const _users = pages.map(({ user, userId }) => user ?? userId);
 		const _userMap = await this.userEntityService.packMany(_users, me)
 			.then(users => new Map(users.map(u => [u.id, u])));
-		return Promise.all(pages.map(page => this.pack(page, me, { packedUser: _userMap.get(page.userId) })));
+		return await Promise.all(pages.map(page => this.pack(page, me, { packedUser: _userMap.get(page.userId) })));
 	}
 }
 

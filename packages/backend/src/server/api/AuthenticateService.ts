@@ -13,8 +13,15 @@ import type { MiApp } from '@/models/App.js';
 import { CacheService } from '@/core/CacheService.js';
 import { isNativeUserToken } from '@/misc/token.js';
 import { bindThis } from '@/decorators.js';
+import { attachCallerId } from '@/misc/attach-caller-id.js';
+import { CacheManagementService, type ManagedMemoryKVCache } from '@/global/CacheManagementService.js';
+import { TimeService } from '@/global/TimeService.js';
+import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 
 export class AuthenticationError extends Error {
+	// Fix the error name in stack traces - https://stackoverflow.com/a/71573071
+	override name = this.constructor.name;
+
 	constructor(message: string) {
 		super(message);
 		this.name = 'AuthenticationError';
@@ -22,8 +29,8 @@ export class AuthenticationError extends Error {
 }
 
 @Injectable()
-export class AuthenticateService implements OnApplicationShutdown {
-	private appCache: MemoryKVCache<MiApp>;
+export class AuthenticateService {
+	private readonly appCache: ManagedMemoryKVCache<MiApp>;
 
 	constructor(
 		@Inject(DI.usersRepository)
@@ -36,8 +43,12 @@ export class AuthenticateService implements OnApplicationShutdown {
 		private appsRepository: AppsRepository,
 
 		private cacheService: CacheService,
+		private readonly timeService: TimeService,
+		private readonly collapsedQueueService: CollapsedQueueService,
+
+		cacheManagementService: CacheManagementService,
 	) {
-		this.appCache = new MemoryKVCache<MiApp>(1000 * 60 * 60 * 24 * 7); // 1w
+		this.appCache = cacheManagementService.createMemoryKVCache<MiApp>('app', 1000 * 60 * 60 * 24); // 1d
 	}
 
 	@bindThis
@@ -47,8 +58,7 @@ export class AuthenticateService implements OnApplicationShutdown {
 		}
 
 		if (isNativeUserToken(token)) {
-			const user = await this.cacheService.localUserByNativeTokenCache.fetch(token,
-				() => this.usersRepository.findOneBy({ token }) as Promise<MiLocalUser | null>);
+			const user = await this.cacheService.findOptionalLocalUserByNativeToken(token);
 
 			if (user == null) {
 				throw new AuthenticationError('user not found');
@@ -62,20 +72,24 @@ export class AuthenticateService implements OnApplicationShutdown {
 				}, {
 					token: token, // miauth
 				}],
+				relations: {
+					user: true,
+				},
 			});
 
 			if (accessToken == null) {
 				throw new AuthenticationError('invalid signature');
 			}
 
-			this.accessTokensRepository.update(accessToken.id, {
-				lastUsedAt: new Date(),
+			await this.collapsedQueueService.updateAccessTokenQueue.enqueue(accessToken.id, {
+				lastUsedAt: this.timeService.date,
 			});
 
-			const user = await this.cacheService.localUserByIdCache.fetch(accessToken.userId,
-				() => this.usersRepository.findOneBy({
-					id: accessToken.userId,
-				}) as Promise<MiLocalUser>);
+			// Loaded by relation above
+			const user = accessToken.user as MiLocalUser;
+
+			// Attach token to user - this will be read by RoleService to drop admin/moderator permissions.
+			attachCallerId(user, { accessToken });
 
 			if (accessToken.appId) {
 				const app = await this.appCache.fetch(accessToken.appId,
@@ -91,15 +105,5 @@ export class AuthenticateService implements OnApplicationShutdown {
 				return [user, accessToken];
 			}
 		}
-	}
-
-	@bindThis
-	public dispose(): void {
-		this.appCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

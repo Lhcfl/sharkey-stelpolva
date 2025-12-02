@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { MiUserListMembership, UserListMembershipsRepository, UserListsRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
+import { UserListService } from '@/core/UserListService.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { isPackedPureRenote } from '@/misc/is-renote.js';
@@ -19,14 +20,13 @@ class UserListChannel extends Channel {
 	public static requireCredential = true as const;
 	public static kind = 'read:account';
 	private listId: string;
-	private membershipsMap: Record<string, Pick<MiUserListMembership, 'withReplies'> | undefined> = {};
-	private listUsersClock: NodeJS.Timeout;
 	private withFiles: boolean;
 	private withRenotes: boolean;
 
 	constructor(
 		private userListsRepository: UserListsRepository,
 		private userListMembershipsRepository: UserListMembershipsRepository,
+		private readonly userListService: UserListService,
 		noteEntityService: NoteEntityService,
 
 		id: string,
@@ -45,39 +45,14 @@ class UserListChannel extends Channel {
 		this.withRenotes = !!(params.withRenotes ?? true);
 
 		// Check existence and owner
-		const listExist = await this.userListsRepository.exists({
-			where: {
-				id: this.listId,
-				userId: this.user!.id,
-			},
-		});
+		const listExist = await this.userListService.userListsCache.fetchMaybe(this.listId);
 		if (!listExist) return;
+		if (!listExist.isPublic && listExist.userId !== this.user?.id) return;
 
 		// Subscribe stream
 		this.subscriber?.on(`userListStream:${this.listId}`, this.send);
 
 		this.subscriber?.on('notesStream', this.onNote);
-
-		this.updateListUsers();
-		this.listUsersClock = setInterval(this.updateListUsers, 5000);
-	}
-
-	@bindThis
-	private async updateListUsers() {
-		const memberships = await this.userListMembershipsRepository.find({
-			where: {
-				userListId: this.listId,
-			},
-			select: ['userId'],
-		});
-
-		const membershipsMap: Record<string, Pick<MiUserListMembership, 'withReplies'> | undefined> = {};
-		for (const membership of memberships) {
-			membershipsMap[membership.userId] = {
-				withReplies: membership.withReplies,
-			};
-		}
-		this.membershipsMap = membershipsMap;
 	}
 
 	@bindThis
@@ -87,9 +62,10 @@ class UserListChannel extends Channel {
 
 		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
 
-		if (!Object.hasOwn(this.membershipsMap, note.userId)) return;
+		const memberships = await this.cacheService.listUserMembershipsCache.fetch(this.listId);
+		if (!memberships.has(note.userId)) return;
 
-		const { accessible, silence } = await this.checkNoteVisibility(note, { includeReplies: true });
+		const { accessible, silence } = await this.checkNoteVisibility(note, { includeReplies: true, listContext: this.listId });
 		if (!accessible || silence) return;
 		if (!this.withRenotes && isPackedPureRenote(note)) return;
 
@@ -102,8 +78,6 @@ class UserListChannel extends Channel {
 		// Unsubscribe events
 		this.subscriber?.off(`userListStream:${this.listId}`, this.send);
 		this.subscriber?.off('notesStream', this.onNote);
-
-		clearInterval(this.listUsersClock);
 	}
 }
 
@@ -121,6 +95,7 @@ export class UserListChannelService implements MiChannelService<true> {
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
 		private noteEntityService: NoteEntityService,
+		private readonly userListService: UserListService,
 	) {
 	}
 
@@ -129,6 +104,7 @@ export class UserListChannelService implements MiChannelService<true> {
 		return new UserListChannel(
 			this.userListsRepository,
 			this.userListMembershipsRepository,
+			this.userListService,
 			this.noteEntityService,
 			id,
 			connection,

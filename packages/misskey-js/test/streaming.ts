@@ -1,4 +1,4 @@
-import WS from 'jest-websocket-mock';
+import { WS } from 'jest-websocket-mock';
 import Stream from '../src/streaming.js';
 
 describe('Streaming', () => {
@@ -43,7 +43,7 @@ describe('Streaming', () => {
 		const server = new WS('wss://misskey.test/streaming');
 		const stream = new Stream('https://misskey.test', { token: 'TOKEN' });
 		const chatChannelReceived: any[] = [];
-		const chat = stream.useChannel('chat', { other: 'aaa' });
+		const chat = stream.useChannel('chatUser', { otherId: 'aaa' });
 		chat.on('message', payload => {
 			chatChannelReceived.push(payload);
 		});
@@ -54,8 +54,8 @@ describe('Streaming', () => {
 		const msg = JSON.parse(await server.nextMessage as string);
 		const chatChannelId = msg.body.id;
 		expect(msg.type).toEqual('connect');
-		expect(msg.body.channel).toEqual('chat');
-		expect(msg.body.params).toEqual({ other: 'aaa' });
+		expect(msg.body.channel).toEqual('chatUser');
+		expect(msg.body.params).toEqual({ otherId: 'aaa' });
 		expect(chatChannelId != null).toEqual(true);
 
 		server.send(JSON.stringify({
@@ -81,8 +81,8 @@ describe('Streaming', () => {
 		const server = new WS('wss://misskey.test/streaming');
 		const stream = new Stream('https://misskey.test', { token: 'TOKEN' });
 
-		stream.useChannel('chat', { other: 'aaa' });
-		stream.useChannel('chat', { other: 'bbb' });
+		stream.useChannel('chatUser', { otherId: 'aaa' });
+		stream.useChannel('chatUser', { otherId: 'bbb' });
 
 		const ws = await server.connected;
 		expect(new URLSearchParams(new URL(ws.url).search).get('i')).toEqual('TOKEN');
@@ -104,7 +104,7 @@ describe('Streaming', () => {
 		const server = new WS('wss://misskey.test/streaming');
 		const stream = new Stream('https://misskey.test', { token: 'TOKEN' });
 
-		const chat = stream.useChannel('chat', { other: 'aaa' });
+		const chat = stream.useChannel('chatUser', { otherId: 'aaa' });
 		chat.send('read', { id: 'aaa' });
 
 		const ws = await server.connected;

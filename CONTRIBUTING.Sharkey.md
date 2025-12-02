@@ -326,11 +326,14 @@ git checkout -m merge/$(date +%Y-%m-%d)   # Create/switch to a merge branch for 
 git merge --no-ff misskey/develop   # Merge from Misskey's develop branch, forcing a merge commit.
 ```
 
-Fix conflicts and *commit!* Conflicts in `pnpm-lock.yaml` can usually
-be fixed by running `pnpm install` - it detects conflict markers and
-seems to do a decent job.
+Fix conflicts and *commit!*
+- Conflicts in `pnpm-lock.yaml` can be fixed by rejecting changes and running `pnpm install`.
+- Conflicts in `packages/misskey-js/etc` and `packages/misskey-js/src/autogen` can be fixed by rejecting changes and running `pnpm run build-misskey-js-with-types`.
+- Conflicts in `locales/index.d.ts` can be fixed by rejecting changes and running `pnpm run build-assets`.
+- Conflicts in any `package.json` file can be fixed by merging only added/removed dependencies, then running `pnpm run sync-dependency-versions`. Other changes (not dependencies) will need to be merged manually.
+- Conflicts involving `this.timeService.now` or `this.timeService.date` can be resolved by accepting remote changes. ESLint will highlight all the missing references in a later step.
 
-*After that commit,* do all the extra work, on the same branch:
+*After that commit*, do all the extra work on the same branch:
 
 - Copy all changes (commit after each step):
     - in `packages/backend/src/core/activitypub/models/ApNoteService.ts`, from `createNote` to `updateNote`
@@ -358,14 +361,44 @@ seems to do a decent job.
     - from `.config/example.yml` to `.config/ci.yml` and `chart/files/default.yml`
     - in `packages/backend/src/core/MfmService.ts`, from `toHtml` to `toMastoApiHtml`
     - from `verifyLink` in `packages/backend/src/core/activitypub/models/ApPersonService.ts` to `verifyFieldLinks` in `packages/backend/src/misc/verify-field-link.ts` (if sensible)
-
-- If there have been any changes to the federated user data (the
-  `renderPerson` function in
-  `packages/backend/src/core/activitypub/ApRendererService.ts`), make
-  sure that the set of fields in `userNeedsPublishing` and
-  `profileNeedsPublishing` in
-  `packages/backend/src/server/api/endpoints/i/update.ts` are still
-  correct.
+- Check for changes that may require additional work:
+  - If there have been any changes to the federated user data (the
+    `renderPerson` function in
+    `packages/backend/src/core/activitypub/ApRendererService.ts`), make
+    sure that the set of fields in `userNeedsPublishing` and
+    `profileNeedsPublishing` in
+    `packages/backend/src/server/api/endpoints/i/update.ts` are still
+    correct.
+  - Check for any new instances of any memory cache class.
+    (`MemoryKVCache`, `MemorySingleCache`, `RedisKVCache`, `RedisSingleCache`, and `QuantumKVCache` are the current ones.)
+  	These can usually be kept as-is, but all instances must be managed by `CacheManagementService`.
+    The conversion is easy:
+    1. Make sure that `CacheManagementService` is available.
+       In most cases, it can be injected through DI.
+       (it's in the `GlobalModule` which should be available everywhere.)
+    2. Find where the cache is constructed.
+       If it's a field initializer, then move it to the constructor (splitting declaration and initialization.)
+    3. Replace the `new Whatever()` statement with a call to `cacheManagementService.createWhatever()`.
+       Arguments can be kept as-is, but remove any references to `Redis`, `InternalEventService`, or `TimeService`.
+       (these are provided by `CacheManagementService` directly.)
+    4. Remove any calls to `dispose()` the cache.
+       Disposal is managed by `CacheManagementService`, so attempting to call any `dispose` or `onApplicationShutdown` method will produce a type error.
+  - Check for any new calls to native time functions:
+    - `Date.now()` - replace with `this.timeService.now`.
+       Inject `TimeService` via DI if it's not already available.
+    - `new Date()` - if there's a value passed in, then leave it.
+    But the no-args constructor should be replaced with `this.timeService.date`.
+      Inject `TimeService` via DI if it's not already available.
+    - `setTimeout` - migrate to `this.timeService.startTimer` or `this.timeService.startPromiseTimer`.
+      The parameters should be the same, but the return type is different.
+      You may need to replace some `NodeJS.Timeout` types with `this.timerHandle`.
+			Inject `TimeService` via DI if it's not already available.
+    - `setInterval` - migrate to `this.timeService.startTimer`.
+    	Migration is mostly the same as `setTimeout`, but with one major difference:
+    	You must add `{ repeated: true }` as the final option parameter.
+    	If this is omitted, the code will compile but the interval will only fire once!
+  - Check for any new Chart subclasses, and make sure to inject `TimeService` and implement `getCurrentDate`.
+  - Check for any new Channel subclasses and add all missing DI parameters.
 
 - Check the changes against our `develop` branch (`git diff develop`)
   and against Misskey's `develop` branch (`git diff misskey/develop`).
@@ -465,3 +498,33 @@ following apply:
   together. Using `MemorySingleCache` or `RedisSingleCache` could
   provide a cleaner implementation without resorting to hacks like a
   fixed key.
+
+- It's necessary to use `null` as a data value.
+  `QuantumKVCache` does not allow null values, and thus another option should be chosen.
+
+### Inter-Process Communication
+
+Sharkey can utilize multiple processes for a single server.
+When running in this mode, a mechanism to synchronization changes between each process is necessary.
+This is accomplished through the use of **Redis IPC**.
+
+#### IPC Options
+
+There are three methods to access this IPC system, all of which are available through Dependency Injection:
+* Using the `pub` and `sub` Redis instances to directly establish channels.
+  This should only be done when necessary, like when implementing very low-level utilities.
+* The `publishInternalEvent` method of `GlobalEventService`.
+  This method will asynchronously publish an event to redis, which will forward it to all connected processes - **including the sending process**.
+  Due to this and other issues, `publishInternalEvent` should be considered obsolete and avoided in new code.
+  Instead, consider one of the other options.
+* `InternalEventService`, which is the newest and recommended way to handle IPC.
+  The `emit` method accepts arguments identical to `publishInternalEvent`, which eases migration, while also accepting a configuration object to control event propagation.
+  Additionally, `InternalEventService` ensures that local event listeners are called *before* notifying other processes, avoiding potential data races and other weirdness.
+
+#### When to use IPC
+
+IPC should be used whenever cacheable data is modified.
+By cacheable, we mean any data that could be stored in any of the supported memory caches.
+Changes to `MiUser`, `MiUserProfile`, or `MiInstance` entities should **always** be considered cacheable, but these are not the only options.
+A major exception is when the local data is cached in a Quantum cache (`QuantumKVCache`).
+Quantum caches automatically call `InternalEventService.emit` to synchronize changes, so you only need to `await set()` and the changes will be reflected in other processes' caches too.

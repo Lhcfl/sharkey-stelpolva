@@ -4,7 +4,7 @@
  */
 
 function parseBigIntChunked(str: string, base: number, chunkSize: number, powerOfChunkSize: bigint): bigint {
-	const chunks = [];
+	const chunks: string[] = [];
 	while (str.length > 0) {
 		chunks.unshift(str.slice(-chunkSize));
 		str = str.slice(0, -chunkSize);

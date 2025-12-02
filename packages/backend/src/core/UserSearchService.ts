@@ -11,11 +11,8 @@ import { bindThis } from '@/decorators.js';
 import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
 import type { Config } from '@/config.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { Packed } from '@/misc/json-schema.js';
-
-function defaultActiveThreshold() {
-	return new Date(Date.now() - 1000 * 60 * 60 * 24 * 30);
-}
 
 @Injectable()
 export class UserSearchService {
@@ -36,7 +33,12 @@ export class UserSearchService {
 		private mutingsRepository: MutingsRepository,
 
 		private userEntityService: UserEntityService,
+		private readonly timeService: TimeService,
 	) {
+	}
+
+	private defaultActiveThreshold() {
+		return new Date(this.timeService.now - 1000 * 60 * 60 * 24 * 30);
 	}
 
 	/**
@@ -97,7 +99,7 @@ export class UserSearchService {
 			}
 		}
 
-		return this.userEntityService.packMany<'UserLite' | 'UserDetailed'>(
+		return await this.userEntityService.packMany<'UserLite' | 'UserDetailed'>(
 			[...resultSet].slice(0, limit),
 			me,
 			{ schema: opts?.detail ? 'UserDetailed' : 'UserLite' },
@@ -120,7 +122,7 @@ export class UserSearchService {
 		},
 	) {
 		// デフォルト30日以内に更新されたユーザーをアクティブユーザーとする
-		const activeThreshold = params.activeThreshold ?? defaultActiveThreshold();
+		const activeThreshold = params.activeThreshold ?? this.defaultActiveThreshold();
 
 		const followingUserQuery = this.followingsRepository.createQueryBuilder('following')
 			.select('following.followeeId')
@@ -166,7 +168,7 @@ export class UserSearchService {
 		activeThreshold?: Date,
 	}) {
 		// デフォルト30日以内に更新されたユーザーをアクティブユーザーとする
-		const activeThreshold = params.activeThreshold ?? defaultActiveThreshold();
+		const activeThreshold = params.activeThreshold ?? this.defaultActiveThreshold();
 
 		const activeUserQuery = this.generateUserQueryBuilder(params)
 			.andWhere(new Brackets(qb => {
@@ -218,7 +220,7 @@ export class UserSearchService {
 		offset: number;
 		origin: 'local' | 'remote' | 'combined';
 	}> = {}) {
-		const activeThreshold = new Date(Date.now() - (1000 * 60 * 60 * 24 * 30)); // 30日
+		const activeThreshold = new Date(this.timeService.now - (1000 * 60 * 60 * 24 * 30)); // 30日
 
 		const isUsername = query.startsWith('@') && !query.includes(' ') && query.indexOf('@', 1) === -1;
 

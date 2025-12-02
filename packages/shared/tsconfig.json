@@ -1,0 +1,14 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./tsconfig.scripts.jsonc",
+
+	"#": [
+		"This is not a template!!!",
+		"Used for type-checking the shared JS/TS code; do not reference from other packages."
+	],
+
+	"include": [
+		"*.js",
+		"*.ts",
+	],
+}

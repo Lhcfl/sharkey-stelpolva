@@ -54,7 +54,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				isActive: ps.isActive,
 				on: ps.on,
 			});
-			return this.systemWebhookEntityService.packMany(webhooks);
+			return await this.systemWebhookEntityService.packMany(webhooks);
 		});
 	}
 }

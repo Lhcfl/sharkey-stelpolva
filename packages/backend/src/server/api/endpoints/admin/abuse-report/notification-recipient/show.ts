@@ -58,7 +58,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchRecipient);
 			}
 
-			return this.abuseReportNotificationRecipientEntityService.pack(recipients[0]);
+			return await this.abuseReportNotificationRecipientEntityService.pack(recipients[0]);
 		});
 	}
 }

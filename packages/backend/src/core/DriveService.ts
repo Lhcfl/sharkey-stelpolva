@@ -207,7 +207,7 @@ export class DriveService {
 
 			//#region Uploads
 			this.registerLogger.debug(`uploading original: ${key}`);
-			const uploads = [
+			const uploads: Promise<void>[] = [
 				this.upload(key, fs.createReadStream(path), type, null, name),
 			];
 
@@ -424,10 +424,10 @@ export class DriveService {
 		if (this.meta.objectStorageSetPublicRead) params.ACL = 'public-read';
 
 		try {
-			if (this.bunnyService.usingBunnyCDN(this.meta)) {
-				await this.bunnyService.upload(this.meta, key, stream);
+			if (this.bunnyService.usingBunnyCDN()) {
+				await this.bunnyService.upload(key, stream);
 			} else {
-				const result = await this.s3Service.upload(this.meta, params);
+				const result = await this.s3Service.upload(params);
 				if ('Bucket' in result) { // CompleteMultipartUploadCommandOutput
 					this.registerLogger.debug(`Uploaded: ${result.Bucket}/${result.Key} => ${result.Location}`);
 				} else { // AbortMultipartUploadCommandOutput
@@ -470,7 +470,7 @@ export class DriveService {
 		for (const fileId of exceedFileIds) {
 			const file = await this.driveFilesRepository.findOneBy({ id: fileId });
 			if (file == null) continue;
-			this.deleteFile(file, true);
+			await this.deleteFile(file, true);
 		}
 	}
 
@@ -718,14 +718,14 @@ export class DriveService {
 			if (values.isSensitive !== undefined && values.isSensitive !== file.isSensitive) {
 				const user = file.userId ? await this.usersRepository.findOneByOrFail({ id: file.userId }) : null;
 				if (values.isSensitive) {
-					this.moderationLogService.log(updater, 'markSensitiveDriveFile', {
+					await this.moderationLogService.log(updater, 'markSensitiveDriveFile', {
 						fileId: file.id,
 						fileUserId: file.userId,
 						fileUserUsername: user?.username ?? null,
 						fileUserHost: user?.host ?? null,
 					});
 				} else {
-					this.moderationLogService.log(updater, 'unmarkSensitiveDriveFile', {
+					await this.moderationLogService.log(updater, 'unmarkSensitiveDriveFile', {
 						fileId: file.id,
 						fileUserId: file.userId,
 						fileUserUsername: user?.username ?? null,
@@ -739,35 +739,13 @@ export class DriveService {
 	}
 
 	@bindThis
-	public async deleteFile(file: MiDriveFile, isExpired = false, deleter?: MiUser) {
-		if (file.storedInternal) {
-			this.deleteLocalFile(file.accessKey!);
-
-			if (file.thumbnailUrl) {
-				this.deleteLocalFile(file.thumbnailAccessKey!);
-			}
-
-			if (file.webpublicUrl) {
-				this.deleteLocalFile(file.webpublicAccessKey!);
-			}
-		} else if (!file.isLink) {
-			this.queueService.createDeleteObjectStorageFileJob(file.accessKey!);
-
-			if (file.thumbnailUrl) {
-				this.queueService.createDeleteObjectStorageFileJob(file.thumbnailAccessKey!);
-			}
-
-			if (file.webpublicUrl) {
-				this.queueService.createDeleteObjectStorageFileJob(file.webpublicAccessKey!);
-			}
-		}
-
-		this.deletePostProcess(file, isExpired, deleter);
+	public async deleteFile(file: MiDriveFile, isExpired = false, deleter?: { id: string }) {
+		await this.queueService.createDeleteFileJob(file.id, isExpired, deleter?.id);
 	}
 
 	@bindThis
-	public async deleteFileSync(file: MiDriveFile, isExpired = false, deleter?: MiUser) {
-		const promises = [];
+	public async deleteFileSync(file: MiDriveFile, isExpired = false, deleter?: { id: string }) {
+		const promises: Promise<void>[] = [];
 
 		if (file.storedInternal) {
 			promises.push(this.deleteLocalFile(file.accessKey!));
@@ -793,14 +771,14 @@ export class DriveService {
 
 		await Promise.all(promises);
 
-		this.deletePostProcess(file, isExpired, deleter);
+		await this.deletePostProcess(file, isExpired, deleter);
 	}
 
 	@bindThis
-	private async deletePostProcess(file: MiDriveFile, isExpired = false, deleter?: MiUser) {
+	private async deletePostProcess(file: MiDriveFile, isExpired = false, deleter?: { id: string }) {
 		// リモートファイル期限切れ削除後は直リンクにする
 		if (isExpired && file.userHost !== null && file.uri != null) {
-			this.driveFilesRepository.update(file.id, {
+			await this.driveFilesRepository.update(file.id, {
 				isLink: true,
 				url: file.uri,
 				thumbnailUrl: null,
@@ -812,7 +790,7 @@ export class DriveService {
 				webpublicAccessKey: 'webpublic-' + randomUUID(),
 			});
 		} else {
-			this.driveFilesRepository.delete(file.id);
+			await this.driveFilesRepository.delete(file.id);
 		}
 
 		this.driveChart.update(file, false);
@@ -831,7 +809,7 @@ export class DriveService {
 
 		if (deleter && await this.roleService.isModerator(deleter) && (file.userId !== deleter.id)) {
 			const user = file.userId ? await this.usersRepository.findOneByOrFail({ id: file.userId }) : null;
-			this.moderationLogService.log(deleter, 'deleteDriveFile', {
+			await this.moderationLogService.log(deleter, 'deleteDriveFile', {
 				fileId: file.id,
 				fileUserId: file.userId,
 				fileUserUsername: user?.username ?? null,
@@ -843,15 +821,17 @@ export class DriveService {
 	@bindThis
 	public async deleteObjectStorageFile(key: string) {
 		try {
+			if (this.bunnyService.usingBunnyCDN()) {
+				await this.bunnyService.delete(key);
+				return;
+			}
+
 			const param = {
 				Bucket: this.meta.objectStorageBucket,
 				Key: key,
 			} as DeleteObjectCommandInput;
-			if (this.bunnyService.usingBunnyCDN(this.meta)) {
-				await this.bunnyService.delete(this.meta, key);
-			} else {
-				await this.s3Service.delete(this.meta, param);
-			}
+
+			await this.s3Service.delete(param);
 		} catch (err: any) {
 			if (err.name === 'NoSuchKey') {
 				this.deleteLogger.warn(`The object storage had no such key to delete: ${key}. Skipping this.`);

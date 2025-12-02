@@ -15,5 +15,5 @@ const fs = require('fs');
 	fs.rmSync(__dirname + '/../packages/misskey-reversi/built', { recursive: true, force: true });
 	fs.rmSync(__dirname + '/../packages/misskey-bubble-game/built', { recursive: true, force: true });
 	fs.rmSync(__dirname + '/../built', { recursive: true, force: true });
-	fs.rmSync(__dirname + '/../packages/megalodon/lib', { recursive: true, force: true });
+	fs.rmSync(__dirname + '/../packages/megalodon/built', { recursive: true, force: true });
 })();

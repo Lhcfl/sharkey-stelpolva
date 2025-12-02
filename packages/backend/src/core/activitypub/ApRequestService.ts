@@ -14,6 +14,7 @@ import { UserKeypairService } from '@/core/UserKeypairService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import type Logger from '@/logger.js';
 import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/validator.js';
@@ -40,7 +41,7 @@ type PrivateKey = {
 };
 
 export class ApRequestCreator {
-	static createSignedPost(args: { key: PrivateKey, url: string, body: string, digest?: string, additionalHeaders: Record<string, string> }): Signed {
+	static createSignedPost(args: { key: PrivateKey, url: string, body: string, digest?: string, additionalHeaders: Record<string, string>, now: Date | string | number }): Signed {
 		const u = new URL(args.url);
 		const digestHeader = args.digest ?? this.createDigest(args.body);
 
@@ -48,7 +49,7 @@ export class ApRequestCreator {
 			url: u.href,
 			method: 'POST',
 			headers: this.#objectAssignWithLcKey({
-				'Date': new Date().toUTCString(),
+				'Date': new Date(args.now).toUTCString(),
 				'Host': u.host,
 				'Content-Type': 'application/activity+json',
 				'Digest': digestHeader,
@@ -69,7 +70,7 @@ export class ApRequestCreator {
 		return `SHA-256=${crypto.createHash('sha256').update(body).digest('base64')}`;
 	}
 
-	static createSignedGet(args: { key: PrivateKey, url: string, additionalHeaders: Record<string, string> }): Signed {
+	static createSignedGet(args: { key: PrivateKey, url: string, additionalHeaders: Record<string, string>, now: Date | string | number }): Signed {
 		const u = new URL(args.url);
 
 		const request: Request = {
@@ -77,7 +78,7 @@ export class ApRequestCreator {
 			method: 'GET',
 			headers: this.#objectAssignWithLcKey({
 				'Accept': 'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-				'Date': new Date().toUTCString(),
+				'Date': new Date(args.now).toUTCString(),
 				'Host': new URL(args.url).host,
 			}, args.additionalHeaders),
 		};
@@ -150,6 +151,7 @@ export class ApRequestService {
 		private httpRequestService: HttpRequestService,
 		private loggerService: LoggerService,
 		private readonly apUtilityService: ApUtilityService,
+		private readonly timeService: TimeService,
 	) {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		this.logger = this.loggerService?.getLogger('ap-request'); // なぜか TypeError: Cannot read properties of undefined (reading 'getLogger') と言われる
@@ -171,6 +173,7 @@ export class ApRequestService {
 			digest,
 			additionalHeaders: {
 			},
+			now: this.timeService.now,
 		});
 
 		await this.httpRequestService.send(url, {
@@ -200,6 +203,7 @@ export class ApRequestService {
 			url,
 			additionalHeaders: {
 			},
+			now: this.timeService.now,
 		});
 
 		const res = await this.httpRequestService.send(url, {
