@@ -164,7 +164,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			.leftJoinAndSelect('renote.user', 'renoteUser')
 			.limit(ps.limit);
 
-		this.queryService.generateExcludedRepliesQueryForNotes(query, me);
+		if (!ps.withReplies) {
+			this.queryService.generateExcludedRepliesQueryForNotes(query, me);
+		}
 		this.queryService.generateVisibilityQuery(query, me);
 		this.queryService.generateBlockedHostQueryForNote(query);
 		this.queryService.generateSuspendedUserQueryForNote(query);
