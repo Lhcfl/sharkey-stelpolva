@@ -248,7 +248,6 @@ Detailed view of a note in the Sharkey style. Used when opening a note onto its 
 import { computed, inject, onMounted, onUnmounted, onUpdated, provide, ref, useTemplateRef, watch } from 'vue';
 import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
-import { isPureRenote } from 'misskey-js/note.js';
 import { isLink } from '@@/js/is-link.js';
 import * as config from '@@/js/config.js';
 import type { OpenOnRemoteOptions } from '@/utility/please-login.js';

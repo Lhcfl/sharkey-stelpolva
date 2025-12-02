@@ -1,12 +1,10 @@
-
-import { isPureRenote } from 'misskey-js/note.js';
-import type * as Misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import { $i } from '@/i';
 
 export function stpvNoteClassBindings(notep: Misskey.entities.Note) {
 	let note = notep;
 	const res: string[] = [];
-	if (isPureRenote(note)) {
+	if (Misskey.note.isPureRenote(note)) {
 		note = note.renote;
 		res.push('d-is-renote');
 	}
