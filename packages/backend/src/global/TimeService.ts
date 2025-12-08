@@ -161,7 +161,7 @@ export class NativeTimeService extends TimeService<NativeTimer> implements OnApp
 	protected startNativeTimer(timerId: symbol, repeating: boolean, callback: () => void, delay: number): NativeTimer {
 		// Wrap the caller's callback to make sure we clean up the registration.
 		const wrappedCallback = () => {
-			this.timers.delete(timerId);
+			// this.timers.delete(timerId);
 			callback();
 		};
 
