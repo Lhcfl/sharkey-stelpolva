@@ -209,13 +209,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			query.andWhere('note.channelId IS NULL');
 		}
 
-		this.queryService.generateBlockedHostQueryForNote(query, true);
-		this.queryService.generateSuspendedUserQueryForNote(query, true);
-		this.queryService.generateSilencedUserQueryForNotes(query, me, true);
-		if (me) {
-			this.queryService.generateMutedUserQueryForNotes(query, me, true);
-			this.queryService.generateBlockedUserQueryForNotes(query, me);
-			this.queryService.generateMutedNoteThreadQuery(query, me);
+		// 让用户起码能看到自己的内容
+		if (!isSelf) {
+			this.queryService.generateBlockedHostQueryForNote(query, true);
+			this.queryService.generateSuspendedUserQueryForNote(query, true);
+			this.queryService.generateSilencedUserQueryForNotes(query, me, true);
+			if (me) {
+				this.queryService.generateMutedUserQueryForNotes(query, me, true);
+				this.queryService.generateBlockedUserQueryForNotes(query, me);
+				this.queryService.generateMutedNoteThreadQuery(query, me);
+			}
 		}
 
 		if (ps.withFiles) {
