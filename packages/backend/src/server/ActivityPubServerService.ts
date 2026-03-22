@@ -34,13 +34,13 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import { IActivity, IAnnounce, ICreate } from '@/core/activitypub/type.js';
 import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import * as Acct from '@/misc/acct.js';
 import { CacheService } from '@/core/CacheService.js';
 import { CustomEmojiService, encodeEmojiKey } from '@/core/CustomEmojiService.js';
+import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginOptions, FastifyBodyParser } from 'fastify';
 import type { FindOptionsWhere } from 'typeorm';
-import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
-import { promiseMap } from '@/misc/promise-map.js';
 
 const ACTIVITY_JSON = 'application/activity+json; charset=utf-8';
 const LD_JSON = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"; charset=utf-8';
@@ -303,6 +303,7 @@ export class ActivityPubServerService {
 		if (signature.params.headers.indexOf('digest') === -1) {
 			// Digest not found.
 			reply.code(401);
+			return;
 		} else {
 			const digest = request.headers.digest;
 

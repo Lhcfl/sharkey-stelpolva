@@ -3,13 +3,16 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import { ChatService } from '@/core/ChatService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import Channel, { type MiChannelService } from '../channel.js';
+import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
+import type { ChatRoomsRepository } from '@/models/_.js';
+import { Channel, type MiChannelService } from '../channel.js';
 
 class ChatRoomChannel extends Channel {
 	public readonly chName = 'chatRoom';
@@ -19,21 +22,32 @@ class ChatRoomChannel extends Channel {
 	private roomId: string;
 
 	constructor(
-		private chatService: ChatService,
-
 		id: string,
 		connection: Channel['connection'],
-		noteEntityService: NoteEntityService,
+
+		private chatRoomsRepository: ChatRoomsRepository,
+		private chatService: ChatService,
 	) {
-		super(id, connection, noteEntityService);
+		super(id, connection);
 	}
 
 	@bindThis
-	public async init(params: JsonObject) {
-		if (typeof params.roomId !== 'string') return;
+	public async init(params: JsonObject): Promise<boolean> {
+		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
+		if (typeof params.roomId !== 'string') return false;
+
 		this.roomId = params.roomId;
 
-		this.subscriber?.on(`chatRoomStream:${this.roomId}`, this.onEvent);
+		const exists = await this.chatRoomsRepository.findOne({
+			select: { id: true },
+			where: { id: this.roomId },
+		}) != null;
+
+		if (!exists) return true;
+
+		this.subscriber.on(`chatRoomStream:${this.roomId}`, this.onEvent);
+
+		return true;
 	}
 
 	@bindThis
@@ -65,18 +79,20 @@ export class ChatRoomChannelService implements MiChannelService<true> {
 	public readonly kind = ChatRoomChannel.kind;
 
 	constructor(
-		private chatService: ChatService,
-		private readonly noteEntityService: NoteEntityService,
+		@Inject(DI.chatRoomsRepository)
+		private readonly chatRoomsRepository: ChatRoomsRepository,
+
+		private readonly chatService: ChatService,
 	) {
 	}
 
 	@bindThis
 	public create(id: string, connection: Channel['connection']): ChatRoomChannel {
 		return new ChatRoomChannel(
-			this.chatService,
 			id,
 			connection,
-			this.noteEntityService,
+			this.chatRoomsRepository,
+			this.chatService,
 		);
 	}
 }

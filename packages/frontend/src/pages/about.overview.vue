@@ -67,10 +67,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</template>
 				</MkKeyValue>
 			</FormSplit>
-			<FormLink v-if="instance.impressumUrl" :to="instance.impressumUrl" external>
-				<template #icon><i class="ti ti-user-shield"></i></template>
-				{{ i18n.ts.impressum }}
-			</FormLink>
 			<div class="_gaps_s">
 				<FormLink v-if="instance.impressumUrl" :to="instance.impressumUrl" external>
 					<template #icon><i class="ti ti-user-shield"></i></template>

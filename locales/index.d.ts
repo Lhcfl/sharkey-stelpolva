@@ -13928,6 +13928,16 @@ export interface Locale extends ILocale {
      * 您对 {target} 的举报已被接受。感谢您的帮助！管理人员已经采取了适当的措施。
      */
     "reportAcceptedBody": ParameterizedString<"target">;
+    "_header": {
+        /**
+         * Browse
+         */
+        "browse": string;
+        /**
+         * Manage
+         */
+        "manage": string;
+    };
 }
 declare const locales: {
     [lang: string]: Locale;

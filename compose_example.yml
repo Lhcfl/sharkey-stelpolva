@@ -14,7 +14,8 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      # change this if your reverse proxy is not on the same machine
+      - "127.0.0.1:3000:3000"
     networks:
       - shonk
     # env_file:

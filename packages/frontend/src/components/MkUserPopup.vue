@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	:leaveToClass="prefer.s.animation ? $style.transition_popup_leaveTo : ''"
 	appear @afterLeave="emit('closed')"
 >
-	<div v-if="showing" :class="$style.root" class="_popup _shadow" :style="{ zIndex, top: top + 'px', left: left + 'px' }" @mouseover="() => { emit('mouseover'); }" @mouseleave="() => { emit('mouseleave'); }">
+	<div v-if="showing" :class="$style.root" class="_popup _shadow" :style="{ zIndex, top: top + 'px', left: left + 'px' }" @pointerover="(event) => { emit('pointerover', event); }" @mouseleave="() => { emit('mouseleave'); }">
 		<MkError v-if="error" @retry="fetchUser()"/>
 		<div v-else-if="user != null">
 			<div :class="$style.banner" :style="user.bannerUrl ? { backgroundImage: `url(${prefer.s.disableShowingAnimatedImages ? getStaticImageUrl(user.bannerUrl) : user.bannerUrl})` } : ''">
@@ -92,7 +92,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	(ev: 'closed'): void;
-	(ev: 'mouseover'): void;
+	(ev: 'pointerover', event: PointerEvent): void;
 	(ev: 'mouseleave'): void;
 }>();
 

@@ -87,6 +87,7 @@ type UploadFromUrlArgs = {
 	comment?: string | null;
 	requestIp?: string | null;
 	requestHeaders?: Record<string, string> | null;
+	isForImport?: boolean;
 };
 
 @Injectable()
@@ -872,13 +873,17 @@ export class DriveService {
 		comment = null,
 		requestIp = null,
 		requestHeaders = null,
+		isForImport = false,
 	}: UploadFromUrlArgs): Promise<MiDriveFile> {
 		// Create temp file
 		const [path, cleanup] = await createTemp();
 
 		try {
 			// write content at URL to temp file
-			const { filename: name } = await this.downloadService.downloadUrl(url, path);
+			const { filename: name } = await this.downloadService.downloadUrl(url, path, {
+				operationTimeout: isForImport ? this.config.import?.downloadTimeout : undefined,
+				maxSize: isForImport ? this.config.import?.maxFileSize : undefined,
+			});
 
 			// If the comment is same as the name, skip comment
 			// (image.name is passed in when receiving attachment)

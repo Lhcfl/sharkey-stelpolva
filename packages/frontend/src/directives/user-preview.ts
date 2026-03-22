@@ -21,7 +21,7 @@ export class UserPreview {
 
 		this.show = this.show.bind(this);
 		this.close = this.close.bind(this);
-		this.onMouseover = this.onMouseover.bind(this);
+		this.onPointerover = this.onPointerover.bind(this);
 		this.onMouseleave = this.onMouseleave.bind(this);
 		this.onClick = this.onClick.bind(this);
 		this.attach = this.attach.bind(this);
@@ -41,7 +41,8 @@ export class UserPreview {
 			q: this.user,
 			source: this.el,
 		}, {
-			mouseover: () => {
+			pointerover: (event: PointerEvent) => {
+				if (event.pointerType === 'touch') return;
 				window.clearTimeout(this.hideTimer);
 			},
 			mouseleave: () => {
@@ -74,7 +75,8 @@ export class UserPreview {
 		}
 	}
 
-	private onMouseover() {
+	private onPointerover(event: PointerEvent) {
+		if (event.pointerType === 'touch') return;
 		window.clearTimeout(this.showTimer);
 		window.clearTimeout(this.hideTimer);
 		this.showTimer = window.setTimeout(this.show, 500);
@@ -92,13 +94,13 @@ export class UserPreview {
 	}
 
 	public attach() {
-		this.el.addEventListener('mouseover', this.onMouseover);
+		this.el.addEventListener('pointerover', this.onPointerover);
 		this.el.addEventListener('mouseleave', this.onMouseleave);
 		this.el.addEventListener('click', this.onClick);
 	}
 
 	public detach() {
-		this.el.removeEventListener('mouseover', this.onMouseover);
+		this.el.removeEventListener('pointerover', this.onPointerover);
 		this.el.removeEventListener('mouseleave', this.onMouseleave);
 		this.el.removeEventListener('click', this.onClick);
 	}

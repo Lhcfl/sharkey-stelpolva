@@ -270,7 +270,7 @@ const exportData = () => {
 };
 
 const importFollowing = async (ev) => {
-	const file = await selectFile(ev.currentTarget ?? ev.target);
+	const file = await selectFile(ev.currentTarget ?? ev.target, null, { isForImport: true });
 	misskeyApi('i/import-following', {
 		fileId: file.id,
 		withReplies: withReplies.value,
@@ -278,7 +278,7 @@ const importFollowing = async (ev) => {
 };
 
 const importNotes = async (ev) => {
-	const file = await selectFile(ev.currentTarget ?? ev.target);
+	const file = await selectFile(ev.currentTarget ?? ev.target, null, { isForImport: true });
 	misskeyApi('i/import-notes', {
 		fileId: file.id,
 		type: noteType.value,
@@ -286,22 +286,22 @@ const importNotes = async (ev) => {
 };
 
 const importUserLists = async (ev) => {
-	const file = await selectFile(ev.currentTarget ?? ev.target);
+	const file = await selectFile(ev.currentTarget ?? ev.target, null, { isForImport: true });
 	misskeyApi('i/import-user-lists', { fileId: file.id }).then(onImportSuccess).catch(onError);
 };
 
 const importMuting = async (ev) => {
-	const file = await selectFile(ev.currentTarget ?? ev.target);
+	const file = await selectFile(ev.currentTarget ?? ev.target, null, { isForImport: true });
 	misskeyApi('i/import-muting', { fileId: file.id }).then(onImportSuccess).catch(onError);
 };
 
 const importBlocking = async (ev) => {
-	const file = await selectFile(ev.currentTarget ?? ev.target);
+	const file = await selectFile(ev.currentTarget ?? ev.target, null, { isForImport: true });
 	misskeyApi('i/import-blocking', { fileId: file.id }).then(onImportSuccess).catch(onError);
 };
 
 const importAntennas = async (ev) => {
-	const file = await selectFile(ev.currentTarget ?? ev.target);
+	const file = await selectFile(ev.currentTarget ?? ev.target, null, { isForImport: true });
 	misskeyApi('i/import-antennas', { fileId: file.id }).then(onImportSuccess).catch(onError);
 };
 

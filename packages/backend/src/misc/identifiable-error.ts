@@ -36,4 +36,6 @@ export const errorCodes = {
 	userIsSuspended: '1e56d624-737f-48e4-beb6-0bdddb9fa809',
 	// User has no valid featured collection (not defined, invalid, etc)
 	noFeaturedCollection: '2aa4766e-b7d8-4291-a671-56800498b085',
+	// WebSocket server encountered an error
+	websocketError: '4b277ff0-88f6-4ddc-8960-8058e76b3677',
 } as const;

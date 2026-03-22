@@ -5,7 +5,6 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
-import * as Misskey from 'misskey-js';
 import _Ajv from 'ajv';
 import { ModuleRef } from '@nestjs/core';
 import { In } from 'typeorm';
@@ -14,7 +13,7 @@ import type { Config } from '@/config.js';
 import type { Packed } from '@/misc/json-schema.js';
 import type { Promiseable } from '@/misc/prelude/await-all.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
-import { USER_ACTIVE_THRESHOLD, USER_ONLINE_THRESHOLD } from '@/const.js';
+import { USER_ACTIVE_THRESHOLD, USER_ONLINE_THRESHOLD, permissions } from '@/const.js';
 import type { MiLocalUser, MiPartialLocalUser, MiPartialRemoteUser, MiRemoteUser, MiUser } from '@/models/User.js';
 import {
 	birthdaySchema,
@@ -933,12 +932,12 @@ export class UserEntityService implements OnModuleInit {
 	@bindThis
 	private getPermissions(user: MiUser, isModerator: boolean, isAdmin: boolean): readonly string[] {
 		const token = getCallerId(user);
-		let permissions = token?.accessToken?.permission ?? Misskey.permissions;
+		let perms = token?.accessToken?.permission ?? permissions;
 
 		if (!isModerator && !isAdmin) {
-			permissions = permissions.filter(perm => !perm.startsWith('read:admin') && !perm.startsWith('write:admin'));
+			perms = perms.filter(perm => !perm.startsWith('read:admin') && !perm.startsWith('write:admin'));
 		}
 
-		return permissions;
+		return perms;
 	}
 }

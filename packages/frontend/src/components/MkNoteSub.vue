@@ -202,8 +202,9 @@ async function reply(viaKeyboard = false): Promise<void> {
 function react(): void {
 	pleaseLogin({ openOnRemote: pleaseLoginContext.value });
 	showMovedDialog();
-	sound.playMisskeySfx('reaction');
 	if (appearNote.value.reactionAcceptance === 'likeOnly') {
+		sound.playMisskeySfx('reaction');
+
 		misskeyApi('notes/like', {
 			noteId: appearNote.value.id,
 			override: defaultLike.value,
@@ -219,7 +220,18 @@ function react(): void {
 		}
 	} else {
 		blur();
-		reactionPicker.show(reactButton.value ?? null, appearNote.value, reaction => {
+		reactionPicker.show(reactButton.value ?? null, note.value, async (reaction) => {
+			if (prefer.s.confirmOnReact) {
+				const confirm = await os.confirm({
+					type: 'question',
+					text: i18n.tsx.reactAreYouSure({ emoji: reaction.replace('@.', '') }),
+				});
+
+				if (confirm.canceled) return;
+			}
+
+			sound.playMisskeySfx('reaction');
+
 			misskeyApi('notes/reactions/create', {
 				noteId: appearNote.value.id,
 				reaction: reaction,

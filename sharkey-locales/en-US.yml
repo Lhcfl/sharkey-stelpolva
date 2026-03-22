@@ -733,3 +733,6 @@ restartMigrationDescription: "Account migration was last attempted {date}. If th
 restartMigrationConfirm: "Are you sure you want to restart this account migration?"
 
 backgroundQueue: "Background queue"
+_header:
+  browse: "Browse"
+  manage: "Manage"

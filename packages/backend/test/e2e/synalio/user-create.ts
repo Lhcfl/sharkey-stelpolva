@@ -4,7 +4,7 @@
  */
 
 import { setTimeout } from 'node:timers/promises';
-import { entities } from 'misskey-js';
+import type { entities } from 'misskey-js';
 import { beforeEach, describe, test } from '@jest/globals';
 import {
 	api,

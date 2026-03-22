@@ -708,7 +708,10 @@ function clear() {
 }
 
 function onKeydown(ev: KeyboardEvent) {
-	if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && canPost.value) post();
+	if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && canPost.value) {
+		ev.preventDefault();
+		post();
+	}
 
 	// justEndedComposition.value is for Safari, which keyDown occurs after compositionend.
 	// ev.isComposing is for another browsers.

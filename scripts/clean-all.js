@@ -23,7 +23,7 @@ const fs = require('fs');
 	fs.rmSync(__dirname + '/../packages/sw/node_modules', { recursive: true, force: true });
 
 	fs.rmSync(__dirname + '/../packages/megalodon/built', { recursive: true, force: true });
-	
+
 	fs.rmSync(__dirname + '/../packages/misskey-js/built', { recursive: true, force: true });
 	fs.rmSync(__dirname + '/../packages/misskey-js/node_modules', { recursive: true, force: true });
 
@@ -32,6 +32,9 @@ const fs = require('fs');
 
 	fs.rmSync(__dirname + '/../packages/misskey-bubble-game/built', { recursive: true, force: true });
 	fs.rmSync(__dirname + '/../packages/misskey-bubble-game/node_modules', { recursive: true, force: true });
+
+	fs.rmSync(__dirname + '/../packages/megalodon/built', { recursive: true, force: true });
+	fs.rmSync(__dirname + '/../packages/megalodon/node_modules', { recursive: true, force: true });
 
 	fs.rmSync(__dirname + '/../built', { recursive: true, force: true });
 	fs.rmSync(__dirname + '/../node_modules', { recursive: true, force: true });

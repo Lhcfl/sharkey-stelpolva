@@ -74,10 +74,12 @@ export class MastodonApiServerService {
 			done();
 		});
 
-		// Tell crawlers not to index API endpoints.
-		// https://developers.google.com/search/docs/crawling-indexing/block-indexing
 		fastify.addHook('onRequest', (request, reply, done) => {
+			// Tell crawlers not to index API endpoints.
+			// https://developers.google.com/search/docs/crawling-indexing/block-indexing
 			reply.header('X-Robots-Tag', 'noindex');
+			// Prevent cache
+			reply.header('Cache-Control', 'private, max-age=0, must-revalidate');
 			done();
 		});
 

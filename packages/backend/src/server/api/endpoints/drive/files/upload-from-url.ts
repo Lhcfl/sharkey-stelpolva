@@ -47,6 +47,7 @@ export const paramDef = {
 		comment: { type: 'string', nullable: true, default: null },
 		marker: { type: 'string', nullable: true, default: null },
 		force: { type: 'boolean', default: false },
+		isForImport: { type: 'boolean', default: false },
 	},
 	required: ['url'],
 } as const;
@@ -66,7 +67,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.commentTooLong);
 			}
 
-			this.driveService.uploadFromUrl({ url: ps.url, user, folderId: ps.folderId, sensitive: ps.isSensitive, force: ps.force, comment: ps.comment, requestIp: ip, requestHeaders: headers }).then(file => {
+			this.driveService.uploadFromUrl({ url: ps.url, user, folderId: ps.folderId, sensitive: ps.isSensitive, force: ps.force, comment: ps.comment, requestIp: ip, requestHeaders: headers, isForImport: ps.isForImport }).then(file => {
 				this.driveFileEntityService.pack(file, { self: true }).then(packedFile => {
 					this.globalEventService.publishMainStream(user.id, 'urlUploadFinished', {
 						marker: ps.marker,
