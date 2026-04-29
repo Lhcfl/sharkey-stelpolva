@@ -22,6 +22,7 @@ export const followingVisibilities = ['public', 'followers', 'private'] as const
 
 export const followersVisibilities = ['public', 'followers', 'private'] as const;
 
+// Keep in sync with const.ts in backend
 export const permissions = [
 	'read:account',
 	'write:account',
@@ -186,6 +187,7 @@ export const moderationLogTypes = [
 	'deleteChatRoom',
 ] as const;
 
+// Keep in sync with backend const.ts
 // See: packages/backend/src/core/ReversiService.ts@L410
 export const reversiUpdateKeys = [
 	'map',

@@ -13,6 +13,7 @@ import { CacheService } from '@/core/CacheService.js';
 import type { MiFollowing, MiUserProfile, NoteFavoritesRepository, NoteReactionsRepository, NotesRepository } from '@/models/_.js';
 import type { StreamEventEmitter, GlobalEvents } from '@/core/GlobalEventService.js';
 import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
+import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { isJsonObject } from '@/misc/json-value.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
 import { LoggerService } from '@/core/LoggerService.js';
@@ -55,13 +56,14 @@ export default class Connection {
 
 	constructor(
 		private readonly noteReactionsRepository: NoteReactionsRepository,
-		private readonly notesRepository: NotesRepository,
 		private readonly noteFavoritesRepository: NoteFavoritesRepository,
 		private readonly queryService: QueryService,
 		private channelsService: ChannelsService,
 		private notificationService: NotificationService,
 		public readonly cacheService: CacheService,
 		private channelFollowingService: ChannelFollowingService,
+		private notesRepository: NotesRepository,
+		private noteEntityService: NoteEntityService,
 		private readonly timeService: TimeService,
 
 		loggerService: LoggerService,
@@ -140,10 +142,7 @@ export default class Connection {
 
 		this.wsConnection = wsConnection;
 		this.wsConnection.on('message', this.onWsConnectionMessage);
-
-		this.subscriber.on('broadcast', data => {
-			this.onBroadcastMessage(data);
-		});
+		this.subscriber.on('broadcast', this.onBroadcastMessage);
 	}
 
 	/**
@@ -173,7 +172,7 @@ export default class Connection {
 		const { type, body } = obj;
 
 		switch (type) {
-			case 'readNotification': this.onReadNotification(body); break;
+			case 'readNotification': await this.onReadNotification(); break;
 			case 'subNote': this.onSubscribeNote(body); break;
 			case 's': this.onSubscribeNote(body); break; // alias
 			case 'sr': this.onSubscribeNote(body); break;
@@ -192,8 +191,9 @@ export default class Connection {
 	}
 
 	@bindThis
-	private onReadNotification(payload: JsonValue | undefined) {
-		this.notificationService.readAllNotification(this.user!.id);
+	private async onReadNotification() {
+		if (!this.user) return;
+		await this.notificationService.readAllNotification(this.user.id);
 	}
 
 	/**
@@ -243,15 +243,18 @@ export default class Connection {
 
 	@bindThis
 	private async onNoteStreamMessage(data: GlobalEvents['note']['payload']) {
-		// we must not send to the frontend information about notes from
-		// users who blocked the logged-in user, even when they're replies
-		// to notes the logged-in user can see
-		if (data.type === 'replied') {
-			const noteUserId = data.body.body.userId;
-			if (noteUserId !== null) {
-				if (this.userIdsWhoBlockingMe.has(noteUserId)) {
-					return;
-				}
+		const note = await this.notesRepository.findOne({
+			where: { id: data.body.id },
+			relations: { reply: true, renote: true },
+		});
+		if (!note && data.type !== 'deleted') return;
+
+		if (note) {
+			// Skip and stop tracking if the message contains a note the user can't or shouldn't see.
+			const { accessible, silence } = await this.noteEntityService.noteVisibilityService.checkNoteVisibilityAsync(note, this.user);
+			if (!accessible || silence) {
+				this.onUnsubscribeNote({ id: data.body.id });
+				return;
 			}
 		}
 
@@ -303,7 +306,7 @@ export default class Connection {
 	 * チャンネルに接続
 	 */
 	@bindThis
-	public connectChannel(id: string, params: JsonObject | undefined, channel: string, pong = false) {
+	public async connectChannel(id: string, params: JsonObject | undefined, channel: string, pong = false) {
 		if (this.channels.has(id)) {
 			this.disconnectChannel(id);
 		}
@@ -334,7 +337,11 @@ export default class Connection {
 
 		const ch: Channel = channelService.create(id, this);
 		this.channels.set(ch.id, ch);
-		ch.init(params ?? {});
+		const valid = await ch.init(params ?? {});
+		if (typeof valid === 'boolean' && !valid) {
+			this.disconnectChannel(id);
+			return;
+		}
 
 		if (pong) {
 			this.sendMessageToWs('connected', {
@@ -386,6 +393,7 @@ export default class Connection {
 		for (const k of this.subscribingNotes.keys()) {
 			this.subscriber?.off(`noteStream:${k}`, this.onNoteStreamMessage);
 		}
+		this.subscriber?.off('broadcast', this.onBroadcastMessage);
 		this.wsConnection?.off('message', this.onWsConnectionMessage);
 
 		this.fetchIntervalId = null;

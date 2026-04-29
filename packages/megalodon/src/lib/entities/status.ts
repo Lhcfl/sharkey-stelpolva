@@ -46,3 +46,7 @@ export interface StatusTag {
 	name: string
 	url: string
 }
+
+export type StatusWithText = Status & {
+	text: string
+}

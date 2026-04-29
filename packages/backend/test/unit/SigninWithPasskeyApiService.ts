@@ -67,7 +67,7 @@ describe('SigninWithPasskeyApiService', () => {
 	let webAuthnService: WebAuthnService;
 	let idService: IdService;
 	let cacheManagementService: CacheManagementService;
-	let FakeWebauthnVerify: ()=>Promise<string>;
+	let FakeWebauthnVerify: () => Promise<string>;
 
 	async function createUser(data: Partial<MiUser> = {}) {
 		await usersRepository.insert(data);

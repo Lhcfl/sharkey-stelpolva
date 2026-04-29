@@ -4,56 +4,70 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { isInstanceMuted, isUserFromMutedInstance } from '@/misc/is-instance-muted.js';
+import { isUserFromMutedInstance } from '@/misc/is-instance-muted.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
+import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import type { JsonObject } from '@/misc/json-value.js';
-import Channel, { type MiChannelService } from '../channel.js';
+import type { GlobalEvents } from '@/core/GlobalEventService.js';
+import { type Channel, NoteChannel, type MiChannelService } from '../channel.js';
 
-class MainChannel extends Channel {
+// TODO does not need to be NoteChannel?
+class MainChannel extends NoteChannel {
 	public readonly chName = 'main';
 	public static shouldShare = true;
 	public static requireCredential = true as const;
 	public static kind = 'read:account';
 
 	constructor(
-		noteEntityService: NoteEntityService,
-
 		id: string,
 		connection: Channel['connection'],
+		noteEntityService: NoteEntityService,
 	) {
 		super(id, connection, noteEntityService);
 	}
 
 	@bindThis
-	public async init(params: JsonObject) {
-		// Subscribe main stream channel
-		this.subscriber?.on(`mainStream:${this.user!.id}`, async data => {
-			switch (data.type) {
-				case 'notification': {
-					// Ignore notifications from instances the user has muted
-					if (isUserFromMutedInstance(data.body, this.userMutedInstances)) return;
-					if (data.body.userId && this.userIdsWhoMeMuting.has(data.body.userId)) return;
+	public async init(): Promise<boolean> {
+		if (!this.user) return false;
+		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
 
-					if (data.body.note) {
-						const { accessible, silence } = await this.checkNoteVisibility(data.body.note, { includeReplies: true });
-						if (!accessible || silence) return;
+		this.subscriber.on(`mainStream:${this.user.id}`, this.onEvent);
 
-						data.body.note = await this.rePackNote(data.body.note);
-					}
-					break;
+		return true;
+	}
+
+	@bindThis
+	private async onEvent(data: GlobalEvents['main']['payload']): Promise<void> {
+		switch (data.type) {
+			case 'notification': {
+				// Ignore notifications from instances the user has muted
+				if (isUserFromMutedInstance(data.body, this.userMutedInstances)) return;
+				if (data.body.userId && this.userIdsWhoMeMuting.has(data.body.userId)) return;
+
+				if (data.body.note) {
+					const preparedNote = await this.prepareNote(data.body.note);
+					if (!preparedNote) return;
+
+					data.body.note = preparedNote;
 				}
-				case 'mention': {
-					const { accessible, silence } = await this.checkNoteVisibility(data.body, { includeReplies: true });
-					if (!accessible || silence) return;
-
-					data.body = await this.rePackNote(data.body);
-					break;
-				}
+				break;
 			}
+			case 'mention': {
+				const preparedNote = await this.prepareNote(data.body);
+				if (preparedNote) {
+					this.send(data.type, preparedNote);
+				}
+				return;
+			}
+		}
 
-			this.send(data.type, data.body);
-		});
+		this.send(data.type, data.body);
+	}
+
+	@bindThis
+	public dispose() {
+		this.subscriber?.off(`mainStream:${this.user?.id}`, this.onEvent);
 	}
 }
 
@@ -71,9 +85,9 @@ export class MainChannelService implements MiChannelService<true> {
 	@bindThis
 	public create(id: string, connection: Channel['connection']): MainChannel {
 		return new MainChannel(
-			this.noteEntityService,
 			id,
 			connection,
+			this.noteEntityService,
 		);
 	}
 }

@@ -109,6 +109,7 @@ export * as 'admin/roles/update-default-policies' from './endpoints/admin/roles/
 export * as 'admin/roles/users' from './endpoints/admin/roles/users.js';
 export * as 'admin/send-email' from './endpoints/admin/send-email.js';
 export * as 'admin/server-info' from './endpoints/admin/server-info.js';
+export * as 'admin/set-root' from './endpoints/admin/set-root.js';
 export * as 'admin/show-moderation-logs' from './endpoints/admin/show-moderation-logs.js';
 export * as 'admin/show-user' from './endpoints/admin/show-user.js';
 export * as 'admin/show-users' from './endpoints/admin/show-users.js';

@@ -27,7 +27,7 @@ spec:
           ports:
             - containerPort: 3000
         - name: postgres
-          image: postgres:15-alpine
+          image: groonga/pgroonga:4.0.1-alpine-17
           env:
             - name: POSTGRES_USER
               value: "example-misskey-user"

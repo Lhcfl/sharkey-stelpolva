@@ -162,6 +162,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkButton primary @click="save_blockedHosts">{{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
+
+				<MkFolder v-if="$i.isRoot">
+					<template #icon><i class="ph-lightning ph-bold ph-lg"></i></template>
+					<template #label>{{ i18n.ts.setRootUser }}</template>
+					<template #header><div :class="$style.folderHeader" v-html="i18n.ts.setRootUserWarning"></div></template>
+
+					<div class="_gaps">
+						<MkButton primary @click="selectUser">{{ i18n.ts.selectUser }}</MkButton>
+						<div v-if="newRootUser != null" style="overflow: hidden;">
+							<MkUserCardMini
+								:user="newRootUser"
+								:withChart="false"
+							/>
+						</div>
+						<MkButton primary :disabled="newRootUser == null" @click="save_setRoot">{{ i18n.ts.save }}</MkButton>
+					</div>
+				</MkFolder>
 			</div>
 		</FormSuspense>
 	</div>
@@ -169,171 +186,199 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
-import MkSwitch from '@/components/MkSwitch.vue';
-import MkInput from '@/components/MkInput.vue';
-import MkTextarea from '@/components/MkTextarea.vue';
-import FormSuspense from '@/components/form/suspense.vue';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { fetchInstance } from '@/instance.js';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import MkButton from '@/components/MkButton.vue';
-import FormLink from '@/components/form/link.vue';
-import MkFolder from '@/components/MkFolder.vue';
-import SkPatternTest from '@/components/SkPatternTest.vue';
-import { $i } from '@/i';
+	import { ref, computed, shallowRef } from 'vue';
+	import type * as Misskey from 'misskey-js';
+	import MkSwitch from '@/components/MkSwitch.vue';
+	import MkInput from '@/components/MkInput.vue';
+	import MkTextarea from '@/components/MkTextarea.vue';
+	import FormSuspense from '@/components/form/suspense.vue';
+	import * as os from '@/os.js';
+	import { misskeyApi } from '@/utility/misskey-api.js';
+	import { fetchInstance } from '@/instance.js';
+	import { i18n } from '@/i18n.js';
+	import { definePage } from '@/page.js';
+	import MkButton from '@/components/MkButton.vue';
+	import FormLink from '@/components/form/link.vue';
+	import MkFolder from '@/components/MkFolder.vue';
+	import MkUserCardMini from '@/components/MkUserCardMini.vue';
+	import SkPatternTest from '@/components/SkPatternTest.vue';
+	import { $i } from '@/i';
+	import { refreshCurrentAccount } from '@/accounts.js';
 
-const enableRegistration = ref<boolean>(false);
-const emailRequiredForSignup = ref<boolean>(false);
-const approvalRequiredForSignup = ref<boolean>(false);
-const sensitiveWords = ref<string>('');
-const prohibitedWords = ref<string>('');
-const prohibitedWordsForNameOfUser = ref<string>('');
-const hiddenTags = ref<string>('');
-const preservedUsernames = ref<string>('');
-const bubbleTimeline = ref<string>('');
-const trustedLinkUrlPatterns = ref<string>('');
-const blockedHosts = ref<string>('');
-const silencedHosts = ref<string>('');
-const mediaSilencedHosts = ref<string>('');
+	const enableRegistration = ref<boolean>(false);
+	const emailRequiredForSignup = ref<boolean>(false);
+	const approvalRequiredForSignup = ref<boolean>(false);
+	const sensitiveWords = ref<string>('');
+	const prohibitedWords = ref<string>('');
+	const prohibitedWordsForNameOfUser = ref<string>('');
+	const hiddenTags = ref<string>('');
+	const preservedUsernames = ref<string>('');
+	const bubbleTimeline = ref<string>('');
+	const trustedLinkUrlPatterns = ref<string>('');
+	const blockedHosts = ref<string>('');
+	const silencedHosts = ref<string>('');
+	const mediaSilencedHosts = ref<string>('');
+	const newRootUser = shallowRef<Misskey.entities.UserDetailed | null>(null);
 
-async function init() {
-	const meta = await misskeyApi('admin/meta');
-	enableRegistration.value = !meta.disableRegistration;
-	emailRequiredForSignup.value = meta.emailRequiredForSignup;
-	approvalRequiredForSignup.value = meta.approvalRequiredForSignup;
-	sensitiveWords.value = meta.sensitiveWords.join('\n');
-	prohibitedWords.value = meta.prohibitedWords.join('\n');
-	prohibitedWordsForNameOfUser.value = meta.prohibitedWordsForNameOfUser.join('\n');
-	hiddenTags.value = meta.hiddenTags.join('\n');
-	preservedUsernames.value = meta.preservedUsernames.join('\n');
-	bubbleTimeline.value = meta.bubbleInstances.join('\n');
-	trustedLinkUrlPatterns.value = meta.trustedLinkUrlPatterns.join('\n');
-	blockedHosts.value = meta.blockedHosts.join('\n');
-	silencedHosts.value = meta.silencedHosts?.join('\n') ?? '';
-	mediaSilencedHosts.value = meta.mediaSilencedHosts.join('\n');
-}
-
-async function onChange_enableRegistration(value: boolean) {
-	if (value) {
-		const { canceled } = await os.confirm({
-			type: 'warning',
-			text: i18n.ts.acknowledgeNotesAndEnable,
-		});
-		if (canceled) return;
+	async function init() {
+		const meta = await misskeyApi('admin/meta');
+		enableRegistration.value = !meta.disableRegistration;
+		emailRequiredForSignup.value = meta.emailRequiredForSignup;
+		approvalRequiredForSignup.value = meta.approvalRequiredForSignup;
+		sensitiveWords.value = meta.sensitiveWords.join('\n');
+		prohibitedWords.value = meta.prohibitedWords.join('\n');
+		prohibitedWordsForNameOfUser.value = meta.prohibitedWordsForNameOfUser.join('\n');
+		hiddenTags.value = meta.hiddenTags.join('\n');
+		preservedUsernames.value = meta.preservedUsernames.join('\n');
+		bubbleTimeline.value = meta.bubbleInstances.join('\n');
+		trustedLinkUrlPatterns.value = meta.trustedLinkUrlPatterns.join('\n');
+		blockedHosts.value = meta.blockedHosts.join('\n');
+		silencedHosts.value = meta.silencedHosts?.join('\n') ?? '';
+		mediaSilencedHosts.value = meta.mediaSilencedHosts.join('\n');
 	}
 
-	enableRegistration.value = value;
+	async function onChange_enableRegistration(value: boolean) {
+		if (value) {
+			const { canceled } = await os.confirm({
+				type: 'warning',
+				text: i18n.ts.acknowledgeNotesAndEnable,
+			});
+			if (canceled) return;
+		}
 
-	os.apiWithDialog('admin/update-meta', {
-		disableRegistration: !value,
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+		enableRegistration.value = value;
 
-function onChange_emailRequiredForSignup(value: boolean) {
-	os.apiWithDialog('admin/update-meta', {
-		emailRequiredForSignup: value,
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+		os.apiWithDialog('admin/update-meta', {
+			disableRegistration: !value,
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-function onChange_approvalRequiredForSignup(value: boolean) {
-	os.apiWithDialog('admin/update-meta', {
-		approvalRequiredForSignup: value,
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+	function onChange_emailRequiredForSignup(value: boolean) {
+		os.apiWithDialog('admin/update-meta', {
+			emailRequiredForSignup: value,
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-function save_bubbleTimeline() {
-	os.apiWithDialog('admin/update-meta', {
-		bubbleInstances: bubbleTimeline.value.split('\n'),
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+	function onChange_approvalRequiredForSignup(value: boolean) {
+		os.apiWithDialog('admin/update-meta', {
+			approvalRequiredForSignup: value,
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-function save_trustedLinkUrlPatterns() {
-	os.apiWithDialog('admin/update-meta', {
-		trustedLinkUrlPatterns: trustedLinkUrlPatterns.value.split('\n'),
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+	function save_bubbleTimeline() {
+		os.apiWithDialog('admin/update-meta', {
+			bubbleInstances: bubbleTimeline.value.split('\n'),
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-function save_preservedUsernames() {
-	os.apiWithDialog('admin/update-meta', {
-		preservedUsernames: preservedUsernames.value.split('\n'),
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+	function save_trustedLinkUrlPatterns() {
+		os.apiWithDialog('admin/update-meta', {
+			trustedLinkUrlPatterns: trustedLinkUrlPatterns.value.split('\n'),
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-function save_sensitiveWords() {
-	os.apiWithDialog('admin/update-meta', {
-		sensitiveWords: sensitiveWords.value.split('\n'),
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+	function save_preservedUsernames() {
+		os.apiWithDialog('admin/update-meta', {
+			preservedUsernames: preservedUsernames.value.split('\n'),
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-function save_prohibitedWords() {
-	os.apiWithDialog('admin/update-meta', {
-		prohibitedWords: prohibitedWords.value.split('\n'),
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+	function save_sensitiveWords() {
+		os.apiWithDialog('admin/update-meta', {
+			sensitiveWords: sensitiveWords.value.split('\n'),
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-function save_prohibitedWordsForNameOfUser() {
-	os.apiWithDialog('admin/update-meta', {
-		prohibitedWordsForNameOfUser: prohibitedWordsForNameOfUser.value.split('\n'),
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+	function save_prohibitedWords() {
+		os.apiWithDialog('admin/update-meta', {
+			prohibitedWords: prohibitedWords.value.split('\n'),
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-function save_hiddenTags() {
-	os.apiWithDialog('admin/update-meta', {
-		hiddenTags: hiddenTags.value.split('\n'),
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+	function save_prohibitedWordsForNameOfUser() {
+		os.apiWithDialog('admin/update-meta', {
+			prohibitedWordsForNameOfUser: prohibitedWordsForNameOfUser.value.split('\n'),
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-function save_blockedHosts() {
-	os.apiWithDialog('admin/update-meta', {
-		blockedHosts: blockedHosts.value.split('\n') || [],
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+	function save_hiddenTags() {
+		os.apiWithDialog('admin/update-meta', {
+			hiddenTags: hiddenTags.value.split('\n'),
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-function save_silencedHosts() {
-	os.apiWithDialog('admin/update-meta', {
-		silencedHosts: silencedHosts.value.split('\n') || [],
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+	function save_blockedHosts() {
+		os.apiWithDialog('admin/update-meta', {
+			blockedHosts: blockedHosts.value.split('\n') || [],
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-function save_mediaSilencedHosts() {
-	os.apiWithDialog('admin/update-meta', {
-		mediaSilencedHosts: mediaSilencedHosts.value.split('\n') || [],
-	}).then(() => {
-		fetchInstance(true);
-	});
-}
+	function save_silencedHosts() {
+		os.apiWithDialog('admin/update-meta', {
+			silencedHosts: silencedHosts.value.split('\n') || [],
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-const headerTabs = computed(() => []);
+	function save_mediaSilencedHosts() {
+		os.apiWithDialog('admin/update-meta', {
+			mediaSilencedHosts: mediaSilencedHosts.value.split('\n') || [],
+		}).then(() => {
+			fetchInstance(true);
+		});
+	}
 
-definePage(() => ({
-	title: i18n.ts.moderation,
-	icon: 'ti ti-shield',
-}));
+	function selectUser() {
+		os.selectUser({
+			includeSelf: true,
+			localOnly: true,
+		}).then(_user => {
+			newRootUser.value = _user;
+		});
+	}
+
+	function save_setRoot() {
+		os.apiWithDialog('admin/set-root', {
+			userId: newRootUser.value.id,
+		}).then(() => {
+			refreshCurrentAccount();
+		});
+	}
+
+	const headerTabs = computed(() => []);
+
+	definePage(() => ({
+		title: i18n.ts.moderation,
+		icon: 'ti ti-shield',
+	}));
 </script>
+
+<style lang="scss" module>
+.folderHeader {
+	padding: var(--MI-marginHalf);
+	gap: var(--MI-marginHalf);
+}
+</style>

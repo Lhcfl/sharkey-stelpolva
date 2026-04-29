@@ -122,6 +122,7 @@ import type {
 	AdminRolesUsersResponse,
 	AdminSendEmailRequest,
 	AdminServerInfoResponse,
+	AdminSetRootRequest,
 	AdminShowModerationLogsRequest,
 	AdminShowModerationLogsResponse,
 	AdminShowUserRequest,
@@ -774,6 +775,7 @@ export type Endpoints = {
 	'admin/roles/users': { req: AdminRolesUsersRequest; res: AdminRolesUsersResponse };
 	'admin/send-email': { req: AdminSendEmailRequest; res: EmptyResponse };
 	'admin/server-info': { req: EmptyRequest; res: AdminServerInfoResponse };
+	'admin/set-root': { req: AdminSetRootRequest; res: EmptyResponse };
 	'admin/show-moderation-logs': { req: AdminShowModerationLogsRequest; res: AdminShowModerationLogsResponse };
 	'admin/show-user': { req: AdminShowUserRequest; res: AdminShowUserResponse };
 	'admin/show-users': { req: AdminShowUsersRequest; res: AdminShowUsersResponse };

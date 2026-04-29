@@ -13,12 +13,12 @@ import type { InstancesRepository, AccessTokensRepository, UserProfilesRepositor
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
+import { CacheService } from '@/core/CacheService.js';
 import endpoints from './endpoints.js';
 import { ApiCallService } from './ApiCallService.js';
 import { SignupApiService } from './SignupApiService.js';
 import { SigninApiService } from './SigninApiService.js';
 import { SigninWithPasskeyApiService } from './SigninWithPasskeyApiService.js';
-import { CacheService } from '@/core/CacheService.js';
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
 
 @Injectable()
@@ -52,6 +52,7 @@ export class ApiServerService {
 	public createServer(fastify: FastifyInstance, options: FastifyPluginOptions, done: (err?: Error) => void) {
 		fastify.register(cors, {
 			origin: '*',
+			methods: '*',
 		});
 
 		fastify.register(multipart, {
@@ -164,7 +165,7 @@ export class ApiServerService {
 			});
 			if (affected) {
 				await this.cacheService.userProfileCache.delete(request.params.user);
-				return ["Unsubscribed."];
+				return ['Unsubscribed.'];
 			} else {
 				reply.code(401);
 				return {

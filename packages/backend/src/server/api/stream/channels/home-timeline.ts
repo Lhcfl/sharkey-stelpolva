@@ -8,10 +8,11 @@ import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { isPackedPureRenote } from '@/misc/is-renote.js';
+import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import type { JsonObject } from '@/misc/json-value.js';
-import Channel, { type MiChannelService } from '../channel.js';
+import { Channel, NoteChannel, type MiChannelService } from '../channel.js';
 
-class HomeTimelineChannel extends Channel {
+class HomeTimelineChannel extends NoteChannel {
 	public readonly chName = 'homeTimeline';
 	public static shouldShare = false;
 	public static requireCredential = true as const;
@@ -21,30 +22,28 @@ class HomeTimelineChannel extends Channel {
 	private withReplies: boolean;
 
 	constructor(
-		noteEntityService: NoteEntityService,
-
 		id: string,
 		connection: Channel['connection'],
+		noteEntityService: NoteEntityService,
 	) {
 		super(id, connection, noteEntityService);
-		//this.onNote = this.onNote.bind(this);
 	}
 
 	@bindThis
 	public async init(params: JsonObject) {
+		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
 		this.withRenotes = !!(params.withRenotes ?? true);
 		this.withFiles = !!(params.withFiles ?? false);
 		this.withReplies = !!(params.withReplies ?? false);
 
-		this.subscriber?.on('notesStream', this.onNote);
+		this.subscriber.on('notesStream', this.onNote);
 	}
 
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
 		const isMe = this.user?.id === note.userId;
-
 		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
-
+		if (!this.withRenotes && isPackedPureRenote(note)) return;
 		if (note.channelId) {
 			if (!this.followingChannels.has(note.channelId)) return;
 		} else {
@@ -52,12 +51,10 @@ class HomeTimelineChannel extends Channel {
 			if (!isMe && !this.following.has(note.userId)) return;
 		}
 
-		const { accessible, silence } = await this.checkNoteVisibility(note);
-		if (!accessible || silence) return;
-		if (!this.withRenotes && isPackedPureRenote(note)) return;
-
-		const clonedNote = await this.rePackNote(note);
-		this.send('note', clonedNote);
+		const preparedNote = await this.prepareNote(note);
+		if (preparedNote) {
+			this.send('note', preparedNote);
+		}
 	}
 
 	@bindThis
@@ -81,9 +78,9 @@ export class HomeTimelineChannelService implements MiChannelService<true> {
 	@bindThis
 	public create(id: string, connection: Channel['connection']): HomeTimelineChannel {
 		return new HomeTimelineChannel(
-			this.noteEntityService,
 			id,
 			connection,
+			this.noteEntityService,
 		);
 	}
 }

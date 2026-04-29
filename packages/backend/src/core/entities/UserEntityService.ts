@@ -5,7 +5,6 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
-import * as Misskey from 'misskey-js';
 import _Ajv from 'ajv';
 import { ModuleRef } from '@nestjs/core';
 import { In } from 'typeorm';
@@ -14,7 +13,7 @@ import type { Config } from '@/config.js';
 import type { Packed } from '@/misc/json-schema.js';
 import type { Promiseable } from '@/misc/prelude/await-all.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
-import { USER_ACTIVE_THRESHOLD, USER_ONLINE_THRESHOLD } from '@/const.js';
+import { USER_ACTIVE_THRESHOLD, USER_ONLINE_THRESHOLD, permissions } from '@/const.js';
 import type { MiLocalUser, MiPartialLocalUser, MiPartialRemoteUser, MiRemoteUser, MiUser } from '@/models/User.js';
 import {
 	birthdaySchema,
@@ -513,6 +512,7 @@ export class UserEntityService implements OnModuleInit {
 		const isMe = meId === user.id;
 		const iAmModerator = opts.iAmModerator ?? (me ? await this.roleService.isModerator(me) : false);
 		const iAmAdmin = opts.iAmAdmin ?? (me ? await this.roleService.isAdministrator(me) : false);
+		const iAmRoot = iAmAdmin && me && this.meta.rootUserId === me.id;
 
 		const profile = isDetailed
 			? (opts.userProfile ?? user.userProfile ?? await this.userProfilesRepository.findOneByOrFail({ userId: user.id }))
@@ -705,6 +705,10 @@ export class UserEntityService implements OnModuleInit {
 				securityKeys: profile!.twoFactorEnabled
 					? Promise.resolve(opts.securityKeyCounts?.get(user.id) ?? this.userSecurityKeysRepository.countBy({ userId: user.id })).then(result => result >= 1)
 					: false,
+			} : {}),
+
+			...(isDetailed && iAmRoot ? {
+				isRoot: true,
 			} : {}),
 
 			...(isDetailed && isMe ? {
@@ -933,12 +937,12 @@ export class UserEntityService implements OnModuleInit {
 	@bindThis
 	private getPermissions(user: MiUser, isModerator: boolean, isAdmin: boolean): readonly string[] {
 		const token = getCallerId(user);
-		let permissions = token?.accessToken?.permission ?? Misskey.permissions;
+		let perms = token?.accessToken?.permission ?? permissions;
 
 		if (!isModerator && !isAdmin) {
-			permissions = permissions.filter(perm => !perm.startsWith('read:admin') && !perm.startsWith('write:admin'));
+			perms = perms.filter(perm => !perm.startsWith('read:admin') && !perm.startsWith('write:admin'));
 		}
 
-		return permissions;
+		return perms;
 	}
 }

@@ -192,7 +192,7 @@ async function del() {
 	});
 	if (canceled) return;
 
-	misskeyApi('admin/emoji/delete', {
+	os.apiWithDialog('admin/emoji/delete', {
 		id: props.emoji.id,
 	}).then(() => {
 		emit('done', {

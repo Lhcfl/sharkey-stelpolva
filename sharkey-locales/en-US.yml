@@ -377,6 +377,7 @@ _moderationLogTypes:
   addRelay: "Added a relay"
   removeRelay: "Removed a relay"
   restartMigration: "Restarted migration for a user"
+  setRoot: "Set the root user"
 
 _mfm:
   uncommonFeature: "This is not a widespread feature, it may not display properly on most other fedi software, including other Misskey forks"
@@ -733,3 +734,11 @@ restartMigrationDescription: "Account migration was last attempted {date}. If th
 restartMigrationConfirm: "Are you sure you want to restart this account migration?"
 
 backgroundQueue: "Background queue"
+_header:
+  browse: "Browse"
+  manage: "Manage"
+
+setRootUser: "Set the root user"
+setRootUserWarning: "You are currently the root user; you can give that away to someone else. If you want to remain an administrator after that, you should make yourself an administration via a role, <em>before</em> you give root away"
+previousRootUser: "Previous root user"
+newRootUser: "New root user"

@@ -281,6 +281,13 @@ export namespace Converter {
 		}
 	}
 
+	export const noteWithText = (n: Entity.Note, host: string | null = null): MegalodonEntity.StatusWithText => {
+		return {
+			...note(n, host),
+			text: n.text ?? ''
+		}
+	}
+
 	export const notesource = (n: Entity.Note): MegalodonEntity.StatusSource => {
 		return {
 			id: n.id,
@@ -482,7 +489,11 @@ export namespace Converter {
 					max_characters: m.maxNoteTextLength,
 					max_media_attachments: m.policies.clipLimit
 				}
-			}
+			},
+			rules: m.serverRules.map((r, index) => ({
+				id: (index + 1).toString(),
+				text: r,
+			}))
 		}
 	}
 

@@ -13,6 +13,7 @@ import type Logger from '@/logger.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { createTempDir } from '@/misc/create-temp.js';
 import { DriveService } from '@/core/DriveService.js';
+import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { bindThis } from '@/decorators.js';
 import type { Config } from '@/config.js';
@@ -39,6 +40,7 @@ export class ImportCustomEmojisProcessorService {
 
 		private customEmojiService: CustomEmojiService,
 		private driveService: DriveService,
+		private driveFileEntityService: DriveFileEntityService,
 		private downloadService: DownloadService,
 		private queueLoggerService: QueueLoggerService,
 		private notificationService: NotificationService,
@@ -81,8 +83,23 @@ export class ImportCustomEmojisProcessorService {
 
 			for (const record of meta.emojis) {
 				if (!record.downloaded) continue;
-				if (!/^[a-zA-Z0-9_]+?([a-zA-Z0-9\.]+)?$/.test(record.fileName)) {
-					this.logger.error(`invalid filename: ${record.fileName}`);
+				/*
+					record.fileName must refer to a member of the zip file; we
+					could be clever and normalise the given string to avoid path
+					traversals and general shenanigans… or we could just
+					prohibit slashes: all existing emoji packs have all the
+					files at the top level anyway
+
+					(aside: ZipReader (via the rust `zip` crate) takes enough
+					care to prevent directory traversals from the zip file
+					itself)
+
+					the colon is in case we're on windows, the zero is because
+					too many libraries get confused by a zero byte in strings,
+					I blame C
+				*/
+				if (!this.driveFileEntityService.validateFileName(record.fileName) || /[\0:]/.test(record.fileName)) {
+					this.logger.error(`invalid filename (can't have slashes or colons): ${record.fileName}`);
 					continue;
 				}
 				const emojiInfo = record.emoji;

@@ -140,12 +140,27 @@ async function chooseList(ev: MouseEvent): Promise<void> {
 		(lists.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link' as const,
+			icon: 'ti ti-pencil',
+			text: i18n.ts._header.manage,
+			to: '/my/lists',
+		},
+		{
 			icon: 'ti ti-plus',
 			text: i18n.ts.createNew,
-			to: '/my/lists',
+			action: createList,
 		},
 	];
 	os.popupMenu(items, ev.currentTarget ?? ev.target);
+}
+
+async function createList() {
+	const { canceled, result: name } = await os.inputText({
+		title: i18n.ts.enterListName,
+	});
+	if (canceled || name === null) return;
+	const list = await os.apiWithDialog('users/lists/create', { name: name });
+	userListsCache.delete();
+	router.push(`/my/lists/${list.id}`);
 }
 
 async function chooseAntenna(ev: MouseEvent): Promise<void> {
@@ -160,9 +175,15 @@ async function chooseAntenna(ev: MouseEvent): Promise<void> {
 		(antennas.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link' as const,
+			icon: 'ti ti-pencil',
+			text: i18n.ts._header.manage,
+			to: '/my/antennas',
+		},
+		{
+			type: 'link' as const,
 			icon: 'ti ti-plus',
 			text: i18n.ts.createNew,
-			to: '/my/antennas',
+			to: '/my/antennas/create',
 		},
 	];
 	os.popupMenu(items, ev.currentTarget ?? ev.target);
@@ -185,9 +206,15 @@ async function chooseChannel(ev: MouseEvent): Promise<void> {
 		(channels.length === 0 ? undefined : { type: 'divider' }),
 		{
 			type: 'link',
+			icon: 'ti ti-search',
+			text: i18n.ts._header.browse,
+			to: '/channels',
+		},
+		{
+			type: 'link',
 			icon: 'ti ti-plus',
 			text: i18n.ts.createNew,
-			to: '/channels',
+			to: '/channels/new',
 		},
 	];
 	os.popupMenu(items, ev.currentTarget ?? ev.target);

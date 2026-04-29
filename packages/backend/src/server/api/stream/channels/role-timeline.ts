@@ -9,53 +9,47 @@ import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import type { JsonObject } from '@/misc/json-value.js';
-import { isPackedPureRenote, isQuotePacked, isRenotePacked } from '@/misc/is-renote.js';
-import Channel, { type MiChannelService } from '../channel.js';
+import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
+import { type Channel, NoteChannel, type MiChannelService } from '../channel.js';
 
-class RoleTimelineChannel extends Channel {
+class RoleTimelineChannel extends NoteChannel {
 	public readonly chName = 'roleTimeline';
 	public static shouldShare = false;
 	public static requireCredential = false as const;
 	private roleId: string;
 
 	constructor(
-		noteEntityService: NoteEntityService,
-		private roleservice: RoleService,
-
 		id: string,
 		connection: Channel['connection'],
+		noteEntityService: NoteEntityService,
+
+		private roleservice: RoleService,
 	) {
 		super(id, connection, noteEntityService);
-		//this.onNote = this.onNote.bind(this);
 	}
 
 	@bindThis
-	public async init(params: JsonObject) {
-		if (typeof params.roleId !== 'string') return;
+	public async init(params: JsonObject): Promise<boolean> {
+		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
+		if (typeof params.roleId !== 'string') return false;
 		this.roleId = params.roleId;
 
-		this.subscriber?.on(`roleTimelineStream:${this.roleId}`, this.onEvent);
+		if (!(await this.roleservice.isExplorable({ id: this.roleId }))) return false;
+
+		this.subscriber.on(`roleTimelineStream:${this.roleId}`, this.onEvent);
+
+		return true;
 	}
 
 	@bindThis
 	private async onEvent(data: GlobalEvents['roleTimeline']['payload']) {
-		if (data.type === 'note') {
-			const note = data.body;
-			const isMe = this.user?.id === note.userId;
+		const note = data.body;
 
-			// TODO this should be cached
-			if (!(await this.roleservice.isExplorable({ id: this.roleId }))) {
-				return;
-			}
-			if (note.visibility !== 'public') return;
+		if (note.visibility !== 'public') return;
 
-			const { accessible, silence } = await this.checkNoteVisibility(note);
-			if (!accessible || silence) return;
-
-			const clonedNote = await this.rePackNote(note);
-			this.send('note', clonedNote);
-		} else {
-			this.send(data.type, data.body);
+		const preparedNote = await this.prepareNote(note);
+		if (preparedNote) {
+			this.send('note', preparedNote);
 		}
 	}
 
@@ -81,10 +75,10 @@ export class RoleTimelineChannelService implements MiChannelService<false> {
 	@bindThis
 	public create(id: string, connection: Channel['connection']): RoleTimelineChannel {
 		return new RoleTimelineChannel(
-			this.noteEntityService,
-			this.roleservice,
 			id,
 			connection,
+			this.noteEntityService,
+			this.roleservice,
 		);
 	}
 }

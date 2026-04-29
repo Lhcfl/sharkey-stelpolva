@@ -66,6 +66,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'clearInstanceFiles',
 					'severFollowRelations',
 					'removeRelay',
+					'setRoot',
 				].includes(log.type)
 			}"
 		>{{ i18n.ts._moderationLogTypes[log.type] ?? log.type }}</b>
@@ -132,6 +133,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'addRelay'">: {{ log.info.inbox }}</span>
 		<span v-else-if="log.type === 'removeRelay'">: {{ log.info.inbox }}</span>
 		<span v-else-if="log.type === 'restartMigration'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
+		<span v-else-if="log.type === 'setRoot'">: {{ log.info.after.userUsername }}</span>
 	</template>
 	<template #icon>
 		<i v-if="log.type === 'updateServerSettings'" class="ti ti-settings"></i>
@@ -177,6 +179,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'deleteGalleryPost'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'deleteChatRoom'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'restartMigration'" class="ph-airplane-takeoff ph-bold ph-lg"></i>
+		<i v-else-if="log.type === 'setRoot'" class="ph-lightning ph-bold ph-lg"></i>
 	</template>
 	<template #suffix>
 		<MkTime :time="log.createdAt"/>
@@ -351,6 +354,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template v-else-if="log.type === 'updateProxyAccountDescription'">
 			<div :class="$style.diff">
 				<CodeDiff :context="5" :hideHeader="true" :oldString="log.info.before ?? ''" :newString="log.info.after ?? ''" maxHeight="300px"/>
+			</div>
+		</template>
+		<template v-else-if="log.type === 'setRoot'">
+			<div>
+				<p>{{ i18n.ts.previousRootUser }}: <MkA :to="`/admin/user/${log.info.before.userId}`" class="_link">@{{ log.info.before.userUsername }}</MkA></p>
+				<p>{{ i18n.ts.newRootUser }}: <MkA :to="`/admin/user/${log.info.after.userId}`" class="_link">@{{ log.info.after.userUsername }}</MkA></p>
 			</div>
 		</template>
 

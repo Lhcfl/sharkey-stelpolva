@@ -693,9 +693,9 @@ export interface MegalodonInterface {
    * Delete one of your own statuses.
    *
    * @param id The target status id.
-   * @return Status
+   * @return Status with source `text`.
    */
-  deleteStatus(id: string): Promise<Response<{}>>
+  deleteStatus(id: string): Promise<Response<Entity.StatusWithText>>
   /**
    * Get parent and child statuses in context.
    * View statuses above and below this status in the thread.

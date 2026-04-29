@@ -97,6 +97,7 @@ function generateToken() {
 				type: 'success',
 				title: i18n.ts.token,
 				text: token,
+				textCopyable: true,
 			});
 		},
 		closed: () => dispose(),

@@ -1,5 +1,5 @@
 import { rejects, strictEqual } from 'node:assert';
-import * as Misskey from 'misskey-js';
+import type * as Misskey from 'misskey-js';
 import { createAccount, createModerator, resolveRemoteUser, sleep, type LoginUser } from './utils.js';
 
 describe('Abuse report', () => {

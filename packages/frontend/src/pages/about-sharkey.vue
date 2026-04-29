@@ -179,6 +179,11 @@ const everyone = ref<Section[]>([
 				avatar: 'https://activitypub.software/uploads/-/system/user/avatar/132/avatar.png?width=128',
 				link: 'https://activitypub.software/tess',
 			},
+			{
+				handle: '@bunnybeam',
+				avatar: 'https://secure.gravatar.com/avatar/25736ba5847665e58884874e87042324e9233885263cb982bfa19f667b8304ae?s=128&d=identicon',
+				link: 'https://activitypub.software/bunnybeam',
+			},
 		]),
 	},
 	{

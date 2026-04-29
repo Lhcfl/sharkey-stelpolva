@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import type { InstancesRepository, NoteReactionsRepository } from '@/models/_.js';
+import { DataSource } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import NotesChart from '@/core/chart/charts/notes.js';
@@ -66,11 +66,8 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.instancesRepository)
-		private instancesRepository: InstancesRepository,
-
-		@Inject(DI.noteReactionsRepository)
-		private noteReactionsRepository: NoteReactionsRepository,
+		@Inject(DI.db)
+		private db: DataSource,
 
 		private notesChart: NotesChart,
 		private usersChart: UsersChart,
@@ -88,11 +85,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				reactionsCount,
 				//originalReactionsCount,
 				instances,
-			] = await Promise.all([
-				this.noteReactionsRepository.count({ cache: 3600000 }), // 1 hour
-				//this.noteReactionsRepository.count({ where: { userHost: IsNull() }, cache: 3600000 }),
-				this.instancesRepository.count({ cache: 3600000 }),
-			]);
+			] = await Promise.all(['note_reaction', 'instance'].map(table => {
+				return this.db.query(
+					'SELECT reltuples::bigint AS estimate FROM pg_class WHERE relname=$1',
+					[table],
+				).then(recs => recs[0].estimate);
+			}));
 
 			return {
 				notesCount,

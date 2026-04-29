@@ -19,11 +19,11 @@ import { ApiTimelineMastodon } from '@/server/api/mastodon/endpoints/timeline.js
 import { ApiSearchMastodon } from '@/server/api/mastodon/endpoints/search.js';
 import { ApiError } from '@/server/api/error.js';
 import { ServerUtilityService } from '@/server/ServerUtilityService.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import { parseTimelineArgs, TimelineArgs, toBoolean } from './argsUtils.js';
 import { convertAnnouncement, convertAttachment, MastodonConverters, convertRelationship } from './MastodonConverters.js';
 import type { Entity } from 'megalodon';
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
-import { promiseMap } from '@/misc/promise-map.js';
 
 @Injectable()
 export class MastodonApiServerService {
@@ -74,10 +74,12 @@ export class MastodonApiServerService {
 			done();
 		});
 
-		// Tell crawlers not to index API endpoints.
-		// https://developers.google.com/search/docs/crawling-indexing/block-indexing
 		fastify.addHook('onRequest', (request, reply, done) => {
+			// Tell crawlers not to index API endpoints.
+			// https://developers.google.com/search/docs/crawling-indexing/block-indexing
 			reply.header('X-Robots-Tag', 'noindex');
+			// Prevent cache
+			reply.header('Cache-Control', 'private, max-age=0, must-revalidate');
 			done();
 		});
 

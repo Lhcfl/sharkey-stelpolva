@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div>
+<div :class="$style.root">
 	<div :class="$style.banner">
 		<i class="ti ti-user-edit"></i>
 	</div>
@@ -350,5 +350,10 @@ function onSignupApiError() {
 
 .captcha {
 	margin: 16px 0;
+}
+
+.root input:user-invalid {
+	outline-style: solid;
+	outline-color: var(--MI_THEME-error);
 }
 </style>

@@ -11076,6 +11076,10 @@ export interface Locale extends ILocale {
          * Restarted migration for a user
          */
         "restartMigration": string;
+        /**
+         * Set the root user
+         */
+        "setRoot": string;
     };
     "_fileViewer": {
         /**
@@ -13677,6 +13681,32 @@ export interface Locale extends ILocale {
      * Background queue
      */
     "backgroundQueue": string;
+    "_header": {
+        /**
+         * Browse
+         */
+        "browse": string;
+        /**
+         * Manage
+         */
+        "manage": string;
+    };
+    /**
+     * Set the root user
+     */
+    "setRootUser": string;
+    /**
+     * You are currently the root user; you can give that away to someone else. If you want to remain an administrator after that, you should make yourself an administration via a role, <em>before</em> you give root away
+     */
+    "setRootUserWarning": string;
+    /**
+     * Previous root user
+     */
+    "previousRootUser": string;
+    /**
+     * New root user
+     */
+    "newRootUser": string;
     /**
      * Sharkey Stelpolva Edition 为天线的设置添加了额外的关键词语法。
      * 具体而言， `domain:example.com` 这个特殊关键词会匹配所有来自 `example.com` 的帖子。这个关键词同样能使用在 OR 语法中。

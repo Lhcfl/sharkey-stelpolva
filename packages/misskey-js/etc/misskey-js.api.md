@@ -404,6 +404,9 @@ type AdminSendEmailRequest = operations['admin___send-email']['requestBody']['co
 type AdminServerInfoResponse = operations['admin___server-info']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type AdminSetRootRequest = operations['admin___set-root']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type AdminShowModerationLogsRequest = operations['admin___show-moderation-logs']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1661,6 +1664,7 @@ declare namespace entities {
         AdminRolesUsersResponse,
         AdminSendEmailRequest,
         AdminServerInfoResponse,
+        AdminSetRootRequest,
         AdminShowModerationLogsRequest,
         AdminShowModerationLogsResponse,
         AdminShowUserRequest,

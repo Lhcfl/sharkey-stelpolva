@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { permissions } from 'misskey-js';
+import { permissions } from '@/const.js';
 import type { KeyOf, Schema } from '@/misc/json-schema.js';
 import type { RateLimit } from '@/misc/rate-limit-utils.js';
 

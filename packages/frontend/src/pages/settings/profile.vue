@@ -205,14 +205,6 @@ const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.d
 
 const reactionAcceptance = computed(store.makeGetterSetter('reactionAcceptance'));
 
-const now = new Date();
-
-const setMaxBirthDate = () => {
-	const y = now.getFullYear();
-
-	return `${y}-12-31`;
-};
-
 function assertVaildLang(lang: string | null): lang is keyof typeof langmap {
 	return lang != null && lang in langmap;
 }
@@ -262,13 +254,6 @@ function saveFields() {
 }
 
 function save() {
-	if (profile.birthday && profile.birthday > setMaxBirthDate()) {
-		os.alert({
-			type: 'warning',
-			text: 'You can\'t set your birthday to the future',
-		});
-		return undefined;
-	}
 	os.apiWithDialog('i/update', {
 		// 空文字列をnullにしたいので??は使うな
 		name: profile.name || null,

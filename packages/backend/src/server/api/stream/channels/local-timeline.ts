@@ -5,15 +5,16 @@
 
 import { Injectable } from '@nestjs/common';
 import type { Packed } from '@/misc/json-schema.js';
-import { MetaService } from '@/core/MetaService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import { isPackedPureRenote } from '@/misc/is-renote.js';
+import { isReply } from '@/misc/is-reply.js';
+import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import type { JsonObject } from '@/misc/json-value.js';
-import Channel, { type MiChannelService } from '../channel.js';
+import { type Channel, NoteChannel, type MiChannelService } from '../channel.js';
 
-class LocalTimelineChannel extends Channel {
+class LocalTimelineChannel extends NoteChannel {
 	public readonly chName = 'localTimeline';
 	public static shouldShare = false;
 	public static requireCredential = false as const;
@@ -23,20 +24,19 @@ class LocalTimelineChannel extends Channel {
 	private withFiles: boolean;
 
 	constructor(
-		private metaService: MetaService,
-		private roleService: RoleService,
-		noteEntityService: NoteEntityService,
-
 		id: string,
 		connection: Channel['connection'],
+		noteEntityService: NoteEntityService,
+
+		private roleService: RoleService,
 	) {
 		super(id, connection, noteEntityService);
-		//this.onNote = this.onNote.bind(this);
 	}
 
 	@bindThis
 	public async init(params: JsonObject) {
-		const policies = await this.roleService.getUserPolicies(this.user ? this.user.id : null);
+		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
+		const policies = await this.roleService.getUserPolicies(this.user);
 		if (!policies.ltlAvailable) return;
 
 		this.withRenotes = !!(params.withRenotes ?? true);
@@ -44,26 +44,23 @@ class LocalTimelineChannel extends Channel {
 		this.withFiles = !!(params.withFiles ?? false);
 		this.withBots = !!(params.withBots ?? true);
 
-		// Subscribe events
-		this.subscriber?.on('notesStream', this.onNote);
+		this.subscriber.on('notesStream', this.onNote);
 	}
 
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
-		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
-		if (!this.withBots && note.user.isBot) return;
-
 		if (note.user.host !== null) return;
 		if (note.visibility !== 'public') return;
 		if (note.channelId != null) return;
-
-		const { accessible, silence } = await this.checkNoteVisibility(note);
-		if (!accessible || silence) return;
+		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
+		if (!this.withBots && note.user.isBot) return;
 		if (!this.withRenotes && isPackedPureRenote(note)) return;
-		if (!this.withReplies && note.replyId != null) return;
+		if (!this.withReplies && isReply(note)) return;
 
-		const clonedNote = await this.rePackNote(note);
-		this.send('note', clonedNote);
+		const preparedNote = await this.prepareNote(note);
+		if (preparedNote) {
+			this.send('note', preparedNote);
+		}
 	}
 
 	@bindThis
@@ -80,7 +77,6 @@ export class LocalTimelineChannelService implements MiChannelService<false> {
 	public readonly kind = LocalTimelineChannel.kind;
 
 	constructor(
-		private metaService: MetaService,
 		private roleService: RoleService,
 		private noteEntityService: NoteEntityService,
 	) {
@@ -89,11 +85,10 @@ export class LocalTimelineChannelService implements MiChannelService<false> {
 	@bindThis
 	public create(id: string, connection: Channel['connection']): LocalTimelineChannel {
 		return new LocalTimelineChannel(
-			this.metaService,
-			this.roleService,
-			this.noteEntityService,
 			id,
 			connection,
+			this.noteEntityService,
+			this.roleService,
 		);
 	}
 }

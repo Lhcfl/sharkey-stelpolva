@@ -1282,10 +1282,18 @@ export default class Misskey implements MegalodonInterface {
   /**
    * POST /api/notes/delete
    */
-  public async deleteStatus(id: string): Promise<Response<{}>> {
-    return this.client.post<{}>('/api/notes/delete', {
+  public async deleteStatus(id: string): Promise<Response<Entity.StatusWithText>> {
+    const status = await this.client
+      .post<MisskeyAPI.Entity.Note>('/api/notes/show', {
+        noteId: id
+      })
+      .then(res => ({ ...res, data: MisskeyAPI.Converter.noteWithText(res.data, this.baseUrl) }))
+
+    await this.client.post<{}>('/api/notes/delete', {
       noteId: id
     })
+
+    return status
   }
 
   /**

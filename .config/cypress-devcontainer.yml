@@ -1,6 +1,63 @@
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Misskey configuration
+# Sharkey configuration
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+#   ┌──────────────────────────────┐
+#───┘ a boring but important thing └────────────────────────────
+
+#
+# First of all, let me tell you a story that may possibly be
+# boring to you and possibly important to you.
+#
+# Sharkey is licensed under the AGPLv3 license. This license is
+# known to be often misunderstood.  Please read the following
+# instructions carefully and select the appropriate option so
+# that you do not negligently cause a license violation.
+#
+
+# --------
+# Option 1: If you host Sharkey AS-IS (without any changes to
+#           the source code. forks are not included).
+#
+# Step 1: Congratulations! You don't need to do anything.
+
+# --------
+# Option 2: If you have made changes to the source code (forks
+#           are included) and publish a Git repository of source
+#           code.  There should be no access restrictions on
+#           this repository.  Strictly speaking, it doesn't have
+#           to be a Git repository, but you'll probably use Git!
+#
+# Step 1: Build and run the Sharkey server first.
+# Step 2: Open <https://your.sharkey.example/admin/settings> in
+#         your browser with the administrator account.
+# Step 3: Enter the URL of your Git repository in the
+#         "Repository URL" field.
+
+# --------
+# Option 3: If neither of the above applies to you.
+#           (In this case, the source code should be published
+#           on the Sharkey interface.  IT IS NOT ENOUGH TO
+#           DISCLOSE THE SOURCE CODE WHEN A USER REQUESTS IT BY
+#           E-MAIL OR OTHER MEANS.  If you are not satisfied
+#           with this, it is recommended that you read the
+#           license again carefully.  Anyway, enabling this
+#           option will automatically generate and publish a
+#           tarball at build time, protecting you from
+#           inadvertent license violations. (There is no legal
+#           guarantee, of course.)  The tarball will be generated
+#           from the root directory of your codebase.  So it is
+#           also recommended to check <built/tarball> directory
+#           once after building and before activating the server
+#           to avoid ACCIDENTAL LEAKING OF SENSITIVE INFORMATION.
+#           To prevent certain files from being included in the
+#           tarball, add a glob pattern after line 15 in
+#           <scripts/tarball.mjs>.  DO NOT FORGET TO BUILD AFTER
+#           ENABLING THIS OPTION!)
+#
+# Step 1: Uncomment the following line.
+#
+# publishTarballInsteadOfProvideRepositoryUrl: true
 
 #   ┌────────────────────────┐
 #───┘ Initial Setup Password └─────────────────────────────────────────────────────
@@ -8,18 +65,19 @@
 # Password to initiate setting up admin account.
 # It will not be used after the initial setup is complete.
 #
-# Be sure to change this when you set up Misskey via the Internet.
+# Be sure to change this when you set up Sharkey via the Internet.
 #
-# The provider of the service who sets up Misskey on behalf of the customer should
-# set this value to something unique when generating the Misskey config file,
+# The provider of the service who sets up Sharkey on behalf of the customer should
+# set this value to something unique when generating the Sharkey config file,
 # and provide it to the customer.
-setupPassword: example_password_please_change_this_or_you_will_get_hacked
+#
+# setupPassword: example_password_please_change_this_or_you_will_get_hacked
 
 #   ┌─────┐
 #───┘ URL └─────────────────────────────────────────────────────
 
 # Final accessible URL seen by a user.
-url: 'http://misskey.local'
+url: http://misskey.local
 
 # ONCE YOU HAVE STARTED THE INSTANCE, DO NOT CHANGE THE
 # URL SETTINGS AFTER THAT!
@@ -28,11 +86,11 @@ url: 'http://misskey.local'
 #───┘ Port and TLS settings └───────────────────────────────────
 
 #
-# Misskey requires a reverse proxy to support HTTPS connections.
+# Sharkey requires a reverse proxy to support HTTPS connections.
 #
 #                 +----- https://example.tld/ ------------+
 #   +------+      |+-------------+      +----------------+|
-#   | User | ---> || Proxy (443) | ---> | Misskey (3000) ||
+#   | User | ---> || Proxy (443) | ---> | Sharkey (3000) ||
 #   +------+      |+-------------+      +----------------+|
 #                 +---------------------------------------+
 #
@@ -40,8 +98,18 @@ url: 'http://misskey.local'
 #   An encrypted connection with HTTPS is highly recommended
 #   because tokens may be transferred in GET requests.
 
-# The port that your Misskey server should listen on.
+# The port that your Sharkey server should listen on.
 port: 61812
+# the address to bind to, defaults to "every address"
+# address: '0.0.0.0'
+
+# but we should not listen to "every address" because we really want
+# to only be contactable from the reverse proxy, so we suggest:
+address: '127.0.0.1'
+
+# You can also use UNIX domain socket.
+# socket: /path/to/sharkey.sock
+# chmodSocket: '777'
 
 #   ┌──────────────────────────┐
 #───┘ PostgreSQL configuration └────────────────────────────────
@@ -100,6 +168,8 @@ redis:
   #pass: example-pass
   #prefix: example-prefix
   #db: 1
+  # You can specify more ioredis options...
+  #username: example-username
 
 #redisForPubsub:
 #  host: redis
@@ -108,6 +178,8 @@ redis:
 #  #pass: example-pass
 #  #prefix: example-prefix
 #  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
 
 #redisForJobQueue:
 #  host: redis
@@ -116,6 +188,8 @@ redis:
 #  #pass: example-pass
 #  #prefix: example-prefix
 #  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
 
 #redisForTimelines:
 #  host: redis
@@ -124,6 +198,8 @@ redis:
 #  #pass: example-pass
 #  #prefix: example-prefix
 #  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
 
 #redisForReactions:
 #  host: redis
@@ -132,9 +208,11 @@ redis:
 #  #pass: example-pass
 #  #prefix: example-prefix
 #  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
 
 #redisForRateLimit:
-#  host: localhost
+#  host: redis
 #  port: 6379
 #  #family: 0  # 0=Both, 4=IPv4, 6=IPv6
 #  #pass: example-pass
@@ -157,6 +235,19 @@ fulltextSearch:
   #   You need to install pgroonga and configure it as a PostgreSQL extension.
   #   In addition to the above, you need to create a pgroonga index on the text column of the note table.
   #   see: https://pgroonga.github.io/tutorial/
+  # - sqlTsvector
+  #   Use Postgres tsvectors.
+  #   You need to create a generated column and index on the note table to use this, followed by an ANALYZE on the table. Beware, this will take a while to be created and the database will remain locked during this process.
+  #   This also enables advanced search syntax, see documentation of websearch_to_tsquery: https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
+  #   Support for multiple languages is currently rather poor and will be improved once post languages become a feature.
+  #
+  #   Example to set up tsvectors for an English instance:
+  #   ALTER TABLE note ADD COLUMN tsvector_embedding tsvector GENERATED ALWAYS AS ( to_tsvector('english', COALESCE(text, '') || ' ' || COALESCE(cw, '') || ' ' || COALESCE(name, ''))) STORED;
+  #   CREATE INDEX vector_idx ON note USING GIN (tsvector_embedding);
+  #   ANALYZE note;
+  #
+  #   Note: You can opt to use a different dictionary for better results if your main instance language is not English.
+  #   To get a list, use "SELECT cfgname FROM pg_ts_config;" and replace 'english' with the desired dictionary name.
   # - meilisearch
   #   Use Meilisearch.
   #   You need to install Meilisearch and configure.
@@ -260,6 +351,9 @@ id: 'aidx'
 #inboxJobMaxAttempts: 8
 #backgroundJobMaxAttempts: 8
 
+# Local address used for outgoing requests
+#outgoingAddress: 127.0.0.1
+
 # IP address family used for outgoing request (ipv4, ipv6 or dual)
 #outgoingAddressFamily: ipv4
 
@@ -275,6 +369,10 @@ id: 'aidx'
 #maxAltTextLength: 20000
 # Amount of characters that will be saved for remote media descriptions (alt text). Longer descriptions will be truncated to this length. (minimum: 1)
 #maxRemoteAltTextLength: 100000
+# Amount of characters that can be used when writing user bios. Longer descriptions will be rejected. (minimum: 1)
+#maxBioLength: 1500
+# Amount of characters that will be saved for remote user bios. Longer descriptions will be truncated to this length. (minimum: 1)
+#maxRemoteBioLength: 15000
 # Amount of dialog-style announcements that can be active at a time. (minimum: 1)
 #maxDialogAnnouncements: 5
 
@@ -298,21 +396,36 @@ proxyBypassHosts:
 #mediaDirectory: /var/lib/sharkey
 
 # Media Proxy
+# Reference Implementation: https://github.com/misskey-dev/media-proxy
+# * Deliver a common cache between instances
+# * Perform image compression (on a different server resource than the main process)
 #mediaProxy: https://example.com/proxy
 
 # Proxy remote files (default: true)
+# Proxy remote files by this instance or mediaProxy to prevent remote files from running in remote domains.
 proxyRemoteFiles: true
 
-# Sign to ActivityPub GET request (default: true)
+# Movie Thumbnail Generation URL
+# There is no reference implementation.
+# For example, Sharkey will point to the following URL:
+#   https://example.com/thumbnail.webp?thumbnail=1&url=https%3A%2F%2Fstorage.example.com%2Fpath%2Fto%2Fvideo.mp4
+#videoThumbnailGenerator: https://example.com
+
+# Sign outgoing ActivityPub GET request (default: true)
 signToActivityPubGet: true
+# Sign outgoing ActivityPub Activities (default: true)
+# Linked Data signatures are cryptographic signatures attached to each activity to provide proof of authenticity.
+# When using authorized fetch, this is often undesired as any signed activity can be forwarded to a blocked instance by relays and other instances.
+# This setting allows admins to disable LD signatures for increased privacy, at the expense of fewer relayed activities and additional inbound fetch (GET) requests.
+attachLdSignatureForRelays: true
 
 # For security reasons, uploading attachments from the intranet is prohibited,
 # but exceptions can be made from the following settings. Default value is "undefined".
 # Read changelog to learn more (Improvements of 12.90.0 (2021/09/04)).
 # Some example configurations:
-allowedPrivateNetworks:
-  # Allow connections to 127.0.0.1 on any port
-  - '127.0.0.1/32'
+#allowedPrivateNetworks:
+#  # Allow connections to 127.0.0.1 on any port
+#  - '127.0.0.1/32'
 #  # Allow connections to 127.0.0.* on any port
 #  - '127.0.0.1/24'
 #  # Allow connections to 127.0.0.1 on any port
@@ -328,6 +441,8 @@ allowedPrivateNetworks:
 #      - 80
 #      - 443
 
+#customMOTD: ['Hello World', 'The sharks rule all', 'Shonks']
+
 # Disable automatic redirect for ActivityPub object lookup. (default: false)
 # This is a strong defense against potential impersonation attacks if the viewer instance has inadequate validation.
 # However it will make it impossible for other instances to lookup third-party user and notes through your URL.
@@ -335,6 +450,14 @@ allowedPrivateNetworks:
 
 # Upload or download file size limits (bytes)
 #maxFileSize: 262144000
+
+# timeout (in milliseconds) and maximum size for imports (e.g. note imports)
+#import:
+#  downloadTimeout: 30000
+#  maxFileSize: 262144000
+
+# PID File of master process
+#pidFile: /tmp/misskey.pid
 
 # CHMod-style permission bits to apply to uploaded files.
 # Permission bits are specified as a base-8 string representing User/Group/Other permissions.
@@ -365,3 +488,17 @@ allowedPrivateNetworks:
   # How long to save each log entry before deleting it.
   # Default: 2592000000 (1 week)
   #maxAge: 2592000000
+
+# Transparently compress every websocket message on clients that support it.
+# Trades server CPU usage for reduced bandwidth usage and a faster frontend on the client.
+# If you're not using jemalloc, this may cause memory fragmentation and performance issues! (https://www.npmjs.com/package/ws#websocket-compression)
+# jemalloc is used by default in the Sharkey Docker image and may be set up manually otherwise: https://github.com/jemalloc/jemalloc/wiki/getting-started
+websocketCompression: false
+
+# Inject arbitrary HTML tags to customize Sharkey without having to fork it
+#customHtml:
+#  head: |
+#    <!-- The possibilities are limitless! -->
+#    <script>console.log("Hello, world!")</script>
+#    <style>.whatever { color: red; }</style>
+#    <link rel="stylesheet" href="https://example.com/styles.css">

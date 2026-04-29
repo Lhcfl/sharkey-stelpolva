@@ -21,7 +21,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkLoading v-else-if="type === 'waiting'" :class="$style.iconInner" :em="true"/>
 		</div>
 		<header v-if="title" :class="$style.title" class="_selectable"><Mfm :text="title"/></header>
-		<div v-if="text" :class="$style.text" class="_selectable"><Mfm :text="text" :isBlock="true" :plain="plain"/></div>
+		<div v-if="text" :class="[$style.text, textCopyable && $style.textCopyable]" class="_selectable">
+			<Mfm :text="text" :isBlock="true" :plain="plain"/>
+			<button v-if="textCopyable" :class="$style.copyButton" @click.stop="copyToClipboard(text)"><i class="ti ti-copy"></i></button>
+		</div>
 		<MkInput v-if="input" v-model="inputValue" autofocus :type="input.type || 'text'" :placeholder="input.placeholder || undefined" :autocomplete="input.autocomplete" @keydown="onInputKeydown">
 			<template v-if="input.type === 'password'" #prefix><i class="ti ti-lock"></i></template>
 			<template #caption>
@@ -57,6 +60,7 @@ import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import { i18n } from '@/i18n.js';
+import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 
 type Input = {
 	type?: 'text' | 'number' | 'password' | 'email' | 'url' | 'date' | 'time' | 'search' | 'datetime-local';
@@ -101,6 +105,7 @@ const props = withDefaults(defineProps<{
 	okText?: string;
 	cancelText?: string;
 	plain?: boolean;
+	textCopyable?: boolean;
 }>(), {
 	type: 'info',
 	showOkButton: true,
@@ -210,6 +215,35 @@ function onInputKeydown(evt: KeyboardEvent) {
 
 .text {
 	margin: 16px 0 0 0;
+}
+
+.textCopyable {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+}
+
+.copyButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border: none;
+	border-radius: var(--MI-radius-sm);
+	background: var(--MI_THEME-buttonBg);
+	color: var(--MI_THEME-fg);
+	cursor: pointer;
+	flex-shrink: 0;
+
+	&:hover {
+		background: var(--MI_THEME-buttonHoverBg);
+	}
+
+	&:active {
+		background: var(--MI_THEME-buttonActiveBg);
+	}
 }
 
 .buttons {

@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import * as argon2 from 'argon2';
 import { IsNull } from 'typeorm';
-import * as Misskey from 'misskey-js';
+import type * as Misskey from 'misskey-js';
 import { DI } from '@/di-symbols.js';
 import type {
 	MiMeta,

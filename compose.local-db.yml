@@ -15,7 +15,7 @@ services:
 
   db:
     restart: always
-    image: postgres:15-alpine
+    image: groonga/pgroonga:4.0.1-alpine-17
     ports:
       - "5432:5432"
     env_file:
@@ -37,4 +37,3 @@ services:
 #      - .config/meilisearch.env
 #    volumes:
 #      - ./meili_data:/meili_data
-

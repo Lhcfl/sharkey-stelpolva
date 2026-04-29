@@ -3,14 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { DI } from '@/di-symbols.js';
+import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
+import type { AntennasRepository } from '@/models/_.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import type { JsonObject } from '@/misc/json-value.js';
-import Channel, { type MiChannelService } from '../channel.js';
+import { type Channel, NoteChannel, type MiChannelService } from '../channel.js';
 
-class AntennaChannel extends Channel {
+class AntennaChannel extends NoteChannel {
 	public readonly chName = 'antenna';
 	public static shouldShare = false;
 	public static requireCredential = true as const;
@@ -18,36 +21,44 @@ class AntennaChannel extends Channel {
 	private antennaId: string;
 
 	constructor(
-		noteEntityService: NoteEntityService,
-
 		id: string,
 		connection: Channel['connection'],
+		noteEntityService: NoteEntityService,
+
+		private antennasRepository: AntennasRepository,
 	) {
 		super(id, connection, noteEntityService);
-		//this.onEvent = this.onEvent.bind(this);
 	}
 
 	@bindThis
-	public async init(params: JsonObject) {
-		if (typeof params.antennaId !== 'string') return;
+	public async init(params: JsonObject): Promise<boolean> {
+		if (!this.user) return false;
+		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
+
+		if (typeof params.antennaId !== 'string') return false;
 		this.antennaId = params.antennaId;
 
-		// Subscribe stream
-		this.subscriber?.on(`antennaStream:${this.antennaId}`, this.onEvent);
+		const antenna = await this.antennasRepository.findOne({
+			select: { id: true, userId: true },
+			where: { id: this.antennaId },
+		});
+		if (!antenna) return false;
+		if (antenna.userId !== this.user.id) return false;
+
+		this.subscriber.on(`antennaStream:${this.antennaId}`, this.onEvent);
+
+		return true;
 	}
 
 	@bindThis
 	private async onEvent(data: GlobalEvents['antenna']['payload']) {
-		if (data.type === 'note') {
-			const note = await this.noteEntityService.pack(data.body.id, this.user, { detail: true });
+		const preparedNote = await this.noteEntityService.pack(data.body.id, this.user, { detail: true });
 
-			const { accessible, silence } = await this.checkNoteVisibility(note, { includeReplies: true });
-			if (!accessible || silence) return;
+		// TODO this duplicate work could be avoided if the visibility data were returned from NoteEntityService.pack().
+		const { accessible, silence } = await this.noteVisibilityService.checkNoteVisibilityAsync(preparedNote, this.user);
+		if (!accessible || silence) return;
 
-			this.send('note', note);
-		} else {
-			this.send(data.type, data.body);
-		}
+		this.send('note', preparedNote);
 	}
 
 	@bindThis
@@ -64,16 +75,20 @@ export class AntennaChannelService implements MiChannelService<true> {
 	public readonly kind = AntennaChannel.kind;
 
 	constructor(
-		private noteEntityService: NoteEntityService,
+		@Inject(DI.antennasRepository)
+		private readonly antennasRepository: AntennasRepository,
+
+		private readonly noteEntityService: NoteEntityService,
 	) {
 	}
 
 	@bindThis
 	public create(id: string, connection: Channel['connection']): AntennaChannel {
 		return new AntennaChannel(
-			this.noteEntityService,
 			id,
 			connection,
+			this.noteEntityService,
+			this.antennasRepository,
 		);
 	}
 }

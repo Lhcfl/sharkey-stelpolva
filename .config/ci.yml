@@ -45,7 +45,7 @@
 #           option will automatically generate and publish a
 #           tarball at build time, protecting you from
 #           inadvertent license violations. (There is no legal
-#           guarantee, of course.)  The tarball will generated
+#           guarantee, of course.)  The tarball will be generated
 #           from the root directory of your codebase.  So it is
 #           also recommended to check <built/tarball> directory
 #           once after building and before activating the server
@@ -100,6 +100,16 @@ url: http://misskey.local
 
 # The port that your Sharkey server should listen on.
 port: 3000
+# the address to bind to, defaults to "every address"
+# address: '0.0.0.0'
+
+# but we should not listen to "every address" because we really want
+# to only be contactable from the reverse proxy, so we suggest:
+address: '127.0.0.1'
+
+# You can also use UNIX domain socket.
+# socket: /path/to/sharkey.sock
+# chmodSocket: '777'
 
 #   ┌──────────────────────────┐
 #───┘ PostgreSQL configuration └────────────────────────────────
@@ -158,6 +168,8 @@ redis:
   #pass: example-pass
   #prefix: example-prefix
   #db: 1
+  # You can specify more ioredis options...
+  #username: example-username
 
 #redisForPubsub:
 #  host: redis
@@ -166,6 +178,8 @@ redis:
 #  #pass: example-pass
 #  #prefix: example-prefix
 #  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
 
 #redisForJobQueue:
 #  host: redis
@@ -174,6 +188,8 @@ redis:
 #  #pass: example-pass
 #  #prefix: example-prefix
 #  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
 
 #redisForTimelines:
 #  host: redis
@@ -182,9 +198,21 @@ redis:
 #  #pass: example-pass
 #  #prefix: example-prefix
 #  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
+
+#redisForReactions:
+#  host: redis
+#  port: 6379
+#  #family: 0  # 0=Both, 4=IPv4, 6=IPv6
+#  #pass: example-pass
+#  #prefix: example-prefix
+#  #db: 1
+#  # You can specify more ioredis options...
+#  #username: example-username
 
 #redisForRateLimit:
-#  host: localhost
+#  host: redis
 #  port: 6379
 #  #family: 0  # 0=Both, 4=IPv4, 6=IPv6
 #  #pass: example-pass
@@ -207,6 +235,19 @@ fulltextSearch:
   #   You need to install pgroonga and configure it as a PostgreSQL extension.
   #   In addition to the above, you need to create a pgroonga index on the text column of the note table.
   #   see: https://pgroonga.github.io/tutorial/
+  # - sqlTsvector
+  #   Use Postgres tsvectors.
+  #   You need to create a generated column and index on the note table to use this, followed by an ANALYZE on the table. Beware, this will take a while to be created and the database will remain locked during this process.
+  #   This also enables advanced search syntax, see documentation of websearch_to_tsquery: https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
+  #   Support for multiple languages is currently rather poor and will be improved once post languages become a feature.
+  #
+  #   Example to set up tsvectors for an English instance:
+  #   ALTER TABLE note ADD COLUMN tsvector_embedding tsvector GENERATED ALWAYS AS ( to_tsvector('english', COALESCE(text, '') || ' ' || COALESCE(cw, '') || ' ' || COALESCE(name, ''))) STORED;
+  #   CREATE INDEX vector_idx ON note USING GIN (tsvector_embedding);
+  #   ANALYZE note;
+  #
+  #   Note: You can opt to use a different dictionary for better results if your main instance language is not English.
+  #   To get a list, use "SELECT cfgname FROM pg_ts_config;" and replace 'english' with the desired dictionary name.
   # - meilisearch
   #   Use Meilisearch.
   #   You need to install Meilisearch and configure.
@@ -243,6 +284,26 @@ fulltextSearch:
 # ID SETTINGS AFTER THAT!
 
 id: 'aidx'
+
+#   ┌────────────────┐
+#───┘ Error tracking └──────────────────────────────────────────
+
+# Sentry is available for error tracking.
+# See the Sentry documentation for more details on options.
+
+#sentryForBackend:
+#  enableNodeProfiling: true
+#  options:
+#    dsn: 'https://examplePublicKey@o0.ingest.sentry.io/0'
+
+#sentryForFrontend:
+#  vueIntegration:
+#    tracingOptions:
+#      trackComponents: true
+#  browserTracingIntegration:
+#  replayIntegration:
+#  options:
+#    dsn: 'https://examplePublicKey@o0.ingest.sentry.io/0'
 
 #   ┌─────────────────────┐
 #───┘ Other configuration └─────────────────────────────────────
@@ -308,6 +369,12 @@ id: 'aidx'
 #maxAltTextLength: 20000
 # Amount of characters that will be saved for remote media descriptions (alt text). Longer descriptions will be truncated to this length. (minimum: 1)
 #maxRemoteAltTextLength: 100000
+# Amount of characters that can be used when writing user bios. Longer descriptions will be rejected. (minimum: 1)
+#maxBioLength: 1500
+# Amount of characters that will be saved for remote user bios. Longer descriptions will be truncated to this length. (minimum: 1)
+#maxRemoteBioLength: 15000
+# Amount of dialog-style announcements that can be active at a time. (minimum: 1)
+#maxDialogAnnouncements: 5
 
 # Proxy for HTTP/HTTPS
 #proxy: http://127.0.0.1:3128
@@ -329,6 +396,9 @@ proxyBypassHosts:
 #mediaDirectory: /var/lib/sharkey
 
 # Media Proxy
+# Reference Implementation: https://github.com/misskey-dev/media-proxy
+# * Deliver a common cache between instances
+# * Perform image compression (on a different server resource than the main process)
 #mediaProxy: https://example.com/proxy
 
 # Proxy remote files (default: true)
@@ -381,6 +451,14 @@ attachLdSignatureForRelays: true
 # Upload or download file size limits (bytes)
 #maxFileSize: 262144000
 
+# timeout (in milliseconds) and maximum size for imports (e.g. note imports)
+#import:
+#  downloadTimeout: 30000
+#  maxFileSize: 262144000
+
+# PID File of master process
+#pidFile: /tmp/misskey.pid
+
 # CHMod-style permission bits to apply to uploaded files.
 # Permission bits are specified as a base-8 string representing User/Group/Other permissions.
 # This setting is only useful for custom deployments, such as using a reverse proxy to serve media.
@@ -410,3 +488,17 @@ attachLdSignatureForRelays: true
   # How long to save each log entry before deleting it.
   # Default: 2592000000 (1 week)
   #maxAge: 2592000000
+
+# Transparently compress every websocket message on clients that support it.
+# Trades server CPU usage for reduced bandwidth usage and a faster frontend on the client.
+# If you're not using jemalloc, this may cause memory fragmentation and performance issues! (https://www.npmjs.com/package/ws#websocket-compression)
+# jemalloc is used by default in the Sharkey Docker image and may be set up manually otherwise: https://github.com/jemalloc/jemalloc/wiki/getting-started
+websocketCompression: false
+
+# Inject arbitrary HTML tags to customize Sharkey without having to fork it
+#customHtml:
+#  head: |
+#    <!-- The possibilities are limitless! -->
+#    <script>console.log("Hello, world!")</script>
+#    <style>.whatever { color: red; }</style>
+#    <link rel="stylesheet" href="https://example.com/styles.css">

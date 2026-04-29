@@ -7,6 +7,7 @@ import https from 'node:https';
 import { Inject, Injectable } from '@nestjs/common';
 import { summaly } from '@misskey-dev/summaly';
 import { SummalyResult } from '@misskey-dev/summaly/built/summary.js';
+import { StatusError } from '@misskey-dev/summaly/built/utils/status-error.js';
 import { IsNull, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -40,7 +41,14 @@ export type LocalSummalyResult = SummalyResult & {
 	haveNoteLocally?: boolean;
 	linkAttribution?: {
 		userId: string,
-	}
+	},
+	error?: {
+		status: number,
+		age: number,
+		message: string,
+		code: string,
+		id: string,
+	},
 };
 
 // Increment this to invalidate cached previews after a major change.
@@ -262,21 +270,75 @@ export class UrlPreviewService {
 		} catch (err) {
 			this.logger.warn(`Failed to get preview of ${url} for ${lang}: ${renderInlineError(err)}`);
 
-			reply.header('Cache-Control', 'max-age=3600');
-			return reply.code(422).send({
-				error: {
-					message: 'Failed to get preview',
-					code: 'URL_PREVIEW_FAILED',
-					id: '09d01cb5-53b9-4856-82e5-38a50c290a3b',
-				},
-			});
+			const errorResponse = await this.cacheError(cacheKey, url, err);
+			return this.renderError(errorResponse, reply);
 		}
+	}
+
+	private async cacheError(cacheKey: string, url: string, error: unknown): Promise<LocalSummalyResult> {
+		const errorResponse = {
+			url: url,
+			title: null,
+			icon: null,
+			description: null,
+			thumbnail: null,
+			sitename: null,
+			player: {
+				url: null,
+				width: null,
+				height: null,
+				allow: [],
+			},
+			activityPub: null,
+			fediverseCreator: null,
+			error: {
+				status: 422,
+				age: 3600,
+				message: 'Failed to get preview',
+				code: 'URL_PREVIEW_FAILED',
+				id: '09d01cb5-53b9-4856-82e5-38a50c290a3b',
+			}
+		};
+		if (error instanceof StatusError) {
+			if (error.isPermanentError) {
+				// a permanent HTTP error (4xx), avoid trying again for a week
+				errorResponse.error.age = 86400 * 7;
+			}
+		} else if (error instanceof Error) {
+			if (error.message.match(/maxSize/)) {
+				// a file too large isn't going to become smaller any time
+				// soon, avoid trying again for a week
+				errorResponse.error.age = 86400 * 7;
+			}
+		}
+
+		await this.previewCache.set(cacheKey, errorResponse, errorResponse.error.age * 1000);
+
+		return errorResponse;
+	}
+
+	private renderError(errorResponse: LocalSummalyResult, reply: FastifyReply): FastifyReply {
+		const e = errorResponse.error!;
+		reply.header('Cache-Control', `max-age=${e.age}`);
+
+		return reply.code(e.status).send({
+			error: {
+				message: e.message,
+				code: e.code,
+				id: e.id,
+			},
+		});
 	}
 
 	private async sendCachedPreview(cacheKey: string, reply: FastifyReply, fetch: boolean): Promise<boolean> {
 		const summary = await this.previewCache.get(cacheKey);
 		if (summary === undefined) {
 			return false;
+		}
+
+		if (summary.error) {
+			this.renderError(summary, reply);
+			return true;
 		}
 
 		// Check if note has loaded since we last cached the preview

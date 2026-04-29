@@ -562,7 +562,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	}
 
 	@bindThis
-	public async getUserPolicies(userOrId: MiUser | MiUser['id'] | null): Promise<RolePolicies> {
+	public async getUserPolicies(userOrId: MiUser | MiUser['id'] | null | undefined): Promise<RolePolicies> {
 		const basePolicies = { ...DEFAULT_POLICIES, ...this.meta.policies };
 
 		if (userOrId == null) return basePolicies;

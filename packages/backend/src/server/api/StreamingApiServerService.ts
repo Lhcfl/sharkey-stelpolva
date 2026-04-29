@@ -25,6 +25,7 @@ import type Logger from '@/logger.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { TimeService, type TimerHandle } from '@/global/TimeService.js';
+import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { AuthenticateService, AuthenticationError } from './AuthenticateService.js';
 import MainStreamConnection from './stream/Connection.js';
 import { ChannelsService } from './stream/ChannelsService.js';
@@ -50,11 +51,11 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
-		@Inject(DI.noteReactionsRepository)
-		private readonly noteReactionsRepository: NoteReactionsRepository,
-
 		@Inject(DI.notesRepository)
 		private readonly notesRepository: NotesRepository,
+
+		@Inject(DI.noteReactionsRepository)
+		private readonly noteReactionsRepository: NoteReactionsRepository,
 
 		@Inject(DI.noteFavoritesRepository)
 		private readonly noteFavoritesRepository: NoteFavoritesRepository,
@@ -68,6 +69,7 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 		private notificationService: NotificationService,
 		private usersService: UserService,
 		private channelFollowingService: ChannelFollowingService,
+		private noteEntityService: NoteEntityService,
 		private rateLimiterService: SkRateLimiterService,
 		private loggerService: LoggerService,
 		private readonly queryService: QueryService,
@@ -200,13 +202,14 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 
 			const stream = new MainStreamConnection(
 				this.noteReactionsRepository,
-				this.notesRepository,
 				this.noteFavoritesRepository,
 				this.queryService,
 				this.channelsService,
 				this.notificationService,
 				this.cacheService,
 				this.channelFollowingService,
+				this.notesRepository,
+				this.noteEntityService,
 				this.timeService,
 				this.loggerService,
 				user, app, requestIp,

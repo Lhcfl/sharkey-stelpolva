@@ -77,7 +77,8 @@
 #───┘ URL └─────────────────────────────────────────────────────
 
 # Final accessible URL seen by a user.
-# You can set url from an environment variable instead.
+# You can set url from an environment variable instead;
+# please read the comments in the `docker.env` file
 url: https://example.tld/
 
 # ONCE YOU HAVE STARTED THE INSTANCE, DO NOT CHANGE THE
@@ -110,11 +111,13 @@ db:
   port: 5432
 
   # Database name
-  # You can set db from an environment variable instead.
+  # You can set db from an environment variable instead;
+  # please read the comments in the `docker.env` file
   db: misskey
 
   # Auth
-  # You can set user and pass from environment variables instead.
+  # You can set user and pass from environment variables instead;
+  # please read the comments in the `docker.env` file
   user: example-misskey-user
   pass: example-misskey-pass
 

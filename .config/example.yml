@@ -103,6 +103,10 @@ port: 3000
 # the address to bind to, defaults to "every address"
 # address: '0.0.0.0'
 
+# but we should not listen to "every address" because we really want
+# to only be contactable from the reverse proxy, so we suggest:
+address: '127.0.0.1'
+
 # You can also use UNIX domain socket.
 # socket: /path/to/sharkey.sock
 # chmodSocket: '777'

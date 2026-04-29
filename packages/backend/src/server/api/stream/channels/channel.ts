@@ -9,9 +9,10 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import { isPackedPureRenote } from '@/misc/is-renote.js';
-import Channel, { type MiChannelService } from '../channel.js';
+import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
+import { type Channel, type MiChannelService, NoteChannel } from '../channel.js';
 
-class ChannelChannel extends Channel {
+class ChannelChannel extends NoteChannel {
 	public readonly chName = 'channel';
 	public static shouldShare = false;
 	public static requireCredential = false as const;
@@ -20,43 +21,42 @@ class ChannelChannel extends Channel {
 	private withRenotes: boolean;
 
 	constructor(
-		noteEntityService: NoteEntityService,
-
 		id: string,
 		connection: Channel['connection'],
+		noteEntityService: NoteEntityService,
 	) {
 		super(id, connection, noteEntityService);
-		//this.onNote = this.onNote.bind(this);
 	}
 
 	@bindThis
-	public async init(params: JsonObject) {
-		if (typeof params.channelId !== 'string') return;
+	public async init(params: JsonObject): Promise<boolean> {
+		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
+
+		if (typeof params.channelId !== 'string') return false;
+
 		this.channelId = params.channelId;
 		this.withFiles = !!(params.withFiles ?? false);
 		this.withRenotes = !!(params.withRenotes ?? true);
 
-		// Subscribe stream
-		this.subscriber?.on('notesStream', this.onNote);
+		this.subscriber.on('notesStream', this.onNote);
+
+		return true;
 	}
 
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
 		if (note.channelId !== this.channelId) return;
-
 		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
-
-		const { accessible, silence } = await this.checkNoteVisibility(note, { includeReplies: true });
-		if (!accessible || silence) return;
 		if (!this.withRenotes && isPackedPureRenote(note)) return;
 
-		const clonedNote = await this.rePackNote(note);
-		this.send('note', clonedNote);
+		const preparedNote = await this.prepareNote(note);
+		if (preparedNote) {
+			this.send('note', preparedNote);
+		}
 	}
 
 	@bindThis
 	public dispose() {
-		// Unsubscribe events
 		this.subscriber?.off('notesStream', this.onNote);
 	}
 }
@@ -75,9 +75,9 @@ export class ChannelChannelService implements MiChannelService<false> {
 	@bindThis
 	public create(id: string, connection: Channel['connection']): ChannelChannel {
 		return new ChannelChannel(
-			this.noteEntityService,
 			id,
 			connection,
+			this.noteEntityService,
 		);
 	}
 }

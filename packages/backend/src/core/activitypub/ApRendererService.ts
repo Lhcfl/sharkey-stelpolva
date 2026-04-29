@@ -591,6 +591,8 @@ export class ApRendererService {
 	public async renderPerson(user: MiLocalUser) {
 		const id = this.userEntityService.genLocalUserUri(user.id);
 		const isSystem = user.username.includes('.');
+		// if we ever support split-domain setups, this will differ from the ActivityPub host
+		const webfingerDomain = this.config.host;
 
 		const [avatar, banner, background, profile] = await Promise.all([
 			user.avatarId ? this.driveFilesRepository.findOneBy({ id: user.avatarId }) : undefined,
@@ -629,6 +631,8 @@ export class ApRendererService {
 			endpoints: { sharedInbox: `${this.config.url}/inbox` },
 			url: `${this.config.url}/@${user.username}`,
 			preferredUsername: user.username,
+			// FEP-2c59 backlink to preferred/canonical handle for WebFinger lookups
+			webfinger: `${user.username}@${webfingerDomain}`,
 			name: user.name,
 			summary: profile.description ? this.mfmService.toHtml(mfm.parse(profile.description)) : null,
 			_misskey_summary: profile.description,

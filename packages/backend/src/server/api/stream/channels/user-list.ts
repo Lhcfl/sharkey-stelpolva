@@ -9,12 +9,13 @@ import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { UserListService } from '@/core/UserListService.js';
 import { DI } from '@/di-symbols.js';
+import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import { bindThis } from '@/decorators.js';
 import { isPackedPureRenote } from '@/misc/is-renote.js';
 import type { JsonObject } from '@/misc/json-value.js';
-import Channel, { type MiChannelService } from '../channel.js';
+import { type Channel, NoteChannel, type MiChannelService } from '../channel.js';
 
-class UserListChannel extends Channel {
+class UserListChannel extends NoteChannel {
 	public readonly chName = 'userList';
 	public static shouldShare = false;
 	public static requireCredential = true as const;
@@ -24,13 +25,13 @@ class UserListChannel extends Channel {
 	private withRenotes: boolean;
 
 	constructor(
+		id: string,
+		connection: Channel['connection'],
+		noteEntityService: NoteEntityService,
+
 		private userListsRepository: UserListsRepository,
 		private userListMembershipsRepository: UserListMembershipsRepository,
 		private readonly userListService: UserListService,
-		noteEntityService: NoteEntityService,
-
-		id: string,
-		connection: Channel['connection'],
 	) {
 		super(id, connection, noteEntityService);
 		//this.updateListUsers = this.updateListUsers.bind(this);
@@ -38,39 +39,37 @@ class UserListChannel extends Channel {
 	}
 
 	@bindThis
-	public async init(params: JsonObject) {
-		if (typeof params.listId !== 'string') return;
+	public async init(params: JsonObject): Promise<boolean> {
+		if (!this.user) return false;
+		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
+		if (typeof params.listId !== 'string') return false;
 		this.listId = params.listId;
 		this.withFiles = !!(params.withFiles ?? false);
 		this.withRenotes = !!(params.withRenotes ?? true);
 
 		// Check existence and owner
 		const listExist = await this.userListService.userListsCache.fetchMaybe(this.listId);
-		if (!listExist) return;
-		if (!listExist.isPublic && listExist.userId !== this.user?.id) return;
+		if (!listExist) return false;
+		if (!listExist.isPublic && listExist.userId !== this.user.id) return false;
 
-		// Subscribe stream
-		this.subscriber?.on(`userListStream:${this.listId}`, this.send);
-
-		this.subscriber?.on('notesStream', this.onNote);
+		this.subscriber.on(`userListStream:${this.listId}`, this.send);
+		this.subscriber.on('notesStream', this.onNote);
+		return true;
 	}
 
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
-		// チャンネル投稿は無視する
 		if (note.channelId) return;
-
 		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
+		if (!this.withRenotes && isPackedPureRenote(note)) return;
 
 		const memberships = await this.cacheService.listUserMembershipsCache.fetch(this.listId);
 		if (!memberships.has(note.userId)) return;
 
-		const { accessible, silence } = await this.checkNoteVisibility(note, { includeReplies: true, listContext: this.listId });
-		if (!accessible || silence) return;
-		if (!this.withRenotes && isPackedPureRenote(note)) return;
-
-		const clonedNote = await this.rePackNote(note);
-		this.send('note', clonedNote);
+		const preparedNote = await this.prepareNote(note);
+		if (preparedNote) {
+			this.send('note', preparedNote);
+		}
 	}
 
 	@bindThis
@@ -102,12 +101,12 @@ export class UserListChannelService implements MiChannelService<true> {
 	@bindThis
 	public create(id: string, connection: Channel['connection']): UserListChannel {
 		return new UserListChannel(
+			id,
+			connection,
+			this.noteEntityService,
 			this.userListsRepository,
 			this.userListMembershipsRepository,
 			this.userListService,
-			this.noteEntityService,
-			id,
-			connection,
 		);
 	}
 }

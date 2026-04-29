@@ -13,13 +13,15 @@ import type { MiUser } from '@/models/User.js';
 import type { MiNote } from '@/models/Note.js';
 import type { UsersRepository, NotesRepository, FollowingsRepository, PollsRepository, PollVotesRepository, NoteReactionsRepository, ChannelsRepository, MiMeta, MiPollVote, MiPoll, MiChannel, MiFollowing, NoteFavoritesRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
+import { deepClone } from '@/misc/clone.js';
+import { crawlNote } from '@/misc/crawl-note.js';
 import { DebounceLoader } from '@/misc/loader.js';
-import type { IdService } from '@/core/IdService.js';
-import type { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { TimeService } from '@/global/TimeService.js';
-import type { Config } from '@/config.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
+import type { IdService } from '@/core/IdService.js';
+import type { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
+import type { Config } from '@/config.js';
 import type { NoteVisibilityData } from '@/core/NoteVisibilityService.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { CacheService } from '../CacheService.js';
@@ -229,7 +231,7 @@ export class NoteEntityService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async populateMyNoteMutings(notes: Packed<'Note'>[], meId: string): Promise<Set<string>> {
+	private async populateMyNoteMutings(notes: Packed<'Note'>[], meId: string): Promise<Set<string>> {
 		const mutedNotes = await this.cacheService.noteMutingsCache.fetch(meId);
 
 		const mutedIds = notes
@@ -239,7 +241,7 @@ export class NoteEntityService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async populateMyTheadMutings(notes: Packed<'Note'>[], meId: string): Promise<Set<string>> {
+	private async populateMyTheadMutings(notes: Packed<'Note'>[], meId: string): Promise<Set<string>> {
 		const mutedThreads = await this.cacheService.threadMutingsCache.fetch(meId);
 
 		const mutedIds = notes
@@ -249,15 +251,15 @@ export class NoteEntityService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async populateMyRenotes(notes: Packed<'Note'>[], meId: string, _hint_?: {
-		myRenotes: Set<string>;
+	private async populateMyRenotes(notes: Packed<'Note'>[], meId: string, hint?: {
+		myRenotes?: Set<string>;
 	}): Promise<Set<string>> {
 		const fetchedRenotes = new Set<string>();
 		const toFetch = new Set<string>();
 
-		if (_hint_) {
+		if (hint?.myRenotes) {
 			for (const note of notes) {
-				if (_hint_.myRenotes.has(note.id)) {
+				if (hint.myRenotes.has(note.id)) {
 					fetchedRenotes.add(note.id);
 				} else {
 					toFetch.add(note.id);
@@ -284,15 +286,15 @@ export class NoteEntityService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async populateMyFavorites(notes: Packed<'Note'>[], meId: string, _hint_?: {
-		myFavorites: Set<string>;
+	private async populateMyFavorites(notes: Packed<'Note'>[], meId: string, hint?: {
+		myFavorites?: Set<string>;
 	}): Promise<Set<string>> {
 		const fetchedFavorites = new Set<string>();
 		const toFetch = new Set<string>();
 
-		if (_hint_) {
+		if (hint?.myFavorites) {
 			for (const note of notes) {
-				if (_hint_.myFavorites.has(note.id)) {
+				if (hint.myFavorites.has(note.id)) {
 					fetchedFavorites.add(note.id);
 				} else {
 					toFetch.add(note.id);
@@ -320,15 +322,15 @@ export class NoteEntityService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async populateMyReactions(notes: Packed<'Note'>[], meId: string, _hint_?: {
-		myReactions: Map<MiNote['id'], string | null>;
+	private async populateMyReactions(notes: Packed<'Note'>[], meId: string, hint?: {
+		myReactions?: Map<MiNote['id'], string | null>;
 	}): Promise<Map<string, string>> {
 		const fetchedReactions = new Map<string, string>();
 		const toFetch = new Set<string>();
 
-		if (_hint_) {
+		if (hint?.myReactions) {
 			for (const note of notes) {
-				const fromHint = _hint_.myReactions.get(note.id);
+				const fromHint = hint.myReactions.get(note.id);
 
 				// null means we know there's no reaction, so just skip it.
 				if (fromHint === null) continue;
@@ -503,6 +505,55 @@ export class NoteEntityService implements OnModuleInit {
 			}
 		}
 		return fileIds.map(id => packedFiles.get(id)).filter(x => x != null);
+	}
+
+	/**
+	 * Takes an anonymous packed note (called with "me" set to null or undefined) and "re-packs" it in the context of a given user.
+	 * @param note Anonymous packed note
+	 * @param me User to re-pack for
+	 * @param hint Optional hint data - pass optimistically to speed up calls
+	 */
+	@bindThis
+	public async rePack(note: Packed<'Note'>, me: MiUser | MiUser['id'], hint?: {
+		myReactions?: Map<MiNote['id'], string | null>;
+		myRenotes?: Set<string>;
+		myFavorites?: Set<string>;
+	}): Promise<Packed<'Note'>> {
+		const meId = typeof(me) === 'object' ? me.id : me;
+
+		// Important: copy the note, since anonymous packed notes are often shared between multiple users!
+		const clonedNote = deepClone(note);
+		const allNotes = crawlNote(clonedNote);
+
+		const [myReactions, myRenotes, myFavorites, myThreadMutings, myNoteMutings, myFollowings] = await Promise.all([
+			this.populateMyReactions(allNotes, meId, hint),
+			this.populateMyRenotes(allNotes, meId, hint),
+			this.populateMyFavorites(allNotes, meId, hint),
+			this.populateMyTheadMutings(allNotes, meId),
+			this.populateMyNoteMutings(allNotes, meId),
+			this.cacheService.userFollowingsCache.fetch(meId),
+		]);
+
+		for (const n of allNotes) {
+			// Sync visibility in case there's something like "makeNotesFollowersOnlyBefore" enabled
+			this.noteVisibilityService.syncVisibility(n);
+
+			n.myReaction = myReactions.get(n.id) ?? null;
+			n.isRenoted = myRenotes.has(n.id);
+			n.isFavorited = myFavorites.has(n.id);
+			n.isMutingThread = myThreadMutings.has(n.id);
+			n.isMutingNote = myNoteMutings.has(n.id);
+			n.user.bypassSilence = n.userId === meId || myFollowings.has(n.userId);
+		}
+
+		// Hide notes *after* we sync visibility
+		await this.hideNotes(allNotes, meId, {
+			userMutedNotes: myNoteMutings,
+			userMutedThreads: myThreadMutings,
+			userFollowings: myFollowings,
+		});
+
+		return clonedNote;
 	}
 
 	@bindThis
