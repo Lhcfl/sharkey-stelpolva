@@ -10,7 +10,7 @@ const hasPromiseTry = Reflect.has(globalThis.Promise, 'try');
 /**
  * Polyfill for https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/try
  */
-export const promiseTry: PromiseTryFunc = hasPromiseTry ? Promise.try : promiseTryPolyfill;
+export const promiseTry: PromiseTryFunc = hasPromiseTry ? Promise.try.bind(Promise) : promiseTryPolyfill;
 
 /**
  * Takes a callback of any kind (returns or throws, synchronously or asynchronously) and wraps its result in a Promise.
