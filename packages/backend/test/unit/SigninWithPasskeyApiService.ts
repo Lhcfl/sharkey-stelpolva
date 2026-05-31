@@ -6,11 +6,10 @@
 import { IncomingHttpHeaders } from 'node:http';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, jest, test } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { AuthenticationResponseJSON } from '@simplewebauthn/types';
-import { HttpHeader } from 'fastify/types/utils.js';
+import { AuthenticationResponseJSON } from '@simplewebauthn/server';
 import { MockMetadata, ModuleMocker } from 'jest-mock';
 import { FakeSkRateLimiterService } from '../misc/FakeSkRateLimiterService.js';
+import type { FastifyReply, FastifyRequest, HttpHeader } from 'fastify';
 import { MiUser } from '@/models/User.js';
 import { MiUserProfile, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -130,7 +129,7 @@ describe('SigninWithPasskeyApiService', () => {
 	afterEach(async () => {
 		await userProfilesRepository.deleteAll();
 		await usersRepository.deleteAll();
-		cacheManagementService.clear();
+		await cacheManagementService.clear();
 	});
 
 	describe('Get Passkey Options', () => {

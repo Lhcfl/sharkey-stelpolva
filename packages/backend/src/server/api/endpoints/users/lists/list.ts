@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { UserListsRepository, UsersRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserListEntityService } from '@/core/entities/UserListEntityService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { ApiError } from '@/server/api/error.js';
 import { DI } from '@/di-symbols.js';
 import { promiseMap } from '@/misc/promise-map.js';
@@ -72,11 +73,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private userListsRepository: UserListsRepository,
 
 		private userListEntityService: UserListEntityService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (typeof ps.userId !== 'undefined') {
-				const user = await this.usersRepository.findOneBy({ id: ps.userId });
-				if (user === null) throw new ApiError(meta.errors.noSuchUser);
+				const user = await this.cacheService.findOptionalUserById(ps.userId);
+				if (user == null) throw new ApiError(meta.errors.noSuchUser);
 				if (user.host !== null) throw new ApiError(meta.errors.remoteUser);
 			} else if (me === null) {
 				throw new ApiError(meta.errors.invalidParam);
@@ -89,7 +91,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				isPublic: true,
 			});
 
-			return await promiseMap(userLists, async x => await this.userListEntityService.pack(x, me?.id), { limit: 4 });
+			return await promiseMap(userLists, async x => await this.userListEntityService.pack(x, me?.id), { limiter: 4 });
 		});
 	}
 }

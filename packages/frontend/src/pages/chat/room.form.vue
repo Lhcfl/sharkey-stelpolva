@@ -37,7 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { onMounted, watch, ref, shallowRef, computed, nextTick, readonly, onBeforeUnmount } from 'vue';
 import * as Misskey from 'misskey-js';
 //import insertTextAtCursor from 'insert-text-at-cursor';
-import { formatTimeString } from '@/utility/format-time-string.js';
+import { formatTimeString } from '@@/js/format-time-string.js';
 import { selectFile } from '@/utility/select-file.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';

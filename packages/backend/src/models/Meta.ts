@@ -779,6 +779,12 @@ export class MiMeta {
 		default: [],
 	})
 	public deliverSuspendedSoftware: SoftwareSuspension[];
+
+	constructor(data?: Partial<MiMeta>) {
+		if (data) {
+			Object.assign(this, data);
+		}
+	}
 }
 
 export type SoftwareSuspension = {

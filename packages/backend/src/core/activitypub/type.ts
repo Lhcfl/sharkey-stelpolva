@@ -13,13 +13,13 @@ export interface IObject {
 	'@context'?: string | string[] | Obj | Obj[];
 	type: string | string[];
 	id?: string;
-	name?: string | null;
-	summary?: string | null;
+	name?: string;
+	summary?: string;
 	_misskey_summary?: string;
-	_misskey_followedMessage?: string | null;
+	_misskey_followedMessage?: string;
 	_misskey_requireSigninToViewContents?: boolean;
-	_misskey_makeNotesFollowersOnlyBefore?: number | null;
-	_misskey_makeNotesHiddenBefore?: number | null;
+	_misskey_makeNotesFollowersOnlyBefore?: number;
+	_misskey_makeNotesHiddenBefore?: number;
 	published?: string;
 	cc?: ApObject;
 	to?: ApObject;
@@ -27,12 +27,12 @@ export interface IObject {
 	attachment?: IApDocument[];
 	inReplyTo?: any;
 	replies?: ICollection | IOrderedCollection | string;
-	content?: string | null;
+	content?: string;
 	startTime?: Date; // TODO these are wrong - should be string
 	endTime?: Date; // TODO these are wrong - should be string
 	updated?: string;
-	icon?: any;
-	image?: any;
+	icon?: IApImage;
+	image?: IApImage;
 	mediaType?: string;
 	url?: ApObject | string;
 	href?: string;
@@ -259,6 +259,8 @@ export const isActor = (object: IObject): object is IActor => {
 	return type != null && validActor.includes(type);
 };
 
+export type IActorWithId = IActor & { id: string };
+
 export interface IActor extends IObject {
 	type: 'Person' | 'Service' | 'Organization' | 'Group' | 'Application';
 	name?: string;
@@ -269,10 +271,7 @@ export interface IActor extends IObject {
 	discoverable?: boolean | null;
 	inbox: string;
 	sharedInbox?: string;	// 後方互換性のため
-	publicKey?: {
-		id: string;
-		publicKeyPem: string;
-	};
+	publicKey?: IKey;
 	followers?: string | ICollection | IOrderedCollection;
 	following?: string | ICollection | IOrderedCollection;
 	featured?: string | IOrderedCollection;
@@ -284,10 +283,17 @@ export interface IActor extends IObject {
 	'vcard:Address'?: string;
 	hideOnlineStatus?: boolean;
 	noindex?: boolean;
+	indexable?: boolean;
 	enableRss?: boolean;
 	listenbrainz?: string;
-	backgroundUrl?: string;
+	backgroundUrl?: string | IApImage;
 	attributionDomains?: string[];
+	isCat?: boolean;
+	speakAsCat?: boolean;
+	requireSigninToViewContents?: boolean;
+	makeNotesFollowersOnlyBefore?: number;
+	makeNotesHiddenBefore?: number;
+	webfinger?: string;
 }
 
 export const isCollection = (object: IObject): object is ICollection =>
@@ -305,7 +311,7 @@ export const isOrderedCollectionPage = (object: IObject): object is IOrderedColl
 export const isCollectionOrOrderedCollection = (object: IObject): object is AnyCollection =>
 	isCollection(object) || isOrderedCollection(object) || isCollectionPage(object) || isOrderedCollectionPage(object);
 
-export interface IApPropertyValue extends IObject {
+export interface IApPropertyValue extends IApDocument {
 	type: 'PropertyValue';
 	identifier: IApPropertyValue;
 	name: string;
@@ -339,27 +345,30 @@ export const isHashtag = (object: IObject): object is IApHashtag =>
 export interface IApEmoji extends IObject {
 	type: 'Emoji';
 	name: string;
-	updated: string;
+	updated?: string;
 	// Misskey拡張。後方互換性のためにoptional。
 	// 将来の拡張性を考慮してobjectにしている
 	_misskey_license?: {
-		freeText: string | null;
+		freeText?: string;
+	};
+	icon: IApImage & {
+		url: string;
 	};
 }
 
 export const isEmoji = (object: IObject): object is IApEmoji =>
-	getApType(object) === 'Emoji' && !Array.isArray(object.icon) && object.icon.url != null;
+	getApType(object) === 'Emoji' && !Array.isArray(object.icon) && object.icon?.url != null;
 
 export interface IKey extends IObject {
 	type: 'Key';
-	owner: string;
-	publicKeyPem: string | Buffer;
+	owner?: string;
+	publicKeyPem: string;
 }
 
 export const validDocumentTypes = ['Audio', 'Document', 'Image', 'Page', 'Video'];
 
 export interface IApDocument extends IObject {
-	type: 'Audio' | 'Document' | 'Image' | 'Page' | 'Video';
+	type: 'Audio' | 'Document' | 'Image' | 'Page' | 'Video' | 'PropertyValue';
 	width?: number;
 	height?: number;
 }

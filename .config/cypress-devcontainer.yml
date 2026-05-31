@@ -318,38 +318,80 @@ id: 'aidx'
 # | Job concurrency options |
 # +-------------------------+
 #
+# The settings here configure scaling for Sharkey's task queue workers.
+# 11 distinct queues are used, and each supports 3 scaling parameters.
+#
 ### Available options:
 # [type]JobConcurrency - limits the number jobs that can run at the same time.
 #   Sharkey will allow this many jobs of this type *per worker process*.
 # [type]JobPerSec - limits the total number of jobs that may complete within a single second.
 #   If this limit is exceeded, then Sharkey will pause this type of job until the next second.
+#   Set this to 0 to disable rate limiting.
 # [type]JobMaxAttempts - limits the number of times that a job is allowed to fail and re-try before it's permanently stopped.
 #   If this limit is exceeded, then the job is considered "failed" and recorded for debugging.
+#   Set this to 1 to disable retries.
 #
-### Job types:
-# inbox - processes ActivityPub messages (AKA "Activities") received from remote instances.
-#   All inbound activities are queued and processed in chronological order by this job.
-# deliver - processes ActivityPub messages (AKA "Activities") being set to remote instances.
-#   All outbound activities are queued and processed in chronological order by this job.
-# relationship - processes user-to-user tasks including follow/unfollow, block/unblock, account migrations, and all follow import jobs.
-# background - processes background synchronization tasks that need to happen soon (but not immediately), such as remote user updates and instance metadata updates.
-
-# Job concurrency per worker
+## Deliver queue - processes ActivityPub messages (AKA "Activities") being set to remote instances.
+## All inbound activities are queued and processed in chronological order by this queue.
 #deliverJobConcurrency: 128
-#inboxJobConcurrency: 16
-#relationshipJobConcurrency: 16
-#backgroundJobConcurrency: 32
-
-# Job rate limiter
-#deliverJobPerSec: 128
-#inboxJobPerSec: 32
-#relationshipJobPerSec: 64
-#backgroundJobPerSec: 256
-
-# Job attempts
+#deliverJobPerSec: 0
 #deliverJobMaxAttempts: 12
+#
+## Inbox queue - processes ActivityPub messages (AKA "Activities") received from remote instances.
+## All inbound activities are queued and processed in chronological order by this job.
+#inboxJobConcurrency: 16
+#inboxJobPerSec: 0
 #inboxJobMaxAttempts: 8
-#backgroundJobMaxAttempts: 8
+#
+## System queue - processes scheduled maintenance and operational tasks.
+#systemJobConcurrency: 2
+#systemJobPerSec: 0
+#systemJobMaxAttempts: 1
+#
+## Daemon queue - processes brief, recurrent tasks.
+#daemonJobConcurrency: 4
+#daemonJobPerSec: 0
+#daemonJobMaxAttempts: 1
+#
+## Ended Poll Notification queue - refreshes completed polls and notifies all interested users.
+#endedPollNotificationJobConcurrency: 4
+#endedPollNotificationJobPerSec: 0
+#endedPollNotificationJobMaxAttempts: 4
+#
+## DB queue - processes bulk database updates.
+#dbJobConcurrency: 1
+#dbJobPerSec: 0
+#dbJobMaxAttempts: 1
+#
+## Relationship queue - processes user-to-user relationship updates including follow/unfollow, block/unblock, account migrations, and all follow import jobs.
+#relationshipJobConcurrency: 16
+#relationshipJobPerSec: 64
+#relationshipJobMaxAttempts: 1
+#
+## Object Storage queue - processes media uploads when Object Storage (S3) is enabled.
+#objectStorageJobConcurrency: 16
+#objectStorageJobPerSec: 0
+#objectStorageJobMaxAttempts: 4
+#
+## User Webhook Deliver queue - processes events for user-created Webhooks.
+#userWebhookDeliverJobConcurrency: 64
+#userWebhookDeliverJobPerSec: 0
+#userWebhookDeliverJobMaxAttempts: 4
+#
+## System Webhook Deliver queue - processes events for system (admin-created) Webhooks.
+#systemWebhookDeliverJobConcurrency: 16
+#systemWebhookDeliverJobPerSec: 0
+#systemWebhookDeliverJobMaxAttempts: 4
+#
+## Scheduled Note Post queue - processes scheduled notes.
+#scheduleNotePostJobConcurrency: 1
+#scheduleNotePostJobPerSec: 0
+#scheduleNotePostJobMaxAttempts: 1
+#
+## Background Task queue - processes background synchronization tasks that need to happen soon (but not immediately), such as remote user updates and instance metadata updates.
+#backgroundTaskJobConcurrency: 32
+#backgroundTaskJobPerSec: 0
+#backgroundTaskJobMaxAttempts: 4
 
 # Local address used for outgoing requests
 #outgoingAddress: 127.0.0.1

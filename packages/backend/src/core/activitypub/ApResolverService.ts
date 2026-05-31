@@ -165,7 +165,7 @@ export class Resolver {
 				}
 			}
 		}, {
-			limit: concurrency,
+			limiter: concurrency,
 		});
 
 		// Items will be null if a request fails and ignoreErrors is true
@@ -397,8 +397,8 @@ export class Resolver {
 					.then(async followRequest => {
 						if (followRequest == null) throw new IdentifiableError('a9d946e5-d276-47f8-95fb-f04230289bb0', `failed to resolve local ${url}: invalid follow request ID`);
 						const [follower, followee] = await Promise.all([
-							this.cacheService.findLocalUserById(followRequest.followerId),
-							this.cacheService.findLocalUserById(followRequest.followeeId),
+							this.cacheService.findUserById(followRequest.followerId),
+							this.cacheService.findUserById(followRequest.followeeId),
 						]);
 						if (follower == null || followee == null) {
 							throw new IdentifiableError('06ae3170-1796-4d93-a697-2611ea6d83b6', `failed to resolve local ${url}: follower or followee does not exist`);

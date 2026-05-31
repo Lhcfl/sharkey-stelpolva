@@ -112,7 +112,7 @@ export class ApiInstanceMastodon {
 				description: this.meta.description || this.meta.about || 'This is a vanilla Sharkey Instance.',
 				usage: {
 					users: {
-						active_month: instanceStats.usersActiveMonth,
+						active_month: instanceStats.localUsersSixMonths,
 					},
 				},
 				thumbnail: {

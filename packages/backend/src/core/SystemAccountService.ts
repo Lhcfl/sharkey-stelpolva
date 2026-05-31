@@ -8,7 +8,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { OnApplicationShutdown } from '@nestjs/common';
 import { DataSource, IsNull } from 'typeorm';
 import * as Redis from 'ioredis';
-import bcrypt from 'bcryptjs';
 import { MiLocalUser, MiUser } from '@/models/User.js';
 import { MiSystemAccount, MiUsedUsername, MiUserKeypair, MiUserProfile, type UsersRepository, type SystemAccountsRepository } from '@/models/_.js';
 import type { MiMeta, UserProfilesRepository } from '@/models/_.js';
@@ -21,7 +20,7 @@ import { IdService } from '@/core/IdService.js';
 import { genRsaKeyPair } from '@/misc/gen-key-pair.js';
 import { CacheManagementService, type ManagedMemoryKVCache } from '@/global/CacheManagementService.js';
 import { CacheService } from '@/core/CacheService.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
+import { InternalEventService, InternalEventTypes } from '@/global/InternalEventService.js';
 import { TimeService } from '@/global/TimeService.js';
 
 export const SYSTEM_ACCOUNT_TYPES = ['actor', 'relay', 'proxy'] as const;
@@ -57,29 +56,16 @@ export class SystemAccountService implements OnApplicationShutdown {
 		cacheManagementService: CacheManagementService,
 	) {
 		this.cache = cacheManagementService.createMemoryKVCache<string>('systemAccount', 1000 * 60 * 10); // 10m
-
-		this.redisForSub.on('message', this.onMessage);
+		this.internalEventService.on('metaUpdated', this.onMetaUpdated);
 	}
 
 	@bindThis
-	private async onMessage(_: string, data: string): Promise<void> {
-		const obj = JSON.parse(data);
-
-		if (obj.channel === 'internal') {
-			const { type, body } = obj.message as GlobalEvents['internal']['payload'];
-			switch (type) {
-				case 'metaUpdated': {
-					if (body.before != null && body.before.name !== body.after.name) {
-						for (const account of SYSTEM_ACCOUNT_TYPES) {
-							await this.updateCorrespondingUserProfile(account, {
-								name: body.after.name,
-							});
-						}
-					}
-					break;
-				}
-				default:
-					break;
+	private async onMetaUpdated(body: InternalEventTypes['metaUpdated']): Promise<void> {
+		if (body.before.name !== body.after.name) {
+			for (const account of SYSTEM_ACCOUNT_TYPES) {
+				await this.updateCorrespondingUserProfile(account, {
+					name: body.after.name,
+				});
 			}
 		}
 	}
@@ -120,12 +106,6 @@ export class SystemAccountService implements OnApplicationShutdown {
 		username: MiUser['username'];
 		name?: MiUser['name'];
 	}): Promise<MiLocalUser> {
-		const password = randomUUID();
-
-		// Generate hash of password
-		const salt = await bcrypt.genSalt(8);
-		const hash = await bcrypt.hash(password, salt);
-
 		// Generate secret
 		const secret = generateNativeUserToken();
 
@@ -172,7 +152,10 @@ export class SystemAccountService implements OnApplicationShutdown {
 			await transactionalEntityManager.insert(MiUserProfile, {
 				userId: account.id,
 				autoAcceptFollowed: false,
-				password: hash,
+
+				// System accounts can't be logged into, so don't give them a password.
+				// (null password prevents all password auth for the user)
+				password: null,
 			});
 
 			await transactionalEntityManager.insert(MiUsedUsername, {
@@ -205,13 +188,20 @@ export class SystemAccountService implements OnApplicationShutdown {
 			await this.internalEventService.emit('localUserUpdated', { id: user.id });
 		}
 
+		const existingProfile = await this.cacheService.userProfileCache.fetch(user.id);
 		const profileUpdates = {} as Partial<MiUserProfile>;
-		if (extra.description !== undefined) profileUpdates.description = extra.description;
 
-		if (Object.keys(profileUpdates).length > 0) {
-			await this.userProfilesRepository.update(user.id, profileUpdates);
-			await this.internalEventService.emit('updateUserProfile', { userId: user.id });
+		if (extra.description !== undefined && extra.description !== existingProfile.description) {
+			profileUpdates.description = extra.description;
 		}
+
+		const updatedProfileKeys = Object.keys(profileUpdates) as (keyof MiUserProfile)[];
+		if (updatedProfileKeys.length > 0) {
+			await this.userProfilesRepository.update({ userId: user.id }, profileUpdates);
+			await this.internalEventService.emit('updateUserProfile', { userId: user.id, keys: updatedProfileKeys });
+		}
+
+		// TODO federate this?
 
 		return await this.cacheService.findLocalUserById(user.id);
 	}
@@ -230,7 +220,7 @@ export class SystemAccountService implements OnApplicationShutdown {
 
 	@bindThis
 	public dispose(): void {
-		this.redisForSub.off('message', this.onMessage);
+		this.internalEventService.off('metaUpdated', this.onMetaUpdated);
 	}
 
 	@bindThis

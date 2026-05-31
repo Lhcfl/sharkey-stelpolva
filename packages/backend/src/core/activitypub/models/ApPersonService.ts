@@ -36,7 +36,6 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import type { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
-import type { AccountMoveService } from '@/core/AccountMoveService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
 import { AppLockService } from '@/core/AppLockService.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
@@ -48,6 +47,7 @@ import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import { QueueService } from '@/core/QueueService.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
+import { deepEquals } from '@/misc/deep-equals.js';
 import { promiseMap } from '@/misc/promise-map.js';
 import { getApId, getApType, getNullableApId, isActor, isPost, isPropertyValue } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
@@ -66,9 +66,6 @@ type Field = Record<'name' | 'value', string>;
 
 @Injectable()
 export class ApPersonService implements OnModuleInit {
-	// Moved from CacheService
-	public readonly uriPersonCache: ManagedQuantumKVCache<string>;
-
 	// Moved from ApDbResolverService
 	private readonly publicKeyByKeyIdCache: ManagedQuantumKVCache<MiUserPublickey>;
 	private readonly publicKeyByUserIdCache: ManagedQuantumKVCache<MiUserPublickey>;
@@ -85,9 +82,7 @@ export class ApPersonService implements OnModuleInit {
 	private hashtagService: HashtagService;
 	private usersChart: UsersChart;
 	private instanceChart: InstanceChart;
-	private accountMoveService: AccountMoveService;
 	private logger: Logger;
-	private idService: IdService;
 
 	constructor(
 		private moduleRef: ModuleRef,
@@ -126,39 +121,11 @@ export class ApPersonService implements OnModuleInit {
 		private readonly queueService: QueueService,
 		private readonly collapsedQueueService: CollapsedQueueService,
 		private readonly internalEventService: InternalEventService,
+		private readonly idService: IdService,
 
 		apLoggerService: ApLoggerService,
 	) {
 		this.logger = apLoggerService.logger;
-
-		this.uriPersonCache = this.cacheManagementService.createQuantumKVCache('uriPerson', {
-			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: async (uri) => {
-				const { id } = await this.usersRepository
-					.createQueryBuilder('user')
-					.select('user.id')
-					.where({ uri })
-					.getOneOrFail() as { id: string };
-				return id;
-			},
-			optionalFetcher: async (uri) => {
-				const res = await this.usersRepository
-					.createQueryBuilder('user')
-					.select('user.id')
-					.where({ uri })
-					.getOne() as { id: string } | null;
-				return res?.id;
-			},
-			bulkFetcher: async (uris) => {
-				const users = await this.usersRepository
-					.createQueryBuilder('user')
-					.select('user.id')
-					.addSelect('user.uri')
-					.where({ uri: In(uris) })
-					.getMany() as { id: string, uri: string }[];
-				return users.map(user => [user.uri, user.id]);
-			},
-		});
 
 		this.publicKeyByKeyIdCache = this.cacheManagementService.createQuantumKVCache<MiUserPublickey>('publicKeyByKeyId', {
 			lifetime: 1000 * 60 * 60 * 12, // 12h
@@ -182,7 +149,7 @@ export class ApPersonService implements OnModuleInit {
 	}
 
 	@bindThis
-	onModuleInit(): void {
+	public onModuleInit(): void {
 		this.driveFileEntityService = this.moduleRef.get('DriveFileEntityService');
 		this.federatedInstanceService = this.moduleRef.get('FederatedInstanceService');
 		this.fetchInstanceMetadataService = this.moduleRef.get('FetchInstanceMetadataService');
@@ -195,8 +162,6 @@ export class ApPersonService implements OnModuleInit {
 		this.hashtagService = this.moduleRef.get('HashtagService');
 		this.usersChart = this.moduleRef.get('UsersChart');
 		this.instanceChart = this.moduleRef.get('InstanceChart');
-		this.accountMoveService = this.moduleRef.get('AccountMoveService');
-		this.idService = this.moduleRef.get('IdService');
 	}
 
 	/**
@@ -221,7 +186,7 @@ export class ApPersonService implements OnModuleInit {
 		if (typeof(x.id) !== 'string') {
 			throw new UnrecoverableError(`invalid Actor ${uri}: wrong id type ${typeof(x.id)}`);
 		}
-		const parsedId = this.utilityService.assertUrl(x.id);
+		const parsedId = this.utilityService.assertUrl(x.id, { allowFragment: false });
 		const idHost = this.utilityService.punyHostPSLDomain(parsedId);
 		if (idHost !== expectHost) {
 			throw new UnrecoverableError(`invalid Actor ${uri}: wrong host in id ${x.id} (got ${parsedId}, expected ${expectHost})`);
@@ -286,8 +251,8 @@ export class ApPersonService implements OnModuleInit {
 			x.summary = truncate(x.summary, this.config.maxRemoteBioLength);
 		}
 
-		// Sanitize publicKey
-		this.apUtilityService.sanitizeInlineObject(x, 'publicKey', parsedUri, expectHost);
+		// Sanitize publicKey (fragment / hash is allowed)
+		this.apUtilityService.sanitizeInlineObject(x, 'publicKey', parsedUri, expectHost, undefined);
 
 		return x;
 	}
@@ -298,11 +263,11 @@ export class ApPersonService implements OnModuleInit {
 	 * Misskeyに対象のPersonが登録されていればそれを返し、登録がなければnullを返します。
 	 */
 	@bindThis
-	public async fetchPerson(uri: string, opts?: { withDeleted?: boolean, withSuspended?: boolean }): Promise<MiLocalUser | MiRemoteUser | null> {
-		const _opts = {
-			withDeleted: opts?.withDeleted ?? false,
-			withSuspended: opts?.withSuspended ?? true,
-		};
+	public async fetchPerson(uri: string, opts?: { withDeleted?: boolean, withSuspended?: boolean, withDefederated?: boolean, withUnapproved?: boolean }): Promise<MiLocalUser | MiRemoteUser | null> {
+		const withDeleted = opts?.withDeleted ?? false;
+		const withSuspended = opts?.withSuspended ?? false;
+		const withDefederated = opts?.withDefederated ?? withSuspended;
+		const withUnapproved = !this.meta.approvalRequiredForSignup || (opts?.withUnapproved ?? withSuspended);
 
 		let userId: string | null | undefined;
 
@@ -311,7 +276,7 @@ export class ApPersonService implements OnModuleInit {
 		if (parsed.local) {
 			userId = parsed.type === 'users' ? parsed.id : null;
 		} else {
-			userId = await this.uriPersonCache.fetchMaybe(uri);
+			userId = await this.cacheService.uriPersonCache.fetchMaybe(uri);
 		}
 
 		// No match
@@ -321,11 +286,16 @@ export class ApPersonService implements OnModuleInit {
 
 		const user = await this.cacheService.findOptionalUserById(userId) as MiLocalUser | MiRemoteUser | null;
 
-		if (user?.isDeleted && !_opts.withDeleted) {
-			return null;
-		}
-		if (user?.isSuspended && !_opts.withSuspended) {
-			return null;
+		// State validation
+		if (user != null) {
+			if (!withDeleted && user.isDeleted) return null;
+			if (!withSuspended && user.isSuspended) return null;
+
+			if (isRemoteUser(user)) {
+				if (!withDefederated && !this.utilityService.isFederationAllowedHost(user.host)) return null;
+			} else {
+				if (!withUnapproved && !user.approved) return null;
+			}
 		}
 
 		return user;
@@ -468,7 +438,7 @@ export class ApPersonService implements OnModuleInit {
 			: null;
 
 		// Register the instance first, to avoid FK errors
-		await this.federatedInstanceService.fetchOrRegister(host);
+		const instance = await this.federatedInstanceService.fetchOrRegister(host);
 
 		try {
 			// Start transaction
@@ -551,7 +521,7 @@ export class ApPersonService implements OnModuleInit {
 			// duplicate key error
 			if (isDuplicateKeyValueError(e)) {
 				// /users/@a => /users/:id のように入力がaliasなときにエラーになることがあるのを対応
-				const u = await this.usersRepository.findOneBy({ uri: person.id });
+				const u = await this.cacheService.findOptionalUserByUri(person.id);
 				if (u == null) throw new UnrecoverableError(`already registered a user with conflicting data: ${uri}`);
 
 				user = u as MiRemoteUser;
@@ -565,7 +535,7 @@ export class ApPersonService implements OnModuleInit {
 		if (user == null) throw new Error(`failed to create user - user is null: ${uri}`);
 
 		// Register to the cache
-		await this.uriPersonCache.set(user.uri, user.id);
+		await this.cacheService.uriPersonCache.set(user.uri, user.id);
 
 		// Register public key to the cache.
 		if (publicKey) {
@@ -577,13 +547,13 @@ export class ApPersonService implements OnModuleInit {
 
 		// Register host
 		if (this.meta.enableStatsForFederatedInstances) {
-			this.federatedInstanceService.fetchOrRegister(host).then(async i => {
-				await this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { usersCountDelta: 1 });
+			{
+				this.collapsedQueueService.updateInstanceQueue.enqueue(instance.host, { usersCountDelta: 1 });
 				if (this.meta.enableChartsForFederatedInstances) {
-					this.instanceChart.newUser(i.host);
+					this.instanceChart.newUser(instance.host);
 				}
-				await this.fetchInstanceMetadataService.fetchInstanceMetadataLazy(i);
-			});
+				await this.fetchInstanceMetadataService.fetchInstanceMetadataLazy(instance);
+			}
 		}
 
 		this.usersChart.update(user, true);
@@ -644,7 +614,7 @@ export class ApPersonService implements OnModuleInit {
 
 		//#region このサーバーに既に登録されているか
 		const exist = await this.fetchPerson(uri) as MiRemoteUser | null;
-		if (exist === null) return;
+		if (exist === null || exist.isDeleted) return;
 		//#endregion
 
 		if (resolver == null) resolver = this.apResolverService.createResolver();
@@ -761,9 +731,7 @@ export class ApPersonService implements OnModuleInit {
 		if (moving) updates.movedAt = this.timeService.date;
 
 		// Update user
-		if (!(await this.usersRepository.update({ id: exist.id, isDeleted: false }, updates)).affected) {
-			return `skip: user ${exist.id} is deleted`;
-		}
+		await this.usersRepository.update({ id: exist.id }, updates);
 
 		// Notify event ASAP
 		await this.internalEventService.emit('remoteUserUpdated', { id: exist.id });
@@ -806,19 +774,50 @@ export class ApPersonService implements OnModuleInit {
 			_description = this.apMfmService.htmlToMfm(truncate(person.summary, this.config.maxRemoteBioLength), person.tag);
 		}
 
-		await this.userProfilesRepository.update({ userId: updated.id }, {
-			url,
-			fields,
-			verifiedLinks,
-			description: _description,
-			followedMessage: person._misskey_followedMessage != null ? truncate(person._misskey_followedMessage, 256) : null,
-			followingVisibility,
-			followersVisibility,
-			birthday: bday?.[0] ?? null,
-			location: person['vcard:Address'] ?? null,
-			listenbrainz: person.listenbrainz ?? null,
-		});
-		await this.cacheService.userProfileCache.delete(updated.id);
+		const followedMessage = person._misskey_followedMessage != null ? truncate(person._misskey_followedMessage, 256) : null;
+		const birthday = bday?.[0] ?? null;
+		const location = person['vcard:Address'] ?? null;
+		const listenbrainz = person.listenbrainz ?? null;
+
+		const existingProfile = await this.cacheService.userProfileCache.fetch(exist.id);
+		const profileUpdates: Partial<MiUserProfile> = {};
+
+		if (url !== existingProfile.url) {
+			profileUpdates.url = url;
+		}
+		if (!deepEquals(fields, existingProfile.fields)) {
+			profileUpdates.fields = fields;
+		}
+		if (!deepEquals(verifiedLinks, existingProfile.verifiedLinks)) {
+			profileUpdates.verifiedLinks = verifiedLinks;
+		}
+		if (_description !== existingProfile.description) {
+			profileUpdates.description = _description;
+		}
+		if (followedMessage !== existingProfile.followedMessage) {
+			profileUpdates.followedMessage = followedMessage;
+		}
+		if (followingVisibility !== existingProfile.followingVisibility) {
+			profileUpdates.followingVisibility = followingVisibility;
+		}
+		if (followersVisibility !== existingProfile.followersVisibility) {
+			profileUpdates.followersVisibility = followersVisibility;
+		}
+		if (birthday !== existingProfile.birthday) {
+			profileUpdates.birthday = birthday;
+		}
+		if (location !== existingProfile.location) {
+			profileUpdates.location = location;
+		}
+		if (listenbrainz !== existingProfile.listenbrainz) {
+			profileUpdates.listenbrainz = listenbrainz;
+		}
+
+		const updatedProfileKeys = Object.keys(profileUpdates) as (keyof MiUserProfile)[];
+		if (updatedProfileKeys.length > 0) {
+			await this.userProfilesRepository.update({ userId: updated.id }, profileUpdates);
+			await this.internalEventService.emit('updateUserProfile', { userId: updated.id, keys: updatedProfileKeys });
+		}
 
 		// 該当ユーザーが既にフォロワーになっていた場合はFollowingもアップデートする
 		if (updated.inbox !== person.inbox || updated.sharedInbox !== (person.sharedInbox ?? person.endpoints?.sharedInbox)) {
@@ -829,8 +828,6 @@ export class ApPersonService implements OnModuleInit {
 					followerSharedInbox: person.sharedInbox ?? person.endpoints?.sharedInbox ?? null,
 				},
 			);
-
-			await this.cacheService.refreshFollowRelationsFor(updated.id);
 		}
 
 		// ハッシュタグ更新
@@ -941,8 +938,8 @@ export class ApPersonService implements OnModuleInit {
 		const userId = typeof(userOrId) === 'object' ? userOrId.id : userOrId;
 		const user = typeof(userOrId) === 'object' ? userOrId : await this.cacheService.findRemoteUserById(userId);
 
-		if (user.isDeleted) throw new IdentifiableError(errorCodes.userIsDeleted, `Can't update featured for ${userId}: user is deleted`);
-		if (user.isSuspended) throw new IdentifiableError(errorCodes.userIsSuspended, `Can't update featured for ${userId}: user is suspended`);
+		if (user.isDeleted) throw new IdentifiableError(errorCodes.userDeleted, `Can't update featured for ${userId}: user is deleted`);
+		if (user.isSuspended) throw new IdentifiableError(errorCodes.userSuspended, `Can't update featured for ${userId}: user is suspended`);
 		if (!user.featured) throw new IdentifiableError(errorCodes.noFeaturedCollection, `Can't update featured for ${userId}: no featured collection`);
 
 		this.logger.info(`Updating featured notes for: ${user.uri}`);
@@ -977,7 +974,7 @@ export class ApPersonService implements OnModuleInit {
 			}
 			return null;
 		}, {
-			limit: 2,
+			limiter: 2,
 		});
 
 		await this.db.transaction(async transactionalEntityManager => {
@@ -1013,7 +1010,7 @@ export class ApPersonService implements OnModuleInit {
 		if (dst && isLocalUser(dst)) {
 			// TODO this branch should not be possible
 			// targetがローカルユーザーだった場合データベースから引っ張ってくる
-			dst = await this.usersRepository.findOneByOrFail({ uri: src.movedToUri }) as MiLocalUser;
+			dst = await this.cacheService.findLocalUserByUri(src.movedToUri);
 		} else if (dst) {
 			if (movePreventUris.includes(src.movedToUri)) return 'skip: circular move';
 

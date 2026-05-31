@@ -21,10 +21,6 @@ import type * as misskey from 'misskey-js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/validator.js';
 import { ApiError } from '@/server/api/error.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import { EnvService } from '@/global/EnvService.js';
-import { NativeTimeService } from '@/global/TimeService.js';
-
 export { server as startServer, jobQueue as startJobQueue } from '@/boot/common.js';
 
 export interface UserToken {
@@ -42,8 +38,7 @@ export type SystemWebhookPayload = {
 };
 
 // eslint-disable-next-line no-restricted-globals
-const loggerService = new LoggerService(console, new NativeTimeService(), new EnvService());
-const config = loadConfig(loggerService);
+const config = loadConfig();
 export const port = config.port;
 export const origin = config.url;
 export const host = new URL(config.url).host;

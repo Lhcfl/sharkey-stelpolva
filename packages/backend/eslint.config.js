@@ -94,6 +94,11 @@ export default [
 					property: 'now',
 					message: 'Use TimeService.now instead.',
 				},
+				{
+					object: 'process',
+					property: 'env',
+					message: 'Use EnvService.env instead.',
+				},
 			],
 			'no-restricted-syntax': [
 				'error',
@@ -120,6 +125,10 @@ export default [
 				{
 					'selector': 'NewExpression[callee.name=\'QuantumKVCache\']',
 					'message': 'Cache constructor will produce an unmanaged instance. Use CacheManagementService.createQuantumKVCache() instead.',
+				},
+				{
+					'selector': 'NewExpression[callee.name=\'CollapsedQueue\']',
+					'message': 'Queue constructor will produce an unmanaged instance. Use CacheManagementService.createCollapsedQueue() instead.',
 				},
 				{
 					'selector': 'CallExpression[callee.property.name=\'delete\'][arguments.length=1] > ObjectExpression[properties.length=0]',

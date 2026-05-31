@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
 import type { RenoteMutingsRepository } from '@/models/_.js';
 import type { MiRenoteMuting } from '@/models/RenoteMuting.js';
-
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { IdService } from '@/core/IdService.js';
 import type { MiUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
@@ -22,6 +22,7 @@ export class UserRenoteMutingService {
 
 		private idService: IdService,
 		private cacheService: CacheService,
+		private internalEventService: InternalEventService,
 	) {
 	}
 
@@ -33,7 +34,7 @@ export class UserRenoteMutingService {
 			muteeId: target.id,
 		});
 
-		await this.cacheService.renoteMutingsCache.delete(user.id);
+		await this.internalEventService.emit('muteRenotes', { muterId: user.id, muteeId: target.id });
 	}
 
 	@bindThis
@@ -44,6 +45,18 @@ export class UserRenoteMutingService {
 			id: In(mutings.map(m => m.id)),
 		});
 
-		await this.cacheService.renoteMutingsCache.deleteMany(mutings.map(m => m.muterId));
+		const groups = mutings.reduce((map, mute) => {
+			let group = map.get(mute.muterId);
+			if (!group) {
+				group = [];
+				map.set(mute.muterId, group);
+			}
+			group.push(mute.muteeId);
+			return map;
+		}, new Map<string, string[]>);
+
+		for (const [muterId, muteeId] of groups) {
+			await this.internalEventService.emit('unmuteRenotes', { muterId, muteeId });
+		}
 	}
 }

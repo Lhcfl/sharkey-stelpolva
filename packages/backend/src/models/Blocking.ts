@@ -38,4 +38,10 @@ export class MiBlocking {
 	})
 	@JoinColumn()
 	public blocker: MiUser | null;
+
+	constructor(data?: Partial<MiBlocking>) {
+		if (data) {
+			Object.assign(this, data);
+		}
+	}
 }

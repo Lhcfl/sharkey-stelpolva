@@ -11,6 +11,7 @@ import { MiPage, pageNameSchema } from '@/models/Page.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { PageEntityService } from '@/core/entities/PageEntityService.js';
 import { TimeService } from '@/global/TimeService.js';
+import { UserService } from '@/core/UserService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../error.js';
 
@@ -81,6 +82,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private pageEntityService: PageEntityService,
 		private idService: IdService,
 		private readonly timeService: TimeService,
+		private readonly userService: UserService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			let eyeCatchingImage: MiDriveFile | null = null;
@@ -120,6 +122,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				hideTitleWhenPinned: ps.hideTitleWhenPinned,
 				font: ps.font,
 			}));
+
+			this.userService.markUserActive(me, true);
 
 			return await this.pageEntityService.pack(page, me);
 		});

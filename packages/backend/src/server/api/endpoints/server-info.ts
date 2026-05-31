@@ -3,17 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as os from 'node:os';
-import si from 'systeminformation';
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import { MiMeta } from '@/models/_.js';
+import type { MiMeta } from '@/models/_.js';
+import type { Schema } from '@/misc/json-schema.js';
+import type { IEndpointMeta } from '@/server/api/endpoints.js';
 import { DI } from '@/di-symbols.js';
+import { InstanceStatsService } from '@/core/InstanceStatsService.js';
 
 export const meta = {
 	requireCredential: false,
 	allowGet: true,
-	cacheSec: 60 * 1,
+	cacheSec: 60,
 
 	tags: ['meta'],
 	res: {
@@ -71,19 +72,20 @@ export const meta = {
 		dripSize: 7,
 		dripRate: 900,
 	},
-} as const;
+} as const satisfies IEndpointMeta;
 
 export const paramDef = {
 	type: 'object',
 	properties: {},
 	required: [],
-} as const;
+} as const satisfies Schema;
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.meta)
-		private serverSettings: MiMeta,
+		private readonly serverSettings: MiMeta,
+		private readonly instanceStatsService: InstanceStatsService,
 	) {
 		super(meta, paramDef, async () => {
 			if (!this.serverSettings.enableServerMachineStats) return {
@@ -101,21 +103,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				},
 			};
 
-			const memStats = await si.mem();
-			const fsStats = await si.fsSize();
-
+			const { platform, environment } = await this.instanceStatsService.fetch();
 			return {
-				machine: os.hostname(),
+				machine: platform.machineName,
 				cpu: {
-					model: os.cpus()[0].model,
-					cores: os.cpus().length,
+					model: platform.cpuModel,
+					cores: platform.cpuCores,
 				},
 				mem: {
-					total: memStats.total,
+					total: platform.memory,
 				},
 				fs: {
-					total: fsStats[0].size,
-					used: fsStats[0].used,
+					total: environment.diskCapacity,
+					used: environment.diskUsage,
 				},
 			};
 		});

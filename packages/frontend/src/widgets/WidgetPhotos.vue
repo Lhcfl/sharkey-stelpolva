@@ -22,10 +22,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import * as Misskey from 'misskey-js';
-import { useWidgetPropsManager } from './widget.js';
 import type { WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
+import { useWidgetPropsManager } from './widget.js';
 import type { GetFormResultType } from '@/utility/form.js';
 import { useStream } from '@/stream.js';
 import { getStaticImageUrl } from '@/utility/media-proxy.js';
@@ -58,9 +58,9 @@ const { widgetProps, configure } = useWidgetPropsManager(name,
 	emit,
 );
 
-const connection = useStream().useChannel('main');
+const connection = ref<Misskey.IChannelConnection<Misskey.Channels['main']> | undefined>();
 const images = ref<Misskey.entities.DriveFile[]>([]);
-const fetching = ref(true);
+const fetching = ref(false);
 
 const onDriveFileCreated = (file) => {
 	if (/^image\/.+$/.test(file.type)) {
@@ -75,17 +75,20 @@ const thumbnail = (image: Misskey.entities.DriveFile): string => {
 		: image.thumbnailUrl ?? image.url;
 };
 
-misskeyApi('drive/stream', {
-	type: 'image/*',
-	limit: 9,
-}).then(res => {
-	images.value = res;
+onMounted(async () => {
+	fetching.value = true;
+	images.value = await misskeyApi('drive/stream', {
+		type: 'image/*',
+		limit: 9,
+	});
 	fetching.value = false;
+
+	connection.value = useStream().useChannel('main');
+	connection.value.on('driveFileCreated', onDriveFileCreated);
 });
 
-connection.on('driveFileCreated', onDriveFileCreated);
 onUnmounted(() => {
-	connection.dispose();
+	connection.value?.dispose();
 });
 
 defineExpose<WidgetComponentExpose>({

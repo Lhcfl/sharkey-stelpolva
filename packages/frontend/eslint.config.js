@@ -3,9 +3,9 @@ import tsParser from '@typescript-eslint/parser';
 import parser from 'vue-eslint-parser';
 import pluginVue from 'eslint-plugin-vue';
 import pluginMisskey from '@misskey-dev/eslint-plugin';
+import { build as buildLocales } from 'locales';
 import sharedConfig from '../shared/eslint.config.js';
-import localeRule from '../../eslint/locale.js';
-import { build as buildLocales } from '../../locales/index.js';
+import localeRule from '../shared/eslint/locale-eslint-rule.js';
 
 export default [
 	...sharedConfig,
@@ -57,7 +57,6 @@ export default [
 			}],
 			// defineExposeが誤検知されてしまう
 			'@typescript-eslint/no-unused-expressions': 'off',
-			'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
 			// window ... グローバルスコープと衝突し、予期せぬ結果を招くため
 			// e ... error や event など、複数のキーワードの頭文字であり分かりにくいため
 			// close ... window.closeと衝突 or 紛らわしい
@@ -211,7 +210,7 @@ export default [
 		languageOptions: {
 			parserOptions: {
 				parser: tsParser,
-				project: ['tsconfig.storybook.json'],
+				project: ['.storybook/tsconfig.json'],
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
 			},
@@ -277,6 +276,7 @@ export default [
 			'**/storybook-static',
 			'vue-shims.d.ts',
 			'assets',
+			'src/utility/libopenmpt',
 		],
 	},
 ];

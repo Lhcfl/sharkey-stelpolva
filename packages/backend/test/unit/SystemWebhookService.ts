@@ -8,6 +8,8 @@ import { setTimeout } from 'node:timers/promises';
 import { afterEach, beforeEach, describe, expect, jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomString } from '../utils.js';
+import { FakeQueueService } from '../misc/FakeQueueService.js';
+import type { Queues } from '@/queue/types.js';
 import { MiUser } from '@/models/User.js';
 import { MiSystemWebhook, SystemWebhookEventType } from '@/models/SystemWebhook.js';
 import { SystemWebhooksRepository, UsersRepository } from '@/models/_.js';
@@ -32,7 +34,7 @@ describe('SystemWebhookService', () => {
 	let systemWebhooksRepository: SystemWebhooksRepository;
 	let idService: IdService;
 	let cacheManagementService: CacheManagementService;
-	let queueService: jest.Mocked<QueueService>;
+	let systemWebhookDeliverQueue: Queues['systemWebhookDeliver'];
 
 	// --------------------------------------------------------------------------------------
 
@@ -72,7 +74,7 @@ describe('SystemWebhookService', () => {
 					CoreModule,
 				],
 			})
-			.overrideProvider(QueueService).useValue({ systemWebhookDeliver: jest.fn() })
+			.overrideProvider(QueueService).useClass(FakeQueueService)
 			.overrideProvider(ModerationLogService).useValue({ log: () => Promise.resolve() })
 			.compile();
 
@@ -85,7 +87,9 @@ describe('SystemWebhookService', () => {
 		service = app.get(SystemWebhookService);
 		idService = app.get(IdService);
 		cacheManagementService = app.get(CacheManagementService);
-		queueService = app.get(QueueService) as jest.Mocked<QueueService>;
+		systemWebhookDeliverQueue = app.get<Queues['systemWebhookDeliver']>('queue:systemWebhookDeliver');
+
+		await systemWebhookDeliverQueue.drain(true);
 	});
 
 	afterAll(async () => {
@@ -99,8 +103,8 @@ describe('SystemWebhookService', () => {
 	afterEach(async () => {
 		await usersRepository.deleteAll();
 		await systemWebhooksRepository.deleteAll();
-		queueService.systemWebhookDeliver.mockReset();
-		cacheManagementService.clear();
+		await systemWebhookDeliverQueue.drain(true);
+		await cacheManagementService.clear();
 	});
 
 	// --------------------------------------------------------------------------------------
@@ -299,8 +303,9 @@ describe('SystemWebhookService', () => {
 				});
 				await service.enqueueSystemWebhook('abuseReport', { foo: 'bar' } as any);
 
-				expect(queueService.systemWebhookDeliver).toHaveBeenCalledTimes(1);
-				expect(queueService.systemWebhookDeliver.mock.calls[0][0] as MiSystemWebhook).toEqual(webhook);
+				const [job] = await systemWebhookDeliverQueue.getJobs();
+				expect(job).toBeDefined();
+				expect(job.data.webhookId).toBe(webhook.id);
 			});
 
 			test('非アクティブなWebhookはキューに追加されない', async () => {
@@ -310,7 +315,8 @@ describe('SystemWebhookService', () => {
 				});
 				await service.enqueueSystemWebhook('abuseReport', { foo: 'bar' } as any);
 
-				expect(queueService.systemWebhookDeliver).not.toHaveBeenCalled();
+				const jobs = await systemWebhookDeliverQueue.getJobs();
+				expect(jobs.length).toBe(0);
 			});
 
 			test('未許可のイベント種別が渡された場合はWebhookはキューに追加されない', async () => {
@@ -324,7 +330,8 @@ describe('SystemWebhookService', () => {
 				});
 				await service.enqueueSystemWebhook('abuseReport', { foo: 'bar' } as any);
 
-				expect(queueService.systemWebhookDeliver).not.toHaveBeenCalled();
+				const jobs = await systemWebhookDeliverQueue.getJobs();
+				expect(jobs.length).toBe(0);
 			});
 
 			test('混在した時、有効かつ許可されたイベント種別のみ', async () => {
@@ -346,8 +353,9 @@ describe('SystemWebhookService', () => {
 				});
 				await service.enqueueSystemWebhook('abuseReport', { foo: 'bar' } as any);
 
-				expect(queueService.systemWebhookDeliver).toHaveBeenCalledTimes(1);
-				expect(queueService.systemWebhookDeliver.mock.calls[0][0] as MiSystemWebhook).toEqual(webhook1);
+				const [job] = await systemWebhookDeliverQueue.getJobs();
+				expect(job).toBeDefined();
+				expect(job.data.webhookId).toBe(webhook1.id);
 			});
 
 			test('除外指定した場合は送信されない', async () => {
@@ -362,8 +370,9 @@ describe('SystemWebhookService', () => {
 
 				await service.enqueueSystemWebhook('abuseReport', { foo: 'bar' } as any, { excludes: [webhook2.id] });
 
-				expect(queueService.systemWebhookDeliver).toHaveBeenCalledTimes(1);
-				expect(queueService.systemWebhookDeliver.mock.calls[0][0] as MiSystemWebhook).toEqual(webhook1);
+				const [job] = await systemWebhookDeliverQueue.getJobs();
+				expect(job).toBeDefined();
+				expect(job.data.webhookId).toBe(webhook1.id);
 			});
 		});
 

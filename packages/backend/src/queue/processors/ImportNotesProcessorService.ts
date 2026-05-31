@@ -11,6 +11,16 @@ import { ZipReader } from 'slacc';
 import { DI } from '@/di-symbols.js';
 import type { UsersRepository, DriveFilesRepository, MiDriveFile, MiNote, NotesRepository, MiUser, DriveFoldersRepository, MiDriveFolder } from '@/models/_.js';
 import type Logger from '@/logger.js';
+import type { Config } from '@/config.js';
+import type {
+	DbImportFBToDbJobData,
+	DbImportIGToDbJobData,
+	DbImportKeyNotesToDbJobData,
+	DbImportMastoToDbJobData,
+	DbImportNotesJobData,
+	DbImportPleroToDbJobData,
+	DbImportTweetsToDbJobData,
+} from '@/queue/types.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueService } from '@/core/QueueService.js';
@@ -21,11 +31,9 @@ import { MfmService } from '@/core/MfmService.js';
 import { ApNoteService } from '@/core/activitypub/models/ApNoteService.js';
 import { extractApHashtagObjects } from '@/core/activitypub/models/tag.js';
 import { IdService } from '@/core/IdService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
+import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import type * as Bull from 'bullmq';
-import type { DbNoteImportToDbJobData, DbNoteImportJobData, DbNoteWithParentImportToDbJobData } from '../types.js';
-import type { Config } from '@/config.js';
 
 @Injectable()
 export class ImportNotesProcessorService {
@@ -160,7 +168,7 @@ export class ImportNotesProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbNoteImportJobData>): Promise<void> {
+	public async process(job: Bull.Job<DbImportNotesJobData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
@@ -183,9 +191,9 @@ export class ImportNotesProcessorService {
 			folder = await this.driveFoldersRepository.findOneBy({ name: 'Imports', userId: job.data.user.id });
 		}
 
-		const type = job.data.type;
+		const type = job.data.source;
 
-		if (type === 'Twitter' || file.name.startsWith('twitter') && file.name.endsWith('.zip')) {
+		if (type === 'Twitter') {
 			const [path, cleanup] = await createTempDir();
 
 			this.logger.debug(`Temp dir is ${path}`);
@@ -213,7 +221,7 @@ export class ImportNotesProcessorService {
 			} finally {
 				cleanup();
 			}
-		} else if (type === 'Facebook' || file.name.startsWith('facebook-') && file.name.endsWith('.zip')) {
+		} else if (type === 'Facebook') {
 			const [path, cleanup] = await createTempDir();
 
 			this.logger.debug(`Temp dir is ${path}`);
@@ -244,7 +252,7 @@ export class ImportNotesProcessorService {
 			} finally {
 				cleanup();
 			}
-		} else if (file.name.endsWith('.zip')) {
+		} else if (type !== 'Misskey') {
 			const [path, cleanup] = await createTempDir();
 
 			this.logger.debug(`Temp dir is ${path}`);
@@ -264,7 +272,7 @@ export class ImportNotesProcessorService {
 				this.logger.debug(`Unzipping to ${outputPath}`);
 				ZipReader.withDestinationPath(outputPath).viaBuffer(await fsp.readFile(destPath));
 				const isInstagram = type === 'Instagram' || fs.existsSync(outputPath + '/instagram_live') || fs.existsSync(outputPath + '/instagram_ads_and_businesses');
-				const isOutbox = type === 'Mastodon' || fs.existsSync(outputPath + '/outbox.json');
+				const isOutbox = type === 'Mastodon' || type === 'Pleroma';
 				if (isInstagram) {
 					const postsJson = await fsp.readFile(outputPath + '/content/posts_1.json', 'utf-8');
 					const posts = JSON.parse(postsJson);
@@ -302,7 +310,7 @@ export class ImportNotesProcessorService {
 			} finally {
 				cleanup();
 			}
-		} else if (job.data.type === 'Misskey' || file.name.startsWith('notes-') && file.name.endsWith('.json')) {
+		} else {
 			const [path, cleanup] = await createTemp();
 
 			this.logger.debug(`Temp dir is ${path}`);
@@ -326,7 +334,7 @@ export class ImportNotesProcessorService {
 	}
 
 	@bindThis
-	public async processKeyNotesToDb(job: Bull.Job<DbNoteWithParentImportToDbJobData>): Promise<void> {
+	public async processKeyNotesToDb(job: Bull.Job<DbImportKeyNotesToDbJobData>): Promise<void> {
 		const note = job.data.target;
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
@@ -383,7 +391,7 @@ export class ImportNotesProcessorService {
 	}
 
 	@bindThis
-	public async processMastoToDb(job: Bull.Job<DbNoteWithParentImportToDbJobData>): Promise<void> {
+	public async processMastoToDb(job: Bull.Job<DbImportMastoToDbJobData>): Promise<void> {
 		const toot = job.data.target;
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
@@ -442,7 +450,7 @@ export class ImportNotesProcessorService {
 	}
 
 	@bindThis
-	public async processPleroToDb(job: Bull.Job<DbNoteWithParentImportToDbJobData>): Promise<void> {
+	public async processPleroToDb(job: Bull.Job<DbImportPleroToDbJobData>): Promise<void> {
 		const post = job.data.target;
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
@@ -535,7 +543,7 @@ export class ImportNotesProcessorService {
 	}
 
 	@bindThis
-	public async processIGDb(job: Bull.Job<DbNoteImportToDbJobData>): Promise<void> {
+	public async processIGDb(job: Bull.Job<DbImportIGToDbJobData>): Promise<void> {
 		const post = job.data.target;
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
@@ -580,7 +588,7 @@ export class ImportNotesProcessorService {
 	}
 
 	@bindThis
-	public async processTwitterDb(job: Bull.Job<DbNoteWithParentImportToDbJobData>): Promise<void> {
+	public async processTwitterDb(job: Bull.Job<DbImportTweetsToDbJobData>): Promise<void> {
 		const tweet = job.data.target;
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
@@ -686,7 +694,7 @@ export class ImportNotesProcessorService {
 	}
 
 	@bindThis
-	public async processFBDb(job: Bull.Job<DbNoteImportToDbJobData>): Promise<void> {
+	public async processFBDb(job: Bull.Job<DbImportFBToDbJobData>): Promise<void> {
 		const post = job.data.target;
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {

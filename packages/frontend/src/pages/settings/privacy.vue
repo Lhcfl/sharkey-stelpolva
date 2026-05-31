@@ -17,6 +17,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkSwitch>
 		</SearchMarker>
 
+		<MkDisableSection :disabled="isLocked">
+			<SearchMarker :keywords="['follow', 'lock', 'bots']">
+				<MkSwitch v-model="carefulBot" @update:modelValue="save()">
+					<template #label><SearchLabel>{{ i18n.ts.carefulBot }}</SearchLabel></template>
+				</MkSwitch>
+			</SearchMarker>
+		</MkDisableSection>
+
 		<MkDisableSection :disabled="!isLocked">
 			<SearchMarker :keywords="['follow', 'auto', 'accept']">
 				<MkSwitch v-model="autoAcceptFollowed" @update:modelValue="save()">
@@ -241,18 +249,18 @@ import { instance } from '@/instance.js';
 import { ensureSignin } from '@/i.js';
 import { definePage } from '@/page.js';
 import FormSlot from '@/components/form/slot.vue';
-import { formatDateTimeString } from '@/utility/format-time-string.js';
+import { formatDateTimeString } from '@@/js/format-time-string.js';
 import MkInput from '@/components/MkInput.vue';
 import * as os from '@/os.js';
 import MkDisableSection from '@/components/MkDisableSection.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkFeatureBanner from '@/components/MkFeatureBanner.vue';
 import MkRadios from '@/components/MkRadios.vue';
-import { prefer } from '@/preferences';
 
 const $i = ensureSignin();
 
 const isLocked = ref($i.isLocked);
+const carefulBot = ref($i.carefulBot);
 const autoAcceptFollowed = ref($i.autoAcceptFollowed);
 const noCrawle = ref($i.noCrawle);
 const preventAiLearning = ref($i.preventAiLearning);
@@ -315,6 +323,7 @@ async function update_requireSigninToViewContents(value: boolean) {
 function save() {
 	misskeyApi('i/update', {
 		isLocked: !!isLocked.value,
+		carefulBot: !!carefulBot.value,
 		autoAcceptFollowed: !!autoAcceptFollowed.value,
 		noCrawle: !!noCrawle.value,
 		preventAiLearning: !!preventAiLearning.value,

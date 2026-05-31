@@ -1,13 +1,12 @@
 # syntax = docker/dockerfile:1.4
 
-ARG NODE_VERSION=22.15.0-alpine3.20
+ARG NODE_VERSION=22-alpine3.22
 
 FROM node:${NODE_VERSION} as build
 
 RUN apk add git linux-headers alpine-sdk pixman pango cairo cairo-dev pango-dev pixman-dev
 
 ENV PYTHONUNBUFFERED=1
-ENV COREPACK_DEFAULT_TO_LATEST=0
 RUN apk add --update python3 && ln -sf python3 /usr/bin/python
 RUN apk add py3-pip py3-setuptools
 
@@ -22,12 +21,15 @@ RUN pnpm config set fetch-retries 5
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
 	pnpm i --frozen-lockfile --aggregate-output
 RUN pnpm build
-RUN node scripts/trim-deps.mjs
+RUN node scripts/trim-deps.js
 RUN mv packages/frontend/assets sharkey-assets
 RUN mv packages/frontend-embed/assets sharkey-embed-assets
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
 	pnpm prune
-RUN rm -r node_modules packages/frontend packages/frontend-shared packages/frontend-embed packages/sw
+# Remove frontend packages (already built into root)
+RUN rm -r node_modules packages/frontend packages/frontend-shared packages/frontend-embed packages/sw locales
+# Remove dev packages (no longer needed)
+RUN rm -r packages/shared packages/misskey-js/generator
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
 	pnpm i --prod --frozen-lockfile --aggregate-output
 RUN rm -rf .git
@@ -36,7 +38,6 @@ FROM node:${NODE_VERSION}
 
 ARG UID="991"
 ARG GID="991"
-ENV COREPACK_DEFAULT_TO_LATEST=0
 
 RUN apk add ffmpeg tini jemalloc pixman pango cairo libpng librsvg font-noto font-noto-cjk font-noto-thai \
 	&& corepack enable \
@@ -50,37 +51,73 @@ RUN apk add ffmpeg tini jemalloc pixman pango cairo libpng librsvg font-noto fon
 USER sharkey
 WORKDIR /sharkey
 
-# add package.json to add pnpm
-COPY --chown=sharkey:sharkey ./package.json ./package.json
-RUN corepack install
-
+# (root)
+COPY --chown=sharkey:sharkey --from=build /sharkey/package.json ./package.json
 COPY --chown=sharkey:sharkey --from=build /sharkey/node_modules ./node_modules
-COPY --chown=sharkey:sharkey --from=build /sharkey/packages/backend/node_modules ./packages/backend/node_modules
-COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-js/node_modules ./packages/misskey-js/node_modules
-COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-reversi/node_modules ./packages/misskey-reversi/node_modules
-COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-bubble-game/node_modules ./packages/misskey-bubble-game/node_modules
-COPY --chown=sharkey:sharkey --from=build /sharkey/packages/megalodon/node_modules ./packages/megalodon/node_modules
+COPY --chown=sharkey:sharkey --from=build /sharkey/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --chown=sharkey:sharkey --from=build /sharkey/built ./built
-COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-js/built ./packages/misskey-js/built
-COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-reversi/built ./packages/misskey-reversi/built
-COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-bubble-game/built ./packages/misskey-bubble-game/built
-COPY --chown=sharkey:sharkey --from=build /sharkey/packages/backend/built ./packages/backend/built
-COPY --chown=sharkey:sharkey --from=build /sharkey/packages/megalodon/built ./packages/megalodon/built
 COPY --chown=sharkey:sharkey --from=build /sharkey/fluent-emojis ./fluent-emojis
 COPY --chown=sharkey:sharkey --from=build /sharkey/tossface-emojis/dist ./tossface-emojis/dist
 COPY --chown=sharkey:sharkey --from=build /sharkey/sharkey-assets ./packages/frontend/assets
 COPY --chown=sharkey:sharkey --from=build /sharkey/sharkey-embed-assets ./packages/frontend-embed/assets
 
-COPY --chown=sharkey:sharkey pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY --chown=sharkey:sharkey packages/backend/package.json ./packages/backend/package.json
-COPY --chown=sharkey:sharkey packages/backend/scripts/check_connect.js ./packages/backend/scripts/check_connect.js
-COPY --chown=sharkey:sharkey packages/backend/ormconfig.js ./packages/backend/ormconfig.js
-COPY --chown=sharkey:sharkey packages/backend/migration ./packages/backend/migration
-COPY --chown=sharkey:sharkey packages/backend/assets ./packages/backend/assets
-COPY --chown=sharkey:sharkey packages/megalodon/package.json ./packages/megalodon/package.json
-COPY --chown=sharkey:sharkey packages/misskey-js/package.json ./packages/misskey-js/package.json
-COPY --chown=sharkey:sharkey packages/misskey-reversi/package.json ./packages/misskey-reversi/package.json
-COPY --chown=sharkey:sharkey packages/misskey-bubble-game/package.json ./packages/misskey-bubble-game/package.json
+# locales
+# (not needed, bundled into frontend)
+
+# backend
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/backend/package.json ./packages/backend/package.json
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/backend/node_modules ./packages/backend/node_modules
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/backend/built ./packages/backend/built
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/backend/scripts/check_connect.js ./packages/backend/scripts/check_connect.js
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/backend/ormconfig.js ./packages/backend/ormconfig.js
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/backend/migration ./packages/backend/migration
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/backend/assets ./packages/backend/assets
+
+# frontend
+# (not needed, build artifacts are copied into root)
+
+# frontend-embed
+# (not needed, build artifacts are copied into root)
+
+# frontend-shared
+# (not needed, bundled into frontend)
+#COPY --chown=sharkey:sharkey --from=build /sharkey/packages/frontend-shared/package.json ./packages/frontend-shared/package.json
+#COPY --chown=sharkey:sharkey --from=build /sharkey/packages/frontend-shared/node_modules ./packages/frontend-shared/node_modules
+#COPY --chown=sharkey:sharkey --from=build /sharkey/packages/frontend-shared/built ./packages/frontend-shared/built
+#COPY --chown=sharkey:sharkey --from=build /sharkey/packages/frontend-shared/themes ./packages/frontend-shared/themes
+
+# megalodon
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/megalodon/package.json ./packages/megalodon/package.json
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/megalodon/node_modules ./packages/megalodon/node_modules
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/megalodon/built ./packages/megalodon/built
+
+# misskey-bubble-game
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-bubble-game/package.json ./packages/misskey-bubble-game/package.json
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-bubble-game/node_modules ./packages/misskey-bubble-game/node_modules
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-bubble-game/built ./packages/misskey-bubble-game/built
+
+# misskey-js
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-js/package.json ./packages/misskey-js/package.json
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-js/node_modules ./packages/misskey-js/node_modules
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-js/built ./packages/misskey-js/built
+
+# misskey-reversi
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-reversi/package.json ./packages/misskey-reversi/package.json
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-reversi/node_modules ./packages/misskey-reversi/node_modules
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/misskey-reversi/built ./packages/misskey-reversi/built
+
+# shared
+# (not needed, no build artifacts)
+
+# stub
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/stub/package.json ./packages/stub/package.json
+COPY --chown=sharkey:sharkey --from=build /sharkey/packages/stub/index.js ./packages/stub/index.js
+
+# sw
+# (not needed, build artifacts are copied into root)
+
+# re-install pnpm into the final image
+RUN corepack install
 
 ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
 ENV NODE_ENV=production

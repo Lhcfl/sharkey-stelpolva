@@ -15,6 +15,13 @@ export const DI = {
 	redisForReactions: Symbol('redisForReactions'),
 	redisForRateLimit: Symbol('redisForRateLimit'),
 	console: Symbol('console'),
+	globalLogger: Symbol('globalLogger'),
+
+	/**
+	 * Temporary, non-secure identifier that is unique to this DI container instance.
+	 * Implemented as a random 50-bit integer encoded in 10 characters, which provides a good balance of uniqueness vs memory space.
+	 */
+	nodeId: Symbol('nodeId'),
 
 	//#region Repositories
 	usersRepository: Symbol('usersRepository'),

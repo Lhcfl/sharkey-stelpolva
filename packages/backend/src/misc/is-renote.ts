@@ -21,7 +21,7 @@ export type Quote =
 		cw: NonNullable<MiNote['cw']>
 	} | {
 		replyId: NonNullable<MiNote['replyId']>
-		reply: NonNullable<MiNote['reply']> // TODO this is wrong
+		reply?: NonNullable<MiNote['reply']>
 	} | {
 		hasPoll: true
 	} | {

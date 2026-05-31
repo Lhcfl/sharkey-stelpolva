@@ -40,6 +40,7 @@ export class MetaEntityService {
 			instance = this.meta;
 		}
 
+		// TODO quantum-cache for ads
 		const ads = await this.adsRepository.createQueryBuilder('ads')
 			.where('ads.expiresAt > :now', { now: this.timeService.date })
 			.andWhere('ads.startsAt <= :now', { now: this.timeService.date })
@@ -165,9 +166,10 @@ export class MetaEntityService {
 			instance = this.meta;
 		}
 
-		const packed = await this.pack(instance);
-
-		const proxyAccount = await this.systemAccountService.fetch('proxy');
+		const [packed, proxyAccount] = await Promise.all([
+			this.pack(instance),
+			this.systemAccountService.fetch('proxy'),
+		]);
 
 		const packDetailed: Packed<'MetaDetailed'> = {
 			...packed,

@@ -1,4 +1,3 @@
-import FormData from 'form-data'
 import * as MisskeyAPI from './misskey/api_client.js'
 import { DEFAULT_UA } from './default.js'
 import * as OAuth from './oauth.js'
@@ -1538,21 +1537,16 @@ export default class Misskey implements MegalodonInterface {
   /**
    * POST /api/drive/files/create
    */
-  public async uploadMedia(file: { stream: ReadableStream, mimetype: string, filename: string }, _options?: { description?: string; focus?: string }): Promise<Response<Entity.Attachment>> {
+  public async uploadMedia(file: File, _options?: { description?: string; focus?: string }): Promise<Response<Entity.Attachment>> {
     const formData = new FormData()
-    formData.append('file', file.stream, {
-			contentType: file.mimetype,
-		});
+    formData.append('file', file);
 
-		if (file.filename && file.filename !== "file") formData.append("name", file.filename);
+		if (file.name && file.name !== "file") formData.append("name", file.name);
 
 		if (_options?.description != null) formData.append("comment", _options.description);
-    let headers: { [key: string]: string } = {}
-    if (typeof formData.getHeaders === 'function') {
-      headers = formData.getHeaders()
-    }
+
     return this.client
-      .post<MisskeyAPI.Entity.File>('/api/drive/files/create', formData, headers)
+      .post<MisskeyAPI.Entity.File>('/api/drive/files/create', formData)
       .then(res => ({ ...res, data: MisskeyAPI.Converter.file(res.data) }))
   }
 

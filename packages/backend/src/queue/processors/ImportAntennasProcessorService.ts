@@ -5,16 +5,17 @@
 
 import { Injectable, Inject } from '@nestjs/common';
 import _Ajv from 'ajv';
-import { IdService } from '@/core/IdService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import Logger from '@/logger.js';
+import type { Logger } from '@/logger.js';
 import type { AntennasRepository, UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
+import { IdService } from '@/core/IdService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { TimeService } from '@/global/TimeService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import { DBAntennaImportJobData } from '../types.js';
+import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
+import type { DbImportAntennasJobData } from '../types.js';
 import type * as Bull from 'bullmq';
 
 const Ajv = _Ajv.default;
@@ -66,15 +67,15 @@ export class ImportAntennasProcessorService {
 
 		private queueLoggerService: QueueLoggerService,
 		private idService: IdService,
-		private globalEventService: GlobalEventService,
 		private notificationService: NotificationService,
 		private readonly timeService: TimeService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-antennas');
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DBAntennaImportJobData>): Promise<void> {
+	public async process(job: Bull.Job<DbImportAntennasJobData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
@@ -85,7 +86,9 @@ export class ImportAntennasProcessorService {
 
 		const now = this.timeService.date;
 		try {
-			for (const antenna of job.data.antenna) {
+			// Check for legacy jobs
+			const antennas = 'antenna' in job.data ? job.data.antenna : job.data.antennas;
+			for (const antenna of antennas) {
 				if (antenna.keywords.length === 0 || antenna.keywords[0].every(x => x === '')) continue;
 				if (!validate(antenna)) {
 					this.logger.warn('Antenna validation failed');
@@ -108,14 +111,14 @@ export class ImportAntennasProcessorService {
 					withFile: antenna.withFile,
 				});
 				this.logger.debug('Antenna created: ' + result.id);
-				this.globalEventService.publishInternalEvent('antennaCreated', result);
+				await this.internalEventService.emit('antennaCreated', result);
 			}
 
 			this.notificationService.createNotification(job.data.user.id, 'importCompleted', {
 				importedEntity: 'antenna',
 			});
-		} catch (err: any) {
-			this.logger.error('Error importing antennas:', err);
+		} catch (err) {
+			this.logger.error(`Error importing antennas: ${renderInlineError(err)}`);
 		}
 	}
 }

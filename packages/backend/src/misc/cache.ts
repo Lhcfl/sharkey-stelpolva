@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type * as Redis from 'ioredis';
 import { bindThis } from '@/decorators.js';
 import type { TimeService } from '@/global/TimeService.js';
+import type * as Redis from 'ioredis';
 
 export interface RedisCacheServices extends MemoryCacheServices {
 	readonly redisClient: Redis.Redis
@@ -128,10 +128,15 @@ export class RedisKVCache<T> {
 }
 
 export interface RedisSingleCacheOpts<T> {
+	/** Overall lifetime for the cache value */
 	lifetime: number;
-	memoryCacheLifetime: number;
+	/** Optional shorter lifetime for the memory cache */
+	memoryCacheLifetime?: number;
+	/** Optional fetcher to provide missing values. */
 	fetcher?: RedisSingleCache<T>['fetcher'];
+	/** Optional converter to serialize values for redis. */
 	toRedisConverter?: RedisSingleCache<T>['toRedisConverter'];
+	/** Optional converter to deserialize values from redis. */
 	fromRedisConverter?: RedisSingleCache<T>['fromRedisConverter'];
 }
 
@@ -152,7 +157,11 @@ export class RedisSingleCache<T> {
 		this.lifetime = opts.lifetime;
 		// OK: we forward all management calls to the inner cache.
 		// eslint-disable-next-line no-restricted-syntax
-		this.memoryCache = new MemorySingleCache(name + ':mem', services, { lifetime: Math.min(opts.lifetime, opts.memoryCacheLifetime) });
+		this.memoryCache = new MemorySingleCache(name + ':mem', services, {
+			lifetime: opts.memoryCacheLifetime
+				? Math.min(opts.lifetime, opts.memoryCacheLifetime)
+				: opts.lifetime,
+		});
 
 		this.fetcher = opts.fetcher ?? (() => { throw new Error('fetch not supported - use get/set directly'); });
 		this.toRedisConverter = opts.toRedisConverter ?? ((value) => JSON.stringify(value));

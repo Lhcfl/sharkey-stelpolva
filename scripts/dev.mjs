@@ -10,104 +10,73 @@ import { execa } from 'execa';
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
 
+// Quick clean of build artifacts only
 await execa('pnpm', ['clean'], {
 	cwd: _dirname + '/../',
 	stdout: process.stdout,
 	stderr: process.stderr,
 });
 
+// Pre-build the whole solution to avoid rounds of errors during startup
+await execa('pnpm', ['build'], {
+	cwd: _dirname + '/../',
+	stdout: process.stdout,
+	stderr: process.stderr,
+});
+
+// Watch for changes
 await Promise.all([
-	execa('pnpm', ['build-pre'], {
+	execa('pnpm', ['build-pre', '--watch', '--fast'], {
 		cwd: _dirname + '/../',
 		stdout: process.stdout,
 		stderr: process.stderr,
 	}),
-	execa('pnpm', ['build-assets'], {
+
+	execa('pnpm', ['build-assets', '--watch', '--fast'], {
 		cwd: _dirname + '/../',
 		stdout: process.stdout,
 		stderr: process.stderr,
 	}),
-	execa('pnpm', ['--filter', 'backend...', 'build'], {
+
+	execa('pnpm', ['--filter', 'backend', 'dev:fast'], {
 		cwd: _dirname + '/../',
 		stdout: process.stdout,
 		stderr: process.stderr,
 	}),
-	execa('pnpm', ['--filter', 'megalodon', 'build'], {
+
+	execa('pnpm', ['--filter', 'frontend-shared', 'watch:fast'], {
+		cwd: _dirname + '/../',
+		stdout: process.stdout,
+		stderr: process.stderr,
+	}),
+
+	execa('pnpm', ['--filter', 'frontend', 'watch:fast'], {
+		cwd: _dirname + '/../',
+		stdout: process.stdout,
+		stderr: process.stderr,
+	}),
+
+	execa('pnpm', ['--filter', 'frontend-embed', 'watch:fast'], {
+		cwd: _dirname + '/../',
+		stdout: process.stdout,
+		stderr: process.stderr,
+	}),
+
+	execa('pnpm', ['--filter', 'sw', 'watch:fast'], {
+		cwd: _dirname + '/../',
+		stdout: process.stdout,
+		stderr: process.stderr,
+	}),
+
+	execa('pnpm', ['--filter', 'misskey-reversi', 'watch:fast'], {
+		cwd: _dirname + '/../',
+		stdout: process.stdout,
+		stderr: process.stderr,
+	}),
+
+	execa('pnpm', ['--filter', 'misskey-bubble-game', 'watch:fast'], {
 		cwd: _dirname + '/../',
 		stdout: process.stdout,
 		stderr: process.stderr,
 	}),
 ]);
-
-await Promise.all([
-	execa('pnpm', ['--filter', 'misskey-reversi', 'build'], {
-		cwd: _dirname + '/../',
-		stdout: process.stdout,
-		stderr: process.stderr,
-	}),
-	execa('pnpm', ['--filter', 'misskey-bubble-game', 'build'], {
-		cwd: _dirname + '/../',
-		stdout: process.stdout,
-		stderr: process.stderr,
-	}),
-]);
-
-execa('pnpm', ['build-pre', '--watch'], {
-	cwd: _dirname + '/../',
-	stdout: process.stdout,
-	stderr: process.stderr,
-});
-
-execa('pnpm', ['build-assets', '--watch'], {
-	cwd: _dirname + '/../',
-	stdout: process.stdout,
-	stderr: process.stderr,
-});
-
-execa('pnpm', ['--filter', 'backend', 'dev'], {
-	cwd: _dirname + '/../',
-	stdout: process.stdout,
-	stderr: process.stderr,
-});
-
-execa('pnpm', ['--filter', 'frontend-shared', 'watch', '--no-clean'], {
-	cwd: _dirname + '/../',
-	stdout: process.stdout,
-	stderr: process.stderr,
-});
-
-execa('pnpm', ['--filter', 'frontend', 'watch'], {
-	cwd: _dirname + '/../',
-	stdout: process.stdout,
-	stderr: process.stderr,
-});
-
-execa('pnpm', ['--filter', 'frontend-embed', 'watch'], {
-	cwd: _dirname + '/../',
-	stdout: process.stdout,
-	stderr: process.stderr,
-});
-
-execa('pnpm', ['--filter', 'sw', 'watch'], {
-	cwd: _dirname + '/../',
-	stdout: process.stdout,
-	stderr: process.stderr,
-});
-
-execa('pnpm', ['--filter', 'misskey-js', 'watch', '--no-clean'], {
-	cwd: _dirname + '/../',
-	stdout: process.stdout,
-	stderr: process.stderr,
-});
-
-execa('pnpm', ['--filter', 'misskey-reversi', 'watch', '--no-clean'], {
-	cwd: _dirname + '/../',
-	stdout: process.stdout,
-	stderr: process.stderr,
-});
-
-execa('pnpm', ['--filter', 'misskey-bubble-game', 'watch', '--no-clean'], {
-	cwd: _dirname + '/../',
-	stdout: process.stdout,
-	stderr: process.stderr,
-});

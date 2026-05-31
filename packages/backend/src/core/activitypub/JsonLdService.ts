@@ -12,10 +12,10 @@ import Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { StatusError } from '@/misc/status-error.js';
 import { TimeService } from '@/global/TimeService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { CONTEXT, PRELOADED_CONTEXTS } from './misc/contexts.js';
 import { validateContentTypeSetAsJsonLD } from './misc/validator.js';
-import type { ContextDefinition, JsonLdDocument } from 'jsonld';
-import type { JsonLd as JsonLdObject, RemoteDocument } from 'jsonld/jsonld-spec.js';
+import type { ContextDefinition, NodeObject } from 'jsonld';
 
 // https://stackoverflow.com/a/66252656
 type RemoveIndex<T> = {
@@ -29,7 +29,8 @@ type RemoveIndex<T> = {
 	] : T[K];
 };
 
-export type Document = RemoveIndex<JsonLdDocument>;
+export type JsonLdObject = NodeObject | NodeObject[];
+export type Document = RemoveIndex<JsonLdObject>;
 
 export type Signature = {
 	id?: string;
@@ -51,8 +52,25 @@ export function isSigned<T extends Document>(doc: T): doc is Signed<T> {
 
 // RsaSignature2017 implementation is based on https://github.com/transmute-industries/RsaSignature2017
 
-@Injectable()
-export class JsonLdService {
+export class JsonLdError extends IdentifiableError {
+	constructor(id: string, message?: string) {
+		super(id, message);
+	}
+}
+
+export class JsonLdForbiddenDriectiveError extends JsonLdError {
+	constructor(public directive: string) {
+		super('0297f79b-0ed9-4b6c-875f-b0a82ff96781', `${directive} is forbidden by Misskey in ActivityPub documents`);
+	}
+}
+
+export class JsonLd {
+	private static forbiddenDirectives = new Set([
+		'@included',
+		'@graph',
+		'@reverse',
+	]);
+
 	private readonly logger: Logger;
 
 	constructor(
@@ -148,8 +166,29 @@ export class JsonLdService {
 	}
 
 	@bindThis
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	public checkForForbiddenDirectives(value: any): void {
+		if (typeof value === 'object') {
+			if (Array.isArray(value)) {
+				for (const item of value) this.checkForForbiddenDirectives(item);
+			} else {
+				const object = value;
+				for (const [key, value] of Object.entries(object)) {
+					if (JsonLd.forbiddenDirectives.has(key)) {
+						throw new JsonLdForbiddenDriectiveError(key);
+					}
+
+					if (typeof value === 'object' && value !== null) {
+						this.checkForForbiddenDirectives(value);
+					}
+				}
+			}
+		}
+	}
+
+	@bindThis
 	private getLoader() {
-		return async (url: string): Promise<RemoteDocument> => {
+		return async (url: string) => {
 			if (!/^https?:\/\//.test(url)) throw new UnrecoverableError(`Invalid URL: ${url}`);
 
 			{
@@ -204,3 +243,19 @@ export class JsonLdService {
 		return hash.digest('hex');
 	}
 }
+
+@Injectable()
+export class JsonLdService {
+	constructor(
+		private httpRequestService: HttpRequestService,
+		private timeService: TimeService,
+		private loggerService: LoggerService,
+	) {
+	}
+
+	@bindThis
+	public use(): JsonLd {
+		return new JsonLd(this.httpRequestService, this.timeService, this.loggerService);
+	}
+}
+

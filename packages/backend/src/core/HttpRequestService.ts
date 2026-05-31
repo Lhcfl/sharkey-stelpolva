@@ -20,6 +20,7 @@ import type { IObject, IObjectWithId } from '@/core/activitypub/type.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
 import { TimeService } from '@/global/TimeService.js';
+import { EnvService } from '@/global/EnvService.js';
 import type { Response } from 'node-fetch';
 import type { Socket } from 'node:net';
 
@@ -80,6 +81,7 @@ declare module 'node:http' {
 class HttpRequestServiceAgent extends http.Agent {
 	constructor(
 		private config: Config,
+		private readonly envService: EnvService,
 		options?: http.AgentOptions,
 	) {
 		super(options);
@@ -89,7 +91,7 @@ class HttpRequestServiceAgent extends http.Agent {
 	public createConnection(options: net.NetConnectOpts, callback?: (err: Error | null, stream: net.Socket) => void): net.Socket {
 		const socket = super.createConnection(options, callback)
 			.on('connect', () => {
-				if (process.env.NODE_ENV === 'production') {
+				if (this.envService.env.NODE_ENV === 'production') {
 					validateSocketConnect(this.config.allowedPrivateNetworks, socket);
 				}
 			});
@@ -100,6 +102,7 @@ class HttpRequestServiceAgent extends http.Agent {
 class HttpsRequestServiceAgent extends https.Agent {
 	constructor(
 		private config: Config,
+		private readonly envService: EnvService,
 		options?: https.AgentOptions,
 	) {
 		super(options);
@@ -109,7 +112,7 @@ class HttpsRequestServiceAgent extends https.Agent {
 	public createConnection(options: net.NetConnectOpts, callback?: (err: Error | null, stream: net.Socket) => void): net.Socket {
 		const socket = super.createConnection(options, callback)
 			.on('connect', () => {
-				if (process.env.NODE_ENV === 'production') {
+				if (this.envService.env.NODE_ENV === 'production') {
 					validateSocketConnect(this.config.allowedPrivateNetworks, socket);
 				}
 			});
@@ -161,6 +164,8 @@ export class HttpRequestService {
 		private readonly apUtilityService: ApUtilityService,
 		private readonly utilityService: UtilityService,
 		private readonly timeService: TimeService,
+
+		envService: EnvService,
 	) {
 		const cache = new CacheableLookup({
 			maxTtl: 3600,	// 1hours
@@ -181,9 +186,9 @@ export class HttpRequestService {
 
 		this.httpsNative = new https.Agent(agentOption);
 
-		this.http = new HttpRequestServiceAgent(config, agentOption);
+		this.http = new HttpRequestServiceAgent(config, envService, agentOption);
 
-		this.https = new HttpsRequestServiceAgent(config, agentOption);
+		this.https = new HttpsRequestServiceAgent(config, envService, agentOption);
 
 		const maxSockets = Math.max(256, config.deliverJobConcurrency ?? 128);
 
@@ -343,7 +348,7 @@ export class HttpRequestService {
 
 		const parsedUrl = new URL(url);
 		const allowHttp = args.allowHttp || await isPrivateUrl(parsedUrl, this.lookup);
-		this.utilityService.assertUrl(parsedUrl, allowHttp);
+		this.utilityService.assertUrl(parsedUrl, { allowHttp });
 
 		const controller = new AbortController();
 		this.timeService.startTimer(() => {

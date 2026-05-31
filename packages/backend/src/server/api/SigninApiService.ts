@@ -4,8 +4,6 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import bcrypt from 'bcryptjs';
-import * as argon2 from 'argon2';
 import { IsNull } from 'typeorm';
 import type * as Misskey from 'misskey-js';
 import { DI } from '@/di-symbols.js';
@@ -25,11 +23,15 @@ import { WebAuthnService } from '@/core/WebAuthnService.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
 import { CaptchaService } from '@/core/CaptchaService.js';
 import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
-import { isSystemAccount } from '@/misc/is-system-account.js';
+import { EnvService } from '@/global/EnvService.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
 import { Keyed, RateLimit, sendRateLimitHeaders } from '@/misc/rate-limit-utils.js';
+import { CacheService } from '@/core/CacheService.js';
+import { ServerUtilityService } from '@/server/ServerUtilityService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import type { E as ApiErrorDefinition } from '@/server/api/error.js';
 import { SigninService } from './SigninService.js';
-import type { AuthenticationResponseJSON } from '@simplewebauthn/types';
+import type { AuthenticationResponseJSON } from '@simplewebauthn/server';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
 // Up to 10 attempts, then 1 per minute
@@ -67,6 +69,10 @@ export class SigninApiService {
 		private userAuthService: UserAuthService,
 		private webAuthnService: WebAuthnService,
 		private captchaService: CaptchaService,
+		private readonly internalEventService: InternalEventService,
+		private readonly envService: EnvService,
+		private readonly cacheService: CacheService,
+		private readonly serverUtilityService: ServerUtilityService,
 	) {
 	}
 
@@ -96,7 +102,7 @@ export class SigninApiService {
 		const password = body['password'];
 		const token = body['token'];
 
-		function error(status: number, error: { id: string }) {
+		function error(status: number, error: ApiErrorDefinition) {
 			reply.code(status);
 			return { error };
 		}
@@ -128,31 +134,20 @@ export class SigninApiService {
 		}
 
 		// Fetch user
-		const user = await this.usersRepository.findOneBy({
-			usernameLower: username.toLowerCase(),
-			host: IsNull(),
-		}) as MiLocalUser;
+		const user = await this.cacheService.findLocalUserByUsername(username);
 
-		if (user == null) {
-			return error(404, {
-				id: '6cc579cc-885d-43d8-95c2-b8c7fc963280',
-			});
+		// Verify user
+		const userError = this.serverUtilityService.assertClientUser(user, {
+			deletedError: 404,
+		});
+		if (userError) {
+			return error(userError.httpStatusCode, userError);
 		}
 
-		if (user.isSuspended) {
-			return error(403, {
-				id: 'e03a5f46-d309-4865-9b69-56282d94e1eb',
-			});
-		}
-
-		if (isSystemAccount(user)) {
-			return error(403, {
-				id: 'ba4ba3bc-ef1e-4c74-ad88-1d2b7d69a100',
-			});
-		}
-
-		const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
-		const securityKeysAvailable = await this.userSecurityKeysRepository.countBy({ userId: user.id }).then(result => result >= 1);
+		const [profile, securityKeysAvailable] = await Promise.all([
+			this.cacheService.userProfileCache.fetch(user.id),
+			this.userSecurityKeysRepository.existsBy({ userId: user.id }),
+		]);
 
 		if (password == null) {
 			reply.code(200);
@@ -174,19 +169,13 @@ export class SigninApiService {
 			return;
 		}
 
-		if (!user.approved && this.meta.approvalRequiredForSignup) {
-			reply.code(403);
-			return {
-				error: {
-					message: 'The account has not been approved by an admin yet. Try again later.',
-					code: 'NOT_APPROVED',
-					id: '22d05606-fbcf-421a-a2db-b32241faft1b',
-				},
-			};
+		if (profile.password == null) {
+			reply.code(500);
+			return;
 		}
 
 		// Compare password
-		const same = await argon2.verify(profile.password!, password) || bcrypt.compareSync(password, profile.password!);
+		const same = await this.userAuthService.checkPassword(profile, password);
 
 		const fail = async (status?: number, failure?: { id: string; }) => {
 			// Append signin history
@@ -202,7 +191,7 @@ export class SigninApiService {
 		};
 
 		if (!profile.twoFactorEnabled) {
-			if (process.env.NODE_ENV !== 'test') {
+			if (this.envService.env.NODE_ENV !== 'test') {
 				if (this.meta.enableHcaptcha && this.meta.hcaptchaSecretKey) {
 					await this.captchaService.verifyHcaptcha(this.meta.hcaptchaSecretKey, body['hcaptcha-response']).catch(err => {
 						throw new FastifyReplyError(400, String(err), err);
@@ -241,13 +230,10 @@ export class SigninApiService {
 			}
 
 			if (same) {
-				if (profile.password!.startsWith('$2')) {
-					const newHash = await argon2.hash(password);
-					await this.userProfilesRepository.update(user.id, {
-						password: newHash,
-					});
+				if (!this.meta.approvalRequiredForSignup && !user.approved) {
+					await this.usersRepository.update(user.id, { approved: true });
+					await this.internalEventService.emit('userUpdated', { id: user.id });
 				}
-				if (!this.meta.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
 
 				return this.signinService.signin(request, reply, user);
 			} else {
@@ -265,12 +251,6 @@ export class SigninApiService {
 			}
 
 			try {
-				if (profile.password!.startsWith('$2')) {
-					const newHash = await argon2.hash(password);
-					await this.userProfilesRepository.update(user.id, {
-						password: newHash,
-					});
-				}
 				await this.userAuthService.twoFactorAuthenticate(profile, token);
 			} catch (e) {
 				return await fail(403, {
@@ -278,7 +258,10 @@ export class SigninApiService {
 				});
 			}
 
-			if (!this.meta.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
+			if (!this.meta.approvalRequiredForSignup && !user.approved) {
+				await this.usersRepository.update(user.id, { approved: true });
+				await this.internalEventService.emit('userUpdated', { id: user.id });
+			}
 
 			return this.signinService.signin(request, reply, user);
 		} else if (body.credential) {
@@ -291,7 +274,10 @@ export class SigninApiService {
 			const authorized = await this.webAuthnService.verifyAuthentication(user.id, body.credential);
 
 			if (authorized) {
-				if (!this.meta.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
+				if (!this.meta.approvalRequiredForSignup && !user.approved) {
+					await this.usersRepository.update(user.id, { approved: true });
+					await this.internalEventService.emit('userUpdated', { id: user.id });
+				}
 				return this.signinService.signin(request, reply, user);
 			} else {
 				return await fail(403, {

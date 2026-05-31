@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { NotesRepository, UserPublickeysRepository, UsersRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -24,7 +24,7 @@ import type { IObject } from './type.js';
 export type { UriParseResult } from '@/core/UtilityService.js';
 
 @Injectable()
-export class ApDbResolverService implements OnApplicationShutdown {
+export class ApDbResolverService {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
@@ -161,14 +161,5 @@ export class ApDbResolverService implements OnApplicationShutdown {
 		}
 
 		return newKey ?? oldKey;
-	}
-
-	@bindThis
-	public dispose(): void {
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

@@ -16,7 +16,7 @@ import { bindThis } from '@/decorators.js';
 import { QueueService } from '@/core/QueueService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
-import type { DbUserImportJobData, DbUserImportToDbJobData } from '../types.js';
+import type { DbImportFollowingJobData, DbImportFollowingToDbJobData } from '../types.js';
 
 @Injectable()
 export class ImportFollowingProcessorService {
@@ -39,7 +39,7 @@ export class ImportFollowingProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbUserImportJobData>): Promise<void> {
+	public async process(job: Bull.Job<DbImportFollowingJobData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
@@ -64,7 +64,7 @@ export class ImportFollowingProcessorService {
 	}
 
 	@bindThis
-	public async processDb(job: Bull.Job<DbUserImportToDbJobData>): Promise<void> {
+	public async processDb(job: Bull.Job<DbImportFollowingToDbJobData>): Promise<void> {
 		const line = job.data.target;
 		const user = job.data.user;
 

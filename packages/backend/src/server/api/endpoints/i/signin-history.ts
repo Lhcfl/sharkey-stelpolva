@@ -57,7 +57,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const history = await query.limit(ps.limit).getMany();
 
-			return await promiseMap(history, async record => await this.signinEntityService.pack(record), { limit: 4 });
+			return await promiseMap(history, async record => await this.signinEntityService.pack(record), { limiter: 4 });
 		});
 	}
 }

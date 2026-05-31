@@ -7,6 +7,7 @@ import { URL } from 'node:url';
 import { Injectable } from '@nestjs/common';
 import { load as cheerio } from 'cheerio/slim';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
+import { EnvService } from '@/global/EnvService.js';
 import { bindThis } from '@/decorators.js';
 import type Logger from '@/logger.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
@@ -25,19 +26,23 @@ export type IWebFinger = {
 const urlRegex = /^https?:\/\//;
 const mRegex = /^([^@]+)@(.*)/;
 
-// we have the colons here, because URL.protocol does as well, so it's
-// more uniform in the places we use both
-const defaultProtocol = process.env.MISSKEY_WEBFINGER_USE_HTTP?.toLowerCase() === 'true' ? 'http:' : 'https:';
-
 @Injectable()
 export class WebfingerService {
+	private readonly defaultProtocol: 'http:' | 'https:';
+
 	private logger: Logger;
 
 	constructor(
 		private httpRequestService: HttpRequestService,
 		private remoteLoggerService: RemoteLoggerService,
+
+		envService: EnvService,
 	) {
 		this.logger = this.remoteLoggerService.logger.createSubLogger('webfinger');
+
+		// we have the colons here, because URL.protocol does as well, so it's
+		// more uniform in the places we use both
+		this.defaultProtocol = envService.env.MISSKEY_WEBFINGER_USE_HTTP?.toLowerCase() === 'true' ? 'http:' : 'https:';
 	}
 
 	@bindThis
@@ -75,7 +80,7 @@ export class WebfingerService {
 		const m = query.match(mRegex);
 		if (m) {
 			const hostname = m[2];
-			return `${defaultProtocol}//${hostname}/.well-known/webfinger?resource={uri}`;
+			return `${this.defaultProtocol}//${hostname}/.well-known/webfinger?resource={uri}`;
 		}
 
 		throw new Error(`Invalid query (${query})`);
@@ -91,7 +96,7 @@ export class WebfingerService {
 		const m = query.match(mRegex);
 		if (m) {
 			const hostname = m[2];
-			return `${defaultProtocol}//${hostname}/.well-known/host-meta`;
+			return `${this.defaultProtocol}//${hostname}/.well-known/host-meta`;
 		}
 
 		throw new Error(`Invalid query (${query})`);

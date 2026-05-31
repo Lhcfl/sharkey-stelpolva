@@ -27,8 +27,7 @@ async function main() {
 	/** @type {import('../src/server/api/openapi/gen-spec.js')} */
 	const { genOpenapiSpec } = await import('../built/server/api/openapi/gen-spec.js');
 
-	const loggerService = new LoggerService(console, new NativeTimeService(), new EnvService());
-	const config = loadConfig(loggerService);
+	const config = loadConfig();
 	const spec = genOpenapiSpec(config, true);
 
 	writeFileSync('./built/api.json', JSON.stringify(spec), 'utf-8');

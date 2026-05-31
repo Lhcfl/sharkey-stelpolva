@@ -6,17 +6,16 @@
 import { URL } from 'node:url';
 import * as http from 'node:http';
 import * as https from 'node:https';
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { Inject, Injectable, type OnApplicationShutdown } from '@nestjs/common';
+import { DeleteObjectCommand, S3Client, type DeleteObjectCommandInput, type PutObjectCommandInput } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { NodeHttpHandler, NodeHttpHandlerOptions } from '@smithy/node-http-handler';
 import type { MiMeta } from '@/models/Meta.js';
+import type { JsonSerialized } from '@/misc/json-value.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
+import { InternalEventService, type InternalEventTypes } from '@/global/InternalEventService.js';
 import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
-import type { InternalEventTypes } from '@/core/GlobalEventService.js';
-import type { DeleteObjectCommandInput, PutObjectCommandInput } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class S3Service implements OnApplicationShutdown {
@@ -40,8 +39,7 @@ export class S3Service implements OnApplicationShutdown {
 		}
 	}
 
-	private needsChange(before: MiMeta | undefined, after: MiMeta): boolean {
-		if (before == null) return true;
+	private needsChange(before: MiMeta | JsonSerialized<MiMeta>, after: MiMeta | JsonSerialized<MiMeta>): boolean {
 		if (before.objectStorageEndpoint !== after.objectStorageEndpoint) return true;
 		if (before.objectStorageUseSSL !== after.objectStorageUseSSL) return true;
 		if (before.objectStorageUseProxy !== after.objectStorageUseProxy) return true;
@@ -60,7 +58,7 @@ export class S3Service implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private createS3Client(meta: MiMeta): S3Client {
+	private createS3Client(meta: MiMeta | JsonSerialized<MiMeta>): S3Client {
 		const u = meta.objectStorageEndpoint
 			? `${meta.objectStorageUseSSL ? 'https' : 'http'}://${meta.objectStorageEndpoint}`
 			: `${meta.objectStorageUseSSL ? 'https' : 'http'}://example.net`; // dummy url to select http(s) agent
@@ -121,7 +119,7 @@ export class S3Service implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	onApplicationShutdown() {
+	public onApplicationShutdown() {
 		this.dispose();
 	}
 }

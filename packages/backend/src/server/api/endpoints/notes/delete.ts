@@ -8,9 +8,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { UsersRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteDeleteService } from '@/core/NoteDeleteService.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
 import { DI } from '@/di-symbols.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { RoleService } from '@/core/RoleService.js';
+import { UserService } from '@/core/UserService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -58,6 +61,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private getterService: GetterService,
 		private roleService: RoleService,
 		private noteDeleteService: NoteDeleteService,
+		private readonly cacheService: CacheService,
+		private readonly userService: UserService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {
@@ -69,8 +74,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.accessDenied);
 			}
 
+			if (note.userId === me.id) {
+				this.userService.markUserActive(me, true);
+			}
+
 			// この操作を行うのが投稿者とは限らない(例えばモデレーター)ため
-			await this.noteDeleteService.delete(await this.usersRepository.findOneByOrFail({ id: note.userId }), note, me);
+			const author = await this.cacheService.findUserById(note.userId);
+			trackPromise(this.noteDeleteService.delete(author, note, me));
 		});
 	}
 }

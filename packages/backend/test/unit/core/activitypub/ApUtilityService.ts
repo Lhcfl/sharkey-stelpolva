@@ -23,7 +23,9 @@ describe(ApUtilityService, () => {
 		} as unknown as EnvService;
 
 		const config = {
+			url: 'https://example.com',
 			host: 'example.com',
+			id: 'aidx',
 			blockedHosts: [],
 			silencedHosts: [],
 			mediaSilencedHosts: [],

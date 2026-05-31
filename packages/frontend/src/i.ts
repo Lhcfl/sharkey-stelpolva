@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { computed, reactive } from 'vue';
-import * as Misskey from 'misskey-js';
+import { reactive } from 'vue';
+import type * as Misskey from 'misskey-js';
 import { miLocalStorage } from '@/local-storage.js';
 
 // TODO: 他のタブと永続化されたstateを同期
@@ -14,7 +14,7 @@ type AccountWithToken = Misskey.entities.MeDetailed & { token: string };
 const accountData = miLocalStorage.getItem('account');
 
 // TODO: 外部からはreadonlyに
-export const $i = accountData ? reactive(JSON.parse(accountData) as AccountWithToken) : null;
+export const $i: AccountWithToken | null = accountData ? reactive(JSON.parse(accountData)) : null;
 
 export const iAmModerator = $i != null && ($i.isAdmin === true || $i.isModerator === true);
 export const iAmAdmin = $i != null && $i.isAdmin;

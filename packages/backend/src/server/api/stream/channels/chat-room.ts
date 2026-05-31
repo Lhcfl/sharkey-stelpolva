@@ -6,11 +6,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
-import type { GlobalEvents } from '@/core/GlobalEventService.js';
+import type { ChatEventPayload } from '@/core/GlobalEventService.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import { ChatService } from '@/core/ChatService.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import type { ChatRoomsRepository } from '@/models/_.js';
 import { Channel, type MiChannelService } from '../channel.js';
 
@@ -33,9 +31,7 @@ class ChatRoomChannel extends Channel {
 
 	@bindThis
 	public async init(params: JsonObject): Promise<boolean> {
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
 		if (typeof params.roomId !== 'string') return false;
-
 		this.roomId = params.roomId;
 
 		const exists = await this.chatRoomsRepository.findOne({
@@ -51,7 +47,7 @@ class ChatRoomChannel extends Channel {
 	}
 
 	@bindThis
-	private async onEvent(data: GlobalEvents['chatRoom']['payload']) {
+	private async onEvent(data: ChatEventPayload) {
 		this.send(data.type, data.body);
 	}
 
@@ -68,7 +64,7 @@ class ChatRoomChannel extends Channel {
 
 	@bindThis
 	public dispose() {
-		this.subscriber?.off(`chatRoomStream:${this.roomId}`, this.onEvent);
+		this.subscriber.off(`chatRoomStream:${this.roomId}`, this.onEvent);
 	}
 }
 

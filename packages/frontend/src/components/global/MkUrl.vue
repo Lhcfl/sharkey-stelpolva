@@ -32,7 +32,7 @@ import { toUnicode as decodePunycode } from 'punycode.js';
 import { url as local } from '@@/js/config.js';
 import * as os from '@/os.js';
 import { useTooltip } from '@/use/use-tooltip.js';
-import { isEnabledUrlPreview } from '@/instance.js';
+import { instance } from '@/instance.js';
 import type { MkABehavior } from '@/components/global/MkA.vue';
 import { warningExternalWebsite } from '@/utility/warning-external-website.js';
 import { maybeMakeRelative } from '@@/js/url.js';
@@ -60,7 +60,7 @@ const url = new URL(props.url);
 if (!['http:', 'https:'].includes(url.protocol)) throw new Error('invalid url');
 const el = ref();
 
-if (props.showUrlPreview && isEnabledUrlPreview.value) {
+if (props.showUrlPreview && instance.enableUrlPreview) {
 	useTooltip(el, (showing) => {
 		const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkUrlPreviewPopup.vue')), {
 			showing,

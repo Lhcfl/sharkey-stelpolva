@@ -15,10 +15,12 @@ export const meta = {
 		type: 'object',
 	},
 
-	// 10 calls per 5 seconds
+	// up to 50 calls, then 2 per second.
+	// high cap helps when reloading many tabs.
 	limit: {
-		duration: 1000 * 5,
-		max: 10,
+		type: 'bucket',
+		size: 50,
+		dripRate: 500,
 	},
 } as const;
 
@@ -39,6 +41,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private registryApiService: RegistryApiService,
 	) {
 		super(meta, paramDef, async (ps, me, accessToken) => {
+			// TODO cache this?
 			const items = await this.registryApiService.getAllItemsOfScope(me.id, accessToken != null ? accessToken.id : (ps.domain ?? null), ps.scope);
 
 			const res = {} as Record<string, any>;

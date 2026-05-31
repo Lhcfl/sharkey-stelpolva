@@ -9,7 +9,7 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { In } from 'typeorm';
 import { ReplyError } from 'ioredis';
 import { DI } from '@/di-symbols.js';
-import type { UsersRepository } from '@/models/_.js';
+import type { UsersRepository, MiUserProfile } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiNotification } from '@/models/Notification.js';
 import { bindThis } from '@/decorators.js';
@@ -17,7 +17,7 @@ import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { PushNotificationService } from '@/core/PushNotificationService.js';
 import { NotificationEntityService } from '@/core/entities/NotificationEntityService.js';
 import { IdService } from '@/core/IdService.js';
-import { CacheService } from '@/core/CacheService.js';
+import { CacheService, type UserRelation } from '@/core/CacheService.js';
 import type { Config } from '@/config.js';
 import { UserListService } from '@/core/UserListService.js';
 import { FilterUnionByProperty, groupedNotificationTypes, obsoleteNotificationTypes } from '@/types.js';
@@ -53,28 +53,27 @@ export class NotificationService implements OnApplicationShutdown {
 		userId: MiUser['id'],
 		force = false,
 	) {
-		const latestReadNotificationId = await this.redisClient.get(`latestReadNotification:${userId}`);
+		const [latestReadNotificationId, latestNotificationIdsRes] = await Promise.all([
+			this.redisClient.get(`latestReadNotification:${userId}`),
+			this.redisClient.xrevrange(
+				`notificationTimeline:${userId}`,
+				'+',
+				'-',
+				'COUNT', 1),
+		]);
 
-		const latestNotificationIdsRes = await this.redisClient.xrevrange(
-			`notificationTimeline:${userId}`,
-			'+',
-			'-',
-			'COUNT', 1);
-		const latestNotificationId = latestNotificationIdsRes[0]?.[0];
-
+		// Bail if the user has no notifications.
+		// Type Assertion is required because TS tries to incorrectly "infer" latestNotificationId as non-nullable.
+		const latestNotificationId = latestNotificationIdsRes[0]?.[0] as string | undefined;
 		if (latestNotificationId == null) return;
 
-		this.redisClient.set(`latestReadNotification:${userId}`, latestNotificationId);
-
-		if (force || latestReadNotificationId == null || (latestReadNotificationId < latestNotificationId)) {
-			return this.postReadAllNotifications(userId);
+		if (force || latestNotificationId !== latestReadNotificationId) {
+			await Promise.all([
+				this.redisClient.set(`latestReadNotification:${userId}`, latestNotificationId),
+				this.globalEventService.publishMainStream(userId, 'readAllNotifications', {}),
+				this.pushNotificationService.pushNotification(userId, 'readAllNotifications', undefined),
+			]);
 		}
-	}
-
-	@bindThis
-	private async postReadAllNotifications(userId: MiUser['id']) {
-		this.globalEventService.publishMainStream(userId, 'readAllNotifications');
-		await this.pushNotificationService.pushNotification(userId, 'readAllNotifications', undefined);
 	}
 
 	@bindThis
@@ -83,21 +82,36 @@ export class NotificationService implements OnApplicationShutdown {
 		type: T,
 		data: Omit<FilterUnionByProperty<MiNotification, 'type', T>, 'type' | 'id' | 'createdAt' | 'notifierId'>,
 		notifierId?: MiUser['id'] | null,
+		hint?: {
+			notifieeProfile?: MiUserProfile,
+			notifieeUser?: MiUser,
+			notifieeRelation?: UserRelation,
+		},
 	) {
 		trackPromise(
-			this.#createNotificationInternal(notifieeId, type, data, notifierId),
+			this.createNotificationImmediate(notifieeId, type, data, notifierId, hint),
 		);
 	}
 
-	async #createNotificationInternal<T extends MiNotification['type']>(
+	@bindThis
+	public async createNotificationImmediate<T extends MiNotification['type']>(
 		notifieeId: MiUser['id'],
 		type: T,
 		data: Omit<FilterUnionByProperty<MiNotification, 'type', T>, 'type' | 'id' | 'createdAt' | 'notifierId'>,
 		notifierId?: MiUser['id'] | null,
+		hint?: {
+			notifieeProfile?: MiUserProfile,
+			notifieeUser?: MiUser,
+			notifieeRelation?: UserRelation,
+		},
 	): Promise<MiNotification | null> {
-		const [profile, notifiee] = await Promise.all([
-			this.cacheService.userProfileCache.fetch(notifieeId),
-			this.cacheService.findUserById(notifieeId),
+		// noinspection ES6MissingAwait
+		const [profile, notifiee, notifieeRelation] = await Promise.all([
+			hint?.notifieeProfile ?? this.cacheService.userProfileCache.fetch(notifieeId),
+			hint?.notifieeUser ?? this.cacheService.findUserById(notifieeId),
+			notifierId != null && notifierId !== notifieeId
+				? (hint?.notifieeRelation ?? this.cacheService.getUserRelation(notifieeId, notifierId))
+				: null,
 		]);
 
 		// 古いMisskeyバージョンのキャッシュが残っている可能性がある
@@ -108,39 +122,29 @@ export class NotificationService implements OnApplicationShutdown {
 		}
 
 		if (notifierId) {
-			if (notifieeId === notifierId) {
+			// notifieeRelation will be null if notifier is the same, so this covers both conditions.
+			if (!notifieeRelation) {
 				return null;
 			}
 
-			const mutings = await this.cacheService.userMutingsCache.fetch(notifieeId);
-			if (mutings.has(notifierId)) {
+			if (notifieeRelation.isMuting) {
 				return null;
 			}
 
 			if (recieveConfig?.type === 'following') {
-				const isFollowing = await this.cacheService.userFollowingsCache.fetch(notifieeId).then(followings => followings.has(notifierId));
-				if (!isFollowing) {
+				if (!notifieeRelation.isFollowing) {
 					return null;
 				}
 			} else if (recieveConfig?.type === 'follower') {
-				const isFollower = await this.cacheService.userFollowingsCache.fetch(notifierId).then(followings => followings.has(notifieeId));
-				if (!isFollower) {
+				if (!notifieeRelation.isFollowed) {
 					return null;
 				}
 			} else if (recieveConfig?.type === 'mutualFollow') {
-				const [isFollowing, isFollower] = await Promise.all([
-					this.cacheService.userFollowingsCache.fetch(notifieeId).then(followings => followings.has(notifierId)),
-					this.cacheService.userFollowingsCache.fetch(notifierId).then(followings => followings.has(notifieeId)),
-				]);
-				if (!(isFollowing && isFollower)) {
+				if (!(notifieeRelation.isFollowing && notifieeRelation.isFollowed)) {
 					return null;
 				}
 			} else if (recieveConfig?.type === 'followingOrFollower') {
-				const [isFollowing, isFollower] = await Promise.all([
-					this.cacheService.userFollowingsCache.fetch(notifieeId).then(followings => followings.has(notifierId)),
-					this.cacheService.userFollowingsCache.fetch(notifierId).then(followings => followings.has(notifieeId)),
-				]);
-				if (!isFollowing && !isFollower) {
+				if (!notifieeRelation.isFollowing && !notifieeRelation.isFollowed) {
 					return null;
 				}
 			} else if (recieveConfig?.type === 'list') {
@@ -167,6 +171,7 @@ export class NotificationService implements OnApplicationShutdown {
 			} as unknown as FilterUnionByProperty<MiNotification, 'type', T>;
 
 			try {
+				// TODO this needs type safety
 				redisId = (await this.redisClient.xadd(
 					`notificationTimeline:${notifieeId}`,
 					'MAXLEN', '~', this.config.perUserNotificationsMaxCount.toString(),
@@ -179,7 +184,7 @@ export class NotificationService implements OnApplicationShutdown {
 			}
 
 			break;
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,no-constant-condition
 		} while (true);
 
 		const packed = await this.notificationEntityService.pack(notification, notifiee, {});
@@ -187,8 +192,9 @@ export class NotificationService implements OnApplicationShutdown {
 		if (packed == null) return null;
 
 		// Publish notification event
-		this.globalEventService.publishMainStream(notifieeId, 'notification', packed);
+		await this.globalEventService.publishMainStream(notifieeId, 'notification', packed);
 
+		// TODO this is terrible, need to rework this to not make a redis fetch *for every single duplicate*
 		// 2秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
 		// テスト通知の場合は即時発行
 		const interval = notification.type === 'test' ? 0 : 2000;
@@ -196,11 +202,12 @@ export class NotificationService implements OnApplicationShutdown {
 			const latestReadNotificationId = await this.redisClient.get(`latestReadNotification:${notifieeId}`);
 			if (latestReadNotificationId && (latestReadNotificationId >= redisId)) return;
 
-			this.globalEventService.publishMainStream(notifieeId, 'unreadNotification', packed);
-			this.pushNotificationService.pushNotification(notifieeId, 'notification', packed);
+			await this.globalEventService.publishMainStream(notifieeId, 'unreadNotification', packed);
+			await this.pushNotificationService.pushNotification(notifieeId, 'notification', packed);
 
-			if (type === 'follow') this.emailNotificationFollow(notifieeId, await this.cacheService.findUserById(notifierId!));
-			if (type === 'receiveFollowRequest') this.emailNotificationReceiveFollowRequest(notifieeId, await this.cacheService.findUserById(notifierId!));
+			// TODO uncomment if the emailWhatever methods ever get implemented
+			// if (type === 'follow') await this.emailNotificationFollow(notifieeId, await this.cacheService.findUserById(notifierId!));
+			// if (type === 'receiveFollowRequest') await this.emailNotificationReceiveFollowRequest(notifieeId, await this.cacheService.findUserById(notifierId!));
 		}, () => { /* aborted, ignore it */ });
 
 		return notification;
@@ -240,8 +247,8 @@ export class NotificationService implements OnApplicationShutdown {
 		await Promise.all([
 			this.redisClient.del(`notificationTimeline:${userId}`),
 			this.redisClient.del(`latestReadNotification:${userId}`),
+			this.globalEventService.publishMainStream(userId, 'notificationFlushed', {}),
 		]);
-		this.globalEventService.publishMainStream(userId, 'notificationFlushed');
 	}
 
 	@bindThis

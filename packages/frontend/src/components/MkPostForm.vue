@@ -124,8 +124,9 @@ import * as Misskey from 'misskey-js';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import autosize from 'autosize';
 import { toASCII } from 'punycode.js';
-import { host, url } from '@@/js/config.js';
+import { url } from '@@/js/config.js';
 import { appendContentWarning } from '@@/js/append-content-warning.js';
+import { formatTimeString } from '@@/js/format-time-string.js';
 import type { ShallowRef } from 'vue';
 import type { MenuItem } from '@/types/menu.js';
 import type { PostFormProps } from '@/types/post-form.js';
@@ -136,8 +137,7 @@ import XTextCounter from '@/components/MkPostForm.TextCounter.vue';
 import MkPollEditor from '@/components/MkPollEditor.vue';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import { erase, unique } from '@/utility/array.js';
-import { extractMentions } from '@/utility/extract-mentions.js';
-import { formatTimeString } from '@/utility/format-time-string.js';
+import { extractMentions, type MfmMention } from '@/utility/extract-mentions.js';
 import { Autocomplete } from '@/utility/autocomplete.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
@@ -341,23 +341,19 @@ watch(visibleUsers, () => {
 });
 
 if (props.mention) {
-	text.value = props.mention.host ? `@${props.mention.username}@${toASCII(props.mention.host)}` : `@${props.mention.username}`;
-	text.value += ' ';
+	pushMention(props.mention);
 }
 
-if (props.reply && (props.reply.user.username !== $i.username || (props.reply.user.host != null && props.reply.user.host !== host))) {
-	text.value = `@${props.reply.user.username}${props.reply.user.host != null ? '@' + toASCII(props.reply.user.host) : ''} `;
+if (props.reply && props.reply.user.id !== $i.id) {
+	pushMention(props.reply.user);
 }
 
-if (props.reply && props.reply.mentionHandles) {
-	for (const [user, mention] of Object.entries(props.reply.mentionHandles)) {
-		// Don't mention ourself
-		if (user === $i.id) continue;
+if (props.reply && props.reply.text != null) {
+	const ast = mfm.parse(props.reply.text);
+	const otherHost = props.reply.user.host;
 
-		// 重複は除外
-		if (text.value.includes(`${mention} `)) continue;
-
-		text.value += `${mention} `;
+	for (const x of extractMentions(ast, otherHost)) {
+		pushMention(x);
 	}
 }
 
@@ -447,28 +443,33 @@ function MFMWindow() {
 
 function checkMissingMention() {
 	if (visibility.value === 'specified') {
-		const ast = mfm.parse(text.value);
-
-		for (const x of extractMentions(ast)) {
-			if (!visibleUsers.value.some(u => (u.username.toLowerCase() === x.username.toLowerCase()) && (u.host === x.host))) {
-				hasNotSpecifiedMentions.value = true;
-				return;
-			}
-		}
+		hasNotSpecifiedMentions.value = getMissingMentions().length > 0;
 	}
-	hasNotSpecifiedMentions.value = false;
 }
 
 function addMissingMention() {
-	const ast = mfm.parse(text.value);
-
-	for (const x of extractMentions(ast)) {
-		if (!visibleUsers.value.some(u => (u.username.toLowerCase() === x.username.toLowerCase()) && (u.host === x.host))) {
-			misskeyApi('users/show', { username: x.username, host: x.host }).then(user => {
-				pushVisibleUser(user);
-			});
-		}
+	for (const x of getMissingMentions()) {
+		misskeyApi('users/show', { username: x.username, host: x.host }).then(user => {
+			pushVisibleUser(user);
+		});
 	}
+}
+
+function getMissingMentions(): MfmMention[] {
+	const ast = mfm.parse(text.value);
+	const mentions = extractMentions(ast);
+
+	return mentions.filter(mu => {
+		const mUsername = mu.username.toLowerCase();
+		const mHost = mu.host;
+
+		// We're looking for missing mentions, so only include this mention if it *doesn't* match any visible.
+		return !visibleUsers.value.some(vu => {
+			const vUsername = vu.username.toLowerCase();
+			const vHost = vu.host ? toASCII(vu.host).toLowerCase() : null;
+			return mUsername === vUsername && mHost === vHost;
+		});
+	});
 }
 
 function togglePoll() {
@@ -680,7 +681,7 @@ function showOtherSettings() {
 //#endregion
 
 function pushVisibleUser(user: Misskey.entities.UserDetailed) {
-	if (!visibleUsers.value.some(u => u.username.toLowerCase() === user.username.toLowerCase() && u.host === user.host)) {
+	if (!visibleUsers.value.some(u => u.id === user.id)) {
 		visibleUsers.value.push(user);
 	}
 }
@@ -688,14 +689,11 @@ function pushVisibleUser(user: Misskey.entities.UserDetailed) {
 function addVisibleUser() {
 	os.selectUser().then(user => {
 		pushVisibleUser(user);
-
-		if (!text.value.toLowerCase().includes(`@${user.username.toLowerCase()}`)) {
-			text.value = `@${Misskey.acct.toString(user)} ${text.value}`;
-		}
+		pushMention(user, 'start');
 	});
 }
 
-function removeVisibleUser(user) {
+function removeVisibleUser(user: Misskey.entities.UserDetailed) {
 	visibleUsers.value = erase(user, visibleUsers.value);
 }
 
@@ -1097,9 +1095,49 @@ function cancel() {
 }
 
 function insertMention() {
-	os.selectUser({ localOnly: localOnly.value, includeSelf: true }).then(user => {
-		insertTextAtCursor(textareaEl.value, '@' + Misskey.acct.toString(user) + ' ');
+	os.selectUser({ localOnly: localOnly.value }).then(user => {
+		pushMention(user, 'cursor');
 	});
+}
+
+/**
+ * Adds a mention to the post.
+ * @param user User or Acct, should already be host-normalized.
+ * @param at Where to add the mention.
+ */
+function pushMention(user: { id?: string; username: string; host: string | null }, at: 'start' | 'end' | 'cursor' = 'end') {
+	// Don't mention ourself
+	if (user.id === $i.id) {
+		return;
+	}
+	if (user.host === null && user.username.toLowerCase() === $i.username.toLowerCase()) {
+		return;
+	}
+
+	const acct = Misskey.acct.toString(user, false);
+	const mention = `@${acct}`;
+
+	// Cursor mode is easy - skip checks and inject with spacer.
+	if (at === 'cursor' && textareaEl.value) {
+		insertTextAtCursor(textareaEl.value, mention + ' ');
+		text.value = textareaEl.value.value;
+		return;
+	}
+
+	// Other modes require more involved checks
+	const mentionLower = mention.toLowerCase();
+	const textLower = text.value.toLowerCase();
+	if (!textLower.includes(mentionLower + ' ') && !textLower.endsWith(mentionLower)) {
+		if (at === 'start') {
+			text.value = text.value.match(/^\s/)
+				? `${mention}${text.value}`
+				: `${mention} ${text.value}`;
+		} else {
+			text.value = text.value.match(/\s$/)
+				? `${text.value}${mention} `
+				: `${text.value} ${mention} `;
+		}
+	}
 }
 
 async function insertEmoji(ev: MouseEvent) {

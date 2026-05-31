@@ -6,6 +6,8 @@
 import { Injectable } from '@nestjs/common';
 import { createEnvOptions, type EnvOption } from '@/env.js';
 
+/* eslint-disable no-restricted-properties */
+
 /**
  * Provides structured, mockable access to runtime/environment details.
  */

@@ -114,7 +114,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// 1. It may return less than "limit" results.
 			// 2. A span of more than "limit" consecutive non-trendable users may cause the pagination to stop early.
 			// Unfortunately, there's no better solution unless we refactor role policies to be persisted to the DB.
-			const usersWithRoles = await promiseMap(allUsers, async u => [u, await this.roleService.getUserPolicies(u)] as const, { limit: 4 });
+			const usersWithRoles = await promiseMap(allUsers, async u => [u, await this.roleService.getUserPolicies(u)] as const, { limiter: 4 });
 			const users = usersWithRoles
 				.filter(([,p]) => p.canTrend)
 				.map(([u]) => u);

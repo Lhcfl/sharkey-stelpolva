@@ -6,7 +6,6 @@
 import ms from 'ms';
 import { In } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import moment from 'moment';
 import { isPureRenote } from '@/misc/is-renote.js';
 import type { MiUser } from '@/models/User.js';
 import type {
@@ -16,6 +15,7 @@ import type {
 	DriveFilesRepository,
 	NoteScheduleRepository,
 } from '@/models/_.js';
+import type { Queues } from '@/queue/types.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import type { MiNote } from '@/models/Note.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -209,6 +209,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
+		@Inject('queue:scheduleNotePost')
+		private readonly scheduleNotePostQueue: Queues['scheduleNotePost'],
+
 		private queueService: QueueService,
 		private roleService: RoleService,
 		private idService: IdService,
@@ -305,7 +308,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.poll) {
 				let scheduleNote_scheduledAt = this.timeService.now;
 				if (typeof ps.scheduleNote.scheduledAt === 'number') {
-					scheduleNote_scheduledAt = moment.utc(ps.scheduleNote.scheduledAt).local().valueOf();
+					scheduleNote_scheduledAt = ps.scheduleNote.scheduledAt;
 				}
 				if (typeof ps.poll.expiresAt === 'number') {
 					if (ps.poll.expiresAt < scheduleNote_scheduledAt) {
@@ -316,7 +319,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}
 			}
 			if (typeof ps.scheduleNote.scheduledAt === 'number') {
-				if (moment.utc(ps.scheduleNote.scheduledAt).local().valueOf() < this.timeService.now) {
+				if (ps.scheduleNote.scheduledAt < this.timeService.now) {
 					throw new ApiError(meta.errors.cannotCreateAlreadyExpiredSchedule);
 				}
 			} else {
@@ -345,7 +348,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.scheduleNote.scheduledAt) {
 				me.token = null;
 				const noteId = this.idService.gen(this.timeService.now);
-				const schedNoteLocalTime = moment.utc(ps.scheduleNote.scheduledAt).local().valueOf();
+				const schedNoteLocalTime = ps.scheduleNote.scheduledAt;
 				await this.noteScheduleRepository.insert({
 					id: noteId,
 					note: note,
@@ -354,12 +357,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				});
 
 				const delay = new Date(schedNoteLocalTime).getTime() - this.timeService.now;
-				await this.queueService.ScheduleNotePostQueue.add(String(delay), {
+				const jobId = `schedNote_${noteId}`;
+				await this.scheduleNotePostQueue.add(jobId, {
 					scheduleNoteId: noteId,
 				}, {
 					delay,
 					removeOnComplete: true,
-					jobId: `schedNote:${noteId}`,
+					jobId,
 				});
 			}
 

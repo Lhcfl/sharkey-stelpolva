@@ -8,7 +8,7 @@ import { DI } from '@/di-symbols.js';
 import type { NoteReactionsRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { bindThis } from '@/decorators.js';
-import type { IdService } from '@/core/IdService.js';
+import { IdService } from '@/core/IdService.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { } from '@/models/Blocking.js';
 import type { MiUser } from '@/models/User.js';
@@ -23,7 +23,6 @@ export class NoteReactionEntityService implements OnModuleInit {
 	private userEntityService: UserEntityService;
 	private noteEntityService: NoteEntityService;
 	private reactionService: ReactionService;
-	private idService: IdService;
 
 	constructor(
 		private moduleRef: ModuleRef,
@@ -31,19 +30,15 @@ export class NoteReactionEntityService implements OnModuleInit {
 		@Inject(DI.noteReactionsRepository)
 		private noteReactionsRepository: NoteReactionsRepository,
 
-		//private userEntityService: UserEntityService,
-		//private noteEntityService: NoteEntityService,
-		//private reactionService: ReactionService,
-		//private idService: IdService,
+		private readonly idService: IdService,
 	) {
 	}
 
 	@bindThis
-	onModuleInit() {
+	public onModuleInit() {
 		this.userEntityService = this.moduleRef.get('UserEntityService');
 		this.noteEntityService = this.moduleRef.get('NoteEntityService');
 		this.reactionService = this.moduleRef.get('ReactionService');
-		this.idService = this.moduleRef.get('IdService');
 	}
 
 	@bindThis

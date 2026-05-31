@@ -3,23 +3,26 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { FollowingsRepository } from '@/models/_.js';
+import type { IEndpointMeta } from '@/server/api/endpoints.js';
+import type { Schema } from '@/misc/json-schema.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { DI } from '@/di-symbols.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { ApiError } from '../../error.js';
-import { CacheService } from '@/core/CacheService.js';
 
 export const meta = {
 	tags: ['following', 'users'],
 
+	// Up to 10, then 4 per second
 	limit: {
-		duration: ms('1hour'),
-		max: 100,
+		type: 'bucket',
+		size: 10,
+		dripRate: 250,
 	},
 
 	requireCredential: true,
@@ -51,7 +54,7 @@ export const meta = {
 		optional: false, nullable: false,
 		ref: 'UserLite',
 	},
-} as const;
+} as const satisfies IEndpointMeta;
 
 export const paramDef = {
 	type: 'object',
@@ -59,7 +62,7 @@ export const paramDef = {
 		userId: { type: 'string', format: 'misskey:id' },
 	},
 	required: ['userId'],
-} as const;
+} as const satisfies Schema;
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
@@ -87,7 +90,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			// Check not following
-			const exist = await this.cacheService.userFollowingsCache.fetch(follower.id).then(f => f.has(followee.id));
+			const exist = await this.cacheService.isFollowing(follower, followee);
 
 			if (!exist) {
 				throw new ApiError(meta.errors.notFollowing);
@@ -95,7 +98,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			await this.userFollowingService.unfollow(follower, followee);
 
-			return await this.userEntityService.pack(followee.id, me);
+			return await this.userEntityService.pack(followee, me);
 		});
 	}
 }

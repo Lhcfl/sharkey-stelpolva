@@ -3,15 +3,22 @@
 	"extends": "../shared/tsconfig.lib.jsonc",
 	"compilerOptions": {
 		"noImplicitAny": false,
-		"outDir": "js-built/util",
-		"rootDir": "util"
+		"outDir": "./built/util",
+		"rootDir": "./util"
 	},
 	"include": [
 		"util/**/*.js",
 		"util/**/*.ts"
 	],
 	"exclude": [
-		"node_modules",
-		"js-built"
+		"**/node_modules",
+		"**/built",
+		"**/built-test",
+		"**/js-built",
+		"**/temp",
+		"**/coverage",
+		"**/*.min.js",
+		"*.js",
+		"*.ts"
 	]
 }

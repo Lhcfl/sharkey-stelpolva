@@ -14,11 +14,12 @@ import { DriveService } from '@/core/DriveService.js';
 import { createTemp } from '@/misc/create-temp.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { NotificationService } from '@/core/NotificationService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
-import type { DbJobDataWithUser } from '../types.js';
+import type { DbExportUserListsJobData } from '../types.js';
 
 @Injectable()
 export class ExportUserListsProcessorService {
@@ -39,12 +40,13 @@ export class ExportUserListsProcessorService {
 		private queueLoggerService: QueueLoggerService,
 		private notificationService: NotificationService,
 		private readonly timeService: TimeService,
+		private readonly cacheService: CacheService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-user-lists');
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbJobDataWithUser>): Promise<void> {
+	public async process(job: Bull.Job<DbExportUserListsJobData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
@@ -67,9 +69,7 @@ export class ExportUserListsProcessorService {
 
 			for (const list of lists) {
 				const memberships = await this.userListMembershipsRepository.findBy({ userListId: list.id });
-				const users = await this.usersRepository.findBy({
-					id: In(memberships.map(j => j.userId)),
-				});
+				const users = (await this.cacheService.findUsersById(memberships.map(j => j.userId))).values().toArray();
 
 				for (const u of users) {
 					const acct = this.utilityService.getFullApAccount(u.username, u.host);

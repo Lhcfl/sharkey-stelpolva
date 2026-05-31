@@ -6,13 +6,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { parseTimelineArgs, TimelineArgs, toBoolean } from '@/server/api/mastodon/argsUtils.js';
 import { MastodonClientService } from '@/server/api/mastodon/MastodonClientService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { DriveService } from '@/core/DriveService.js';
 import { DI } from '@/di-symbols.js';
-import type { AccessTokensRepository, UserProfilesRepository } from '@/models/_.js';
+import type { AccessTokensRepository } from '@/models/_.js';
 import { attachMinMaxPagination } from '@/server/api/mastodon/pagination.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import { MastodonConverters, convertRelationship, convertFeaturedTag, convertList } from '../MastodonConverters.js';
 import type { FastifyInstance } from 'fastify';
-import { promiseMap } from '@/misc/promise-map.js';
 
 interface ApiAccountMastodonRoute {
 	Params: { id?: string },
@@ -23,15 +24,13 @@ interface ApiAccountMastodonRoute {
 @Injectable()
 export class ApiAccountMastodon {
 	constructor(
-		@Inject(DI.userProfilesRepository)
-		private readonly userProfilesRepository: UserProfilesRepository,
-
 		@Inject(DI.accessTokensRepository)
 		private readonly accessTokensRepository: AccessTokensRepository,
 
 		private readonly clientService: MastodonClientService,
 		private readonly mastoConverters: MastodonConverters,
 		private readonly driveService: DriveService,
+		private readonly cacheService: CacheService,
 	) {}
 
 	public register(fastify: FastifyInstance): void {
@@ -137,7 +136,7 @@ export class ApiAccountMastodon {
 
 			const client = this.clientService.getClient(_request);
 			const data = await client.search(_request.query.acct, { type: 'accounts' });
-			const profile = await this.userProfilesRepository.findOneBy({ userId: data.data.accounts[0].id });
+			const profile = await this.cacheService.userProfileCache.fetchMaybe(data.data.accounts[0].id);
 			data.data.accounts[0].fields = profile?.fields.map(f => ({ ...f, verified_at: null })) ?? [];
 			const response = await this.mastoConverters.convertAccount(data.data.accounts[0]);
 
@@ -189,7 +188,7 @@ export class ApiAccountMastodon {
 			const { client, me } = await this.clientService.getAuthClient(request);
 			const args = parseTimelineArgs(request.query);
 			const data = await client.getAccountStatuses(request.params.id, args);
-			const response = await promiseMap(data.data, async status => await this.mastoConverters.convertStatus(status, me), { limit: 2 });
+			const response = await promiseMap(data.data, async status => await this.mastoConverters.convertStatus(status, me), { limiter: 2 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);
@@ -213,7 +212,7 @@ export class ApiAccountMastodon {
 				request.params.id,
 				parseTimelineArgs(request.query),
 			);
-			const response = await promiseMap(data.data, async account => await this.mastoConverters.convertAccount(account), { limit: 2 });
+			const response = await promiseMap(data.data, async account => await this.mastoConverters.convertAccount(account), { limiter: 2 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);
@@ -227,7 +226,7 @@ export class ApiAccountMastodon {
 				request.params.id,
 				parseTimelineArgs(request.query),
 			);
-			const response = await promiseMap(data.data, async account => await this.mastoConverters.convertAccount(account), { limit: 2 });
+			const response = await promiseMap(data.data, async account => await this.mastoConverters.convertAccount(account), { limiter: 2 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);

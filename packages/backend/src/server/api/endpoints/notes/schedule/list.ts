@@ -142,7 +142,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					},
 				};
 			}, {
-				limit: 4,
+				limiter: 4,
 			});
 
 			return scheduleNotesPack;

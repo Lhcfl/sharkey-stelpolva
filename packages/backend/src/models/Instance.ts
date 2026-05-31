@@ -232,4 +232,10 @@ export class MiInstance {
 		nullable: true,
 	})
 	public mandatoryCW: string | null;
+
+	constructor(data?: Partial<MiInstance>) {
+		if (data) {
+			Object.assign(this, data);
+		}
+	}
 }

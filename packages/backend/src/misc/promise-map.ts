@@ -18,12 +18,12 @@ export async function promiseMap<Input, Output>(
 	values: Iterable<Input> | AsyncIterable<Input>,
 	callback: (value: Input, index: number) => Promise<Output>,
 	opts?: {
-		limit: number | ReturnType<typeof promiseLimit<void>>;
+		limiter?: number | Limiter | ReturnType<typeof promiseLimit<unknown>>;
 		signal?: AbortSignal;
 	},
 ): Promise<Output[]> {
 	// Parse the configured limit or create no-op
-	const limiter = createLimiter(opts?.limit);
+	const limiter = createLimiter(opts?.limiter);
 
 	// Internal state
 	const outputs: Output[] = [];
@@ -75,18 +75,19 @@ export async function promiseMap<Input, Output>(
 	return outputs;
 }
 
-type Limiter = (cb: () => Promise<void>) => Promise<void>;
+// TODO remove when we merge the fixed promise-limit types
+export type Limiter = <T>(factory: () => Promise<T>) => Promise<T>;
 
-function createLimiter(limit: undefined | number | ReturnType<typeof promiseLimit<void>>): Limiter {
-	if (!limit) {
+function createLimiter(limiter: undefined | number | Limiter | ReturnType<typeof promiseLimit<unknown>>): Limiter {
+	if (!limiter) {
 		return cb => cb();
 	}
 
-	if (typeof limit === 'number') {
-		return promiseLimit<void>(limit);
+	if (typeof limiter === 'number') {
+		return promiseLimit(limiter);
 	}
 
-	return limit;
+	return limiter as Limiter;
 }
 
 function throwResults(errors: unknown[]): never {

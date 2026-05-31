@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+// Required, otherwise typeorm will "lose" all the included types!!
+import type from '@peertube/http-signature';
+
 declare module '@peertube/http-signature' {
 	import type { IncomingMessage, ClientRequest } from 'node:http';
 

@@ -29,6 +29,7 @@ describe('XHome', () => {
 		const home = renderHome({
 			id: 'blobcat',
 			name: 'blobcat',
+			username: 'blobcat',
 			host: 'example.com',
 			uri: 'https://example.com/@user',
 			url: 'https://example.com/@user/profile',
@@ -49,6 +50,7 @@ describe('XHome', () => {
 		const home = renderHome({
 			id: 'blobcat',
 			name: 'blobcat',
+			username: 'blobcat',
 			host: 'example.com',
 			uri: 'https://example.com/@user',
 			url: null,

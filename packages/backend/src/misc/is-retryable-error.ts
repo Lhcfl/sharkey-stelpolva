@@ -36,6 +36,7 @@ export function isRetryableError(e: unknown): boolean {
 	if (e instanceof UnrecoverableError) return false;
 	if (e instanceof AbortError) return true;
 	if (e instanceof FetchError) return true; // TODO check status code?
+	if (e instanceof TypeError) return false;
 	if (e instanceof SyntaxError) return false;
 	if (e instanceof Error) {
 		if (e.name === 'AbortError') return true;

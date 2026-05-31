@@ -6,18 +6,28 @@
 import querystring from 'querystring';
 import multipart from '@fastify/multipart';
 import { Inject, Injectable } from '@nestjs/common';
-import { FastifyInstance } from 'fastify';
 import { DI } from '@/di-symbols.js';
-import type { Config } from '@/config.js';
+import { isSystemAccount } from '@/misc/is-system-account.js';
 import { saveToTempFile } from '@/misc/create-temp.js';
+import { bindThis } from '@/decorators.js';
+import { isLocalUser } from '@/models/User.js';
+import type { MiUser } from '@/models/User.js';
+import type { Config } from '@/config.js';
+import type { MiMeta } from '@/models/Meta.js';
+import type { E as ApiErrorDefinition } from '@/server/api/error.js';
+import type { FastifyInstance } from 'fastify';
 
 @Injectable()
 export class ServerUtilityService {
 	constructor(
+		@Inject(DI.meta)
+		private readonly meta: MiMeta,
+
 		@Inject(DI.config)
 		private readonly config: Config,
 	) {}
 
+	@bindThis
 	public addMultipartFormDataContentType(fastify: FastifyInstance): void {
 		fastify.register(multipart, {
 			limits: {
@@ -77,6 +87,7 @@ export class ServerUtilityService {
 		});
 	}
 
+	@bindThis
 	public addFormUrlEncodedContentType(fastify: FastifyInstance) {
 		fastify.addContentTypeParser('application/x-www-form-urlencoded', (_, payload, done) => {
 			let body = '';
@@ -95,6 +106,7 @@ export class ServerUtilityService {
 		});
 	}
 
+	@bindThis
 	public addCORS(fastify: FastifyInstance) {
 		fastify.addHook('preHandler', (_, reply, done) => {
 			// Allow web-based clients to connect from other origins.
@@ -117,6 +129,7 @@ export class ServerUtilityService {
 		});
 	}
 
+	@bindThis
 	public addFlattenedQueryType(fastify: FastifyInstance) {
 		// Remove trailing "[]" from query params
 		fastify.addHook<{ Querystring?: Record<string, string | string[] | undefined> }>('preValidation', (request, _reply, done) => {
@@ -158,5 +171,46 @@ export class ServerUtilityService {
 
 			return done();
 		});
+	}
+
+	@bindThis
+	public assertClientUser(user: MiUser | null | undefined, opts?: { deletedError?: number, invalidError?: number, suspendedError?: number, notApprovedError?: number }): (ApiErrorDefinition & { httpStatusCode: number }) | null {
+		// Missing or deleted user -> 401 Unauthenticated
+		if (user == null || user.isDeleted) return {
+			id: '1384574d-a912-4b81-8601-c7b1c4085df1',
+			code: 'CREDENTIAL_REQUIRED',
+			message: 'Credential required.',
+			kind: 'permission',
+			httpStatusCode: opts?.deletedError ?? 401,
+		};
+
+		// Non-client user -> 422 (Bad Request)
+		if (isSystemAccount(user) || !isLocalUser(user)) return {
+			id: 'ba4ba3bc-ef1e-4c74-ad88-1d2b7d69a100',
+			code: 'LOGIN_PROHIBITED',
+			message: 'Login prohibited for this account.',
+			kind: 'permission',
+			httpStatusCode: opts?.invalidError ?? 422,
+		};
+
+		// Suspended user -> 403 (Unauthorized)
+		if (user.isSuspended) return {
+			id: 'a8c724b3-6e9c-4b46-b1a8-bc3ed6258370',
+			code: 'ACCOUNT_SUSPENDED',
+			message: 'Account has been suspended.',
+			kind: 'permission',
+			httpStatusCode: opts?.suspendedError ?? 403,
+		};
+
+		// Non-approved user -> 403 (Unauthorized)
+		if (!user.approved && this.meta.approvalRequiredForSignup) return {
+			id: 'a61e4b47-f075-4454-b78f-8c2683698321',
+			code: 'ACCOUNT_NOT_APPROVED',
+			message: 'Account is pending approval.',
+			kind: 'permission',
+			httpStatusCode: opts?.notApprovedError ?? 403,
+		};
+
+		return null;
 	}
 }

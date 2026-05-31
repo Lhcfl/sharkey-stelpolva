@@ -54,7 +54,7 @@ export class RelayService {
 		const relayActor = await this.systemAccountService.fetch('relay');
 		const follow = this.apRendererService.renderFollowRelay(relay, relayActor);
 		const activity = this.apRendererService.addContext(follow);
-		this.queueService.deliver(relayActor, activity, relay.inbox, false);
+		await this.queueService.deliver(relayActor, activity, relay.inbox, false);
 
 		return relay;
 	}
@@ -73,7 +73,7 @@ export class RelayService {
 		const follow = this.apRendererService.renderFollowRelay(relay, relayActor);
 		const undo = this.apRendererService.renderUndo(follow, relayActor);
 		const activity = this.apRendererService.addContext(undo);
-		this.queueService.deliver(relayActor, activity, relay.inbox, false);
+		await this.queueService.deliver(relayActor, activity, relay.inbox, false);
 
 		await this.relaysRepository.delete(relay.id);
 	}
@@ -117,7 +117,7 @@ export class RelayService {
 		const signed = await this.signActivity(copy, user);
 
 		for (const relay of relays) {
-			this.queueService.deliver(user, signed, relay.inbox, false);
+			await this.queueService.deliver(user, signed, relay.inbox, false);
 		}
 	}
 

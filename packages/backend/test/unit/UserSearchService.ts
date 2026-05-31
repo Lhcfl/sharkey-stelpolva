@@ -144,7 +144,7 @@ describe('UserSearchService', () => {
 
 	afterEach(async () => {
 		await usersRepository.deleteAll();
-		cacheManagementService.clear();
+		await cacheManagementService.clear();
 	});
 
 	afterAll(async () => {

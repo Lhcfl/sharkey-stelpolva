@@ -74,23 +74,23 @@ const props = defineProps<{
 	domain: ApQueueDomain;
 }>();
 
-function onStats(stats: Misskey.entities.QueueStats) {
+function onStats(stats: Misskey.entities.QueueLogs) {
 	activeSincePrevTick.value = stats[props.domain].activeSincePrevTick;
 	active.value = stats[props.domain].active;
 	delayed.value = stats[props.domain].delayed;
 	waiting.value = stats[props.domain].waiting;
 
-	chartProcess.value.pushData(stats[props.domain].activeSincePrevTick);
-	chartActive.value.pushData(stats[props.domain].active);
-	chartDelayed.value.pushData(stats[props.domain].delayed);
-	chartWaiting.value.pushData(stats[props.domain].waiting);
+	chartProcess.value?.pushData(stats[props.domain].activeSincePrevTick);
+	chartActive.value?.pushData(stats[props.domain].active);
+	chartDelayed.value?.pushData(stats[props.domain].delayed);
+	chartWaiting.value?.pushData(stats[props.domain].waiting);
 }
 
-function onStatsLog(statsLog: Misskey.entities.QueueStatsLog) {
-	const dataProcess: Misskey.entities.QueueStats[ApQueueDomain]['activeSincePrevTick'][] = [];
-	const dataActive: Misskey.entities.QueueStats[ApQueueDomain]['active'][] = [];
-	const dataDelayed: Misskey.entities.QueueStats[ApQueueDomain]['delayed'][] = [];
-	const dataWaiting: Misskey.entities.QueueStats[ApQueueDomain]['waiting'][] = [];
+function onStatsLog(statsLog: Misskey.entities.QueueLogs[]) {
+	const dataProcess: Misskey.entities.QueueCounts[ApQueueDomain]['activeSincePrevTick'][] = [];
+	const dataActive: Misskey.entities.QueueCounts[ApQueueDomain]['active'][] = [];
+	const dataDelayed: Misskey.entities.QueueCounts[ApQueueDomain]['delayed'][] = [];
+	const dataWaiting: Misskey.entities.QueueCounts[ApQueueDomain]['waiting'][] = [];
 
 	for (const stats of [...statsLog].reverse()) {
 		dataProcess.push(stats[props.domain].activeSincePrevTick);
@@ -99,10 +99,10 @@ function onStatsLog(statsLog: Misskey.entities.QueueStatsLog) {
 		dataWaiting.push(stats[props.domain].waiting);
 	}
 
-	chartProcess.value.setData(dataProcess);
-	chartActive.value.setData(dataActive);
-	chartDelayed.value.setData(dataDelayed);
-	chartWaiting.value.setData(dataWaiting);
+	chartProcess.value?.setData(dataProcess);
+	chartActive.value?.setData(dataActive);
+	chartDelayed.value?.setData(dataDelayed);
+	chartWaiting.value?.setData(dataWaiting);
 }
 
 onMounted(() => {
@@ -113,7 +113,6 @@ onMounted(() => {
 	connection.on('stats', onStats);
 	connection.on('statsLog', onStatsLog);
 	connection.send('requestLog', {
-		id: Math.random().toString().substring(2, 10),
 		length: 200,
 	});
 });

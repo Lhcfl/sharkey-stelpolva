@@ -55,7 +55,7 @@ describe(promiseMap, () => {
 			inProgress--;
 			return String(i);
 		}, {
-			limit: 2,
+			limiter: 2,
 		});
 
 		expect(results).toEqual(['1', '2', '3', '4', '5']);
@@ -64,7 +64,7 @@ describe(promiseMap, () => {
 
 	it('should accept limit as instance', async () => {
 		const items = [1, 2, 3, 4, 5];
-		const limit = promiseLimit<void>(2);
+		const limiter = promiseLimit(2);
 
 		let inProgress = 0;
 		let maxProgress = 0;
@@ -78,7 +78,7 @@ describe(promiseMap, () => {
 			inProgress--;
 			return String(i);
 		}, {
-			limit,
+			limiter,
 		});
 
 		expect(results).toEqual(['1', '2', '3', '4', '5']);
@@ -96,7 +96,7 @@ describe(promiseMap, () => {
 
 			return String(i);
 		}, {
-			limit: 1,
+			limiter: 1,
 			signal: controller.signal,
 		});
 
@@ -117,7 +117,7 @@ describe(promiseMap, () => {
 			processed.push(i);
 			return String(i);
 		}, {
-			limit: 1,
+			limiter: 1,
 			signal: controller.signal,
 		}).catch(() => null);
 

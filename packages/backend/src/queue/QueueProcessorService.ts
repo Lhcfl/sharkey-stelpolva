@@ -3,18 +3,66 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import {
+	Inject,
+	Injectable,
+	type OnApplicationBootstrap,
+	type BeforeApplicationShutdown,
+} from '@nestjs/common';
 import * as Bull from 'bullmq';
 import * as Sentry from '@sentry/node';
 import type { Config } from '@/config.js';
+import type { Logger } from '@/logger.js';
+import type {
+	Jobs,
+	Workers,
+	QueueType,
+	QueueData,
+	CleanRemoteFilesJobData,
+	DbDeleteDriveFilesJobData,
+	DbExportAccountDataJobData,
+	DbExportCustomEmojisJobData,
+	DbExportAntennasJobData,
+	DbExportNotesJobData,
+	DbExportClipsJobData,
+	DbExportFavoritesJobData,
+	DbExportFollowingJobData,
+	DbExportMutingJobData,
+	DbExportBlockingJobData,
+	DbExportUserListsJobData,
+	DbImportAntennasJobData,
+	DbImportNotesJobData,
+	DbImportTweetsToDbJobData,
+	DbImportIGToDbJobData,
+	DbImportFBToDbJobData,
+	DbImportMastoToDbJobData,
+	DbImportPleroToDbJobData,
+	DbImportKeyNotesToDbJobData,
+	DbImportFollowingJobData,
+	DbImportFollowingToDbJobData,
+	DbImportMutingJobData,
+	DbImportBlockingJobData,
+	DbImportBlockingToDbJobData,
+	DbImportUserListsJobData,
+	DbImportCustomEmojisJobData,
+	DbDeleteAccountJobData,
+	ObjectStorageFileJobData,
+	ObjectStorageJobData,
+	RelationshipJobData,
+	SystemJobData,
+	DaemonJobData,
+} from '@/queue/types.js';
 import { DI } from '@/di-symbols.js';
-import type Logger from '@/logger.js';
+import { promiseTry } from '@/misc/promise-try.js';
+import { getWorkerOptions } from '@/queue/const.js';
 import { bindThis } from '@/decorators.js';
-import { CheckModeratorsActivityProcessorService } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { renderFullError } from '@/misc/render-full-error.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
+import { renderFullError } from '@/misc/render-full-error.js';
 import { isRetryableError } from '@/misc/is-retryable-error.js';
+import { CheckModeratorsActivityProcessorService } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
+import { QueueStatsService } from '@/core/QueueStatsService.js';
+import { ServerStatsService } from '@/core/ServerStatsService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { UserWebhookDeliverProcessorService } from './processors/UserWebhookDeliverProcessorService.js';
 import { SystemWebhookDeliverProcessorService } from './processors/SystemWebhookDeliverProcessorService.js';
 import { EndedPollNotificationProcessorService } from './processors/EndedPollNotificationProcessorService.js';
@@ -50,13 +98,14 @@ import { CleanProcessorService } from './processors/CleanProcessorService.js';
 import { AggregateRetentionProcessorService } from './processors/AggregateRetentionProcessorService.js';
 import { ScheduleNotePostProcessorService } from './processors/ScheduleNotePostProcessorService.js';
 import { QueueLoggerService } from './QueueLoggerService.js';
-import { QUEUE, baseWorkerOptions } from './const.js';
 import { ImportNotesProcessorService } from './processors/ImportNotesProcessorService.js';
 import { CleanupApLogsProcessorService } from './processors/CleanupApLogsProcessorService.js';
 import { HibernateUsersProcessorService } from './processors/HibernateUsersProcessorService.js';
 import { BackgroundTaskProcessorService } from './processors/BackgroundTaskProcessorService.js';
 
 // ref. https://github.com/misskey-dev/misskey/pull/7635#issue-971097019
+// TODO respect 429 rate limit
+// TODO distribute based on number failing to the same host
 function httpRelatedBackoff(attemptsMade: number, type?: string, error?: Error) {
 	// Don't retry permanent errors
 	// https://docs.bullmq.io/guide/retrying-failing-jobs#custom-back-off-strategies
@@ -64,6 +113,7 @@ function httpRelatedBackoff(attemptsMade: number, type?: string, error?: Error) 
 		return -1;
 	}
 
+	// MIN((2^n) - 1 minutes, 8 hours) +- RAND(0%, 20%)
 	const baseDelay = 60 * 1000;	// 1min
 	const maxBackoff = 8 * 60 * 60 * 1000;	// 8hours
 	let backoff = (Math.pow(2, attemptsMade) - 1) * baseDelay;
@@ -91,19 +141,9 @@ function _getJobInfo(now: number, job: Bull.Job | undefined, increment = false):
 }
 
 @Injectable()
-export class QueueProcessorService implements OnApplicationShutdown {
-	private logger: Logger;
-	private systemQueueWorker: Bull.Worker;
-	private dbQueueWorker: Bull.Worker;
-	private deliverQueueWorker: Bull.Worker;
-	private inboxQueueWorker: Bull.Worker;
-	private userWebhookDeliverQueueWorker: Bull.Worker;
-	private systemWebhookDeliverQueueWorker: Bull.Worker;
-	private relationshipQueueWorker: Bull.Worker;
-	private objectStorageQueueWorker: Bull.Worker;
-	private endedPollNotificationQueueWorker: Bull.Worker;
-	private schedulerNotePostQueueWorker: Bull.Worker;
-	private readonly backgroundTaskWorker: Bull.Worker;
+export class QueueProcessorService implements OnApplicationBootstrap, BeforeApplicationShutdown {
+	private readonly logger: Logger;
+	private readonly workers = {} as Partial<Workers>;
 
 	constructor(
 		@Inject(DI.config)
@@ -150,474 +190,231 @@ export class QueueProcessorService implements OnApplicationShutdown {
 		private readonly cleanupApLogsProcessorService: CleanupApLogsProcessorService,
 		private readonly hibernateUsersProcessorService: HibernateUsersProcessorService,
 		private readonly backgroundTaskProcessorService: BackgroundTaskProcessorService,
+		private readonly queueStatsService: QueueStatsService,
+		private readonly serverStatsService: ServerStatsService,
 	) {
 		this.logger = this.queueLoggerService.logger;
+	}
 
-		// This is just to avoid modifying all the existing code.
-		const getJobInfo = (job: Bull.Job | undefined, increment = false) => {
-			return _getJobInfo(this.timeService.now, job, increment);
-		};
-
+	@bindThis
+	public onApplicationBootstrap() {
 		//#region system
 		{
-			const processer = (job: Bull.Job) => {
-				switch (job.name) {
-					case 'tickCharts': return this.tickChartsProcessorService.process();
-					case 'resyncCharts': return this.resyncChartsProcessorService.process();
-					case 'cleanCharts': return this.cleanChartsProcessorService.process();
-					case 'aggregateRetention': return this.aggregateRetentionProcessorService.process();
-					case 'checkExpiredMutings': return this.checkExpiredMutingsProcessorService.process();
-					case 'bakeBufferedReactions': return this.bakeBufferedReactionsProcessorService.process();
-					case 'checkModeratorsActivity': return this.checkModeratorsActivityProcessorService.process();
-					case 'clean': return this.cleanProcessorService.process();
-					case 'cleanupApLogs': return this.cleanupApLogsProcessorService.process();
-					case 'hibernateUsers': return this.hibernateUsersProcessorService.process();
-					default: throw new Error(`unrecognized job type ${job.name} for system`);
+			const processer = async (job: Bull.Job<SystemJobData>) => {
+				switch (job.data.type) {
+					case 'tickCharts': return await this.tickChartsProcessorService.process();
+					case 'resyncCharts': return await this.resyncChartsProcessorService.process();
+					case 'cleanCharts': return await this.cleanChartsProcessorService.process();
+					case 'aggregateRetention': return await this.aggregateRetentionProcessorService.process();
+					case 'checkExpiredMutings': return await this.checkExpiredMutingsProcessorService.process();
+					case 'bakeBufferedReactions': return await this.bakeBufferedReactionsProcessorService.process();
+					case 'checkModeratorsActivity': return await this.checkModeratorsActivityProcessorService.process();
+					case 'clean': return await this.cleanProcessorService.process();
+					case 'cleanupApLogs': return await this.cleanupApLogsProcessorService.process();
+					case 'hibernateUsers': return await this.hibernateUsersProcessorService.process();
+					// @ts-expect-error it doesn't realize that we're *trying* to catch unknown values here
+					default: throw new Error(`unrecognized job type ${job.data.type} for system`);
 				}
 			};
 
-			this.systemQueueWorker = new Bull.Worker(QUEUE.SYSTEM, (job) => {
-				if (this.config.sentryForBackend) {
-					return Sentry.startSpan({ name: 'Queue: System: ' + job.name }, () => processer(job));
-				} else {
-					return processer(job);
-				}
-			}, {
-				...baseWorkerOptions(this.config, QUEUE.SYSTEM),
-				autorun: false,
-			});
+			this.createWorker('system', processer);
+		}
+		//#endregion
 
-			const logger = this.logger.createSubLogger('system');
-
-			this.systemQueueWorker
-				.on('active', (job) => logger.debug(`active id=${job.id}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
-				.on('failed', (job, err: Error) => {
-					this.logError(logger, err, job);
-					if (config.sentryForBackend) {
-						Sentry.captureMessage(`Queue: System: ${job?.name ?? '?'}: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
+		//#region daemon
+		{
+			const processer = async (job: Bull.Job<DaemonJobData>) => {
+				switch (job.data.type) {
+					case 'tickServerStats': {
+						await this.serverStatsService.tick();
+						return 'ok';
 					}
-				})
-				.on('error', (err: Error) => this.logError(logger, err))
-				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
+					case 'tickQueueCounts': {
+						await this.queueStatsService.tick();
+						return 'ok';
+					}
+					// @ts-expect-error it doesn't realize that we're *trying* to catch unknown values here
+					default: throw new Error(`unrecognized job type ${job.data.type} for daemon`);
+				}
+			};
+
+			this.createWorker('daemon', processer);
 		}
 		//#endregion
 
 		//#region db
 		{
-			const processer = (job: Bull.Job) => {
-				switch (job.name) {
-					case 'deleteDriveFiles': return this.deleteDriveFilesProcessorService.process(job);
-					case 'exportCustomEmojis': return this.exportCustomEmojisProcessorService.process(job);
-					case 'exportNotes': return this.exportNotesProcessorService.process(job);
-					case 'exportClips': return this.exportClipsProcessorService.process(job);
-					case 'exportFavorites': return this.exportFavoritesProcessorService.process(job);
-					case 'exportFollowing': return this.exportFollowingProcessorService.process(job);
-					case 'exportMuting': return this.exportMutingProcessorService.process(job);
-					case 'exportBlocking': return this.exportBlockingProcessorService.process(job);
-					case 'exportUserLists': return this.exportUserListsProcessorService.process(job);
-					case 'exportAntennas': return this.exportAntennasProcessorService.process(job);
-					case 'exportAccountData': return this.exportAccountDataProcessorService.process(job);
-					case 'importFollowing': return this.importFollowingProcessorService.process(job);
-					case 'importFollowingToDb': return this.importFollowingProcessorService.processDb(job);
-					case 'importMuting': return this.importMutingProcessorService.process(job);
-					case 'importBlocking': return this.importBlockingProcessorService.process(job);
-					case 'importBlockingToDb': return this.importBlockingProcessorService.processDb(job);
-					case 'importUserLists': return this.importUserListsProcessorService.process(job);
-					case 'importCustomEmojis': return this.importCustomEmojisProcessorService.process(job);
-					case 'importAntennas': return this.importAntennasProcessorService.process(job);
-					case 'importNotes': return this.importNotesProcessorService.process(job);
-					case 'importTweetsToDb': return this.importNotesProcessorService.processTwitterDb(job);
-					case 'importIGToDb': return this.importNotesProcessorService.processIGDb(job);
-					case 'importFBToDb': return this.importNotesProcessorService.processFBDb(job);
-					case 'importMastoToDb': return this.importNotesProcessorService.processMastoToDb(job);
-					case 'importPleroToDb': return this.importNotesProcessorService.processPleroToDb(job);
-					case 'importKeyNotesToDb': return this.importNotesProcessorService.processKeyNotesToDb(job);
-					case 'deleteAccount': return this.deleteAccountProcessorService.process(job);
-					default: throw new Error(`unrecognized job type ${job.name} for db`);
+			const processer = async (job: Jobs['db']) => {
+				switch (job.data.type) {
+					case 'deleteDriveFiles': return await this.deleteDriveFilesProcessorService.process(job as Bull.Job<DbDeleteDriveFilesJobData>);
+					case 'exportCustomEmojis': return await this.exportCustomEmojisProcessorService.process(job as Bull.Job<DbExportCustomEmojisJobData>);
+					case 'exportNotes': return await this.exportNotesProcessorService.process(job as Bull.Job<DbExportNotesJobData>);
+					case 'exportClips': return await this.exportClipsProcessorService.process(job as Bull.Job<DbExportClipsJobData>);
+					case 'exportFavorites': return await this.exportFavoritesProcessorService.process(job as Bull.Job<DbExportFavoritesJobData>);
+					case 'exportFollowing': return await this.exportFollowingProcessorService.process(job as Bull.Job<DbExportFollowingJobData>);
+					case 'exportMuting': return await this.exportMutingProcessorService.process(job as Bull.Job<DbExportMutingJobData>);
+					case 'exportBlocking': return await this.exportBlockingProcessorService.process(job as Bull.Job<DbExportBlockingJobData>);
+					case 'exportUserLists': return await this.exportUserListsProcessorService.process(job as Bull.Job<DbExportUserListsJobData>);
+					case 'exportAntennas': return await this.exportAntennasProcessorService.process(job as Bull.Job<DbExportAntennasJobData>);
+					case 'exportAccountData': return await this.exportAccountDataProcessorService.process(job as Bull.Job<DbExportAccountDataJobData>);
+					case 'importFollowing': return await this.importFollowingProcessorService.process(job as Bull.Job<DbImportFollowingJobData>);
+					case 'importFollowingToDb': return await this.importFollowingProcessorService.processDb(job as Bull.Job<DbImportFollowingToDbJobData>);
+					case 'importMuting': return await this.importMutingProcessorService.process(job as Bull.Job<DbImportMutingJobData>);
+					case 'importBlocking': return await this.importBlockingProcessorService.process(job as Bull.Job<DbImportBlockingJobData>);
+					case 'importBlockingToDb': return await this.importBlockingProcessorService.processDb(job as Bull.Job<DbImportBlockingToDbJobData>);
+					case 'importUserLists': return await this.importUserListsProcessorService.process(job as Bull.Job<DbImportUserListsJobData>);
+					case 'importCustomEmojis': return await this.importCustomEmojisProcessorService.process(job as Bull.Job<DbImportCustomEmojisJobData>);
+					case 'importAntennas': return await this.importAntennasProcessorService.process(job as Bull.Job<DbImportAntennasJobData>);
+					case 'importNotes': return await this.importNotesProcessorService.process(job as Bull.Job<DbImportNotesJobData>);
+					case 'importTweetsToDb': return await this.importNotesProcessorService.processTwitterDb(job as Bull.Job<DbImportTweetsToDbJobData>);
+					case 'importIGToDb': return await this.importNotesProcessorService.processIGDb(job as Bull.Job<DbImportIGToDbJobData>);
+					case 'importFBToDb': return await this.importNotesProcessorService.processFBDb(job as Bull.Job<DbImportFBToDbJobData>);
+					case 'importMastoToDb': return await this.importNotesProcessorService.processMastoToDb(job as Bull.Job<DbImportMastoToDbJobData>);
+					case 'importPleroToDb': return await this.importNotesProcessorService.processPleroToDb(job as Bull.Job<DbImportPleroToDbJobData>);
+					case 'importKeyNotesToDb': return await this.importNotesProcessorService.processKeyNotesToDb(job as Bull.Job<DbImportKeyNotesToDbJobData>);
+					case 'deleteAccount': return await this.deleteAccountProcessorService.process(job as Bull.Job<DbDeleteAccountJobData>);
+					// @ts-expect-error it doesn't realize that we're *trying* to catch unknown values here
+					default: throw new Error(`unrecognized job type ${job.data.type} for db job ${job.name}`);
 				}
 			};
 
-			this.dbQueueWorker = new Bull.Worker(QUEUE.DB, (job) => {
-				if (this.config.sentryForBackend) {
-					return Sentry.startSpan({ name: 'Queue: DB: ' + job.name }, () => processer(job));
-				} else {
-					return processer(job);
-				}
-			}, {
-				...baseWorkerOptions(this.config, QUEUE.DB),
-				autorun: false,
-			});
-
-			const logger = this.logger.createSubLogger('db');
-
-			this.dbQueueWorker
-				.on('active', (job) => logger.debug(`active id=${job.id}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
-				.on('failed', (job, err) => {
-					this.logError(logger, err, job);
-					if (config.sentryForBackend) {
-						Sentry.captureMessage(`Queue: DB: ${job?.name ?? '?'}: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
-					}
-				})
-				.on('error', (err: Error) => this.logError(logger, err))
-				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
+			this.createWorker('db', processer);
 		}
 		//#endregion
 
 		//#region deliver
 		{
-			this.deliverQueueWorker = new Bull.Worker(QUEUE.DELIVER, (job) => {
-				if (this.config.sentryForBackend) {
-					return Sentry.startSpan({ name: 'Queue: Deliver' }, () => this.deliverProcessorService.process(job));
-				} else {
-					return this.deliverProcessorService.process(job);
-				}
-			}, {
-				...baseWorkerOptions(this.config, QUEUE.DELIVER),
-				autorun: false,
-				concurrency: this.config.deliverJobConcurrency ?? 128,
-				limiter: {
-					max: this.config.deliverJobPerSec ?? 128,
-					duration: 1000,
-				},
+			this.createWorker('deliver', this.deliverProcessorService.process, {
 				settings: {
 					backoffStrategy: httpRelatedBackoff,
 				},
 			});
-
-			const logger = this.logger.createSubLogger('deliver');
-
-			this.deliverQueueWorker
-				.on('active', (job) => logger.debug(`active ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('failed', (job, err) => {
-					this.logError(logger, err, job);
-					if (config.sentryForBackend) {
-						Sentry.captureMessage(`Queue: Deliver: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
-					}
-				})
-				.on('error', (err: Error) => this.logError(logger, err))
-				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
 
 		//#region inbox
 		{
-			this.inboxQueueWorker = new Bull.Worker(QUEUE.INBOX, (job) => {
-				if (this.config.sentryForBackend) {
-					return Sentry.startSpan({ name: 'Queue: Inbox' }, () => this.inboxProcessorService.process(job));
-				} else {
-					return this.inboxProcessorService.process(job);
-				}
-			}, {
-				...baseWorkerOptions(this.config, QUEUE.INBOX),
-				autorun: false,
-				concurrency: this.config.inboxJobConcurrency ?? 16,
-				limiter: {
-					max: this.config.inboxJobPerSec ?? 32,
-					duration: 1000,
-				},
+			this.createWorker('inbox', this.inboxProcessorService.process, {
 				settings: {
 					backoffStrategy: httpRelatedBackoff,
 				},
 			});
-
-			const logger = this.logger.createSubLogger('inbox');
-
-			this.inboxQueueWorker
-				.on('active', (job) => logger.debug(`active ${getJobInfo(job, true)}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) ${getJobInfo(job, true)}`))
-				.on('failed', (job, err) => {
-					this.logError(logger, err, job);
-					if (config.sentryForBackend) {
-						Sentry.captureMessage(`Queue: Inbox: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
-					}
-				})
-				.on('error', (err: Error) => this.logError(logger, err))
-				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
 
 		//#region user-webhook deliver
 		{
-			this.userWebhookDeliverQueueWorker = new Bull.Worker(QUEUE.USER_WEBHOOK_DELIVER, (job) => {
-				if (this.config.sentryForBackend) {
-					return Sentry.startSpan({ name: 'Queue: UserWebhookDeliver' }, () => this.userWebhookDeliverProcessorService.process(job));
-				} else {
-					return this.userWebhookDeliverProcessorService.process(job);
-				}
-			}, {
-				...baseWorkerOptions(this.config, QUEUE.USER_WEBHOOK_DELIVER),
-				autorun: false,
-				concurrency: 64,
-				limiter: {
-					max: 64,
-					duration: 1000,
-				},
+			this.createWorker('userWebhookDeliver', this.userWebhookDeliverProcessorService.process, {
 				settings: {
 					backoffStrategy: httpRelatedBackoff,
 				},
 			});
-
-			const logger = this.logger.createSubLogger('user-webhook');
-
-			this.userWebhookDeliverQueueWorker
-				.on('active', (job) => logger.debug(`active ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('failed', (job, err) => {
-					this.logError(logger, err, job);
-					if (config.sentryForBackend) {
-						Sentry.captureMessage(`Queue: UserWebhookDeliver: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
-					}
-				})
-				.on('error', (err: Error) => this.logError(logger, err))
-				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
 
 		//#region system-webhook deliver
 		{
-			this.systemWebhookDeliverQueueWorker = new Bull.Worker(QUEUE.SYSTEM_WEBHOOK_DELIVER, (job) => {
-				if (this.config.sentryForBackend) {
-					return Sentry.startSpan({ name: 'Queue: SystemWebhookDeliver' }, () => this.systemWebhookDeliverProcessorService.process(job));
-				} else {
-					return this.systemWebhookDeliverProcessorService.process(job);
-				}
-			}, {
-				...baseWorkerOptions(this.config, QUEUE.SYSTEM_WEBHOOK_DELIVER),
-				autorun: false,
-				concurrency: 16,
-				limiter: {
-					max: 16,
-					duration: 1000,
-				},
+			this.createWorker('systemWebhookDeliver', this.systemWebhookDeliverProcessorService.process, {
 				settings: {
 					backoffStrategy: httpRelatedBackoff,
 				},
 			});
-
-			const logger = this.logger.createSubLogger('system-webhook');
-
-			this.systemWebhookDeliverQueueWorker
-				.on('active', (job) => logger.debug(`active ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) ${getJobInfo(job, true)} to=${job.data.to}`))
-				.on('failed', (job, err) => {
-					this.logError(logger, err, job);
-					if (config.sentryForBackend) {
-						Sentry.captureMessage(`Queue: SystemWebhookDeliver: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
-					}
-				})
-				.on('error', (err: Error) => this.logError(logger, err))
-				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
 
 		//#region relationship
 		{
-			const processer = (job: Bull.Job) => {
-				switch (job.name) {
-					case 'follow': return this.relationshipProcessorService.processFollow(job);
-					case 'unfollow': return this.relationshipProcessorService.processUnfollow(job);
-					case 'block': return this.relationshipProcessorService.processBlock(job);
-					case 'unblock': return this.relationshipProcessorService.processUnblock(job);
-					case 'move': return this.relationshipProcessorService.processMove(job);
-					default: throw new Error(`unrecognized job type ${job.name} for relationship`);
+			const processer = async (job: Bull.Job<RelationshipJobData>) => {
+				switch (job.data.type) {
+					case 'follow': return await this.relationshipProcessorService.processFollow(job);
+					case 'unfollow': return await this.relationshipProcessorService.processUnfollow(job);
+					case 'block': return await this.relationshipProcessorService.processBlock(job);
+					case 'unblock': return await this.relationshipProcessorService.processUnblock(job);
+					case 'move': return await this.relationshipProcessorService.processMove(job);
+					default: throw new Error(`unrecognized job type ${job.data.type} for relationship`);
 				}
 			};
 
-			this.relationshipQueueWorker = new Bull.Worker(QUEUE.RELATIONSHIP, (job) => {
-				if (this.config.sentryForBackend) {
-					return Sentry.startSpan({ name: 'Queue: Relationship: ' + job.name }, () => processer(job));
-				} else {
-					return processer(job);
-				}
-			}, {
-				...baseWorkerOptions(this.config, QUEUE.RELATIONSHIP),
-				autorun: false,
-				concurrency: this.config.relationshipJobConcurrency ?? 16,
-				limiter: {
-					max: this.config.relationshipJobPerSec ?? 64,
-					duration: 1000,
-				},
-			});
-
-			const logger = this.logger.createSubLogger('relationship');
-
-			this.relationshipQueueWorker
-				.on('active', (job) => logger.debug(`active id=${job.id}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
-				.on('failed', (job, err) => {
-					this.logError(logger, err, job);
-					if (config.sentryForBackend) {
-						Sentry.captureMessage(`Queue: Relationship: ${job?.name ?? '?'}: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
-					}
-				})
-				.on('error', (err: Error) => this.logError(logger, err))
-				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
+			this.createWorker('relationship', processer);
 		}
 		//#endregion
 
 		//#region object storage
 		{
-			const processer = (job: Bull.Job) => {
-				switch (job.name) {
-					case 'deleteFile': return this.deleteFileProcessorService.process(job);
-					case 'cleanRemoteFiles': return this.cleanRemoteFilesProcessorService.process(job);
-					default: throw new Error(`unrecognized job type ${job.name} for objectStorage`);
+			const processer = async (job: Bull.Job<ObjectStorageJobData>) => {
+				switch (job.data.type) {
+					case 'deleteFile': return await this.deleteFileProcessorService.process(job as Bull.Job<ObjectStorageFileJobData>);
+					case 'cleanRemoteFiles': return await this.cleanRemoteFilesProcessorService.process(job as Bull.Job<CleanRemoteFilesJobData>);
+					// @ts-expect-error it doesn't realize that we're *trying* to catch unknown values here
+					default: throw new Error(`unrecognized job type ${job.data.type} for objectStorage`);
 				}
 			};
 
-			this.objectStorageQueueWorker = new Bull.Worker(QUEUE.OBJECT_STORAGE, (job) => {
-				if (this.config.sentryForBackend) {
-					return Sentry.startSpan({ name: 'Queue: ObjectStorage: ' + job.name }, () => processer(job));
-				} else {
-					return processer(job);
-				}
-			}, {
-				...baseWorkerOptions(this.config, QUEUE.OBJECT_STORAGE),
-				autorun: false,
-				concurrency: 16,
-			});
-
-			const logger = this.logger.createSubLogger('objectStorage');
-
-			this.objectStorageQueueWorker
-				.on('active', (job) => logger.debug(`active id=${job.id}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
-				.on('failed', (job, err) => {
-					this.logError(logger, err, job);
-					if (config.sentryForBackend) {
-						Sentry.captureMessage(`Queue: ObjectStorage: ${job?.name ?? '?'}: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
-					}
-				})
-				.on('error', (err: Error) => this.logError(logger, err))
-				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
+			this.createWorker('objectStorage', processer);
 		}
 		//#endregion
 
 		//#region ended poll notification
 		{
-			const logger = this.logger.createSubLogger('endedPollNotification');
-
-			this.endedPollNotificationQueueWorker = new Bull.Worker(QUEUE.ENDED_POLL_NOTIFICATION, (job) => {
-				if (this.config.sentryForBackend) {
-					return Sentry.startSpan({ name: 'Queue: EndedPollNotification' }, () => this.endedPollNotificationProcessorService.process(job));
-				} else {
-					return this.endedPollNotificationProcessorService.process(job);
-				}
-			}, {
-				...baseWorkerOptions(this.config, QUEUE.ENDED_POLL_NOTIFICATION),
-				autorun: false,
-			});
-			this.endedPollNotificationQueueWorker
-				.on('active', (job) => logger.debug(`active id=${job.id}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
-				.on('failed', (job, err) => {
-					this.logError(logger, err, job);
-					if (config.sentryForBackend) {
-						Sentry.captureMessage(`Queue: EndedPollNotification: ${job?.name ?? '?'}: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
-					}
-				})
-				.on('error', (err: Error) => this.logError(logger, err))
-				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
+			this.createWorker('endedPollNotification', this.endedPollNotificationProcessorService.process);
 		}
 		//#endregion
 
 		//#region schedule note post
 		{
-			const logger = this.logger.createSubLogger('scheduleNotePost');
-
-			this.schedulerNotePostQueueWorker = new Bull.Worker(QUEUE.SCHEDULE_NOTE_POST, (job) => this.scheduleNotePostProcessorService.process(job), {
-				...baseWorkerOptions(this.config, QUEUE.SCHEDULE_NOTE_POST),
-				autorun: false,
-			});
-			this.schedulerNotePostQueueWorker
-				.on('active', (job) => logger.debug(`active id=${job.id}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
-				.on('failed', (job, err) => {
-					this.logError(logger, err, job);
-					if (config.sentryForBackend) {
-						Sentry.captureMessage(`Queue: ${QUEUE.SCHEDULE_NOTE_POST}: ${job?.name ?? '?'}: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
-					}
-				})
-				.on('error', (err: Error) => this.logError(logger, err))
-				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
+			this.createWorker('scheduleNotePost', this.scheduleNotePostProcessorService.process);
 		}
 		//#endregion
 
 		//#region background tasks
 		{
-			const logger = this.logger.createSubLogger('backgroundTask');
-
-			this.backgroundTaskWorker = new Bull.Worker(QUEUE.BACKGROUND_TASK, (job) => this.backgroundTaskProcessorService.process(job), {
-				...baseWorkerOptions(this.config, QUEUE.BACKGROUND_TASK),
-				autorun: false,
-				concurrency: this.config.backgroundJobConcurrency ?? 32,
-				limiter: {
-					max: this.config.backgroundJobPerSec ?? 256,
-					duration: 1000,
-				},
+			this.createWorker('backgroundTask', async job => await this.backgroundTaskProcessorService.process(job.data), {
 				settings: {
 					backoffStrategy: httpRelatedBackoff,
 				},
-				// Keep a lot of jobs, because this queue moves *fast*!
-				// https://docs.bullmq.io/guide/workers/auto-removal-of-jobs
-				removeOnComplete: {
-					age: 3600 * 24 * 7, // keep up to 7 days
-					count: 1000,
-				},
-				removeOnFail: {
-					age: 3600 * 24 * 7, // keep up to 7 days
-					count: 1000,
-				},
 			});
-			this.backgroundTaskWorker
-				.on('active', (job) => logger.debug(`active id=${job.id}`))
-				.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
-				.on('failed', (job, err) => {
-					this.logError(logger, err, job);
-					if (config.sentryForBackend) {
-						Sentry.captureMessage(`Queue: ${QUEUE.BACKGROUND_TASK}: ${job?.name ?? '?'}: ${err.name}: ${err.message}`, {
-							level: 'error',
-							extra: { job, err },
-						});
-					}
-				})
-				.on('error', (err: Error) => this.logError(logger, err))
-				.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
 		}
 		//#endregion
+	}
+
+	@bindThis
+	private createWorker<QT extends QueueType>(qt: QT, processor: (job: Jobs[QT]) => Promise<string | void>, opts?: Partial<Bull.WorkerOptions>): void {
+		const logger = this.logger.createSubLogger(qt);
+		const options = getWorkerOptions(this.config, qt);
+		if (options.concurrency < 1) {
+			logger.info(`Not connecting ${qt} queue - disabled in config (concurrency < 1)`);
+			return;
+		}
+
+		logger.debug(`Connecting ${qt} queue...`);
+		const worker = new Bull.Worker<QueueData[QT], string | void, string>(qt, async (job: Jobs[QT]) => {
+			if (this.config.sentryForBackend) {
+				return await Sentry.startSpan({ name: `Queue: ${qt}: ` + job.name }, async () => await processor(job));
+			} else {
+				return await processor(job);
+			}
+		}, {
+			...options,
+			...(opts ?? {}),
+		});
+
+		worker
+			.on('active', (job) => logger.debug(`active id=${job.id}`))
+			.on('completed', (job, result) => logger.debug(`completed(${result}) id=${job.id}`))
+			.on('failed', (job, err: Error) => {
+				this.logError(logger, err, job);
+				if (this.config.sentryForBackend) {
+					Sentry.captureMessage(`Queue: System: ${job?.name ?? '?'}: ${err.name}: ${err.message}`, {
+						level: 'error',
+						extra: { job, err },
+					});
+				}
+			})
+			.on('error', (err: Error) => this.logError(logger, err))
+			.on('stalled', (jobId) => logger.warn(`stalled id=${jobId}`));
+
+		// For some reason the type cast is needed...
+		this.workers[qt] = worker as Workers[QT];
 	}
 
 	private logError(logger: Logger, err: unknown, job?: Bull.Job | null): void {
@@ -647,47 +444,33 @@ export class QueueProcessorService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async start(): Promise<void> {
-		await Promise.all([
-			this.systemQueueWorker.run(),
-			this.dbQueueWorker.run(),
-			this.deliverQueueWorker.run(),
-			this.inboxQueueWorker.run(),
-			this.userWebhookDeliverQueueWorker.run(),
-			this.systemWebhookDeliverQueueWorker.run(),
-			this.relationshipQueueWorker.run(),
-			this.objectStorageQueueWorker.run(),
-			this.endedPollNotificationQueueWorker.run(),
-			this.schedulerNotePostQueueWorker.run(),
-			this.backgroundTaskWorker.run(),
-		]);
+	public start() {
+		// TODO refactor so that we can detect startup errors.
+		//   Due to Bull's unfortunate Worker implementation, the *only* way to reliably detect exceptions is by attaching events at construction time.
+		//   These calls to run only return on shutdown or error, so we can't await them.
+		//   They also don't emit any events when starting, so we can wrap in a promise either.
+
+		for (const [queue, worker] of Object.entries(this.workers)) {
+			this.logger.debug(`Starting ${queue} worker...`);
+			worker.run();
+		}
 	}
 
 	@bindThis
 	public async stop(): Promise<void> {
-		await Promise.allSettled([
-			this.systemQueueWorker.close(),
-			this.dbQueueWorker.close(),
-			this.deliverQueueWorker.close(),
-			this.inboxQueueWorker.close(),
-			this.userWebhookDeliverQueueWorker.close(),
-			this.systemWebhookDeliverQueueWorker.close(),
-			this.relationshipQueueWorker.close(),
-			this.objectStorageQueueWorker.close(),
-			this.endedPollNotificationQueueWorker.close(),
-			this.schedulerNotePostQueueWorker.close(),
-			this.backgroundTaskWorker.close(),
-		]).then(res => {
+		const promises = Object.values(this.workers).map(w => promiseTry(() => w.close()));
+		const res = await Promise.allSettled(promises);
+		{
 			for (const result of res) {
 				if (result.status === 'rejected') {
 					this.logger.error(`Error closing queue: ${renderInlineError(result.reason)}`);
 				}
 			}
-		});
+		}
 	}
 
 	@bindThis
-	public async onApplicationShutdown(signal?: string | undefined): Promise<void> {
+	public async beforeApplicationShutdown(): Promise<void> {
 		this.logger.info('Stopping BullMQ workers...');
 		await this.stop();
 		this.logger.info('Workers disposed.');

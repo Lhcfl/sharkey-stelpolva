@@ -7,14 +7,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { In, EntityNotFoundError } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { FollowRequestsRepository, NotesRepository, MiUser, UsersRepository, AccessTokensRepository } from '@/models/_.js';
+import type { FollowRequestsRepository, NotesRepository, MiUser, UsersRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
 import type { MiGroupedNotification, MiNotification } from '@/models/Notification.js';
 import type { MiNote } from '@/models/Note.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { bindThis } from '@/decorators.js';
-import { FilterUnionByProperty, groupedNotificationTypes } from '@/types.js';
-import { CacheService } from '@/core/CacheService.js';
+import { FilterUnionByProperty } from '@/types.js';
+import { UtilityService } from '@/core/UtilityService.js';
+import { CacheService, type UserRelation } from '@/core/CacheService.js';
 import type { RoleEntityService } from './RoleEntityService.js';
 import type { ChatEntityService } from './ChatEntityService.js';
 import type { OnModuleInit } from '@nestjs/common';
@@ -49,15 +50,13 @@ export class NotificationEntityService implements OnModuleInit {
 		@Inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
-		@Inject(DI.accessTokensRepository)
-		private readonly accessTokensRepository: AccessTokensRepository,
-
 		private cacheService: CacheService,
+		private readonly utilityService: UtilityService,
 	) {
 	}
 
 	@bindThis
-	onModuleInit() {
+	public onModuleInit() {
 		this.userEntityService = this.moduleRef.get('UserEntityService');
 		this.noteEntityService = this.moduleRef.get('NoteEntityService');
 		this.roleEntityService = this.moduleRef.get('RoleEntityService');
@@ -303,19 +302,19 @@ export class NotificationEntityService implements OnModuleInit {
 	 */
 	#validateNotifier <T extends MiNotification | MiGroupedNotification> (
 		notification: T,
-		userIdsWhoMeMuting: Set<MiUser['id']>,
-		userMutedInstances: Set<string>,
+		notifierRelations: Map<string, UserRelation>,
 		notifiers: Map<string, MiUser>,
 	): boolean {
 		if (!('notifierId' in notification)) return true;
-		if (userIdsWhoMeMuting.has(notification.notifierId)) return false;
 
 		const notifier = notifiers.get(notification.notifierId) ?? null;
+		const notifierRelation = notifierRelations.get(notification.notifierId);
 
 		if (notifier == null) return false;
-		if (notifier.host && userMutedInstances.has(notifier.host)) return false;
+		if (notifierRelation?.isMuting) return false;
+		if (notifierRelation?.isMutingInstance) return false;
 
-		if (notifier.isSuspended) return false;
+		if (!this.utilityService.isActiveUser(notifier)) return false;
 
 		return true;
 	}
@@ -340,17 +339,15 @@ export class NotificationEntityService implements OnModuleInit {
 		const notifierIds = notifications.map(notification => 'notifierId' in notification ? notification.notifierId : null).filter(x => x != null);
 
 		const [
-			userIdsWhoMeMuting,
-			userMutedInstances,
+			userRelations,
 			notifiers,
 		] = await Promise.all([
-			this.cacheService.userMutingsCache.fetch(meId),
-			this.cacheService.userMutingsCache.fetch(meId),
+			this.cacheService.getUserRelations(meId, notifierIds),
 			this.cacheService.findUsersById(notifierIds),
 		]);
 
-		const filteredNotifications = ((await Promise.all(notifications.map(async (notification) => {
-			const isValid = this.#validateNotifier(notification, userIdsWhoMeMuting, userMutedInstances, notifiers);
+		const filteredNotifications = (((notifications.map((notification) => {
+			const isValid = this.#validateNotifier(notification, userRelations, notifiers);
 			return isValid ? notification : null;
 		}))) as [T | null] ).filter(x => x != null);
 

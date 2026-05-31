@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useWidgetPropsManager } from './widget.js';
 import type { WidgetComponentProps, WidgetComponentEmits, WidgetComponentExpose } from './widget.js';
 import XCalendar from './WidgetActivity.calendar.vue';
@@ -66,7 +66,7 @@ const activity = ref<{
 	replies: number;
 	renotes: number;
 }[] | null>(null);
-const fetching = ref(true);
+const fetching = ref(false);
 
 const toggleView = () => {
 	if (widgetProps.view === 1) {
@@ -77,11 +77,16 @@ const toggleView = () => {
 	save();
 };
 
-misskeyApiGet('charts/user/notes', {
-	userId: $i.id,
-	span: 'day',
-	limit: 7 * 21,
-}).then(res => {
+onMounted(async () => {
+	if (!$i) return;
+
+	fetching.value = true;
+	const res = await misskeyApiGet('charts/user/notes', {
+		userId: $i.id,
+		span: 'day',
+		limit: 7 * 21,
+	});
+
 	activity.value = res.diffs.normal.map((_, i) => ({
 		total: res.diffs.normal[i] + res.diffs.reply[i] + res.diffs.renote[i],
 		notes: res.diffs.normal[i],

@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #header>{{ i18n.ts._widgets.serverMetric }}</template>
 	<template #func="{ buttonStyleClass }"><button class="_button" :class="buttonStyleClass" @click="toggleView()"><i class="ti ti-selector"></i></button></template>
 
-	<div v-if="meta" data-cy-mkw-serverMetric class="mkw-serverMetric">
+	<div v-if="meta && connection" data-cy-mkw-serverMetric class="mkw-serverMetric">
 		<XCpuMemory v-if="widgetProps.view === 0" :connection="connection" :meta="meta"/>
 		<XNet v-else-if="widgetProps.view === 1" :connection="connection" :meta="meta"/>
 		<XCpu v-else-if="widgetProps.view === 2" :connection="connection" :meta="meta"/>
@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { useWidgetPropsManager } from '../widget.js';
 import type { WidgetComponentProps, WidgetComponentEmits, WidgetComponentExpose } from '../widget.js';
@@ -65,23 +65,24 @@ const { widgetProps, configure, save } = useWidgetPropsManager(name,
 );
 
 const meta = ref<Misskey.entities.ServerInfoResponse | null>(null);
-
-misskeyApiGet('server-info', {}).then(res => {
-	meta.value = res;
-});
+const connection = ref<Misskey.IChannelConnection<Misskey.Channels['serverStats']> | undefined>(undefined);
 
 const toggleView = () => {
 	if (widgetProps.view === 4) {
 		widgetProps.view = 0;
 	} else {
 		widgetProps.view++;
-	}
+	}	
 	save();
 };
 
-const connection = useStream().useChannel('serverStats');
+onMounted(async () => {
+	meta.value = await misskeyApiGet('server-info', {});
+	connection.value = useStream().useChannel('serverStats');
+});
+
 onUnmounted(() => {
-	connection.dispose();
+	connection.value?.dispose();
 });
 
 defineExpose<WidgetComponentExpose>({

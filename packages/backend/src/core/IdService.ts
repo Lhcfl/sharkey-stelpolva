@@ -16,14 +16,17 @@ import { genObjectId, isSafeObjectIdT, parseObjectId, parseObjectIdFull } from '
 import { bindThis } from '@/decorators.js';
 import { parseUlid, parseUlidFull } from '@/misc/id/ulid.js';
 
+const MAX_SIMPLE_ID = Math.pow(2, 50);
+
 @Injectable()
 export class IdService {
-	private method: string;
+	private readonly method: string;
 
 	constructor(
-		@Inject(DI.config)
-		private config: Config,
 		private readonly timeService: TimeService,
+
+		@Inject(DI.config)
+		config: Config,
 	) {
 		this.method = config.id.toLowerCase();
 	}
@@ -58,6 +61,25 @@ export class IdService {
 			case 'objectid': return genObjectId(t);
 			default: throw new Error('unrecognized id generation method');
 		}
+	}
+
+	/**
+	 * Returns a non-cryptographically-secure 50-bit random ID encoded as a base-26 string.
+	 * The output of this function is always 10 characters exactly, as 50 bits fits perfectly into 10 characters at 5 bits-per-character.
+	 *
+	 * Keep in sync with frontend randomId().
+	 *
+	 * @param random 	Unit float (0.0 to 1.0) used as source of random.
+	 * 								Exposed for unit testing only; should be undefined for production mode!
+	 * @returns 10-digit string containing 50 bits of non-secure entropy.
+	 */
+	@bindThis
+	public genSimple(random?: number): string {
+		if (random != null && random < 0) throw new Error(`random basis out of range: ${random}`);
+		if (random != null && random > 1) throw new Error(`random basis out of range: ${random}`);
+		const randomFloat = random ?? Math.random();
+		const randomInt = Math.round(randomFloat * MAX_SIMPLE_ID);
+		return randomInt.toString(26).padStart(10, '0');
 	}
 
 	@bindThis

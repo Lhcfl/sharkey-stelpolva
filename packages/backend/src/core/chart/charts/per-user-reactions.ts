@@ -6,6 +6,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import type { MiUser } from '@/models/User.js';
+import { isLocalUser } from '@/models/User.js';
 import type { MiNote } from '@/models/Note.js';
 import { AppLockService } from '@/core/AppLockService.js';
 import { TimeService } from '@/global/TimeService.js';
@@ -48,7 +49,7 @@ export default class PerUserReactionsChart extends Chart<typeof schema> { // esl
 
 	@bindThis
 	public update(user: { id: MiUser['id'], host: MiUser['host'] }, note: MiNote): void {
-		const prefix = this.userEntityService.isLocalUser(user) ? 'local' : 'remote';
+		const prefix = isLocalUser(user) ? 'local' : 'remote';
 		this.commit({
 			[`${prefix}.count`]: 1,
 		}, note.userId);

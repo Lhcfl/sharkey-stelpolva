@@ -139,6 +139,8 @@ export class DriveFileEntityService implements OnModuleInit {
 		return url;
 	}
 
+	// TODO quantum cache these?
+	// TODO transactions around this, otherwise multiple API process can lead to "double spend" of drive capacity. (AKA "the Starbucks hack" from back in the day)
 	@bindThis
 	public async calcDriveUsageOf(user: MiUser['id'] | { id: MiUser['id'] }): Promise<number> {
 		const id = typeof user === 'object' ? user.id : user;

@@ -11,6 +11,7 @@ import { DI } from '@/di-symbols.js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 import { instanceUnsignedFetchOptions } from '@/const.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
+import { MiMeta } from '@/models/Meta.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -654,6 +655,9 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
+		@Inject(DI.meta)
+		private readonly serverSettings: MiMeta,
+
 		@Inject(DI.config)
 		private config: Config,
 
@@ -661,7 +665,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private systemAccountService: SystemAccountService,
 	) {
 		super(meta, paramDef, async () => {
-			const instance = await this.metaService.fetch(true);
+			const instance = this.serverSettings;
 
 			const proxy = await this.systemAccountService.fetch('proxy');
 

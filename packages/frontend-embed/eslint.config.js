@@ -3,9 +3,9 @@ import tsParser from '@typescript-eslint/parser';
 import parser from 'vue-eslint-parser';
 import pluginVue from 'eslint-plugin-vue';
 import pluginMisskey from '@misskey-dev/eslint-plugin';
+import { build as buildLocales } from 'locales';
 import sharedConfig from '../shared/eslint.config.js';
-import localeRule from '../../eslint/locale.js';
-import { build as buildLocales } from '../../locales/index.js';
+import localeRule from '../shared/eslint/locale-eslint-rule.js';
 
 export default [
 	...sharedConfig,
@@ -52,7 +52,6 @@ export default [
 			'@typescript-eslint/no-empty-interface': ['error', {
 				allowSingleExtends: true,
 			}],
-			'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
 			// window の禁止理由: グローバルスコープと衝突し、予期せぬ結果を招くため
 			// e の禁止理由: error や event など、複数のキーワードの頭文字であり分かりにくいため
 			'id-denylist': ['error', 'window', 'e'],

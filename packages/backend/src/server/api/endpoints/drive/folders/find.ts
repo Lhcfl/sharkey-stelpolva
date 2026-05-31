@@ -59,7 +59,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				parentId: ps.parentId ?? IsNull(),
 			});
 
-			return await promiseMap(folders, async folder => await this.driveFolderEntityService.pack(folder), { limit: 4 });
+			return await promiseMap(folders, async folder => await this.driveFolderEntityService.pack(folder), { limiter: 4 });
 		});
 	}
 }

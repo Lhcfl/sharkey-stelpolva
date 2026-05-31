@@ -147,11 +147,6 @@ export const packedUserLiteSchema = {
 			nullable: false, optional: true,
 			default: false,
 		},
-		isSystem: {
-			type: 'boolean',
-			nullable: false, optional: true,
-			default: false,
-		},
 		noindex: {
 			type: 'boolean',
 			nullable: false, optional: false,
@@ -318,7 +313,7 @@ export const packedUserDetailedNotMeOnlySchema = {
 			format: 'uri',
 			nullable: true, optional: false,
 		},
-		// alsoKnownAs moved to packedUserDetailedNotMeOnly for privacy
+		// alsoKnownAs moved to packedMeDetailedOnlySchema for privacy
 		bannerUrl: {
 			type: 'string',
 			format: 'url',
@@ -481,6 +476,18 @@ export const packedUserDetailedNotMeOnlySchema = {
 			type: 'boolean',
 			nullable: false, optional: true,
 		},
+		isDeleted: {
+			type: 'boolean',
+			nullable: false, optional: true,
+		},
+		deletedAt: {
+			type: 'string',
+			nullable: true, optional: true,
+		},
+		isSystem: {
+			type: 'boolean',
+			nullable: false, optional: true,
+		},
 		//#region relations
 		isFollowing: {
 			type: 'boolean',
@@ -598,10 +605,6 @@ export const packedMeDetailedOnlySchema = {
 			nullable: false, optional: false,
 		},
 		isExplorable: {
-			type: 'boolean',
-			nullable: false, optional: false,
-		},
-		isDeleted: {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},

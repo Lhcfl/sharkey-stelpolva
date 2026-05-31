@@ -53,7 +53,6 @@ describe('UserEntityService', () => {
 				userId: user.id,
 			});
 
-			cacheManagementService.clear();
 			return user;
 		}
 
@@ -64,7 +63,6 @@ describe('UserEntityService', () => {
 				targetUserId: target.id,
 				memo,
 			});
-			cacheManagementService.clear();
 		}
 
 		async function follow(follower: MiUser, followee: MiUser) {
@@ -73,7 +71,6 @@ describe('UserEntityService', () => {
 				followerId: follower.id,
 				followeeId: followee.id,
 			});
-			cacheManagementService.clear();
 		}
 
 		async function requestFollow(requester: MiUser, requestee: MiUser) {
@@ -82,7 +79,6 @@ describe('UserEntityService', () => {
 				followerId: requester.id,
 				followeeId: requestee.id,
 			});
-			cacheManagementService.clear();
 		}
 
 		async function block(blocker: MiUser, blockee: MiUser) {
@@ -91,7 +87,6 @@ describe('UserEntityService', () => {
 				blockerId: blocker.id,
 				blockeeId: blockee.id,
 			});
-			cacheManagementService.clear();
 		}
 
 		async function mute(mutant: MiUser, mutee: MiUser) {
@@ -100,7 +95,6 @@ describe('UserEntityService', () => {
 				muterId: mutant.id,
 				muteeId: mutee.id,
 			});
-			cacheManagementService.clear();
 		}
 
 		async function muteRenote(mutant: MiUser, mutee: MiUser) {
@@ -109,7 +103,6 @@ describe('UserEntityService', () => {
 				muterId: mutant.id,
 				muteeId: mutee.id,
 			});
-			cacheManagementService.clear();
 		}
 
 		function randomIntRange(weight = 10) {
@@ -150,7 +143,7 @@ describe('UserEntityService', () => {
 			await mutingRepository.deleteAll();
 			await renoteMutingsRepository.deleteAll();
 			await usersRepository.deleteAll();
-			cacheManagementService.clear();
+			await cacheManagementService.clear();
 		});
 
 		test('UserLite', async() => {
@@ -201,7 +194,7 @@ describe('UserEntityService', () => {
 		});
 
 		describe('packManyによるpreloadがある時、preloadが無い時とpackの結果が同じになるか見たい', () => {
-			test('no-preload', async() => {
+			test('no-preload should pack isFollowing', async() => {
 				const me = await createUser();
 				// meがフォローしてる人たち
 				const followeeMe = await Promise.all(randomIntRange().map(() => createUser()));
@@ -217,6 +210,10 @@ describe('UserEntityService', () => {
 					expect(actual.isMuted).toBe(false);
 					expect(actual.isRenoteMuted).toBe(false);
 				}
+			});
+
+			test('no-preload should pack isFollowed', async() => {
+				const me = await createUser();
 
 				// meをフォローしてる人たち
 				const followerMe = await Promise.all(randomIntRange().map(() => createUser()));
@@ -232,6 +229,10 @@ describe('UserEntityService', () => {
 					expect(actual.isMuted).toBe(false);
 					expect(actual.isRenoteMuted).toBe(false);
 				}
+			});
+
+			test('no-preload should pack hasPendingFollowRequestFromYou', async() => {
+				const me = await createUser();
 
 				// meがフォローリクエストを送った人たち
 				const requestsFromYou = await Promise.all(randomIntRange().map(() => createUser()));
@@ -247,6 +248,10 @@ describe('UserEntityService', () => {
 					expect(actual.isMuted).toBe(false);
 					expect(actual.isRenoteMuted).toBe(false);
 				}
+			});
+
+			test('no-preload should pack hasPendingFollowRequestToYou', async() => {
+				const me = await createUser();
 
 				// meにフォローリクエストを送った人たち
 				const requestsToYou = await Promise.all(randomIntRange().map(() => createUser()));
@@ -262,6 +267,10 @@ describe('UserEntityService', () => {
 					expect(actual.isMuted).toBe(false);
 					expect(actual.isRenoteMuted).toBe(false);
 				}
+			});
+
+			test('no-preload should pack isBlocking', async() => {
+				const me = await createUser();
 
 				// meがブロックしてる人たち
 				const blockingYou = await Promise.all(randomIntRange().map(() => createUser()));
@@ -277,6 +286,10 @@ describe('UserEntityService', () => {
 					expect(actual.isMuted).toBe(false);
 					expect(actual.isRenoteMuted).toBe(false);
 				}
+			});
+
+			test('no-preload should pack isBlocked', async() => {
+				const me = await createUser();
 
 				// meをブロックしてる人たち
 				const blockingMe = await Promise.all(randomIntRange().map(() => createUser()));
@@ -292,6 +305,10 @@ describe('UserEntityService', () => {
 					expect(actual.isMuted).toBe(false);
 					expect(actual.isRenoteMuted).toBe(false);
 				}
+			});
+
+			test('no-preload should pack isMuted', async() => {
+				const me = await createUser();
 
 				// meがミュートしてる人たち
 				const muters = await Promise.all(randomIntRange().map(() => createUser()));
@@ -307,6 +324,10 @@ describe('UserEntityService', () => {
 					expect(actual.isMuted).toBe(true);
 					expect(actual.isRenoteMuted).toBe(false);
 				}
+			});
+
+			test('no-preload should pack isRenoteMuted', async() => {
+				const me = await createUser();
 
 				// meがリノートミュートしてる人たち
 				const renoteMuters = await Promise.all(randomIntRange().map(() => createUser()));
@@ -324,7 +345,7 @@ describe('UserEntityService', () => {
 				}
 			});
 
-			test('preload', async() => {
+			test('preload should pack isFollowing', async() => {
 				const me = await createUser();
 
 				{
@@ -345,6 +366,10 @@ describe('UserEntityService', () => {
 						expect(actual.isRenoteMuted).toBe(false);
 					}
 				}
+			});
+
+			test('preload should pack isFollowed', async() => {
+				const me = await createUser();
 
 				{
 					// meをフォローしてる人たち
@@ -364,6 +389,10 @@ describe('UserEntityService', () => {
 						expect(actual.isRenoteMuted).toBe(false);
 					}
 				}
+			});
+
+			test('preload should pack hasPendingFollowRequestFromYou', async() => {
+				const me = await createUser();
 
 				{
 					// meがフォローリクエストを送った人たち
@@ -383,6 +412,10 @@ describe('UserEntityService', () => {
 						expect(actual.isRenoteMuted).toBe(false);
 					}
 				}
+			});
+
+			test('preload should pack hasPendingFollowRequestToYou', async() => {
+				const me = await createUser();
 
 				{
 					// meにフォローリクエストを送った人たち
@@ -402,6 +435,10 @@ describe('UserEntityService', () => {
 						expect(actual.isRenoteMuted).toBe(false);
 					}
 				}
+			});
+
+			test('preload should pack isBlocking', async() => {
+				const me = await createUser();
 
 				{
 					// meがブロックしてる人たち
@@ -421,6 +458,10 @@ describe('UserEntityService', () => {
 						expect(actual.isRenoteMuted).toBe(false);
 					}
 				}
+			});
+
+			test('preload should pack isBlocked', async() => {
+				const me = await createUser();
 
 				{
 					// meをブロックしてる人たち
@@ -440,6 +481,10 @@ describe('UserEntityService', () => {
 						expect(actual.isRenoteMuted).toBe(false);
 					}
 				}
+			});
+
+			test('preload should pack isMuted', async() => {
+				const me = await createUser();
 
 				{
 					// meがミュートしてる人たち
@@ -459,6 +504,10 @@ describe('UserEntityService', () => {
 						expect(actual.isRenoteMuted).toBe(false);
 					}
 				}
+			});
+
+			test('preload should pack isRenoteMuted', async() => {
+				const me = await createUser();
 
 				{
 					// meがリノートミュートしてる人たち

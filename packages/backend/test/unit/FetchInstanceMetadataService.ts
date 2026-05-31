@@ -76,7 +76,7 @@ describe('FetchInstanceMetadataService', () => {
 
 	afterEach(async () => {
 		await instancesRepository.deleteAll();
-		cacheManagementService.clear();
+		await cacheManagementService.clear();
 	});
 
 	test('Lock and update', async () => {

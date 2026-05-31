@@ -4,7 +4,6 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import * as Redis from 'ioredis';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { NotesRepository, AntennasRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -12,10 +11,9 @@ import { DI } from '@/di-symbols.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { IdService } from '@/core/IdService.js';
 import { TimeService } from '@/global/TimeService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { trackPromise } from '@/misc/promise-tracker.js';
-import ActiveUsersChart from '@/core/chart/charts/active-users.js';
+import { UserService } from '@/core/UserService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 import { ApiError } from '../../error.js';
 
@@ -77,12 +75,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
 		private fanoutTimelineService: FanoutTimelineService,
-		private globalEventService: GlobalEventService,
-		private readonly activeUsersChart: ActiveUsersChart,
 		private readonly timeService: TimeService,
 		private readonly collapsedQueueService: CollapsedQueueService,
+		private readonly userService: UserService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			this.userService.markUserActive(me);
+
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
 			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);
 
@@ -98,13 +98,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// falseだった場合はアンテナの配信先が増えたことを通知したい
 			const needPublishEvent = !antenna.isActive;
 
-			await this.collapsedQueueService.updateAntennaQueue.enqueue(antenna.id, {
+			this.collapsedQueueService.updateAntennaQueue.enqueue(antenna.id, {
 				isActive: true,
 				lastUsedAt: this.timeService.date,
 			});
 
 			if (needPublishEvent) {
-				this.globalEventService.publishInternalEvent('antennaUpdated', antenna);
+				await this.internalEventService.emit('antennaUpdated', antenna);
 			}
 
 			let noteIds = await this.fanoutTimelineService.get(`antennaTimeline:${antenna.id}`, untilId, sinceId);
@@ -134,11 +134,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
 
 			const notes = await query.getMany();
-
-			process.nextTick(() => {
-				this.activeUsersChart.read(me);
-			});
-
 			return await this.noteEntityService.packMany(notes, me);
 		});
 	}

@@ -9,6 +9,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import type { UserProfilesRepository, UserSecurityKeysRepository } from '@/models/_.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../../error.js';
 
@@ -51,6 +52,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private userEntityService: UserEntityService,
 		private globalEventService: GlobalEventService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.value === true) {
@@ -70,6 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					await this.userProfilesRepository.update(me.id, {
 						usePasswordLessLogin: false,
 					});
+					await this.internalEventService.emit('updateUserProfile', { userId: me.id, keys: ['usePasswordLessLogin'] });
 
 					throw new ApiError(meta.errors.noKey);
 				}
@@ -78,9 +81,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.userProfilesRepository.update(me.id, {
 				usePasswordLessLogin: ps.value,
 			});
+			await this.internalEventService.emit('updateUserProfile', { userId: me.id, keys: ['usePasswordLessLogin'] });
 
 			// Publish meUpdated event
-			this.globalEventService.publishMainStream(me.id, 'meUpdated', await this.userEntityService.pack(me.id, me, {
+			await this.globalEventService.publishMainStream(me.id, 'meUpdated', await this.userEntityService.pack(me.id, me, {
 				schema: 'MeDetailed',
 				includeSecrets: true,
 			}));

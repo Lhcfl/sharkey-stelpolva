@@ -7,7 +7,6 @@ import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { Inject, Injectable } from '@nestjs/common';
-import rename from 'rename';
 import sharp from 'sharp';
 import { sharpBmp } from '@misskey-dev/sharp-read-bmp';
 import type { Config } from '@/config.js';
@@ -28,6 +27,7 @@ import { bindThis } from '@/decorators.js';
 import { isMimeImage } from '@/misc/is-mime-image.js';
 import { correctFilename } from '@/misc/correct-filename.js';
 import { handleRequestRedirectToOmitSearch } from '@/misc/fastify-hook-handlers.js';
+import { renamePath } from '@/misc/rename-file.js';
 import { getIpHash } from '@/misc/get-ip-hash.js';
 import { AuthenticateService } from '@/server/api/AuthenticateService.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
@@ -256,10 +256,10 @@ export class FileServerService {
 			}
 
 			if (file.fileRole !== 'original') {
-				const filename = rename(file.filename, {
+				const filename = renamePath(file.filename, {
 					suffix: file.fileRole === 'thumbnail' ? '-thumb' : '-web',
 					extname: file.ext ? `.${file.ext}` : '.unknown',
-				}).toString();
+				});
 
 				reply.header('Content-Type', FILE_TYPE_BROWSERSAFE.includes(file.mime) ? file.mime : 'application/octet-stream');
 				reply.header('Cache-Control', 'max-age=31536000, immutable');

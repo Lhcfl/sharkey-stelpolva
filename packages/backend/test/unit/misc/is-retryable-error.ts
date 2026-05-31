@@ -43,6 +43,12 @@ describe(isRetryableError, () => {
 		expect(result).toBeFalsy();
 	});
 
+	it('should return false for TypeError', () => {
+		const error = new TypeError();
+		const result = isRetryableError(error);
+		expect(result).toBe(false);
+	});
+
 	it('should return true for typed AbortError', () => {
 		const error = new AbortError();
 		const result = isRetryableError(error);

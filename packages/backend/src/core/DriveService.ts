@@ -15,6 +15,7 @@ import type { DriveFilesRepository, UsersRepository, DriveFoldersRepository, Use
 import type { Config } from '@/config.js';
 import Logger from '@/logger.js';
 import type { MiRemoteUser, MiUser } from '@/models/User.js';
+import { isLocalUser } from '@/models/User.js';
 import { MiDriveFile } from '@/models/DriveFile.js';
 import { IdService } from '@/core/IdService.js';
 import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
@@ -44,6 +45,7 @@ import { correctFilename } from '@/misc/correct-filename.js';
 import { isMimeImage } from '@/misc/is-mime-image.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { BunnyService } from '@/core/BunnyService.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { LoggerService } from './LoggerService.js';
@@ -58,7 +60,7 @@ type AddFileArgs = {
 	/** Comment */
 	comment?: string | null;
 	/** Folder ID */
-	folderId?: any;
+	folderId?: string | null;
 	/** If set to true, forcibly upload the file even if there is a file with the same hash. */
 	force?: boolean;
 	/** Do not save file to local */
@@ -136,6 +138,7 @@ export class DriveService {
 		private perUserDriveChart: PerUserDriveChart,
 		private instanceChart: InstanceChart,
 		private utilityService: UtilityService,
+		private readonly cacheService: CacheService,
 
 		loggerService: LoggerService,
 	) {
@@ -532,7 +535,7 @@ export class DriveService {
 		//#region Check drive usage
 		if (user && !isLink) {
 			const usage = await this.driveFileEntityService.calcDriveUsageOf(user);
-			const isLocalUser = this.userEntityService.isLocalUser(user);
+			const isLocal = isLocalUser(user);
 
 			const policies = await this.roleService.getUserPolicies(user.id);
 			const driveCapacity = 1024 * 1024 * policies.driveCapacityMb;
@@ -541,7 +544,7 @@ export class DriveService {
 			this.registerLogger.debug(`overrideCap: ${driveCapacity}bytes, usage: ${usage}bytes, u+s: ${usage + info.size}bytes`);
 
 			if (maxFileSize < info.size) {
-				if (isLocalUser) {
+				if (isLocal) {
 					throw new IdentifiableError('f9e4e5f3-4df4-40b5-b400-f236945f7073', 'Max file size exceeded.');
 				} else {
 					// For remote users, throwing an exception will break Activity processing.
@@ -553,10 +556,10 @@ export class DriveService {
 			// If usage limit exceeded
 			// Repeat the "!isLink" check because it could be set to true by the previous block.
 			if (driveCapacity < usage + info.size && !isLink) {
-				if (isLocalUser) {
+				if (isLocal) {
 					throw new IdentifiableError('c6244ed2-a39a-4e1c-bf93-f0fbd7764fa6', 'No free space.', true);
 				}
-				await this.expireOldFile(await this.usersRepository.findOneByOrFail({ id: user.id }) as MiRemoteUser, driveCapacity - info.size);
+				await this.expireOldFile(await this.cacheService.findRemoteUserById(user.id), driveCapacity - info.size);
 			}
 		}
 		//#endregion
@@ -590,7 +593,7 @@ export class DriveService {
 			properties['orientation'] = info.orientation;
 		}
 
-		const profile = user ? await this.userProfilesRepository.findOneBy({ userId: user.id }) : null;
+		const profile = user ? await this.cacheService.userProfileCache.fetchMaybe(user.id) : null;
 
 		const folder = await fetchFolder();
 
@@ -608,7 +611,7 @@ export class DriveService {
 		file.maybeSensitive = info.sensitive;
 		file.maybePorn = info.porn;
 		file.isSensitive = user
-			? this.userEntityService.isLocalUser(user) && (profile!.alwaysMarkNsfw || profile!.defaultSensitive) ? true :
+			? isLocalUser(user) && (profile!.alwaysMarkNsfw || profile!.defaultSensitive) ? true :
 			sensitive ?? false
 			: false;
 
@@ -684,7 +687,7 @@ export class DriveService {
 
 	@bindThis
 	public async updateFile(file: MiDriveFile, values: Partial<MiDriveFile>, updater: MiUser) {
-		const profile = file.userId ? await this.userProfilesRepository.findOneBy({ userId: file.userId }) : null;
+		const profile = file.userId ? await this.cacheService.userProfileCache.fetchMaybe(file.userId) : null;
 		const alwaysMarkNsfw = file.userId ? (await this.roleService.getUserPolicies(file.userId)).alwaysMarkNsfw || (profile !== null && profile!.alwaysMarkNsfw) : false;
 
 		if (values.name != null && !this.driveFileEntityService.validateFileName(values.name)) {
@@ -717,7 +720,7 @@ export class DriveService {
 
 		if (await this.roleService.isModerator(updater) && (file.userId !== updater.id)) {
 			if (values.isSensitive !== undefined && values.isSensitive !== file.isSensitive) {
-				const user = file.userId ? await this.usersRepository.findOneByOrFail({ id: file.userId }) : null;
+				const user = file.userId ? await this.cacheService.findUserById(file.userId) : null;
 				if (values.isSensitive) {
 					await this.moderationLogService.log(updater, 'markSensitiveDriveFile', {
 						fileId: file.id,
@@ -809,7 +812,7 @@ export class DriveService {
 		}
 
 		if (deleter && await this.roleService.isModerator(deleter) && (file.userId !== deleter.id)) {
-			const user = file.userId ? await this.usersRepository.findOneByOrFail({ id: file.userId }) : null;
+			const user = file.userId ? await this.cacheService.findUserById(file.userId) : null;
 			await this.moderationLogService.log(deleter, 'deleteDriveFile', {
 				fileId: file.id,
 				fileUserId: file.userId,

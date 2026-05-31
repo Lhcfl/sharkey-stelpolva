@@ -3,6 +3,7 @@
 	"private": true,
 	"scripts": {
 		"watch": "nodemon -w ../../package.json -e json --exec \"node build.js watch\"",
+		"watch:fast": "nodemon -w ../../package.json -e json --exec \"node build.js watch --no-clean\"",
 		"build": "node build.js",
 		"typecheck-all": "pnpm run --no-bail typecheck:sw && pnpm run --no-bail typecheck:scripts",
 		"typecheck": "pnpm run typecheck:sw && pnpm run typecheck:scripts",
@@ -13,16 +14,18 @@
 	},
 	"dependencies": {
 		"idb-keyval": "6.2.2",
-		"misskey-js": "workspace:*"
+		"locales": "workspace:*",
+		"misskey-js": "workspace:*",
+		"frontend-shared": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/node": "22.18.1",
-		"@typescript-eslint/parser": "8.44.1",
+		"@typescript-eslint/parser": "8.57.1",
 		"@typescript/lib-webworker": "npm:@types/serviceworker@0.0.153",
-		"esbuild": "0.25.10",
+		"esbuild": "0.27.4",
 		"eslint-plugin-import": "2.32.0",
 		"nodemon": "3.1.10",
-		"typescript": "5.9.2"
+		"typescript": "5.9.3"
 	},
 	"type": "module"
 }

@@ -4,24 +4,28 @@
  */
 
 import * as mfm from 'mfm-js';
-import { DataSource, In } from 'typeorm';
+import { DataSource, In, IsNull, Not } from 'typeorm';
 import * as Redis from 'ioredis';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { UnrecoverableError } from 'bullmq';
 import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mfm.js';
 import { extractHashtags } from '@/misc/extract-hashtags.js';
+import { concat } from '@/misc/prelude/array.js';
+import { isRemoteUser, isLocalUser } from '@/models/User.js';
+import { normalizeForSearch } from '@/misc/normalize-for-search.js';
+import { bindThis } from '@/decorators.js';
+import { isReply } from '@/misc/is-reply.js';
+import { isPureRenote } from '@/misc/is-renote.js';
 import type { IMentionedRemoteUsers } from '@/models/Note.js';
 import { MiNote } from '@/models/Note.js';
-import type { NoteEditsRepository, ChannelFollowingsRepository, ChannelsRepository, FollowingsRepository, InstancesRepository, MiMeta, MutingsRepository, NotesRepository, NoteThreadMutingsRepository, UserListMembershipsRepository, UserProfilesRepository, UsersRepository, PollsRepository } from '@/models/_.js';
+import type { NoteEditsRepository, ChannelFollowingsRepository, ChannelsRepository, FollowingsRepository, InstancesRepository, MiMeta, MutingsRepository, NotesRepository, NoteThreadMutingsRepository, UserListMembershipsRepository, UserProfilesRepository, UsersRepository, PollsRepository, NoteReactionsRepository } from '@/models/_.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import type { MiApp } from '@/models/App.js';
-import { concat } from '@/misc/prelude/array.js';
+import type { Queues } from '@/queue/types.js';
 import { IdService } from '@/core/IdService.js';
 import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
-import { isRemoteUser, isLocalUser } from '@/models/User.js';
 import { MiPoll, type IPoll } from '@/models/Poll.js';
 import type { MiChannel } from '@/models/Channel.js';
-import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import { RelayService } from '@/core/RelayService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { DI } from '@/di-symbols.js';
@@ -36,22 +40,17 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
 import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
-import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import { SearchService } from '@/core/SearchService.js';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { CacheService } from '@/core/CacheService.js';
-import { isReply } from '@/misc/is-reply.js';
-import { trackTask } from '@/misc/promise-tracker.js';
-import { isUserRelated } from '@/misc/is-user-related.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
-import { isPureRenote } from '@/misc/is-renote.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention' | 'edited';
@@ -197,6 +196,12 @@ export class NoteEditService implements OnApplicationShutdown {
 
 		@Inject(DI.pollsRepository)
 		private pollsRepository: PollsRepository,
+
+		@Inject(DI.noteReactionsRepository)
+		private readonly noteReactionsRepository: NoteReactionsRepository,
+
+		@Inject('queue:endedPollNotification')
+		private readonly endedPollNotificationQueue: Queues['endedPollNotification'],
 
 		private noteEntityService: NoteEntityService,
 		private idService: IdService,
@@ -438,7 +443,7 @@ export class NoteEditService implements OnApplicationShutdown {
 		tags = tags.filter(tag => Array.from(tag).length <= 128).splice(0, 32);
 
 		if (data.reply && (user.id !== data.reply.userId) && !mentionedUsers.some(u => u.id === data.reply!.userId)) {
-			mentionedUsers.push(await this.usersRepository.findOneByOrFail({ id: data.reply!.userId }));
+			mentionedUsers.push(await this.cacheService.findUserById(data.reply.userId));
 		}
 
 		if (data.visibility === 'specified') {
@@ -451,7 +456,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			}
 
 			if (data.reply && !data.visibleUsers.some(x => x.id === data.reply!.userId)) {
-				data.visibleUsers.push(await this.usersRepository.findOneByOrFail({ id: data.reply!.userId }));
+				data.visibleUsers.push(await this.cacheService.findUserById(data.reply.userId));
 			}
 		}
 
@@ -548,9 +553,9 @@ export class NoteEditService implements OnApplicationShutdown {
 
 			if (mentionedUsers.length > 0) {
 				note.mentions = mentionedUsers.map(u => u.id);
-				const profiles = await this.userProfilesRepository.findBy({ userId: In(note.mentions) });
+				const profiles = new Map(await this.cacheService.userProfileCache.fetchMany(note.mentions));
 				note.mentionedRemoteUsers = JSON.stringify(mentionedUsers.filter(u => isRemoteUser(u)).map(u => {
-					const profile = profiles.find(p => p.userId === u.id);
+					const profile = profiles.get(u.id);
 					const url = profile != null ? profile.url : null;
 					return {
 						uri: u.uri,
@@ -612,7 +617,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			if (isRemoteUser(user)) {
 				this.federatedInstanceService.fetchOrRegister(user.host).then(async i => {
 					if (note.renote && note.text || !note.renote) {
-						await this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { notesCountDelta: 1 });
+						this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { notesCountDelta: 1 });
 					}
 					if (this.meta.enableChartsForFederatedInstances) {
 						this.instanceChart.updateNote(i.host, note, true);
@@ -621,15 +626,15 @@ export class NoteEditService implements OnApplicationShutdown {
 			}
 		}
 
-		await this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: this.timeService.date });
+		this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: this.timeService.date });
 
 		// ハッシュタグ更新
 		await this.pushToTl(note, user);
 
 		if (data.poll && data.poll.expiresAt) {
 			const delay = data.poll.expiresAt.getTime() - this.timeService.now;
-			await this.queueService.endedPollNotificationQueue.remove(`pollEnd:${note.id}`);
-			await this.queueService.endedPollNotificationQueue.add(note.id, {
+			await this.endedPollNotificationQueue.remove(`pollEnd:${note.id}`);
+			await this.endedPollNotificationQueue.add(note.id, {
 				noteId: note.id,
 			}, {
 				jobId: `pollEnd_${note.id}`,
@@ -639,14 +644,9 @@ export class NoteEditService implements OnApplicationShutdown {
 		}
 
 		if (!silent) {
-			if (isLocalUser(user)) this.activeUsersChart.write(user);
-
 			// Pack the note
 			const noteObj = await this.noteEntityService.pack(note, null, { skipHide: true, withReactionAndUserPairCache: true });
-			this.globalEventService.publishNoteStream(note.id, 'updated', {
-				cw: note.cw,
-				text: note.text ?? '',
-			});
+			await this.globalEventService.publishNoteStream(note.id, 'updated', { id: note.id, userId: note.userId, body: {} });
 
 			await this.roleService.addNoteToRoleTimeline(noteObj);
 
@@ -662,15 +662,13 @@ export class NoteEditService implements OnApplicationShutdown {
 
 					const [
 						isThreadMuted,
-						userIdsWhoMeMuting,
+						relationship,
 					] = await Promise.all([
 						this.cacheService.threadMutingsCache.fetch(data.reply.userId).then(ms => ms.has(threadId)),
-						this.cacheService.userMutingsCache.fetch(data.reply.userId),
+						this.cacheService.getUserRelation(data.reply.userId, note.userId),
 					]);
 
-					const muted = isUserRelated(note, userIdsWhoMeMuting);
-
-					if (!isThreadMuted && !muted) {
+					if (!isThreadMuted && !relationship.isMuting) {
 						nm.push(data.reply.userId, 'edited');
 						this.globalEventService.publishMainStream(data.reply.userId, 'edited', noteObj);
 						await this.webhookService.enqueueUserWebhook(data.reply.userId, 'reply', { note: noteObj });
@@ -682,7 +680,7 @@ export class NoteEditService implements OnApplicationShutdown {
 
 			//#region AP deliver
 			if (!data.localOnly && isLocalUser(user)) {
-				await trackTask(async () => {
+				{
 					const noteActivity = await this.apRendererService.renderNoteOrRenoteActivity(note, user, { renote: data.renote });
 					const dm = this.apDeliverManagerService.createDeliverManager(user, noteActivity);
 
@@ -693,13 +691,13 @@ export class NoteEditService implements OnApplicationShutdown {
 
 					// 投稿がリプライかつ投稿者がローカルユーザーかつリプライ先の投稿の投稿者がリモートユーザーなら配送
 					if (data.reply && data.reply.userHost !== null) {
-						const u = await this.usersRepository.findOneBy({ id: data.reply.userId });
+						const u = await this.cacheService.findOptionalUserById(data.reply.userId);
 						if (u && isRemoteUser(u)) dm.addDirectRecipe(u);
 					}
 
 					// 投稿がRenoteかつ投稿者がローカルユーザーかつRenote元の投稿の投稿者がリモートユーザーなら配送
 					if (this.isRenote(data) && data.renote.userHost !== null) {
-						const u = await this.usersRepository.findOneBy({ id: data.renote.userId });
+						const u = await this.cacheService.findOptionalUserById(data.renote.id);
 						if (u && isRemoteUser(u)) dm.addDirectRecipe(u);
 					}
 
@@ -709,17 +707,32 @@ export class NoteEditService implements OnApplicationShutdown {
 					}
 
 					if (['public', 'home'].includes(note.visibility)) {
-						// Send edit event to all users who replied to,
-						// renoted a post or reacted to a note.
-						const noteId = note.id;
-						const users = await this.usersRepository.createQueryBuilder()
-							.where(
-								'id IN (SELECT "userId" FROM note WHERE "replyId" = :noteId OR "renoteId" = :noteId UNION SELECT "userId" FROM note_reaction WHERE "noteId" = :noteId)',
-								{ noteId },
-							)
-							.andWhere('host IS NOT NULL')
-							.getMany();
-						for (const u of users) {
+						// Send edit event to all users who replied to, renoted, or reacted to a note.
+						const rawUsers = await Promise.all([
+							this.notesRepository.createQueryBuilder('note')
+								.select('note.userId', 'userId')
+								.where({ replyId: note.id, userId: Not(note.userId), userHost: Not(IsNull()) })
+								.distinct()
+								.getRawMany<{ userId: string }>(),
+							this.notesRepository.createQueryBuilder('note')
+								.select('note.userId', 'userId')
+								.where({ renoteId: note.id, userId: Not(note.userId), userHost: Not(IsNull()) })
+								.distinct()
+								.getRawMany<{ userId: string }>(),
+							this.noteReactionsRepository.createQueryBuilder('reaction')
+								.select('reaction.userId', 'userId')
+								.where({ noteId: note.id, userId: Not(note.userId) })
+								.innerJoin('reaction.user', 'user')
+								.andWhere('user.host IS NOT NULL')
+								.distinct()
+								.getRawMany<{ userId: string }>(),
+						]);
+
+						const allUserIds = rawUsers.flatMap(users => users.map(u => u.userId));
+						const uniqueUserIds = new Set(allUserIds);
+						const allUsers = await this.cacheService.findUsersById(uniqueUserIds);
+
+						for (const u of allUsers.values()) {
 							// User was verified to be remote by checking
 							// whether host IS NOT NULL in SQL query.
 							dm.addDirectRecipe(u as MiRemoteUser);
@@ -731,7 +744,7 @@ export class NoteEditService implements OnApplicationShutdown {
 					if (['public'].includes(note.visibility)) {
 						await this.relayService.deliverToRelays(user, noteActivity);
 					}
-				});
+				}
 			}
 			//#endregion
 		}
@@ -792,9 +805,9 @@ export class NoteEditService implements OnApplicationShutdown {
 		const r = this.redisForTimelines.pipeline();
 
 		if (note.channelId) {
-			this.fanoutTimelineService.push(`channelTimeline:${note.channelId}`, note.id, this.config.perChannelMaxNoteCacheCount, r);
+			await this.fanoutTimelineService.push(`channelTimeline:${note.channelId}`, note.id, this.config.perChannelMaxNoteCacheCount, r);
 
-			this.fanoutTimelineService.push(`userTimelineWithChannel:${user.id}`, note.id, note.userHost == null ? this.meta.perLocalUserUserTimelineCacheMax : this.meta.perRemoteUserUserTimelineCacheMax, r);
+			await this.fanoutTimelineService.push(`userTimelineWithChannel:${user.id}`, note.id, note.userHost == null ? this.meta.perLocalUserUserTimelineCacheMax : this.meta.perRemoteUserUserTimelineCacheMax, r);
 
 			const channelFollowings = await this.channelFollowingsRepository.find({
 				where: {
@@ -804,16 +817,23 @@ export class NoteEditService implements OnApplicationShutdown {
 			});
 
 			for (const channelFollowing of channelFollowings) {
-				this.fanoutTimelineService.push(`homeTimeline:${channelFollowing.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
+				await this.fanoutTimelineService.push(`homeTimeline:${channelFollowing.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
 				if (note.fileIds.length > 0) {
-					this.fanoutTimelineService.push(`homeTimelineWithFiles:${channelFollowing.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
+					await this.fanoutTimelineService.push(`homeTimelineWithFiles:${channelFollowing.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
 				}
 			}
 		} else {
 			// TODO: キャッシュ？
 			// eslint-disable-next-line prefer-const
 			let [followings, userListMemberships] = await Promise.all([
-				this.cacheService.getNonHibernatedFollowers(user.id),
+				this.followingsRepository.find({
+					where: {
+						followeeId: user.id,
+						followerHost: IsNull(),
+						isFollowerHibernated: false,
+					},
+					select: ['followerId', 'withReplies'],
+				}),
 				this.cacheService.userListMembershipsCache.fetch(user.id).then(ms => ms.values().toArray()),
 			]);
 
@@ -824,7 +844,6 @@ export class NoteEditService implements OnApplicationShutdown {
 
 			// TODO: あまりにも数が多いと redisPipeline.exec に失敗する(理由は不明)ため、3万件程度を目安に分割して実行するようにする
 			for (const following of followings) {
-				if (following.followerHost !== null) continue;
 				// 基本的にvisibleUserIdsには自身のidが含まれている前提であること
 				if (note.visibility === 'specified' && !note.visibleUserIds.some(v => v === following.followerId)) continue;
 
@@ -833,9 +852,9 @@ export class NoteEditService implements OnApplicationShutdown {
 					if (!following.withReplies) continue;
 				}
 
-				this.fanoutTimelineService.push(`homeTimeline:${following.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
+				await this.fanoutTimelineService.push(`homeTimeline:${following.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
 				if (note.fileIds.length > 0) {
-					this.fanoutTimelineService.push(`homeTimelineWithFiles:${following.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
+					await this.fanoutTimelineService.push(`homeTimelineWithFiles:${following.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
 				}
 			}
 
@@ -852,42 +871,42 @@ export class NoteEditService implements OnApplicationShutdown {
 					if (!userListMembership.withReplies) continue;
 				}
 
-				this.fanoutTimelineService.push(`userListTimeline:${userListMembership.userListId}`, note.id, this.meta.perUserListTimelineCacheMax, r);
+				await this.fanoutTimelineService.push(`userListTimeline:${userListMembership.userListId}`, note.id, this.meta.perUserListTimelineCacheMax, r);
 				if (note.fileIds.length > 0) {
-					this.fanoutTimelineService.push(`userListTimelineWithFiles:${userListMembership.userListId}`, note.id, this.meta.perUserListTimelineCacheMax / 2, r);
+					await this.fanoutTimelineService.push(`userListTimelineWithFiles:${userListMembership.userListId}`, note.id, this.meta.perUserListTimelineCacheMax / 2, r);
 				}
 			}
 
 			// 自分自身のHTL
 			if (note.userHost == null) {
 				if (note.visibility !== 'specified' || !note.visibleUserIds.some(v => v === user.id)) {
-					this.fanoutTimelineService.push(`homeTimeline:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
+					await this.fanoutTimelineService.push(`homeTimeline:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
 					if (note.fileIds.length > 0) {
-						this.fanoutTimelineService.push(`homeTimelineWithFiles:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
+						await this.fanoutTimelineService.push(`homeTimelineWithFiles:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
 					}
 				}
 			}
 
 			// 自分自身以外への返信
 			if (isReply(note)) {
-				this.fanoutTimelineService.push(`userTimelineWithReplies:${user.id}`, note.id, note.userHost == null ? this.meta.perLocalUserUserTimelineCacheMax : this.meta.perRemoteUserUserTimelineCacheMax, r);
+				await this.fanoutTimelineService.push(`userTimelineWithReplies:${user.id}`, note.id, note.userHost == null ? this.meta.perLocalUserUserTimelineCacheMax : this.meta.perRemoteUserUserTimelineCacheMax, r);
 
 				if (note.visibility === 'public' && note.userHost == null) {
-					this.fanoutTimelineService.push('localTimelineWithReplies', note.id, 300, r);
+					await this.fanoutTimelineService.push('localTimelineWithReplies', note.id, 300, r);
 					if (note.replyUserHost == null) {
-						this.fanoutTimelineService.push(`localTimelineWithReplyTo:${note.replyUserId}`, note.id, 300 / 10, r);
+						await this.fanoutTimelineService.push(`localTimelineWithReplyTo:${note.replyUserId}`, note.id, 300 / 10, r);
 					}
 				}
 			} else {
-				this.fanoutTimelineService.push(`userTimeline:${user.id}`, note.id, note.userHost == null ? this.meta.perLocalUserUserTimelineCacheMax : this.meta.perRemoteUserUserTimelineCacheMax, r);
+				await this.fanoutTimelineService.push(`userTimeline:${user.id}`, note.id, note.userHost == null ? this.meta.perLocalUserUserTimelineCacheMax : this.meta.perRemoteUserUserTimelineCacheMax, r);
 				if (note.fileIds.length > 0) {
-					this.fanoutTimelineService.push(`userTimelineWithFiles:${user.id}`, note.id, note.userHost == null ? this.meta.perLocalUserUserTimelineCacheMax / 2 : this.meta.perRemoteUserUserTimelineCacheMax / 2, r);
+					await this.fanoutTimelineService.push(`userTimelineWithFiles:${user.id}`, note.id, note.userHost == null ? this.meta.perLocalUserUserTimelineCacheMax / 2 : this.meta.perRemoteUserUserTimelineCacheMax / 2, r);
 				}
 
 				if (note.visibility === 'public' && note.userHost == null) {
-					this.fanoutTimelineService.push('localTimeline', note.id, 1000, r);
+					await this.fanoutTimelineService.push('localTimeline', note.id, 1000, r);
 					if (note.fileIds.length > 0) {
-						this.fanoutTimelineService.push('localTimelineWithFiles', note.id, 500, r);
+						await this.fanoutTimelineService.push('localTimelineWithFiles', note.id, 500, r);
 					}
 				}
 			}

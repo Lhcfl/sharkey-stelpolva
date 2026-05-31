@@ -3,17 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import type { MiUserListMembership, UserListMembershipsRepository, UserListsRepository } from '@/models/_.js';
+import { Injectable } from '@nestjs/common';
 import type { Packed } from '@/misc/json-schema.js';
+import { CacheService } from '@/core/CacheService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { UserListService } from '@/core/UserListService.js';
-import { DI } from '@/di-symbols.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import { bindThis } from '@/decorators.js';
 import { isPackedPureRenote } from '@/misc/is-renote.js';
 import type { JsonObject } from '@/misc/json-value.js';
-import { type Channel, NoteChannel, type MiChannelService } from '../channel.js';
+import { NoteChannel, type Channel, type MiChannelService } from '../channel.js';
 
 class UserListChannel extends NoteChannel {
 	public readonly chName = 'userList';
@@ -29,8 +27,7 @@ class UserListChannel extends NoteChannel {
 		connection: Channel['connection'],
 		noteEntityService: NoteEntityService,
 
-		private userListsRepository: UserListsRepository,
-		private userListMembershipsRepository: UserListMembershipsRepository,
+		private readonly cacheService: CacheService,
 		private readonly userListService: UserListService,
 	) {
 		super(id, connection, noteEntityService);
@@ -41,7 +38,6 @@ class UserListChannel extends NoteChannel {
 	@bindThis
 	public async init(params: JsonObject): Promise<boolean> {
 		if (!this.user) return false;
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
 		if (typeof params.listId !== 'string') return false;
 		this.listId = params.listId;
 		this.withFiles = !!(params.withFiles ?? false);
@@ -75,8 +71,8 @@ class UserListChannel extends NoteChannel {
 	@bindThis
 	public dispose() {
 		// Unsubscribe events
-		this.subscriber?.off(`userListStream:${this.listId}`, this.send);
-		this.subscriber?.off('notesStream', this.onNote);
+		this.subscriber.off(`userListStream:${this.listId}`, this.send);
+		this.subscriber.off('notesStream', this.onNote);
 	}
 }
 
@@ -87,13 +83,8 @@ export class UserListChannelService implements MiChannelService<true> {
 	public readonly kind = UserListChannel.kind;
 
 	constructor(
-		@Inject(DI.userListsRepository)
-		private userListsRepository: UserListsRepository,
-
-		@Inject(DI.userListMembershipsRepository)
-		private userListMembershipsRepository: UserListMembershipsRepository,
-
-		private noteEntityService: NoteEntityService,
+		private readonly noteEntityService: NoteEntityService,
+		private readonly cacheService: CacheService,
 		private readonly userListService: UserListService,
 	) {
 	}
@@ -104,8 +95,7 @@ export class UserListChannelService implements MiChannelService<true> {
 			id,
 			connection,
 			this.noteEntityService,
-			this.userListsRepository,
-			this.userListMembershipsRepository,
+			this.cacheService,
 			this.userListService,
 		);
 	}

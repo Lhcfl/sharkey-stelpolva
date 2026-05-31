@@ -64,7 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			return await promiseMap(apps, async app => await this.appEntityService.pack(app, me, {
 				detail: true,
 			}), {
-				limit: 4,
+				limiter: 4,
 			});
 		});
 	}

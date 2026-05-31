@@ -20,14 +20,15 @@ import { RoleService } from '@/core/RoleService.js';
 import type { Config } from '@/config.js';
 import { sendRateLimitHeaders } from '@/misc/rate-limit-utils.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
-import { TimeService, type TimerHandle } from '@/global/TimeService.js';
+import { ServerUtilityService } from '@/server/ServerUtilityService.js';
+import { TimeService } from '@/global/TimeService.js';
+import { CacheManagementService, type ManagedMemoryKVCache } from '@/global/CacheManagementService.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { renderFullError } from '@/misc/render-full-error.js';
 import { ApiError } from './error.js';
 import { ApiLoggerService } from './ApiLoggerService.js';
 import { AuthenticateService, AuthenticationError } from './AuthenticateService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import type { OnApplicationShutdown } from '@nestjs/common';
 import type { IEndpointMeta, IEndpoint } from './endpoints.js';
 
 const accessDenied = {
@@ -37,10 +38,9 @@ const accessDenied = {
 };
 
 @Injectable()
-export class ApiCallService implements OnApplicationShutdown {
-	private logger: Logger;
-	private userIpHistories: Map<MiUser['id'], Set<string>>;
-	private userIpHistoriesClearIntervalId: TimerHandle;
+export class ApiCallService {
+	private readonly logger: Logger;
+	private readonly userIpHistories: ManagedMemoryKVCache<Set<string>>;
 
 	constructor(
 		@Inject(DI.meta)
@@ -57,13 +57,12 @@ export class ApiCallService implements OnApplicationShutdown {
 		private roleService: RoleService,
 		private apiLoggerService: ApiLoggerService,
 		private readonly timeService: TimeService,
+		private readonly serverUtilityServer: ServerUtilityService,
+
+		cacheManagementService: CacheManagementService,
 	) {
 		this.logger = this.apiLoggerService.logger;
-		this.userIpHistories = new Map<MiUser['id'], Set<string>>();
-
-		this.userIpHistoriesClearIntervalId = this.timeService.startTimer(() => {
-			this.userIpHistories.clear();
-		}, 1000 * 60 * 60, { repeated: true });
+		this.userIpHistories = cacheManagementService.createMemoryKVCache('userIpHistories', 1000 * 60 * 60); // 1 hour
 	}
 
 	#sendApiError(reply: FastifyReply, err: ApiError): void {
@@ -278,13 +277,14 @@ export class ApiCallService implements OnApplicationShutdown {
 			return;
 		}
 
-		const ips = this.userIpHistories.get(user.id);
-		if (ips == null || !ips.has(ip)) {
-			if (ips == null) {
-				this.userIpHistories.set(user.id, new Set([ip]));
-			} else {
-				ips.add(ip);
-			}
+		let ips = this.userIpHistories.get(user.id);
+		if (ips == null) {
+			ips = new Set<string>();
+			this.userIpHistories.set(user.id, ips);
+		}
+
+		if (!ips.has(user.id)) {
+			ips.add(ip);
 
 			try {
 				await this.userIpsRepository.createQueryBuilder().insert().values({
@@ -355,20 +355,11 @@ export class ApiCallService implements OnApplicationShutdown {
 		}
 
 		if (ep.meta.requireCredential || ep.meta.requireModerator || ep.meta.requireAdmin) {
-			if (user == null && ep.meta.requireCredential !== 'optional') {
-				throw new ApiError({
-					message: 'Credential required.',
-					code: 'CREDENTIAL_REQUIRED',
-					id: '1384574d-a912-4b81-8601-c7b1c4085df1',
-					httpStatusCode: 401,
-				});
-			} else if (user?.isSuspended) {
-				throw new ApiError({
-					message: 'Your account has been suspended.',
-					code: 'YOUR_ACCOUNT_SUSPENDED',
-					kind: 'permission',
-					id: 'a8c724b3-6e9c-4b46-b1a8-bc3ed6258370',
-				});
+			if (user != null || ep.meta.requireCredential !== 'optional') {
+				const userError = this.serverUtilityServer.assertClientUser(user);
+				if (userError) {
+					throw new ApiError(userError);
+				}
 			}
 		}
 
@@ -457,15 +448,5 @@ export class ApiCallService implements OnApplicationShutdown {
 			return await ep.exec(data, user, token, file, request.ip, request.headers)
 				.catch((err: Error) => this.#onExecError(ep, data, err, user?.id));
 		}
-	}
-
-	@bindThis
-	public dispose(): void {
-		this.timeService.stopTimer(this.userIpHistoriesClearIntervalId);
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }

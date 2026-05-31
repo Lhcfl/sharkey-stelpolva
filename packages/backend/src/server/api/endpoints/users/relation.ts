@@ -6,6 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { CacheService, Requested } from '@/core/CacheService.js';
 
 export const meta = {
 	tags: ['users'],
@@ -152,11 +153,26 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		private userEntityService: UserEntityService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			return Array.isArray(ps.userId)
-				? await this.userEntityService.getRelations(me.id, ps.userId).then(it => [...it.values()])
-				: await this.userEntityService.getRelation(me.id, ps.userId).then(it => [it]);
+			const relations = Array.isArray(ps.userId)
+				? await this.cacheService.getUserRelations(me, ps.userId).then(rels => rels.values().toArray())
+				: await this.cacheService.getUserRelation(me, ps.userId).then(rel => [rel]);
+
+			return relations.map(rel => ({
+				id: rel.userId,
+				isFollowing: !!rel.isFollowing,
+				hasPendingFollowRequestFromYou: rel.isFollowing === Requested,
+				hasPendingFollowRequestToYou: rel.isFollowed === Requested,
+				isFollowed: !!rel.isFollowed,
+				isBlocking: rel.isBlocking,
+				isBlocked: rel.isBlocked,
+				isMuted: rel.isMuting,
+				isRenoteMuted: rel.isMutingRenotes,
+				isInstanceMuted: rel.isMutingInstance,
+				memo: rel.memo,
+			}));
 		});
 	}
 }

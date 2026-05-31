@@ -6,12 +6,13 @@
 import { pipeline } from 'node:stream/promises';
 import fs from 'node:fs';
 import * as tmp from 'tmp';
+import { coreEnvService } from '@/boot/coreLogger.js';
 
 export function createTemp(): Promise<[string, () => void]> {
 	return new Promise<[string, () => void]>((res, rej) => {
 		tmp.file((e, path, fd, cleanup) => {
 			if (e) return rej(e);
-			res([path, process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development' ? cleanup : () => {}]);
+			res([path, coreEnvService.env.NODE_ENV === 'production' || coreEnvService.env.NODE_ENV === 'development' ? cleanup : () => {}]);
 		});
 	});
 }
@@ -24,7 +25,7 @@ export function createTempDir(): Promise<[string, () => void]> {
 			},
 			(e, path, cleanup) => {
 				if (e) return rej(e);
-				res([path, process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development' ? cleanup : () => {}]);
+				res([path, coreEnvService.env.NODE_ENV === 'production' || coreEnvService.env.NODE_ENV === 'development' ? cleanup : () => {}]);
 			},
 		);
 	});

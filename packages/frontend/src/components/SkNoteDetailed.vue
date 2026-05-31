@@ -118,7 +118,7 @@ Detailed view of a note in the Sharkey style. Used when opening a note onto its 
 					<MkMediaList ref="galleryEl" :mediaList="appearNote.files"/>
 				</div>
 				<MkPoll v-if="appearNote.poll" ref="pollViewer" :noteId="appearNote.id" :poll="appearNote.poll" :local="!appearNote.user.host" :class="$style.poll" :author="appearNote.user" :emojiUrls="appearNote.emojis"/>
-				<div v-if="isEnabledUrlPreview" class="_gaps_s" style="margin-top: 6px;" @click.stop>
+				<div v-if="instance.enableUrlPreview" class="_gaps_s" style="margin-top: 6px;" @click.stop>
 					<SkUrlPreviewGroup :sourceNodes="parsed" :sourceNote="appearNote" :compact="true" :detail="true" :showAsQuote="!appearNote.user.rejectQuotes" :skipNoteIds="selfNoteIds" @expandMute="n => emit('expandMute', n)"/>
 				</div>
 				<div v-if="appearNote.renote" :class="$style.quote"><SkNoteSimple :note="appearNote.renote" :class="$style.quoteNote" :expandAllCws="props.expandAllCws"/></div>
@@ -291,7 +291,7 @@ import MkButton from '@/components/MkButton.vue';
 import { boostMenuItems, computeRenoteTooltip } from '@/utility/boost-quote.js';
 import { spacingNote } from '@/utility/autospacing';
 import { stpvNoteClassBindings } from '@/utility/stpv-note-class-bindings';
-import { instance, isEnabledUrlPreview, policies } from '@/instance.js';
+import { instance, policies } from '@/instance.js';
 import { getAppearNote } from '@/utility/get-appear-note.js';
 import { prefer } from '@/preferences.js';
 import { setupNoteViewInterruptors } from '@/plugin.js';
@@ -301,7 +301,6 @@ import SkMutedNote from '@/components/SkMutedNote.vue';
 import SkNoteTranslation from '@/components/SkNoteTranslation.vue';
 import { getSelfNoteIds } from '@/utility/get-self-note-ids.js';
 import SkUrlPreviewGroup from '@/components/SkUrlPreviewGroup.vue';
-import MkNoteSub from '@/components/MkNoteSub.vue';
 import { showNoteOnOriginalInstance } from '@/utility/show-note-on-original-instance.js';
 
 const props = withDefaults(defineProps<{

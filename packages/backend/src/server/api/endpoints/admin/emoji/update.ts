@@ -5,8 +5,9 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import { CustomEmojiService } from '@/core/CustomEmojiService.js';
-import type { DriveFilesRepository, MiEmoji } from '@/models/_.js';
+import { KeyNotFoundError } from '@/misc/errors/KeyNotFoundError.js';
+import { CustomEmojiService, DuplicateEmojiError } from '@/core/CustomEmojiService.js';
+import type { DriveFilesRepository, MiDriveFile, MiEmoji } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../../error.js';
 
@@ -73,34 +74,35 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const nameNfc = ps.name?.normalize('NFC');
-			let driveFile;
+			let driveFile: MiDriveFile | null = null;
 			if (ps.fileId) {
 				driveFile = await this.driveFilesRepository.findOneBy({ id: ps.fileId });
 				if (driveFile == null) throw new ApiError(meta.errors.noSuchFile);
 			}
 
 			// JSON schemeのanyOfの型変換がうまくいっていないらしい
-			const required = { id: ps.id, name: nameNfc } as
-				| { id: MiEmoji['id']; name?: string }
-				| { id?: MiEmoji['id']; name: string };
+			const criteria = ps.id
+				? { id: ps.id }
+				: { name: nameNfc as string, host: null };
 
-			const error = await this.customEmojiService.update({
-				...required,
+			const updates = {
+				name: nameNfc,
 				originalUrl: driveFile != null ? driveFile.url : undefined,
 				publicUrl: driveFile != null ? (driveFile.webpublicUrl ?? driveFile.url) : undefined,
-				fileType: driveFile != null ? (driveFile.webpublicType ?? driveFile.type) : undefined,
 				category: ps.category?.normalize('NFC'),
 				aliases: ps.aliases?.map(a => a.normalize('NFC')),
 				license: ps.license,
 				isSensitive: ps.isSensitive,
 				localOnly: ps.localOnly,
 				roleIdsThatCanBeUsedThisEmojiAsReaction: ps.roleIdsThatCanBeUsedThisEmojiAsReaction,
-			}, me);
+			};
 
-			switch (error) {
-				case null: return;
-				case 'NO_SUCH_EMOJI': throw new ApiError(meta.errors.noSuchEmoji);
-				case 'SAME_NAME_EMOJI_EXISTS': throw new ApiError(meta.errors.sameNameEmojiExists);
+			try {
+				await this.customEmojiService.updateEmoji(criteria, updates, { moderator: me });
+			} catch (err) {
+				if (err instanceof KeyNotFoundError) throw new ApiError(meta.errors.noSuchEmoji);
+				if (err instanceof DuplicateEmojiError) throw new ApiError(meta.errors.sameNameEmojiExists);
+				throw err;
 			}
 		});
 	}

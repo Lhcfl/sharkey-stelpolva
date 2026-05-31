@@ -5,8 +5,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { QUEUE_TYPES, QueueService } from '@/core/QueueService.js';
+import { QueueService } from '@/core/QueueService.js';
+import { QUEUE_TYPES } from '@/queue/const.js';
+import type { IEndpointMeta } from '@/server/api/endpoints.js';
+import type { Schema } from '@/misc/json-schema.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -14,7 +16,13 @@ export const meta = {
 	requireCredential: true,
 	requireModerator: true,
 	kind: 'read:admin:queue',
-} as const;
+
+	res: {
+		type: 'object',
+		optional: false, nullable: false,
+		ref: 'QueueStat',
+	},
+} as const satisfies IEndpointMeta;
 
 export const paramDef = {
 	type: 'object',
@@ -22,14 +30,14 @@ export const paramDef = {
 		queue: { type: 'string', enum: QUEUE_TYPES },
 	},
 	required: ['queue'],
-} as const;
+} as const satisfies Schema;
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		private queueService: QueueService,
+		private readonly queueService: QueueService,
 	) {
-		super(meta, paramDef, async (ps, me) => {
+		super(meta, paramDef, async (ps) => {
 			return await this.queueService.queueGetQueue(ps.queue);
 		});
 	}

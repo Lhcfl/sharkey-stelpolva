@@ -1,0 +1,15 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "../../shared/tsconfig.node.jsonc",
+	"compilerOptions": {
+		"jsx": "react",
+		"jsxFactory": "h"
+	},
+	"files": [
+		"changes.ts",
+		"main.ts",
+		"generate.tsx",
+		"preload-locale.ts",
+		"preload-theme.ts"
+	]
+}

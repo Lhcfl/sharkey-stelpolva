@@ -4,20 +4,31 @@
  */
 
 import * as assert from 'assert';
+import { MockEnvService } from '../misc/MockEnvService.js';
 import type { Config } from '@/config.js';
+import type { MiMeta } from '@/models/Meta.js';
 import { ApMfmService } from '@/core/activitypub/ApMfmService.js';
 import { MfmService } from '@/core/MfmService.js';
+import { UtilityService } from '@/core/UtilityService.js';
 
 describe('ApMfmService', () => {
 	let config: Config;
+	let meta: MiMeta;
+	let envService: MockEnvService;
+	let utilityService: UtilityService;
 	let mfmService: MfmService;
 	let apMfmService: ApMfmService;
 
 	beforeEach(() => {
 		config = {
-			url: 'http://misskey.local',
+			url: 'https://example.com',
+			host: 'example.com',
+			id: 'aidx',
 		} as unknown as Config;
-		mfmService = new MfmService(config);
+		meta = {} as unknown as MiMeta;
+		envService = new MockEnvService();
+		utilityService = new UtilityService(config, meta, envService);
+		mfmService = new MfmService(config, utilityService);
 		apMfmService = new ApMfmService(mfmService);
 	});
 
@@ -31,7 +42,7 @@ describe('ApMfmService', () => {
 			const { content, noMisskeyContent } = apMfmService.getNoteHtml(note);
 
 			assert.equal(noMisskeyContent, true, 'noMisskeyContent');
-			assert.equal(content, '<p>テキスト <a href="http://misskey.local/tags/タグ" rel="tag">#タグ</a> <a href="http://misskey.local/@mention" class="u-url mention">@mention</a> 🍊 ​:emoji:​ <a href="https://example.com">https://example.com</a></p>', 'content');
+			assert.equal(content, '<p>テキスト <a href="https://example.com/tags/タグ" rel="tag">#タグ</a> <a href="https://example.com/@mention" class="u-url mention">@mention</a> 🍊 ​:emoji:​ <a href="https://example.com">https://example.com</a></p>', 'content');
 		});
 
 		test('Provide _misskey_content for MFM', () => {

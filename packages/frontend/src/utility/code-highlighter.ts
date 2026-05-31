@@ -3,11 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { createHighlighterCore } from 'shiki/core';
-import { createOnigurumaEngine } from 'shiki/engine/oniguruma';
-import darkPlus from 'shiki/themes/dark-plus.mjs';
-import { bundledThemesInfo } from 'shiki/themes';
-import { bundledLanguagesInfo } from 'shiki/langs';
+import { createHighlighterCore, bundledThemes, bundledThemesInfo, bundledLanguagesInfo, createOnigurumaEngine } from 'shiki';
 import lightTheme from '@@/themes/_light.json5';
 import darkTheme from '@@/themes/_dark.json5';
 import defaultLightTheme from '@@/themes/l-light.json5';
@@ -15,9 +11,10 @@ import defaultDarkTheme from '@@/themes/d-green-lime.json5';
 import { unique } from './array.js';
 import { deepClone } from './clone.js';
 import { deepMerge } from './merge.js';
-import type { HighlighterCore, LanguageRegistration, ThemeRegistration, ThemeRegistrationRaw } from 'shiki/core';
+import type { HighlighterCore, LanguageRegistration, ThemeRegistration, ThemeRegistrationRaw } from 'shiki';
 import { prefer } from '@/preferences.js';
 
+const darkPlus = bundledThemes['dark-plus'];
 let _highlighter: HighlighterCore | null = null;
 
 export async function getTheme(mode: 'light' | 'dark', getName: true): Promise<string>;
@@ -52,7 +49,7 @@ export async function getTheme(mode: 'light' | 'dark', getName = false): Promise
 	if (getName) {
 		return 'dark-plus';
 	}
-	return darkPlus;
+	return (await darkPlus()).default;
 }
 
 export async function getHighlighter(): Promise<HighlighterCore> {

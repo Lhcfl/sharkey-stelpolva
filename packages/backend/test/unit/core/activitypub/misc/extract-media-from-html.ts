@@ -26,7 +26,7 @@ describe(extractMediaFromHtml, () => {
 		expect(result).toEqual([{
 			type: 'Image',
 			url: 'https://example.com/img.png',
-			name: null,
+			name: undefined,
 		}]);
 	});
 
@@ -40,7 +40,7 @@ describe(extractMediaFromHtml, () => {
 		expect(result).toEqual([{
 			type: 'Image',
 			url: 'https://example.com/picture.png',
-			name: null,
+			name: undefined,
 		}]);
 	});
 
@@ -59,7 +59,7 @@ describe(extractMediaFromHtml, () => {
 		expect(result).toEqual([{
 			type: 'Document',
 			url: 'https://example.com/object.dat',
-			name: null,
+			name: undefined,
 		}]);
 	});
 
@@ -73,7 +73,7 @@ describe(extractMediaFromHtml, () => {
 		expect(result).toEqual([{
 			type: 'Image',
 			url: 'https://example.com/object.png',
-			name: null,
+			name: undefined,
 		}]);
 	});
 
@@ -87,7 +87,7 @@ describe(extractMediaFromHtml, () => {
 		expect(result).toEqual([{
 			type: 'Document',
 			url: 'https://example.com/embed.dat',
-			name: null,
+			name: undefined,
 		}]);
 	});
 
@@ -101,7 +101,7 @@ describe(extractMediaFromHtml, () => {
 		expect(result).toEqual([{
 			type: 'Audio',
 			url: 'https://example.com/audio.mp3',
-			name: null,
+			name: undefined,
 		}]);
 	});
 
@@ -115,7 +115,7 @@ describe(extractMediaFromHtml, () => {
 		expect(result).toEqual([{
 			type: 'Video',
 			url: 'https://example.com/video.mp4',
-			name: null,
+			name: undefined,
 		}]);
 	});
 
@@ -239,37 +239,37 @@ describe(extractMediaFromHtml, () => {
 			{
 				type: 'Image',
 				url: 'https://example.com/img.png',
-				name: null,
+				name: undefined,
 			},
 			{
 				type: 'Image',
 				url: 'https://example.com/picture.png',
-				name: null,
+				name: undefined,
 			},
 			{
 				type: 'Image',
 				url: 'https://example.com/object-2.png',
-				name: null,
+				name: undefined,
 			},
 			{
 				type: 'Document',
 				url: 'https://example.com/object-1.dat',
-				name: null,
+				name: undefined,
 			},
 			{
 				type: 'Document',
 				url: 'https://example.com/embed.dat',
-				name: null,
+				name: undefined,
 			},
 			{
 				type: 'Audio',
 				url: 'https://example.com/audio.mp3',
-				name: null,
+				name: undefined,
 			},
 			{
 				type: 'Video',
 				url: 'https://example.com/video.mp4',
-				name: null,
+				name: undefined,
 			},
 		]);
 	});

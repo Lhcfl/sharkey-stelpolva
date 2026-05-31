@@ -11,6 +11,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { DI } from '@/di-symbols.js';
 import { AchievementService } from '@/core/AchievementService.js';
+import { UserService } from '@/core/UserService.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -58,6 +59,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 		private getterService: GetterService,
 		private achievementService: AchievementService,
+		private readonly userService: UserService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get favoritee
@@ -77,6 +79,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (exist) {
 				throw new ApiError(meta.errors.alreadyFavorited);
 			}
+
+			this.userService.markUserActive(me, true);
 
 			// Create favorite
 			await this.noteFavoritesRepository.insert({

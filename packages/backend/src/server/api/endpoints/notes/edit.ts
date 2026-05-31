@@ -14,6 +14,7 @@ import type { Config } from '@/config.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteEditService } from '@/core/NoteEditService.js';
+import { UserService } from '@/core/UserService.js';
 import { DI } from '@/di-symbols.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
@@ -313,6 +314,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteEntityService: NoteEntityService,
 		private noteEditService: NoteEditService,
 		private readonly timeService: TimeService,
+		private readonly userService: UserService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.text && ps.text.length > this.config.maxNoteLength) {
@@ -421,6 +423,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					apHashtags: ps.noExtractHashtags ? [] : undefined,
 					apEmojis: ps.noExtractEmojis ? [] : undefined,
 				});
+
+				this.userService.markUserActive(me, true);
 
 				return {
 					createdNote: await this.noteEntityService.pack(note, me),

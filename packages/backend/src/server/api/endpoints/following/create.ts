@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { FollowingsRepository } from '@/models/_.js';
+import type { IEndpointMeta } from '@/server/api/endpoints.js';
+import type { Schema } from '@/misc/json-schema.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
@@ -17,9 +18,11 @@ import { ApiError } from '../../error.js';
 export const meta = {
 	tags: ['following', 'users'],
 
+	// Up to 20, then 1 per 10 seconds
 	limit: {
-		duration: ms('1hour'),
-		max: 100,
+		type: 'bucket',
+		size: 20,
+		dripRate: 10 * 1000,
 	},
 
 	requireCredential: true,
@@ -65,7 +68,7 @@ export const meta = {
 		optional: false, nullable: false,
 		ref: 'UserLite',
 	},
-} as const;
+} as const satisfies IEndpointMeta;
 
 export const paramDef = {
 	type: 'object',
@@ -74,7 +77,7 @@ export const paramDef = {
 		withReplies: { type: 'boolean' },
 	},
 	required: ['userId'],
-} as const;
+} as const satisfies Schema;
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
@@ -111,7 +114,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw e;
 			}
 
-			return await this.userEntityService.pack(followee.id, me);
+			return await this.userEntityService.pack(followee, me);
 		});
 	}
 }

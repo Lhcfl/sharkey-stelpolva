@@ -8,8 +8,8 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { CacheService } from '@/core/CacheService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -34,9 +34,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.usersRepository)
 		private readonly usersRepository: UsersRepository,
 
-		private readonly globalEventService: GlobalEventService,
 		private readonly cacheService: CacheService,
 		private readonly moderationLogService: ModerationLogService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.cacheService.findUserById(ps.userId);
@@ -51,8 +51,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.usersRepository.update(ps.userId, { mandatoryCW: newCW });
 
 			// Synchronize caches and other processes
-			const evt = user.host == null ? 'localUserUpdated' : 'remoteUserUpdated';
-			this.globalEventService.publishInternalEvent(evt, { id: ps.userId });
+			await this.internalEventService.emit('userUpdated', { id: ps.userId });
 
 			await this.moderationLogService.log(me, 'setMandatoryCW', {
 				newCW,

@@ -7,8 +7,8 @@
  * Language manager for SW
  */
 import { get, set } from 'idb-keyval';
-import { I18n } from '@@/js/i18n.js';
-import type { Locale } from '../../../../locales/index.js';
+import { I18n } from 'frontend-shared/js/i18n.js';
+import type { Locale } from 'locales';
 
 class SwLang {
 	public cacheName = `mk-cache-${_LANGS_VERSION_}`;

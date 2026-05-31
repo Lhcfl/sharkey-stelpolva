@@ -100,7 +100,7 @@ export class ApiAppsMastodon {
 			});
 
 			const response = {
-				id: Math.floor(Math.random() * 100).toString(),
+				id: appData.id,
 				name: appData.name,
 				website: body.website,
 				redirect_uri: body.redirect_uris,

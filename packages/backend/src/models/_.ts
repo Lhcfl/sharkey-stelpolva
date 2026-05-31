@@ -3,20 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import {
-	FindOneOptions,
-	InsertQueryBuilder,
-	ObjectLiteral,
-	QueryRunner,
-	Repository,
-	SelectQueryBuilder,
-} from 'typeorm';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
-import { RelationCountLoader } from 'typeorm/query-builder/relation-count/RelationCountLoader.js';
-import { RelationIdLoader } from 'typeorm/query-builder/relation-id/RelationIdLoader.js';
-import {
-	RawSqlResultsToEntityTransformer,
-} from 'typeorm/query-builder/transformer/RawSqlResultsToEntityTransformer.js';
 import { MiAbuseReportNotificationRecipient } from '@/models/AbuseReportNotificationRecipient.js';
 import { MiAbuseUserReport } from '@/models/AbuseUserReport.js';
 import { MiAccessToken } from '@/models/AccessToken.js';
@@ -92,74 +78,71 @@ import { MiUserProfile } from '@/models/UserProfile.js';
 import { MiUserPublickey } from '@/models/UserPublickey.js';
 import { MiUserSecurityKey } from '@/models/UserSecurityKey.js';
 import { MiWebhook } from '@/models/Webhook.js';
-import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 import { NoteEdit } from '@/models/NoteEdit.js';
 import { SkApInboxLog } from '@/models/SkApInboxLog.js';
 import { SkApFetchLog } from '@/models/SkApFetchLog.js';
 import { SkApContext } from '@/models/SkApContext.js';
 import { SkLatestNote } from '@/models/LatestNote.js';
+import type {
+	FindOneOptions,
+	ObjectLiteral,
+	Repository,
+	PartialEntityUpdate,
+} from 'typeorm';
 
 export interface MiRepository<T extends ObjectLiteral> {
-	createTableColumnNames(this: Repository<T> & MiRepository<T>): string[];
-
-	insertOne(this: Repository<T> & MiRepository<T>, entity: QueryDeepPartialEntity<T>, findOptions?: Pick<FindOneOptions<T>, 'relations'>): Promise<T>;
-
-	insertOneImpl(this: Repository<T> & MiRepository<T>, entity: QueryDeepPartialEntity<T>, findOptions?: Pick<FindOneOptions<T>, 'relations'>, queryRunner?: QueryRunner): Promise<T>;
-
-	selectAliasColumnNames(this: Repository<T> & MiRepository<T>, queryBuilder: InsertQueryBuilder<T>, builder: SelectQueryBuilder<T>): void;
+	/**
+	 * Inserts an entity and returns the final result, including all database-generated columns.
+	 * The return value defaults to a complete entity with no loaded relations, unless additional findOptions are specified.
+	 * @param entity Partial entity to insert
+	 * @param findOptions Additional options to customize entity fetch
+	 */
+	insertOne(this: Repository<T> & MiRepository<T>, entity: PartialEntityUpdate<T>, findOptions?: Omit<FindOneOptions<T>, 'where'>): Promise<T>;
 }
 
 export const miRepository = {
-	createTableColumnNames() {
-		return this.metadata.columns.filter(column => column.isSelect && !column.isVirtual).map(column => column.databaseName);
-	},
-	async insertOne(entity, findOptions?) {
-		const opt = this.manager.connection.options as PostgresConnectionOptions;
-		if (opt.replication) {
-			const queryRunner = this.manager.connection.createQueryRunner('master');
-			try {
-				return await this.insertOneImpl(entity, findOptions, queryRunner);
-			} finally {
-				await queryRunner.release();
+	async insertOne(entity, findOptions?: Omit<FindOneOptions<ObjectLiteral>, 'where'>) {
+		// Find the primary key column so we know which row to look at
+		const primaryColumns = this.metadata.columns.filter(c => c.isPrimary);
+		if (primaryColumns.length < 1) {
+			throw new Error(`insertOne() failed: entity ${this.metadata.name} does not have a primary key`);
+		} else if (primaryColumns.length > 1) {
+			throw new Error(`insertOne() failed: entity ${this.metadata.name} has multiple defined primary keys`);
+		}
+		const primaryColumn = primaryColumns[0];
+
+		// Execute in transaction to avoided races and replication-related desyncs.
+		return await this.manager.transaction(async tem => {
+			// Injected repos are NOT usable in transactions; we have to get a new one!
+			// https://typeorm.io/docs/working-with-entity-manager/custom-repository/#using-custom-repositories-in-transactions
+			const repo = tem.getRepository(this.target);
+
+			// Insert the new row
+			const builder = repo.createQueryBuilder()
+				.insert()
+				.values(entity)
+				// Input property name as a user would write it...
+				// https://github.com/typeorm/typeorm/blob/56c449eabd7d596da989b74879de7c17f735d6a2/src/query-builder/QueryBuilder.ts#L991
+				// ...but plan for it to be rewritten into Database-form!
+				// https://github.com/typeorm/typeorm/blob/56c449eabd7d596da989b74879de7c17f735d6a2/src/query-builder/QueryBuilder.ts#L933
+				.returning([primaryColumn.propertyPath]);
+			const result = await builder.execute();
+
+			// Find the new row's ID
+			// https://github.com/typeorm/typeorm/blob/56c449eabd7d596da989b74879de7c17f735d6a2/test/functional/query-builder/returning/query-builder-returning.test.ts#L58
+			if (!Array.isArray(result.raw) || result.raw.length !== 1 || !(primaryColumn.databaseName in result.raw[0])) {
+				throw new Error(`insertOne() failed: result did not include primary key ${primaryColumn.propertyPath}`);
 			}
-		} else {
-			return await this.insertOneImpl(entity, findOptions);
-		}
-	},
-	async insertOneImpl(entity, findOptions?, queryRunner?) {
-		// ---- insert + returningの結果を共通テーブル式(CTE)に保持するクエリを生成 ----
 
-		const queryBuilder = this.createQueryBuilder().insert().values(entity);
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const mainAlias = queryBuilder.expressionMap.mainAlias!;
-		const name = mainAlias.name;
-		mainAlias.name = 't';
-		const columnNames = this.createTableColumnNames();
-		queryBuilder.returning(columnNames.reduce((a, c) => `${a}, ${queryBuilder.escape(c)}`, '').slice(2));
-
-		// ---- 共通テーブル式(CTE)から結果を取得 ----
-		const builder = this.createQueryBuilder(undefined, queryRunner).addCommonTableExpression(queryBuilder, 'cte', { columnNames });
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		builder.expressionMap.mainAlias!.tablePath = 'cte';
-		this.selectAliasColumnNames(queryBuilder, builder);
-		if (findOptions) {
-			builder.setFindOptions(findOptions);
-		}
-		const raw = await builder.execute();
-		mainAlias.name = name;
-		const relationId = await new RelationIdLoader(builder.connection, this.queryRunner, builder.expressionMap.relationIdAttributes).load(raw);
-		const relationCount = await new RelationCountLoader(builder.connection, this.queryRunner, builder.expressionMap.relationCountAttributes).load(raw);
-		const result = new RawSqlResultsToEntityTransformer(builder.expressionMap, builder.connection.driver, relationId, relationCount, this.queryRunner).transform(raw, mainAlias);
-		return result[0];
-	},
-	selectAliasColumnNames(queryBuilder, builder) {
-		let selectOrAddSelect = (selection: string, selectionAliasName?: string) => {
-			selectOrAddSelect = (selection, selectionAliasName) => builder.addSelect(selection, selectionAliasName);
-			return builder.select(selection, selectionAliasName);
-		};
-		for (const columnName of this.createTableColumnNames()) {
-			selectOrAddSelect(`${builder.alias}.${columnName}`, `${builder.alias}_${columnName}`);
-		}
+			// Fetch and return the new row
+			const insertedId = result.raw[0][primaryColumn.databaseName];
+			return await repo.findOneOrFail({
+				...(findOptions ?? {}),
+				where: {
+					[primaryColumn.propertyName]: insertedId,
+				},
+			});
+		});
 	},
 } satisfies MiRepository<ObjectLiteral>;
 
@@ -318,7 +301,9 @@ export type RolesRepository = Repository<MiRole> & MiRepository<MiRole>;
 export type RoleAssignmentsRepository = Repository<MiRoleAssignment> & MiRepository<MiRoleAssignment>;
 export type FlashsRepository = Repository<MiFlash> & MiRepository<MiFlash>;
 export type FlashLikesRepository = Repository<MiFlashLike> & MiRepository<MiFlashLike>;
-export type UserMemoRepository = Repository<MiUserMemo> & MiRepository<MiUserMemo>;
+export type UserMemosRepository = Repository<MiUserMemo> & MiRepository<MiUserMemo>;
+/** @deprecated This overload has the wrong naming convention - use UserMemosRepository instead. */
+export type UserMemoRepository = UserMemosRepository;
 export type ChatMessagesRepository = Repository<MiChatMessage> & MiRepository<MiChatMessage>;
 export type ChatRoomsRepository = Repository<MiChatRoom> & MiRepository<MiChatRoom>;
 export type ChatRoomMembershipsRepository = Repository<MiChatRoomMembership> & MiRepository<MiChatRoomMembership>;

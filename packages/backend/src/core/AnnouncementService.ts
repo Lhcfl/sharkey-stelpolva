@@ -18,6 +18,7 @@ import { IdentifiableError } from '@/misc/identifiable-error.js';
 import type { Config } from '@/config.js';
 import { RoleService } from '@/core/RoleService.js';
 import { TimeService } from '@/global/TimeService.js';
+import { CacheService } from '@/core/CacheService.js';
 
 @Injectable()
 export class AnnouncementService {
@@ -40,6 +41,7 @@ export class AnnouncementService {
 		private announcementEntityService: AnnouncementEntityService,
 		private roleService: RoleService,
 		private readonly timeService: TimeService,
+		private readonly cacheService: CacheService,
 	) {
 	}
 
@@ -109,7 +111,7 @@ export class AnnouncementService {
 			});
 
 			if (moderator) {
-				const user = await this.usersRepository.findOneByOrFail({ id: values.userId });
+				const user = await this.cacheService.findUserById(values.userId);
 				this.moderationLogService.log(moderator, 'createUserAnnouncement', {
 					announcementId: announcement.id,
 					announcement: announcement,
@@ -164,7 +166,7 @@ export class AnnouncementService {
 
 		if (moderator) {
 			if (announcement.userId) {
-				const user = await this.usersRepository.findOneByOrFail({ id: announcement.userId });
+				const user = await this.cacheService.findUserById(announcement.userId);
 				this.moderationLogService.log(moderator, 'updateUserAnnouncement', {
 					announcementId: announcement.id,
 					before: announcement,
@@ -189,7 +191,7 @@ export class AnnouncementService {
 
 		if (moderator) {
 			if (announcement.userId) {
-				const user = await this.usersRepository.findOneByOrFail({ id: announcement.userId });
+				const user = await this.cacheService.findUserById(announcement.userId);
 				this.moderationLogService.log(moderator, 'deleteUserAnnouncement', {
 					announcementId: announcement.id,
 					announcement: announcement,
@@ -244,7 +246,7 @@ export class AnnouncementService {
 		}
 
 		if ((await this.getUnreadAnnouncements(user)).length === 0) {
-			this.globalEventService.publishMainStream(user.id, 'readAllAnnouncements');
+			await this.globalEventService.publishMainStream(user.id, 'readAllAnnouncements', {});
 		}
 	}
 

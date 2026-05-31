@@ -4,7 +4,6 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import * as argon2 from 'argon2';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { RegistrationTicketsRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket, MiMeta, UserIpsRepository } from '@/models/_.js';
@@ -21,7 +20,10 @@ import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 import { RoleService } from '@/core/RoleService.js';
 import Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import { UserAuthService } from '@/core/UserAuthService.js';
 import { TimeService } from '@/global/TimeService.js';
+import { EnvService } from '@/global/EnvService.js';
 import { SigninService } from './SigninService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
@@ -62,6 +64,9 @@ export class SignupApiService {
 		private roleService: RoleService,
 		private loggerService: LoggerService,
 		private readonly timeService: TimeService,
+		private readonly envService: EnvService,
+		private readonly internalEventService: InternalEventService,
+		private readonly userAuthService: UserAuthService,
 	) {
 		this.logger = this.loggerService.getLogger('Signup');
 	}
@@ -90,7 +95,7 @@ export class SignupApiService {
 
 		// Verify *Captcha
 		// ただしテスト時はこの機構は障害となるため無効にする
-		if (process.env.NODE_ENV !== 'test') {
+		if (this.envService.env.NODE_ENV !== 'test') {
 			if (this.meta.enableHcaptcha && this.meta.hcaptchaSecretKey) {
 				await this.captchaService.verifyHcaptcha(this.meta.hcaptchaSecretKey, body['hcaptcha-response']).catch(err => {
 					throw new FastifyReplyError(400, String(err), err);
@@ -130,7 +135,7 @@ export class SignupApiService {
 
 		const username = body['username'];
 		const password = body['password'];
-		const host: string | null = process.env.NODE_ENV === 'test' ? (body['host'] ?? null) : null;
+		const host: string | null = this.envService.env.NODE_ENV === 'test' ? (body['host'] ?? null) : null;
 		const invitationCode = body['invitationCode'];
 		const reason = body['reason'];
 		const emailAddress = body['emailAddress'];
@@ -157,7 +162,7 @@ export class SignupApiService {
 
 		let ticket: MiRegistrationTicket | null = null;
 
-		if (this.meta.disableRegistration && process.env.NODE_ENV !== 'test') {
+		if (this.meta.disableRegistration && this.envService.env.NODE_ENV !== 'test') {
 			if (invitationCode == null || typeof invitationCode !== 'string') {
 				reply.code(400);
 				return;
@@ -214,7 +219,7 @@ export class SignupApiService {
 			const code = secureRndstr(16, { chars: L_CHARS });
 
 			// Generate hash of password
-			const hash = await argon2.hash(password);
+			const hash = await this.userAuthService.hashPassword(password);
 
 			const pendingUser = await this.userPendingsRepository.insertOne({
 				id: this.idService.gen(),
@@ -341,6 +346,7 @@ export class SignupApiService {
 				emailVerified: true,
 				emailVerifyCode: null,
 			});
+			await this.internalEventService.emit('updateUserProfile', { userId: profile.userId, keys: ['email', 'emailVerified', 'emailVerifyCode'] });
 
 			const ticket = await this.registrationTicketsRepository.findOneBy({ pendingUserId: pendingUser.id });
 			if (ticket) {

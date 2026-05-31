@@ -7,13 +7,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div class="_spacer" :style="{ '--MI_SPACER-w': narrow ? '800px' : '1100px', ...background }">
 	<div ref="rootEl" class="ftskorzw" :class="{ wide: !narrow }" style="container-type: inline-size;">
 		<div class="main _gaps">
+			<MkInfo v-if="user.isDeleted" :warn="true">{{ i18n.ts.userDeleted }}</MkInfo>
 			<MkInfo v-if="user.isSuspended" :warn="true">{{ i18n.ts.userSuspended }}</MkInfo>
 			<MkInfo v-if="user.isSilenced" :warn="true">{{ i18n.ts.userSilenced }}</MkInfo>
 
 			<div class="profile _gaps">
 				<MkAccountMoved v-if="user.movedToUri" :movedTo="user.movedTo" :movedToUri="user.movedToUri"/>
 				<MkRemoteCaution v-if="user.host != null" :href="user.url ?? user.uri!"/>
-				<MkInfo v-if="user.host == null && user.username.includes('.')">{{ i18n.ts.isSystemAccount }}</MkInfo>
+				<MkInfo v-if="user.isSystem">{{ i18n.ts.isSystemAccount }}</MkInfo>
 
 				<div :key="user.id" class="main _panel">
 					<div class="banner-container" :class="{ [$style.bannerContainerTall]: useTallBanner }">

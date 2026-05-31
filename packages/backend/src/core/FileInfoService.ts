@@ -9,13 +9,14 @@ import * as stream from 'node:stream/promises';
 import { Injectable } from '@nestjs/common';
 import * as fileType from 'file-type';
 import FFmpeg from 'fluent-ffmpeg';
-import isSvg from 'is-svg';
-import probeImageSize from 'probe-image-size';
+import sharp from 'sharp';
 import { sharpBmp } from '@misskey-dev/sharp-read-bmp';
 import * as blurhash from 'blurhash';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
+import { isSvgFile } from '@/misc/is-svg-file.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 
 export type FileInfo = {
 	size: number;
@@ -30,7 +31,7 @@ export type FileInfo = {
 	blurhash?: string;
 	sensitive: boolean;
 	porn: boolean;
-	warnings: string[];
+	warnings: FileInfoWarning[];
 };
 
 const TYPE_OCTET_STREAM = {
@@ -42,6 +43,26 @@ const TYPE_SVG = {
 	mime: 'image/svg+xml',
 	ext: 'svg',
 };
+
+export const ImageDimensionsExceedLimit = 'image dimensions exceeds limits';
+export const ImageDimensionsUnknown = 'cannot detect image dimensions';
+export const BlurHashFailed = 'blurhash failed';
+
+export type FileInfoWarningType =
+	typeof ImageDimensionsExceedLimit |
+	typeof ImageDimensionsUnknown |
+	typeof BlurHashFailed;
+
+export type FileInfoWarning = FileInfoWarningType | [warning: FileInfoWarningType, message?: string, error?: unknown];
+
+const PossibleSvgTypes: string[] = [
+	// This is what we expect from file-type lib.
+	'application/xml',
+	// But it could also return these.
+	'text/xml',
+	'text/html',
+	'application/xhtml+xml',
+];
 
 @Injectable()
 export class FileInfoService {
@@ -60,7 +81,7 @@ export class FileInfoService {
 	 */
 	@bindThis
 	public async getFileInfo(path: string): Promise<FileInfo> {
-		const warnings = [] as string[];
+		const warnings: FileInfoWarning[] = [];
 
 		const size = await this.getFileSize(path);
 		const md5 = await this.calcHash(path);
@@ -84,27 +105,26 @@ export class FileInfoService {
 			'image/svg+xml',
 			'image/vnd.adobe.photoshop',
 		].includes(type.mime)) {
-			const imageSize = await this.detectImageSize(path).catch(e => {
-				warnings.push(`detectImageSize failed: ${e}`);
-				return undefined;
-			});
+			try {
+				const imageSize = await this.detectImageSize(path);
 
-			// うまく判定できない画像は octet-stream にする
-			if (!imageSize) {
-				warnings.push('cannot detect image dimensions');
-				type = TYPE_OCTET_STREAM;
-			} else if (imageSize.wUnits === 'px') {
-				width = imageSize.width;
-				height = imageSize.height;
-				orientation = imageSize.orientation;
+				// TODO make this configurable?
+				if (imageSize.width <= 16383 && imageSize.height <= 16383) {
+					// Save image metadata
+					width = imageSize.width;
+					height = imageSize.height;
+					orientation = imageSize.orientation;
+				} else {
+					warnings.push([ImageDimensionsExceedLimit, `actual size: ${imageSize.width} x ${imageSize.height}`]);
 
-				// 制限を超えている画像は octet-stream にする
-				if (imageSize.width > 16383 || imageSize.height > 16383) {
-					warnings.push('image dimensions exceeds limits');
+					// Downgrade oversized images to generic binary data.
 					type = TYPE_OCTET_STREAM;
 				}
-			} else {
-				warnings.push(`unsupported unit type: ${imageSize.wUnits}`);
+			} catch (e) {
+				warnings.push([ImageDimensionsUnknown, `exception in detectImageSize: ${renderInlineError(e)}`, e]);
+
+				// Downgrade unprocessable images to generic binary data.
+				type = TYPE_OCTET_STREAM;
 			}
 		}
 
@@ -120,7 +140,7 @@ export class FileInfoService {
 			'image/svg+xml',
 		].includes(type.mime)) {
 			blurhash = await this.getBlurhash(path, type.mime).catch(e => {
-				warnings.push(`getBlurhash failed: ${e}`);
+				warnings.push([BlurHashFailed, `exception in getBlurhash: ${renderInlineError(e)}`, e]);
 				return undefined;
 			});
 		}
@@ -199,9 +219,16 @@ export class FileInfoService {
 		const type = await fileType.fileTypeFromFile(path);
 
 		if (type) {
-		// XMLはSVGかもしれない
-			if (type.mime === 'application/xml' && await this.checkSvg(path)) {
-				return TYPE_SVG;
+			// XML formats require additional checks
+			if (PossibleSvgTypes.includes(type.mime)) {
+				if (await this.checkSvg(path)) {
+					return TYPE_SVG;
+				}
+
+				return {
+					mime: type.mime,
+					ext: type.ext,
+				};
 			}
 
 			if ((type.mime.startsWith('video') || type.mime === 'application/ogg') && !(await this.hasVideoTrackOnVideoFile(path))) {
@@ -239,10 +266,7 @@ export class FileInfoService {
 	@bindThis
 	public async checkSvg(path: string): Promise<boolean> {
 		try {
-			const size = await this.getFileSize(path);
-			if (size > 1 * 1024 * 1024) return false;
-			const buffer = await fs.promises.readFile(path);
-			return isSvg(buffer.toString());
+			return isSvgFile(path);
 		} catch {
 			return false;
 		}
@@ -271,16 +295,22 @@ export class FileInfoService {
 	 */
 	@bindThis
 	private async detectImageSize(path: string): Promise<{
-	width: number;
-	height: number;
-	wUnits: string;
-	hUnits: string;
-	orientation?: number;
-}> {
-		const readable = fs.createReadStream(path);
-		const imageSize = await probeImageSize(readable);
-		readable.destroy();
-		return imageSize;
+		width: number;
+		height: number;
+		orientation?: number;
+	}> {
+		const meta = await sharp(path, {
+			// Disable limits since we're only reading metadata.
+			// This should be safe, according to docs: "Fast access to (uncached) image metadata without decoding any compressed pixel data."
+			// We could alternately just capture errors, but Sharp errors are untyped so we'd have to unreliably match message strings.
+			limitInputPixels: false,
+		}).metadata();
+
+		return {
+			width: meta.width,
+			height: meta.height,
+			orientation: meta.orientation,
+		};
 	}
 
 	/**

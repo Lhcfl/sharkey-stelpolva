@@ -25,10 +25,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkFolder v-if="$i && $i.policies.canImportNotes">
 								<template #label><SearchLabel>{{ i18n.ts.import }}</SearchLabel></template>
 								<template #icon><i class="ph-upload ph-bold ph-lg"></i></template>
+								<!-- TODO translations -->
 								<MkRadios v-model="noteType" style="padding-bottom: 8px;" small>
 									<template #label>Origin</template>
-									<option value="Misskey">Misskey/Firefish</option>
-									<option value="Mastodon">Mastodon/Pleroma/Akkoma</option>
+									<option value="Misskey">Misskey/Firefish/Sharkey</option>
+									<option value="Mastodon">Mastodon</option>
+									<option value="Pleroma">Pleroma/Akkoma</option>
 									<option value="Twitter">Twitter</option>
 									<option value="Instagram">Instagram</option>
 									<option value="Facebook">Facebook</option>
@@ -189,6 +191,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
+import type * as Misskey from 'misskey-js';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
@@ -203,9 +206,11 @@ import { $i } from '@/i.js';
 import MkFeatureBanner from '@/components/MkFeatureBanner.vue';
 import { prefer } from '@/preferences.js';
 
+type ImportSource = Misskey.entities.IImportNotesRequest['type'];
+
 const excludeMutingUsers = ref(false);
 const excludeInactiveUsers = ref(false);
-const noteType = ref(null);
+const noteType = ref<ImportSource>('Misskey');
 const withReplies = ref(prefer.s.defaultFollowWithReplies);
 
 const onExportSuccess = () => {

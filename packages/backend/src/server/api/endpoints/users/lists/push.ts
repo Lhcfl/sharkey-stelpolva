@@ -88,9 +88,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const [user, blockings, userList, exist] = await Promise.all([
+			const [user, relations, userList, exist] = await Promise.all([
 				this.cacheService.findOptionalUserById(ps.userId),
-				this.cacheService.userBlockingCache.fetch(ps.userId),
+				this.cacheService.getUserRelation(ps.userId, me.id),
 				this.userListService.userListsCache.fetchMaybe(ps.listId),
 				this.cacheService.listUserMembershipsCache.fetch(ps.listId).then(ms => ms.has(ps.userId)),
 			]);
@@ -104,7 +104,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (user.id !== me.id) {
-				const blockExist = blockings.has(me.id);
+				const blockExist = relations.isBlocking;
 				if (blockExist) {
 					throw new ApiError(meta.errors.youHaveBeenBlocked);
 				}

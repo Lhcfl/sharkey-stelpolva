@@ -11,7 +11,12 @@
 		"built/autogen/**/*.ts"
 	],
 	"exclude": [
-		"node_modules",
-		"./built/**/*.js"
+		"**/node_modules",
+		"**/built-test",
+		"**/js-built",
+		"**/temp",
+		"**/coverage",
+		"**/*.min.js",
+		"**/built/**/*.js"
 	]
 }

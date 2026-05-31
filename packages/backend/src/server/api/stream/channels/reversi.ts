@@ -5,7 +5,6 @@
 
 import { Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import { Channel, type MiChannelService } from '../channel.js';
 
@@ -25,14 +24,13 @@ class ReversiChannel extends Channel {
 	@bindThis
 	public async init(params: JsonObject): Promise<boolean> {
 		if (!this.user) return false;
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
 		this.subscriber.on(`reversiStream:${this.user.id}`, this.send);
 		return true;
 	}
 
 	@bindThis
 	public dispose() {
-		this.subscriber?.off(`reversiStream:${this.user?.id}`, this.send);
+		this.subscriber.off(`reversiStream:${this.user?.id}`, this.send);
 	}
 }
 

@@ -9,11 +9,16 @@ import { DI } from '@/di-symbols.js';
 import type { MiUser } from '@/models/User.js';
 import type { UserProfilesRepository, FollowingsRepository, ChannelFollowingsRepository, BlockingsRepository, NoteThreadMutingsRepository, MutingsRepository, RenoteMutingsRepository, MiMeta, InstancesRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { IdService } from '@/core/IdService.js';
-import type { SelectQueryBuilder, ObjectLiteral } from 'typeorm';
+import { LoggerService } from '@/core/LoggerService.js';
+import type { Logger } from '@/logger.js';
+import type { SelectQueryBuilder, ObjectLiteral, Repository, DataSource } from 'typeorm';
 
 @Injectable()
 export class QueryService {
+	private readonly logger: Logger;
+
 	constructor(
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
@@ -42,8 +47,14 @@ export class QueryService {
 		@Inject(DI.meta)
 		private meta: MiMeta,
 
+		@Inject(DI.db)
+		private readonly db: DataSource,
+
 		private idService: IdService,
+
+		loggerService: LoggerService,
 	) {
+		this.logger = loggerService.getLogger('query');
 	}
 
 	public makePaginationQuery<T extends ObjectLiteral>(
@@ -477,7 +488,7 @@ export class QueryService {
 	}
 
 	/**
-	 * Adds OR condition that noteProp (note ID) refers to a renote.
+	 * Adds OR condition that noteProp (note ID) refers to a pure renote (boost).
 	 * The prop should be an expression, not a raw value.
 	 */
 	@bindThis
@@ -486,7 +497,7 @@ export class QueryService {
 	}
 
 	/**
-	 * Adds AND condition that noteProp (note ID) refers to a renote.
+	 * Adds AND condition that noteProp (note ID) refers to a pure renote (boost).
 	 * The prop should be an expression, not a raw value.
 	 */
 	@bindThis
@@ -803,6 +814,47 @@ export class QueryService {
 				.andWhere('user.isSuspended = FALSE')
 				.andWhere(brakets('replyUser'))
 				.andWhere(brakets('renoteUser'));
+		}
+	}
+
+	/**
+	 * Executes a fast "estimate" row count for a given table.
+	 * As estimate counts depend on at least one successful VACUUM over the postgres database, traditional COUNT is included as a fallback.
+	 * @param repository Repository for the table to count.
+	 */
+	@bindThis
+	public async estimateCount(repository: Repository<ObjectLiteral>): Promise<number> {
+		const tableName = repository.metadata.tableName;
+
+		try {
+			// Fast estimation based on planner stats.
+			// Based on https://stackoverflow.com/a/7945274
+			const [res] = await this.db.query<[{ estimated_count: number | null } | undefined]>(`
+				SELECT
+					(
+						CASE
+							WHEN c.reltuples < 0 THEN NULL       -- never vacuumed
+							WHEN c.relpages = 0 THEN float8 '0'  -- empty table
+							ELSE c.reltuples / c.relpages
+						END
+						*
+						(pg_catalog.pg_relation_size(c.oid) / pg_catalog.current_setting('block_size')::int)
+					)::bigint AS estimated_count
+				FROM pg_catalog.pg_class c
+				WHERE c.oid = to_regclass($1);      -- schema-qualified table here
+			`, [tableName]);
+
+			// If null, then no stats are present.
+			// Admin needs to check their config!
+			if (res == null || res.estimated_count == null || res.estimated_count < 0) {
+				this.logger.warn(`Failed to estimate ${tableName} count from query planner statistics. Is your database vacuuming correctly?`);
+				return await repository.count();
+			}
+
+			return res.estimated_count;
+		} catch (err) {
+			this.logger.warn(`Failed to estimate ${tableName} count from any source - the relevant stat(s) will be zeroed out for the current cache interval. Error cause: ${renderInlineError(err)}`);
+			return 0;
 		}
 	}
 }

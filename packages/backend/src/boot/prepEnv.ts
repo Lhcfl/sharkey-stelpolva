@@ -5,8 +5,10 @@
 
 import { EventEmitter } from 'node:events';
 import { inspect } from 'node:util';
+import si from 'systeminformation';
 import { coreLogger } from '@/boot/coreLogger.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
+import { promiseTry } from '@/misc/promise-try.js';
 
 // Polyfill reflection metadata *without* loading dependencies that may corrupt native types.
 // https://github.com/microsoft/reflect-metadata?tab=readme-ov-file#es-modules-in-nodejsbrowser-typescriptbabel-bundlers
@@ -23,6 +25,12 @@ export function prepEnv() {
 	// Avoid warnings like "11 message listeners added to [Commander]. MaxListeners is 10."
 	// This is expected due to use of NestJS lifecycle hooks.
 	EventEmitter.defaultMaxListeners = 128;
+
+	// Warm up systeminformation deltas, but ignore any errors caused by Jest, Windows, etc.
+	// https://github.com/sebhildebrandt/systeminformation#-additional-notes
+	promiseTry(() => si.fsStats()).catch(() => null);
+	promiseTry(() => si.disksIO()).catch(() => null);
+	promiseTry(() => si.networkStats()).catch(() => null);
 
 	// Workaround certain 3rd-party bugs
 	process.on('uncaughtException', (err) => {

@@ -7,9 +7,8 @@ import { Injectable } from '@nestjs/common';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
-import type { GlobalEvents } from '@/core/GlobalEventService.js';
+import type { RoleTimelineEventPayload } from '@/core/GlobalEventService.js';
 import type { JsonObject } from '@/misc/json-value.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import { type Channel, NoteChannel, type MiChannelService } from '../channel.js';
 
 class RoleTimelineChannel extends NoteChannel {
@@ -30,7 +29,6 @@ class RoleTimelineChannel extends NoteChannel {
 
 	@bindThis
 	public async init(params: JsonObject): Promise<boolean> {
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
 		if (typeof params.roleId !== 'string') return false;
 		this.roleId = params.roleId;
 
@@ -42,7 +40,7 @@ class RoleTimelineChannel extends NoteChannel {
 	}
 
 	@bindThis
-	private async onEvent(data: GlobalEvents['roleTimeline']['payload']) {
+	private async onEvent(data: RoleTimelineEventPayload) {
 		const note = data.body;
 
 		if (note.visibility !== 'public') return;
@@ -56,7 +54,7 @@ class RoleTimelineChannel extends NoteChannel {
 	@bindThis
 	public dispose() {
 		// Unsubscribe events
-		this.subscriber?.off(`roleTimelineStream:${this.roleId}`, this.onEvent);
+		this.subscriber.off(`roleTimelineStream:${this.roleId}`, this.onEvent);
 	}
 }
 

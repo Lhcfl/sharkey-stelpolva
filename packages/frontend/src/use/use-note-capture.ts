@@ -22,7 +22,7 @@ export function useNoteCapture(props: {
 	const pureNote = props.pureNote !== undefined ? props.pureNote : props.note;
 	const connection = $i ? useStream() : null;
 
-	async function onStreamNoteUpdated(noteData): Promise<void> {
+	async function onStreamNoteUpdated(noteData: Misskey.NoteUpdatedEvent): Promise<void> {
 		const { type, id, body } = noteData;
 
 		if ((id !== note.value.id) && (id !== pureNote.value.id)) return;
@@ -115,6 +115,7 @@ export function useNoteCapture(props: {
 
 			case 'updated': {
 				try {
+					// TODO pass the note through the socket instead of blasting the backend with a call from every single client at once
 					const editedNote = await misskeyApi('notes/show', {
 						noteId: id,
 					});

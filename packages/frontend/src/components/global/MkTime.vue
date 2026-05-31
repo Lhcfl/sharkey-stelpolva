@@ -4,8 +4,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<time :title="absolute" :class="{ [$style.old1]: colored && (ago > 60 * 60 * 24 * 90), [$style.old2]: colored && (ago > 60 * 60 * 24 * 180) }">
-	<template v-if="invalid">{{ i18n.ts._ago.invalid }}</template>
+<time :title="absolute" :class="{ [$style.old1]: colored && (secondsAgo > 60 * 60 * 24 * 90), [$style.old2]: colored && (secondsAgo > 60 * 60 * 24 * 180) }">
+	<template v-if="isNever">{{ i18n.ts._ago.never }}</template>
+	<template v-else-if="isInvalid">{{ i18n.ts._ago.invalid }}</template>
 	<template v-else-if="mode === 'relative'">{{ relative }}</template>
 	<template v-else-if="mode === 'absolute'">{{ absolute }}</template>
 	<template v-else-if="mode === 'detail'">{{ absolute }} ({{ relative }})</template>
@@ -14,87 +15,197 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import isChromatic from 'chromatic/isChromatic';
-import { onMounted, onUnmounted, ref, computed } from 'vue';
-import { i18n } from '@/i18n.js';
+import { onMounted, onUnmounted, ref, computed, watch, useId } from 'vue';
 import { dateTimeFormat } from '@@/js/intl-const.js';
+import { breakTime, getRelativeTime, OneSecond, timeBreakpoints } from '@@/js/format-time-string.js';
+import { i18n } from '@/i18n.js';
 
 const props = withDefaults(defineProps<{
 	time: Date | string | number | null;
 	origin?: Date | null;
 	mode?: 'relative' | 'absolute' | 'detail';
 	colored?: boolean;
+	dateOnly?: boolean;
 }>(), {
 	origin: isChromatic() ? () => new Date('2023-04-01T00:00:00Z') : null,
 	mode: 'relative',
+	dateOnly: false,
 });
 
-function getDateSafe(n: Date | string | number) {
-	try {
-		if (n instanceof Date) {
-			return n;
-		}
-		return new Date(n);
-	} catch (err) {
-		return {
-			getTime: () => NaN,
-		};
+const componentId = useId();
+const mounted = ref(false);
+const intervalId = ref<number | undefined>(undefined);
+const intervalValue = ref<number | undefined>(undefined);
+
+const realDate = computed(() => {
+	let date = props.time;
+
+	if (date == null) {
+		return null;
 	}
-}
 
-// eslint-disable-next-line vue/no-setup-props-reactivity-loss
-const _time = props.time == null ? NaN : getDateSafe(props.time).getTime();
-const invalid = Number.isNaN(_time);
-const absolute = !invalid ? dateTimeFormat.format(_time) : i18n.ts._ago.invalid;
+	if (typeof(date) === 'number') {
+		if (Number.isNaN(date)) return null;
+		if (!Number.isFinite(date)) return null;
+		if (date < 0) return null;
+	}
 
-// eslint-disable-next-line vue/no-setup-props-reactivity-loss
-const now = ref(props.origin?.getTime() ?? Date.now());
-const ago = computed(() => (now.value - _time) / 1000/*ms*/);
+	if (!(date instanceof Date)) {
+		try {
+			date = new Date(date);
+		} catch {
+			return null;
+		}
+	}
+
+	// Invalid dates may produce NaN instead of throwing in the constructor
+	if (Number.isNaN(date.getTime())) {
+		return null;
+	}
+
+	return date;
+});
+
+const realNow = ref(new Date());
+
+const now = computed(() => {
+	let value = props.origin ?? realNow.value;
+	if (props.dateOnly) {
+		value = new Date(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDay());
+	}
+	return value;
+});
+
+const date = computed(() => {
+	let value = realDate.value;
+	if (value && props.dateOnly) {
+		value = new Date(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDay());
+	}
+	return value;
+});
+
+const isNever = computed(() => !props.time);
+const isInvalid = computed(() => props.time && !date.value);
+const isValid = computed(() => !isNever.value && !isInvalid.value);
+
+const absolute = computed<string>(() => {
+	if (date.value == null) return i18n.ts._ago.invalid;
+
+	return dateTimeFormat.format(date.value);
+});
 
 const relative = computed<string>(() => {
 	if (props.mode === 'absolute') return ''; // absoluteではrelativeを使わないので計算しない
-	if (invalid) return i18n.ts._ago.invalid;
+	if (isNever.value) return i18n.ts._ago.never;
+	if (isInvalid.value) return i18n.ts._ago.invalid;
+	if (date.value == null) return '';
 
-	return (
-		ago.value >= 31536000 ? i18n.tsx._ago.yearsAgo({ n: Math.round(ago.value / 31536000).toString() }) :
-		ago.value >= 2592000 ? i18n.tsx._ago.monthsAgo({ n: Math.round(ago.value / 2592000).toString() }) :
-		ago.value >= 604800 ? i18n.tsx._ago.weeksAgo({ n: Math.round(ago.value / 604800).toString() }) :
-		ago.value >= 86400 ? i18n.tsx._ago.daysAgo({ n: Math.round(ago.value / 86400).toString() }) :
-		ago.value >= 3600 ? i18n.tsx._ago.hoursAgo({ n: Math.round(ago.value / 3600).toString() }) :
-		ago.value >= 60 ? i18n.tsx._ago.minutesAgo({ n: (~~(ago.value / 60)).toString() }) :
-		ago.value >= 10 ? i18n.tsx._ago.secondsAgo({ n: (~~(ago.value % 60)).toString() }) :
-		ago.value >= -3 ? i18n.ts._ago.justNow :
-		ago.value < -31536000 ? i18n.tsx._timeIn.years({ n: Math.round(-ago.value / 31536000).toString() }) :
-		ago.value < -2592000 ? i18n.tsx._timeIn.months({ n: Math.round(-ago.value / 2592000).toString() }) :
-		ago.value < -604800 ? i18n.tsx._timeIn.weeks({ n: Math.round(-ago.value / 604800).toString() }) :
-		ago.value < -86400 ? i18n.tsx._timeIn.days({ n: Math.round(-ago.value / 86400).toString() }) :
-		ago.value < -3600 ? i18n.tsx._timeIn.hours({ n: Math.round(-ago.value / 3600).toString() }) :
-		ago.value < -60 ? i18n.tsx._timeIn.minutes({ n: (~~(-ago.value / 60)).toString() }) :
-		i18n.tsx._timeIn.seconds({ n: (~~(-ago.value % 60)).toString() })
-	);
+	return getRelativeTime({ then: date.value, now: now.value });
 });
 
-let tickId: number;
-let currentInterval: number;
+/**
+ * Number of milliseconds that have passed since the input time .
+ * Positive if input is in the past (time < now), negative if input is in the future (time > now).
+ * Returns zero is input is now (time === now) or invalid.
+ */
+const millisAgo = computed(() => {
+	if (!isValid.value || !date.value) return 0;
+	return now.value.getTime() - date.value.getTime();
+});
+const secondsAgo = computed(() => Math.round(millisAgo.value / 1000));
 
-function tick() {
-	now.value = Date.now();
-	const nextInterval = ago.value < 60 ? 10000 : ago.value < 3600 ? 60000 : 180000;
+const tickInterval = computed<number>(() => {
+	// Absolute mode doesn't show relative time
+	if (props.mode === 'absolute') return -1;
 
-	if (currentInterval !== nextInterval) {
-		if (tickId) window.clearInterval(tickId);
-		currentInterval = nextInterval;
-		tickId = window.setInterval(tick, nextInterval);
+	// Fixed origin means relative time won't change
+	if (props.origin) return -1;
+
+	// Invalid input won't be shown
+	if (!isValid.value) return -1;
+
+	// Unmounted component won't be shown
+	if (!mounted.value) return -1;
+
+	// number of milliseconds between "now" and the specified time.
+	const absAgo = Math.abs(millisAgo.value);
+
+	// Following steps implement a dynamic step-down algorithm.
+	// It's messy and complicated, but really all it's doing is determining the maximum time we can wait without "missing" a necessary update.
+	// This allows the component to dynamically update relative time strings, but without wasting browser time on unnecessary updates.
+
+	// 1. Find the breakpoint for the time.
+	const bp = breakTime(absAgo);
+
+	// 2. Calculate the time until that breakpoint is reached.
+	const bpAt = absAgo - timeBreakpoints[bp];
+	if (bpAt > absAgo) {
+		console.warn(`assertion failed: bpAt(${bpAt}) > absAgo(${absAgo})`);
 	}
+
+	// 3. Find the breakpoint for *that* time.
+	const bpAfter = breakTime(bpAt);
+
+	// 4. Tick on the smaller breakpoint to make sure we don't "miss" the transition from bp to bpAfter.
+	const bpAfterAt = timeBreakpoints[bpAfter];
+	if (bpAfterAt > bpAt) {
+		console.warn(`assertion failed: bpAfterAt(${bpAfterAt}} > bpAt(${bpAt})`);
+	}
+
+	// 5. But enforce a minimum time to avoid rapid ticks as we approach zero.
+	let interval = Math.max(bpAfterAt, OneSecond);
+
+	// 6. Also enforce *maximum* time to avoid infinite loops on browsers.
+	//    https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout#maximum_delay_value
+	interval = Math.min(interval, 2147483647); // 2^31 (signed)
+
+	// 7. And finally, make sure an invalid value didn't slip through
+	if (!Number.isFinite(interval)) {
+		interval = -1;
+	}
+
+	return interval;
+});
+
+function onTick() {
+	// Update time value
+	realNow.value = new Date();
 }
 
-if (!invalid && props.origin === null && (props.mode === 'relative' || props.mode === 'detail')) {
-	onMounted(() => {
-		tick();
-	});
-	onUnmounted(() => {
-		if (tickId) window.clearInterval(tickId);
-	});
-}
+watch(tickInterval, (interval) => {
+	// stop interval
+	if (interval < 1) {
+		window.clearInterval(intervalId.value);
+		intervalId.value = undefined;
+		intervalValue.value = undefined;
+		return;
+	}
+
+	// start interval
+	if (!intervalId.value) {
+		intervalId.value = window.setInterval(onTick, tickInterval.value);
+		intervalValue.value = tickInterval.value;
+		return;
+	}
+
+	// change interval
+	if (interval !== intervalValue.value) {
+		window.clearInterval(intervalId.value);
+		intervalId.value = window.setInterval(onTick, tickInterval.value);
+		intervalValue.value = tickInterval.value;
+	}
+
+	// keep interval
+	// (noop)
+});
+
+onMounted(() => {
+	mounted.value = true;
+});
+
+onUnmounted(() => {
+	mounted.value = false;
+});
 </script>
 
 <style lang="scss" module>

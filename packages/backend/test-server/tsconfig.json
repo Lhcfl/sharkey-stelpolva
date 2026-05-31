@@ -13,7 +13,12 @@
 	],
 	"exclude": [
 		"**/node_modules",
-		"**/built/",
+		"**/built",
+		"**/built-test",
+		"**/js-built",
+		"**/temp",
+		"**/coverage",
+		"**/*.min.js"	,
 		"**/*.test.ts",
 		"./test/**/*",
 		"./test-federation/**/*",

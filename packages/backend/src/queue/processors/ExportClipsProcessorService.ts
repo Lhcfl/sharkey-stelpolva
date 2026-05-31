@@ -23,7 +23,7 @@ import { NotificationService } from '@/core/NotificationService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
-import type { DbJobDataWithUser } from '../types.js';
+import type { DbExportClipsJobData } from '../types.js';
 
 @Injectable()
 export class ExportClipsProcessorService {
@@ -52,7 +52,7 @@ export class ExportClipsProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbJobDataWithUser>): Promise<void> {
+	public async process(job: Bull.Job<DbExportClipsJobData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
@@ -94,7 +94,7 @@ export class ExportClipsProcessorService {
 		}
 	}
 
-	async processClips(writer: WritableStreamDefaultWriter, user: MiUser, job: Bull.Job<DbJobDataWithUser>) {
+	async processClips(writer: WritableStreamDefaultWriter, user: MiUser, job: Bull.Job<DbExportClipsJobData>) {
 		let exportedClipsCount = 0;
 		let cursor: MiClip['id'] | null = null;
 

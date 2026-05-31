@@ -175,7 +175,7 @@ describe('RoleService', () => {
 		await metasRepository.deleteAll();
 		await usersRepository.deleteAll();
 
-		cacheManagementService.clear();
+		await cacheManagementService.clear();
 	});
 
 	describe('getUserPolicies', () => {

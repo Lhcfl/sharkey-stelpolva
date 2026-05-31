@@ -61,25 +61,26 @@ export class RelationshipProcessorService {
 	@bindThis
 	public async processBlock(job: Bull.Job<RelationshipJobData>): Promise<string> {
 		this.logger.info(`${job.data.from.id} is trying to block ${job.data.to.id}`);
-		const [blockee, blocker] = await Promise.all([
+		const [blocker, blockee] = await Promise.all([
 			this.cacheService.findUserById(job.data.from.id),
 			this.cacheService.findUserById(job.data.to.id),
 		]);
-		await this.userBlockingService.block(blockee, blocker, job.data.silent);
+		await this.userBlockingService.block(blocker, blockee, job.data.silent);
 		return 'ok';
 	}
 
 	@bindThis
 	public async processUnblock(job: Bull.Job<RelationshipJobData>): Promise<string> {
 		this.logger.info(`${job.data.from.id} is trying to unblock ${job.data.to.id}`);
-		const [blockee, blocker] = await Promise.all([
+		const [blocker, blockee] = await Promise.all([
 			this.cacheService.findUserById(job.data.from.id),
 			this.cacheService.findUserById(job.data.to.id),
 		]);
-		await this.userBlockingService.unblock(blockee, blocker);
+		await this.userBlockingService.unblock(blocker, blockee);
 		return 'ok';
 	}
 
+	@bindThis
 	public async processMove(job: Bull.Job<RelationshipJobData>): Promise<string> {
 		this.logger.info(`${job.data.from.id} is trying to migrate to ${job.data.to.id}`);
 		const [src, dst] = await Promise.all([

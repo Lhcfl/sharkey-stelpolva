@@ -3,26 +3,48 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as argon2 from 'argon2';
-import { Inject, Injectable } from '@nestjs/common';
-import ms from 'ms';
-import type { UsersRepository, UserProfilesRepository } from '@/models/_.js';
+import { Injectable } from '@nestjs/common';
+import type { IEndpointMeta } from '@/server/api/endpoints.js';
+import type { Schema } from '@/misc/json-schema.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DeleteAccountService } from '@/core/DeleteAccountService.js';
-import { DI } from '@/di-symbols.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
+import { errorCodes, isIdentifiableError } from '@/misc/identifiable-error.js';
+import { CacheService } from '@/core/CacheService.js';
+import { ApiError } from '@/server/api/error.js';
 
 export const meta = {
 	requireCredential: true,
 
+	// Up to 10, then 1 per 6 minutes (10/hour)
 	limit: {
-		duration: ms('1hour'),
-		max: 10,
-		minInterval: ms('1sec'),
+		type: 'bucket',
+		size: 10,
+		dripRate: 6 * 60 * 1000,
 	},
 
 	secure: true,
-} as const;
+
+	errors: {
+		incorrectPassword: {
+			message: 'Incorrect password.',
+			code: 'INCORRECT_PASSWORD',
+			id: '7add0395-9901-4098-82f9-4f67af65f775',
+		},
+
+		incorrectTotp: {
+			message: 'Incorrect 2FA code.',
+			code: 'INCORRECT_TOTP',
+			id: 'cdf1235b-ac71-46d4-a3a6-84ccce48df6f',
+		},
+
+		userProtected: {
+			message: errorCodes.userProtected,
+			code: 'USER_PROTECTED',
+			id: 'b5983a6a-9930-4c06-966b-d1cac0054544',
+		},
+	},
+} as const satisfies IEndpointMeta;
 
 export const paramDef = {
 	type: 'object',
@@ -31,47 +53,32 @@ export const paramDef = {
 		token: { type: 'string', nullable: true },
 	},
 	required: ['password'],
-} as const;
+} as const satisfies Schema;
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
-		@Inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,
-
-		private userAuthService: UserAuthService,
-		private deleteAccountService: DeleteAccountService,
+		private readonly userAuthService: UserAuthService,
+		private readonly deleteAccountService: DeleteAccountService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const token = ps.token;
-			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });
+			const profile = await this.cacheService.userProfileCache.fetch(me.id);
 
-			if (profile.twoFactorEnabled) {
-				if (token == null) {
-					throw new Error('authentication failed');
-				}
-
-				try {
-					await this.userAuthService.twoFactorAuthenticate(profile, token);
-				} catch (e) {
-					throw new Error('authentication failed');
-				}
+			if (!await this.userAuthService.checkPassword(profile, ps.password)) {
+				throw new ApiError(meta.errors.incorrectPassword);
 			}
 
-			const userDetailed = await this.usersRepository.findOneByOrFail({ id: me.id });
-			if (userDetailed.isDeleted) {
-				return;
+			if (!await this.userAuthService.check2FA(profile, ps.token)) {
+				throw new ApiError(meta.errors.incorrectTotp);
 			}
 
-			const passwordMatched = await argon2.verify(profile.password!, ps.password);
-			if (!passwordMatched) {
-				throw new Error('incorrect password');
+			try {
+				await this.deleteAccountService.deleteAccount(me);
+			} catch (err) {
+				if (isIdentifiableError(err, errorCodes.userProtected)) throw new ApiError(meta.errors.userProtected);
+				throw err;
 			}
-
-			await this.deleteAccountService.deleteAccount(me);
 		});
 	}
 }

@@ -9,6 +9,7 @@ import type { NotesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
+import { UserService } from '@/core/UserService.js';
 import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
@@ -67,11 +68,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 		private roleService: RoleService,
 		private activeUsersChart: ActiveUsersChart,
+		private readonly userService: UserService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const policies = await this.roleService.getUserPolicies(me ? me.id : null);
 			if (!policies.gtlAvailable) {
 				throw new ApiError(meta.errors.gtlDisabled);
+			}
+
+			if (me) {
+				this.userService.markUserActive(me);
 			}
 
 			//#region Construct query
@@ -109,13 +115,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			//#endregion
 
 			const timeline = await query.limit(ps.limit).getMany();
-
-			if (me) {
-				process.nextTick(() => {
-					this.activeUsersChart.read(me);
-				});
-			}
-
 			return await this.noteEntityService.packMany(timeline, me);
 		});
 	}

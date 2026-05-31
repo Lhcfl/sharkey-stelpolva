@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
 import { MetaService } from '@/core/MetaService.js';
@@ -11,6 +11,7 @@ import { MiMeta } from '@/models/Meta.js';
 import Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { CaptchaError, captchaErrorCodes } from '@/misc/captcha-error.js';
+import { DI } from '@/di-symbols.js';
 
 export { CaptchaError } from '@/misc/captcha-error.js';
 
@@ -62,6 +63,9 @@ export class CaptchaService {
 	private readonly logger: Logger;
 
 	constructor(
+		@Inject(DI.meta)
+		private readonly meta: MiMeta,
+
 		private httpRequestService: HttpRequestService,
 		private metaService: MetaService,
 		loggerService: LoggerService,
@@ -214,62 +218,45 @@ export class CaptchaService {
 
 	@bindThis
 	public async get(): Promise<CaptchaSetting> {
-		const meta = await this.metaService.fetch(true);
-
 		let provider: CaptchaProvider;
-		switch (true) {
-			case meta.enableHcaptcha: {
-				provider = 'hcaptcha';
-				break;
-			}
-			case meta.enableMcaptcha: {
-				provider = 'mcaptcha';
-				break;
-			}
-			case meta.enableRecaptcha: {
-				provider = 'recaptcha';
-				break;
-			}
-			case meta.enableTurnstile: {
-				provider = 'turnstile';
-				break;
-			}
-			case meta.enableTestcaptcha: {
-				provider = 'testcaptcha';
-				break;
-			}
-			case meta.enableFC: {
-				provider = 'fc';
-				break;
-			}
-			default: {
-				provider = 'none';
-				break;
-			}
+		if (this.meta.enableHcaptcha) {
+			provider = 'hcaptcha';
+		} else if (this.meta.enableMcaptcha) {
+			provider = 'mcaptcha';
+		} else if (this.meta.enableRecaptcha) {
+			provider = 'recaptcha';
+		} else if (this.meta.enableTurnstile) {
+			provider = 'turnstile';
+		} else if (this.meta.enableTestcaptcha) {
+			provider = 'testcaptcha';
+		} else if (this.meta.enableFC) {
+			provider = 'fc';
+		} else {
+			provider = 'none';
 		}
 
 		return {
 			provider: provider,
 			hcaptcha: {
-				siteKey: meta.hcaptchaSiteKey,
-				secretKey: meta.hcaptchaSecretKey,
+				siteKey: this.meta.hcaptchaSiteKey,
+				secretKey: this.meta.hcaptchaSecretKey,
 			},
 			mcaptcha: {
-				siteKey: meta.mcaptchaSitekey,
-				secretKey: meta.mcaptchaSecretKey,
-				instanceUrl: meta.mcaptchaInstanceUrl,
+				siteKey: this.meta.mcaptchaSitekey,
+				secretKey: this.meta.mcaptchaSecretKey,
+				instanceUrl: this.meta.mcaptchaInstanceUrl,
 			},
 			recaptcha: {
-				siteKey: meta.recaptchaSiteKey,
-				secretKey: meta.recaptchaSecretKey,
+				siteKey: this.meta.recaptchaSiteKey,
+				secretKey: this.meta.recaptchaSecretKey,
 			},
 			turnstile: {
-				siteKey: meta.turnstileSiteKey,
-				secretKey: meta.turnstileSecretKey,
+				siteKey: this.meta.turnstileSiteKey,
+				secretKey: this.meta.turnstileSecretKey,
 			},
 			fc: {
-				siteKey: meta.fcSiteKey,
-				secretKey: meta.fcSecretKey,
+				siteKey: this.meta.fcSiteKey,
+				secretKey: this.meta.fcSecretKey,
 			},
 		};
 	}

@@ -29,6 +29,8 @@ import { emojiRegex } from '@/misc/emoji-regex.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { TimeService } from '@/global/TimeService.js';
+import { CacheService } from '@/core/CacheService.js';
+import { isLocalUser } from '@/models/User.js';
 
 const MAX_ROOM_MEMBERS = 30;
 const MAX_REACTIONS_PER_MESSAGE = 100;
@@ -93,6 +95,7 @@ export class ChatService {
 		private customEmojiService: CustomEmojiService,
 		private moderationLogService: ModerationLogService,
 		private readonly timeService: TimeService,
+		private readonly cacheService: CacheService,
 	) {
 	}
 
@@ -208,25 +211,25 @@ export class ChatService {
 
 		const packedMessage = await this.chatEntityService.packMessageLiteFor1on1(inserted);
 
-		if (this.userEntityService.isLocalUser(toUser)) {
+		if (isLocalUser(toUser)) {
 			const redisPipeline = this.redisClient.pipeline();
 			redisPipeline.set(`newUserChatMessageExists:${toUser.id}:${fromUser.id}`, message.id);
 			redisPipeline.sadd(`newChatMessagesExists:${toUser.id}`, `user:${fromUser.id}`);
 			redisPipeline.exec();
 		}
 
-		if (this.userEntityService.isLocalUser(fromUser)) {
+		if (isLocalUser(fromUser)) {
 			// 自分のストリーム
 			this.globalEventService.publishChatUserStream(fromUser.id, toUser.id, 'message', packedMessage);
 		}
 
-		if (this.userEntityService.isLocalUser(toUser)) {
+		if (isLocalUser(toUser)) {
 			// 相手のストリーム
 			this.globalEventService.publishChatUserStream(toUser.id, fromUser.id, 'message', packedMessage);
 		}
 
 		// 3秒経っても既読にならなかったらイベント発行
-		if (this.userEntityService.isLocalUser(toUser)) {
+		if (isLocalUser(toUser)) {
 			this.timeService.startTimer(async () => {
 				const marker = await this.redisClient.get(`newUserChatMessageExists:${toUser.id}:${fromUser.id}`);
 
@@ -363,14 +366,14 @@ export class ChatService {
 
 		if (message.toUserId) {
 			const [fromUser, toUser] = await Promise.all([
-				this.usersRepository.findOneByOrFail({ id: message.fromUserId }),
-				this.usersRepository.findOneByOrFail({ id: message.toUserId }),
+				this.cacheService.findUserById(message.fromUserId),
+				this.cacheService.findUserById(message.toUserId),
 			]);
 
-			if (this.userEntityService.isLocalUser(fromUser)) this.globalEventService.publishChatUserStream(message.fromUserId, message.toUserId, 'deleted', message.id);
-			if (this.userEntityService.isLocalUser(toUser)) this.globalEventService.publishChatUserStream(message.toUserId, message.fromUserId, 'deleted', message.id);
+			if (isLocalUser(fromUser)) this.globalEventService.publishChatUserStream(message.fromUserId, message.toUserId, 'deleted', message.id);
+			if (isLocalUser(toUser)) this.globalEventService.publishChatUserStream(message.toUserId, message.fromUserId, 'deleted', message.id);
 
-			if (this.userEntityService.isLocalUser(fromUser) && this.userEntityService.isRemoteUser(toUser)) {
+			if (isLocalUser(fromUser) && this.userEntityService.isRemoteUser(toUser)) {
 				//const activity = this.apRendererService.addContext(this.apRendererService.renderDelete(this.apRendererService.renderTombstone(`${this.config.url}/notes/${message.id}`), fromUser));
 				//this.queueService.deliver(fromUser, activity, toUser.inbox);
 			}

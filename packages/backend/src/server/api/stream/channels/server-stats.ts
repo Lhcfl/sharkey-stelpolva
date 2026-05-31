@@ -3,53 +3,54 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import Xev from 'xev';
 import { Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 import { isJsonObject } from '@/misc/json-value.js';
-import type { JsonObject, JsonValue } from '@/misc/json-value.js';
+import type { JsonValue } from '@/misc/json-value.js';
+import { InternalEventService, type InternalEventTypes } from '@/global/InternalEventService.js';
+import { ServerStatsService, ServerStatsLogSize } from '@/core/ServerStatsService.js';
 import Channel, { type MiChannelService } from '../channel.js';
-
-const ev = new Xev();
 
 class ServerStatsChannel extends Channel {
 	public readonly chName = 'serverStats';
 	public static shouldShare = true;
 	public static requireCredential = false as const;
 
-	constructor(id: string, connection: Channel['connection']) {
+	constructor(
+		private readonly internalEventService: InternalEventService,
+		private readonly serverStatsService: ServerStatsService,
+
+		id: string,
+		connection: Channel['connection'],
+	) {
 		super(id, connection);
 	}
 
 	@bindThis
-	public async init(params: JsonObject) {
-		ev.addListener('serverStats', this.onStats);
+	public init(): void {
+		this.internalEventService.on('pushServerStats', this.onServerStats);
 	}
 
 	@bindThis
-	private onStats(stats: JsonObject) {
-		this.send('stats', stats);
+	private async onServerStats(stats: InternalEventTypes['pushServerStats']): Promise<void> {
+		await this.send('stats', stats);
 	}
 
 	@bindThis
-	public onMessage(type: string, body: JsonValue) {
-		switch (type) {
-			case 'requestLog':
-				if (!isJsonObject(body)) return;
-				ev.once(`serverStatsLog:${body.id}`, statsLog => {
-					this.send('statsLog', statsLog);
-				});
-				ev.emit('requestServerStatsLog', {
-					id: body.id,
-					length: body.length,
-				});
-				break;
+	public async onMessage(type: string, body: JsonValue): Promise<void> {
+		if (type === 'requestLog') {
+			const length = isJsonObject(body) && 'length' in body && typeof(body.length) === 'number'
+				? Math.min(Math.max(0, body.length), ServerStatsLogSize)
+				: ServerStatsLogSize;
+
+			const log = this.serverStatsService.getLog(length);
+			await this.send('statsLog', log);
 		}
 	}
 
 	@bindThis
 	public dispose() {
-		ev.removeListener('serverStats', this.onStats);
+		this.internalEventService.off('pushServerStats', this.onServerStats);
 	}
 }
 
@@ -59,9 +60,16 @@ export class ServerStatsChannelService implements MiChannelService<false> {
 	public readonly requireCredential = ServerStatsChannel.requireCredential;
 	public readonly kind = ServerStatsChannel.kind;
 
+	public constructor(
+		private readonly internalEventService: InternalEventService,
+		private readonly serverStatsService: ServerStatsService,
+	) {}
+
 	@bindThis
 	public create(id: string, connection: Channel['connection']): ServerStatsChannel {
 		return new ServerStatsChannel(
+			this.internalEventService,
+			this.serverStatsService,
 			id,
 			connection,
 		);

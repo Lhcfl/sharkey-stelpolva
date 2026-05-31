@@ -1,6 +1,7 @@
 import tsParser from '@typescript-eslint/parser';
 import sharedConfig from '../../shared/eslint.config.js';
 
+// eslint-disable-next-line import/no-default-export
 export default [
 	...sharedConfig,
 	{
@@ -12,20 +13,6 @@ export default [
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
 			},
-		},
-	},
-	{
-		files: ['built/autogen/**.ts'],
-		languageOptions: {
-			parserOptions: {
-				parser: tsParser,
-				project: ['./tsconfig.autogen.json'],
-				sourceType: 'module',
-				tsconfigRootDir: import.meta.dirname,
-			},
-		},
-		rules: {
-			'@stylistic/indent': 'off',
 		},
 	},
 	{

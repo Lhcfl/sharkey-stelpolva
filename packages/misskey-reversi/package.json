@@ -17,6 +17,7 @@
 	"scripts": {
 		"build": "node ./build.js",
 		"watch": "nodemon -w package.json -e json --exec \"node ./build.js --watch\"",
+		"watch:fast": "nodemon -w package.json -e json --exec \"node ./build.js --watch --no-clean\"",
 		"eslint": "eslint --quiet --cache -c eslint.config.js .",
 		"typecheck-all": "pnpm run --no-bail typecheck:game && pnpm run --no-bail typecheck:scripts",
 		"typecheck": "pnpm run typecheck:game && pnpm run typecheck:scripts",
@@ -26,13 +27,13 @@
 	},
 	"devDependencies": {
 		"@types/node": "22.18.1",
-		"@typescript-eslint/eslint-plugin": "8.44.1",
-		"@typescript-eslint/parser": "8.44.1",
-		"esbuild": "0.25.10",
+		"@typescript-eslint/eslint-plugin": "8.57.1",
+		"@typescript-eslint/parser": "8.57.1",
+		"esbuild": "0.27.4",
 		"execa": "9.6.0",
-		"glob": "11.0.3",
+		"fast-glob": "3.3.3",
 		"nodemon": "3.1.10",
-		"typescript": "5.9.2"
+		"typescript": "5.9.3"
 	},
 	"files": [
 		"built"

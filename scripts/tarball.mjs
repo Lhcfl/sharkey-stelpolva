@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import glob from 'fast-glob';
 import walk from 'ignore-walk';
 import { Pack } from 'tar/pack';
-import meta from '../package.json' with { type: "json" };
+import meta from '../package.json' with { type: 'json' };
 
 const cwd = fileURLToPath(new URL('..', import.meta.url));
 const ignore = [
@@ -20,12 +20,14 @@ const ignore = [
 	// Exclude files you don't want to include in the tarball here
 ];
 
+// eslint-disable-next-line import/no-default-export
 export default async function build() {
 	const mkdirPromise = mkdir(resolve(cwd, 'built', 'tarball'), { recursive: true });
 	const pack = new Pack({ cwd, gzip: true });
 	const patterns = await walk({ path: cwd, ignoreFiles: ['.gitignore'] });
 
 	for await (const entry of glob.stream(patterns, { cwd, ignore, dot: true })) {
+		// @ts-expect-error Will always be a string
 		pack.add(entry);
 	}
 

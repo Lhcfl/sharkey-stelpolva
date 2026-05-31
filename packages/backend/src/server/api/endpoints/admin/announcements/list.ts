@@ -10,6 +10,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
+import { IsOne } from '@/misc/is-one.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -63,8 +64,8 @@ export const meta = {
 					items: {
 						type: 'string',
 						optional: false, nullable: false,
-						format: 'misskey:id'
-					}
+						format: 'misskey:id',
+					},
 				},
 			},
 		},
@@ -111,14 +112,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			const announcements = await query.limit(ps.limit).getMany();
+			const announcementIds = announcements.map(a => a.id);
 
-			const reads = new Map<MiAnnouncement, number>();
-
-			for (const announcement of announcements) {
-				reads.set(announcement, await this.announcementReadsRepository.countBy({
-					announcementId: announcement.id,
-				}));
-			}
+			// TODO this should really be part of the initial query
+			const r = await this.announcementReadsRepository.createQueryBuilder('read')
+				.select('read.announcementId', 'announcementId')
+				.addSelect('count(read.userId)', 'userCount')
+				.where({ userId: IsOne(announcementIds) })
+				.groupBy('read.announcementId')
+				.getRawMany<{ announcementId: string, userCount: number }>();
+			const reads = new Map(r.map(r => [r.announcementId, r.userCount]));
 
 			return announcements.map(announcement => ({
 				id: announcement.id,
@@ -136,7 +139,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				needConfirmationToRead: announcement.needConfirmationToRead,
 				confetti: announcement.confetti,
 				userId: announcement.userId,
-				reads: reads.get(announcement)!,
+				reads: reads.get(announcement.id) ?? 0,
 			}));
 		});
 	}

@@ -11,9 +11,12 @@ import { DI } from '@/di-symbols.js';
 import type { MiMeta, UsersRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import { escapeAttribute, escapeValue } from '@/misc/prelude/xml.js';
-import type { MiUser } from '@/models/User.js';
+import type { MiUser, MiLocalUser } from '@/models/User.js';
+import { isLocalUser } from '@/models/User.js';
 import * as Acct from '@/misc/acct.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { UtilityService } from '@/core/UtilityService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { bindThis } from '@/decorators.js';
 import { NodeinfoServerService } from './NodeinfoServerService.js';
 import { OAuth2ProviderService } from './oauth/OAuth2ProviderService.js';
@@ -35,6 +38,8 @@ export class WellKnownServerService {
 		private nodeinfoServerService: NodeinfoServerService,
 		private userEntityService: UserEntityService,
 		private oauth2ProviderService: OAuth2ProviderService,
+		private readonly cacheService: CacheService,
+		private readonly utilityService: UtilityService,
 	) {
 		//this.createServer = this.createServer.bind(this);
 	}
@@ -122,43 +127,56 @@ fastify.get('/.well-known/change-password', async (request, reply) => {
 				return;
 			}
 
-			const fromId = (id: MiUser['id']): FindOptionsWhere<MiUser> => ({
-				id,
-				host: IsNull(),
-				isSuspended: false,
-			});
+			const fetchUserByHandle = async (handle: string): Promise<MiUser | undefined> => {
+				return await this.cacheService.findOptionalUserByAcct(handle);
+			};
 
-			const generateQuery = (resource: string): FindOptionsWhere<MiUser> | number =>
-				resource.startsWith(`${this.config.url.toLowerCase()}/users/`) ?
-					fromId(resource.split('/').pop()!) :
-					fromAcct(Acct.parse(
-						resource.startsWith(`${this.config.url.toLowerCase()}/@`) ? resource.split('/').pop()! :
-						resource.startsWith('acct:') ? resource.slice('acct:'.length) :
-						resource));
+			const fetchUserById = async (id: string): Promise<MiUser | undefined> => {
+				return await this.cacheService.findOptionalUserById(id);
+			};
 
-			const fromAcct = (acct: Acct.Acct): FindOptionsWhere<MiUser> | number =>
-				!acct.host || acct.host === this.config.host.toLowerCase() ? {
-					usernameLower: acct.username.toLowerCase(),
-					host: IsNull(),
-					isSuspended: false,
-				} : 422;
+			const fetchUser = async (resource: string): Promise<MiLocalUser | number> => {
+				// Normalize case to account for varying client implementations
+				resource = resource.toLowerCase();
+
+				let user: MiUser | undefined;
+				if (resource.startsWith(`${this.config.url.toLowerCase()}/users/`)) {
+					// Form 1: User URI
+					const userId = resource.substring(`${this.config.url.toLowerCase()}/users/`.length);
+					user = await fetchUserById(userId);
+				} else if (resource.startsWith(`${this.config.url.toLowerCase()}/@`)) {
+					// Form 2: Profile URL
+					const handle = resource.substring(`${this.config.url.toLowerCase()}/@`.length);
+					user = await fetchUserByHandle(handle);
+				} else if (resource.startsWith('acct:')) {
+					// Form 3: WebFinger Handle
+					const handle = resource.substring('acct:'.length);
+					user = await fetchUserByHandle(handle);
+				} else {
+					// Form 5: Fediverse Handle
+					user = await fetchUserByHandle(resource);
+				}
+
+				if (user == null || !this.utilityService.isActiveUser(user)) {
+					return 404;
+				}
+
+				if (!isLocalUser(user)) {
+					return 422;
+				}
+
+				return user;
+			};
 
 			if (typeof request.query.resource !== 'string') {
 				reply.code(400);
 				return;
 			}
 
-			const query = generateQuery(request.query.resource.toLowerCase());
+			const user = await fetchUser(request.query.resource);
 
-			if (typeof query === 'number') {
-				reply.code(query);
-				return;
-			}
-
-			const user = await this.usersRepository.findOneBy(query);
-
-			if (user == null) {
-				reply.code(404);
+			if (typeof(user) === 'number') {
+				reply.code(user);
 				return;
 			}
 

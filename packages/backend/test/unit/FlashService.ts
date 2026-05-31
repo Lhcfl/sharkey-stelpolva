@@ -98,7 +98,7 @@ describe('FlashService', () => {
 		await usersRepository.deleteAll();
 		await userProfilesRepository.deleteAll();
 		await flashsRepository.deleteAll();
-		cacheManagementService.clear();
+		await cacheManagementService.clear();
 	});
 
 	// --------------------------------------------------------------------------------------

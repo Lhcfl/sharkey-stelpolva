@@ -9,7 +9,10 @@ import type { FollowingsRepository, InstancesRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { InstanceEntityService } from '@/core/entities/InstanceEntityService.js';
+import { InstanceStatsService } from '@/core/InstanceStatsService.js';
 import { DI } from '@/di-symbols.js';
+import type { IEndpointMeta } from '@/server/api/endpoints.js';
+import type { Schema } from '@/misc/json-schema.js';
 
 export const meta = {
 	tags: ['federation'],
@@ -18,7 +21,7 @@ export const meta = {
 	requireCredential: false,
 
 	allowGet: true,
-	cacheSec: 60 * 60,
+	cacheSec: 60 * 60, // 1h
 
 	res: {
 		type: 'object',
@@ -52,12 +55,13 @@ export const meta = {
 		},
 	},
 
-	// 10 calls per 5 seconds
+	// Up to 50 calls, then 5/second
 	limit: {
-		duration: 1000 * 5,
-		max: 10,
+		type: 'bucket',
+		size: 50,
+		dripRate: 250,
 	},
-} as const;
+} as const satisfies IEndpointMeta;
 
 export const paramDef = {
 	type: 'object',
@@ -65,7 +69,7 @@ export const paramDef = {
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 	},
 	required: [],
-} as const;
+} as const satisfies Schema;
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
@@ -77,9 +81,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private followingsRepository: FollowingsRepository,
 
 		private instanceEntityService: InstanceEntityService,
+		private readonly instanceStatsService: InstanceStatsService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const [topSubInstances, topPubInstances, allSubCount, allPubCount] = await Promise.all([
+			const [topSubInstances, topPubInstances, { pubCount: allPubCount, subCount: allSubCount }] = await Promise.all([
 				this.instancesRepository.find({
 					where: {
 						followersCount: MoreThan(0),
@@ -98,16 +103,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					},
 					take: ps.limit,
 				}),
-				this.followingsRepository.count({
-					where: {
-						followeeHost: Not(IsNull()),
-					},
-				}),
-				this.followingsRepository.count({
-					where: {
-						followerHost: Not(IsNull()),
-					},
-				}),
+				this.instanceStatsService.fetch(),
 			]);
 
 			const gotSubCount = topSubInstances.map(x => x.followersCount).reduce((a, b) => a + b, 0);

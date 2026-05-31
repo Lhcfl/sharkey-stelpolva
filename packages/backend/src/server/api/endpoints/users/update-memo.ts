@@ -9,6 +9,7 @@ import { IdService } from '@/core/IdService.js';
 import type { UserMemoRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { GetterService } from '@/server/api/GetterService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -53,6 +54,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userMemosRepository: UserMemoRepository,
 		private getterService: GetterService,
 		private idService: IdService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get target
@@ -67,6 +69,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					userId: me.id,
 					targetUserId: target.id,
 				});
+				await this.internalEventService.emit('userMemoChanged', { userId: me.id, targetUserId: target.id, memo: null });
 				return;
 			}
 
@@ -90,6 +93,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					memo: ps.memo,
 				});
 			}
+			await this.internalEventService.emit('userMemoChanged', { userId: me.id, targetUserId: target.id, memo: ps.memo });
 		});
 	}
 }

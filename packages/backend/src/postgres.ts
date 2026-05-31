@@ -11,7 +11,7 @@ import { entities as charts } from '@/core/chart/entities.js';
 import { Config } from '@/config.js';
 import type MisskeyLogger from '@/logger.js';
 import type { Data } from '@/logger.js';
-import type { LoggerService } from '@/core/LoggerService.js';
+import type { EnvService } from '@/global/EnvService.js';
 import { bindThis } from '@/decorators.js';
 
 import { MiAbuseUserReport } from '@/models/AbuseUserReport.js';
@@ -94,8 +94,13 @@ import { SkLatestNote } from '@/models/LatestNote.js';
 import { SkApContext } from '@/models/SkApContext.js';
 import { SkApFetchLog } from '@/models/SkApFetchLog.js';
 import { SkApInboxLog } from '@/models/SkApInboxLog.js';
+import { coreEnvService, coreLogger } from '@/boot/coreLogger.js';
 
-pg.types.setTypeParser(20, Number);
+// Types are incorrect - TypeId is not a real enum and therefore does not exist at runtime.
+// This construction defines the value by hand, but still allows TypeScript to verify it.
+const INT8: typeof pg.types.TypeId.INT8 = 20;
+
+pg.types.setTypeParser(INT8, Number);
 
 export type LoggerProps = {
 	disableQueryTruncation?: boolean;
@@ -298,10 +303,14 @@ export const entities = [
 	...charts,
 ];
 
-const log = process.env.NODE_ENV !== 'production';
+export function createPostgresDataSource(config: Config, globalLogger?: MisskeyLogger, envService?: EnvService) {
+	envService ??= coreEnvService;
+	globalLogger ??= coreLogger.createSubLogger('global');
 
-export function createPostgresDataSource(config: Config, loggerService: LoggerService) {
-	const dbLogger = loggerService.getLogger('db');
+	const log = envService.env.NODE_ENV !== 'production' && !envService.options.quiet;
+	const verbose = envService.options.verbose;
+
+	const dbLogger = globalLogger.createSubLogger('db');
 	return new DataSource({
 		type: 'postgres',
 		host: config.db.host,
@@ -331,9 +340,9 @@ export function createPostgresDataSource(config: Config, loggerService: LoggerSe
 				})) ?? [],
 			},
 		} : {}),
-		synchronize: process.env.NODE_ENV === 'test',
-		dropSchema: process.env.NODE_ENV === 'test',
-		cache: config.db.disableCache === false && process.env.NODE_ENV !== 'test' ? { // dbをcloseしても何故かredisのコネクションが内部的に残り続けるようで、テストの際に支障が出るため無効にする(キャッシュも含めてテストしたいため本当は有効にしたいが...)
+		synchronize: envService.env.NODE_ENV === 'test',
+		dropSchema: envService.env.NODE_ENV === 'test',
+		cache: config.db.disableCache === false && envService.env.NODE_ENV !== 'test' ? { // dbをcloseしても何故かredisのコネクションが内部的に残り続けるようで、テストの際に支障が出るため無効にする(キャッシュも含めてテストしたいため本当は有効にしたいが...)
 			type: 'ioredis',
 			options: {
 				...config.redis,
@@ -342,13 +351,14 @@ export function createPostgresDataSource(config: Config, loggerService: LoggerSe
 		} : false,
 		logging: log,
 		logger: new TypeORMLogger({
-			disableQueryTruncation: config.logging?.sql?.disableQueryTruncation,
+			disableQueryTruncation: config.logging?.sql?.disableQueryTruncation ?? verbose,
 			enableQueryLogging: log,
-			enableQueryParamLogging: config.logging?.sql?.enableQueryParamLogging,
+			enableQueryParamLogging: config.logging?.sql?.enableQueryParamLogging ?? verbose,
 			printReplicationMode: !!config.dbReplications,
 		}, dbLogger),
 		maxQueryExecutionTime: config.db.slowQueryThreshold,
 		entities: entities,
+		// TODO only pass this when running migrations
 		migrations: ['../../migration/*.js'],
 	});
 }

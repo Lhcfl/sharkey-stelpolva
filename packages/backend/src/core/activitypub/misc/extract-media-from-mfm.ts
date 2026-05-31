@@ -43,7 +43,7 @@ export function extractMediaFromMfm(mfm: string): IApDocument[] {
 				url: node.props.url,
 				name: alt.length > 0
 					? alt.join('')
-					: null,
+					: undefined,
 			});
 		}
 	});

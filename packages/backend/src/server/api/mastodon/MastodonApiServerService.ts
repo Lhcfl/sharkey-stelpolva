@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { createReadStream } from 'node:fs';
-import { Readable } from 'node:stream';
 import { Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import { getErrorData, getErrorException, getErrorStatus, MastodonLogger } from '@/server/api/mastodon/MastodonLogger.js';
 import { MastodonClientService } from '@/server/api/mastodon/MastodonClientService.js';
 import { ApiAccountMastodon } from '@/server/api/mastodon/endpoints/account.js';
@@ -19,7 +18,6 @@ import { ApiTimelineMastodon } from '@/server/api/mastodon/endpoints/timeline.js
 import { ApiSearchMastodon } from '@/server/api/mastodon/endpoints/search.js';
 import { ApiError } from '@/server/api/error.js';
 import { ServerUtilityService } from '@/server/ServerUtilityService.js';
-import { promiseMap } from '@/misc/promise-map.js';
 import { parseTimelineArgs, TimelineArgs, toBoolean } from './argsUtils.js';
 import { convertAnnouncement, convertAttachment, MastodonConverters, convertRelationship } from './MastodonConverters.js';
 import type { Entity } from 'megalodon';
@@ -122,11 +120,12 @@ export class MastodonApiServerService {
 				return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'No image' });
 			}
 
-			const client = this.clientService.getClient(_request);
-			const data = await client.uploadMedia({
-				...multipartData,
-				stream: Readable.toWeb(createReadStream(multipartData.filepath)),
+			const buffer = await multipartData.toBuffer();
+			const file = new File([buffer], multipartData.fieldname, {
+				type: multipartData.mimetype,
 			});
+			const client = this.clientService.getClient(_request);
+			const data = await client.uploadMedia(file);
 			const response = convertAttachment(data.data as Entity.Attachment);
 
 			return reply.send(response);
@@ -137,12 +136,13 @@ export class MastodonApiServerService {
 			if (!multipartData) {
 				return reply.code(400).send({ error: 'BAD_REQUEST', error_description: 'No image' });
 			}
+			const buffer = await multipartData.toBuffer();
+			const file = new File([buffer], multipartData.fieldname, {
+				type: multipartData.mimetype,
+			});
 
 			const client = this.clientService.getClient(_request);
-			const data = await client.uploadMedia({
-				...multipartData,
-				stream: Readable.toWeb(createReadStream(multipartData.filepath)),
-			}, _request.body);
+			const data = await client.uploadMedia(file, _request.body);
 			const response = convertAttachment(data.data as Entity.Attachment);
 
 			return reply.send(response);
@@ -181,7 +181,7 @@ export class MastodonApiServerService {
 			const { client, me } = await this.clientService.getAuthClient(_request);
 
 			const data = await client.getBookmarks(parseTimelineArgs(_request.query));
-			const response = await promiseMap(data.data, async (status) => await this.mastoConverters.convertStatus(status, me), { limit: 4 });
+			const response = await promiseMap(data.data, async (status) => await this.mastoConverters.convertStatus(status, me), { limiter: 4 });
 
 			return reply.send(response);
 		});
@@ -203,7 +203,7 @@ export class MastodonApiServerService {
 				userId: me.id,
 			};
 			const data = await client.getFavourites(args);
-			const response = await promiseMap(data.data, async (status) => await this.mastoConverters.convertStatus(status, me), { limit: 4 });
+			const response = await promiseMap(data.data, async (status) => await this.mastoConverters.convertStatus(status, me), { limiter: 4 });
 
 			return reply.send(response);
 		});
@@ -212,7 +212,7 @@ export class MastodonApiServerService {
 			const client = this.clientService.getClient(_request);
 
 			const data = await client.getMutes(parseTimelineArgs(_request.query));
-			const response = await promiseMap(data.data, async (account) => await this.mastoConverters.convertAccount(account), { limit: 4 });
+			const response = await promiseMap(data.data, async (account) => await this.mastoConverters.convertAccount(account), { limiter: 4 });
 
 			return reply.send(response);
 		});
@@ -221,7 +221,7 @@ export class MastodonApiServerService {
 			const client = this.clientService.getClient(_request);
 
 			const data = await client.getBlocks(parseTimelineArgs(_request.query));
-			const response = await promiseMap(data.data, async (account) => await this.mastoConverters.convertAccount(account), { limit: 4 });
+			const response = await promiseMap(data.data, async (account) => await this.mastoConverters.convertAccount(account), { limiter: 4 });
 
 			return reply.send(response);
 		});
@@ -231,7 +231,7 @@ export class MastodonApiServerService {
 
 			const limit = _request.query.limit ? parseInt(_request.query.limit) : 20;
 			const data = await client.getFollowRequests(limit);
-			const response = await promiseMap(data.data, async (account) => await this.mastoConverters.convertAccount(account), { limit: 4 });
+			const response = await promiseMap(data.data, async (account) => await this.mastoConverters.convertAccount(account), { limiter: 4 });
 
 			return reply.send(response);
 		});

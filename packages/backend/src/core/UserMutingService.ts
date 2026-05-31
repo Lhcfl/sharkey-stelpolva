@@ -11,6 +11,7 @@ import type { MiUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { CacheService } from '@/core/CacheService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 
 @Injectable()
 export class UserMutingService {
@@ -20,11 +21,26 @@ export class UserMutingService {
 
 		private idService: IdService,
 		private cacheService: CacheService,
+		private readonly internalEventService: InternalEventService,
 	) {
 	}
 
 	@bindThis
-	public async mute(user: MiUser, target: MiUser, expiresAt: Date | null = null): Promise<void> {
+	public async tryMute(user: { id: string }, target: { id: string }, expiresAt: Date | null = null): Promise<boolean> {
+		const hasExistingMute = await this.mutingsRepository.existsBy({
+			muterId: user.id,
+			muteeId: target.id,
+		});
+		if (hasExistingMute) {
+			return false;
+		}
+
+		await this.mute(user, target, expiresAt);
+		return true;
+	}
+
+	@bindThis
+	public async mute(user: { id: string }, target: { id: string }, expiresAt: Date | null = null): Promise<void> {
 		await this.mutingsRepository.insert({
 			id: this.idService.gen(),
 			expiresAt: expiresAt ?? null,
@@ -32,7 +48,21 @@ export class UserMutingService {
 			muteeId: target.id,
 		});
 
-		await this.cacheService.userMutingsCache.delete(user.id);
+		await this.internalEventService.emit('mute', { muterId: user.id, muteeId: target.id });
+	}
+
+	@bindThis
+	public async tryUnmute(user: { id: string }, target: { id: string }): Promise<boolean> {
+		const mutes = await this.mutingsRepository.findBy({
+			muterId: user.id,
+			muteeId: target.id,
+		});
+		if (mutes.length < 1) {
+			return false;
+		}
+
+		await this.unmute(mutes);
+		return true;
 	}
 
 	@bindThis
@@ -43,6 +73,18 @@ export class UserMutingService {
 			id: In(mutings.map(m => m.id)),
 		});
 
-		await this.cacheService.userMutingsCache.deleteMany(mutings.map(m => m.muterId));
+		const groups = mutings.reduce((map, mute) => {
+			let group = map.get(mute.muterId);
+			if (!group) {
+				group = [];
+				map.set(mute.muterId, group);
+			}
+			group.push(mute.muteeId);
+			return map;
+		}, new Map<string, string[]>);
+
+		for (const [muterId, muteeId] of groups) {
+			await this.internalEventService.emit('mute', { muterId, muteeId });
+		}
 	}
 }

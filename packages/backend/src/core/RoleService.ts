@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import * as Redis from 'ioredis';
-import { In } from 'typeorm';
+import { Inject, Injectable, type OnModuleInit, type OnApplicationShutdown } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
+import * as Redis from 'ioredis';
 import Ajv from 'ajv';
 import type {
 	MiMeta,
@@ -14,31 +13,29 @@ import type {
 	MiRoleAssignment,
 	RoleAssignmentsRepository,
 	RolesRepository,
-	UsersRepository,
 } from '@/models/_.js';
-import { MemoryKVCache, MemorySingleCache } from '@/misc/cache.js';
 import type { MiUser } from '@/models/User.js';
-import { isLocalUser, isRemoteUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
+import { IsOne } from '@/misc/is-one.js';
 import { bindThis } from '@/decorators.js';
+import { getCallerId } from '@/misc/attach-caller-id.js';
+import { isLocalUser, isRemoteUser } from '@/models/User.js';
 import type { CacheService, FollowStats } from '@/core/CacheService.js';
 import type { RoleCondFormulaValue } from '@/models/Role.js';
-import type { GlobalEvents } from '@/core/GlobalEventService.js';
+import type { NotificationService } from '@/core/NotificationService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { IdService } from '@/core/IdService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { InternalEventService, type InternalEventTypes } from '@/global/InternalEventService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
-import type { NotificationService } from '@/core/NotificationService.js';
-import { TimeService } from '@/global/TimeService.js';
 import {
 	CacheManagementService,
 	type ManagedMemorySingleCache,
 	type ManagedMemoryKVCache,
 } from '@/global/CacheManagementService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { getCallerId } from '@/misc/attach-caller-id.js';
-import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import type { JSONSchemaType, ValidateFunction } from 'ajv';
 
 export type RolePolicies = {
@@ -227,12 +224,6 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		@Inject(DI.redisForTimelines)
 		private redisForTimelines: Redis.Redis,
 
-		@Inject(DI.redisForSub)
-		private redisForSub: Redis.Redis,
-
-		@Inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
 		@Inject(DI.rolesRepository)
 		private rolesRepository: RolesRepository,
 
@@ -244,14 +235,13 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		private moderationLogService: ModerationLogService,
 		private fanoutTimelineService: FanoutTimelineService,
 		private readonly timeService: TimeService,
+		private readonly internalEventService: InternalEventService,
 
 		cacheManagementService: CacheManagementService,
 	) {
 		this.rolesCache = cacheManagementService.createMemorySingleCache<MiRole[]>('roles', 1000 * 60 * 60); // 1h
 		this.roleAssignmentByUserIdCache = cacheManagementService.createMemoryKVCache<MiRoleAssignment[]>('roleAssignment', 1000 * 60 * 5); // 5m
 		// TODO additional cache for final calculation?
-
-		this.redisForSub.on('message', this.onMessage);
 
 		// this is copied from server/api/endpoint-base.ts
 		const ajv = new Ajv.default({
@@ -263,19 +253,22 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	}
 
 	@bindThis
-	async onModuleInit() {
+	public async onModuleInit() {
 		this.notificationService = this.moduleRef.get('NotificationService');
 		this.cacheService = this.moduleRef.get('CacheService');
+
+		this.internalEventService.on('roleCreated', this.onRoleCreated);
+		this.internalEventService.on('roleUpdated', this.onRoleUpdated);
+		this.internalEventService.on('roleDeleted', this.onRoleDeleted);
+		this.internalEventService.on('userRoleAssigned', this.onUserRoleAssigned);
+		this.internalEventService.on('userRoleUnassigned', this.onUserRoleUnassigned);
 	}
 
 	@bindThis
-	private async onMessage(_: string, data: string): Promise<void> {
-		const obj = JSON.parse(data);
-
-		if (obj.channel === 'internal') {
-			const { type, body } = obj.message as GlobalEvents['internal']['payload'];
-			switch (type) {
-				case 'roleCreated': {
+	private onRoleCreated(body: InternalEventTypes['roleCreated']): void {
+		{
+			{
+				{
 					const cached = this.rolesCache.get();
 					if (cached) {
 						cached.push({
@@ -284,9 +277,16 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 							lastUsedAt: new Date(body.lastUsedAt),
 						});
 					}
-					break;
 				}
-				case 'roleUpdated': {
+			}
+		}
+	}
+
+	@bindThis
+	private onRoleUpdated(body: InternalEventTypes['roleUpdated']): void {
+		{
+			{
+				{
 					const cached = this.rolesCache.get();
 					if (cached) {
 						const i = cached.findIndex(x => x.id === body.id);
@@ -298,16 +298,30 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 							};
 						}
 					}
-					break;
 				}
-				case 'roleDeleted': {
+			}
+		}
+	}
+
+	@bindThis
+	private onRoleDeleted(body: InternalEventTypes['roleDeleted']): void {
+		{
+			{
+				{
 					const cached = this.rolesCache.get();
 					if (cached) {
 						this.rolesCache.set(cached.filter(x => x.id !== body.id));
 					}
-					break;
 				}
-				case 'userRoleAssigned': {
+			}
+		}
+	}
+
+	@bindThis
+	private onUserRoleAssigned(body: InternalEventTypes['userRoleAssigned']): void {
+		{
+			{
+				{
 					const cached = this.roleAssignmentByUserIdCache.get(body.userId);
 					if (cached) {
 						cached.push({ // TODO: このあたりのデシリアライズ処理は各modelファイル内に関数としてexportしたい
@@ -317,17 +331,21 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 							role: null, // joinなカラムは通常取ってこないので
 						});
 					}
-					break;
 				}
-				case 'userRoleUnassigned': {
+			}
+		}
+	}
+
+	@bindThis
+	private onUserRoleUnassigned(body: InternalEventTypes['userRoleUnassigned']): void {
+		{
+			{
+				{
 					const cached = this.roleAssignmentByUserIdCache.get(body.userId);
 					if (cached) {
 						this.roleAssignmentByUserIdCache.set(body.userId, cached.filter(x => x.id !== body.id));
 					}
-					break;
 				}
-				default:
-					break;
 			}
 		}
 	}
@@ -684,7 +702,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			: roles.filter(r => r.isModerator);
 
 		const assigns = moderatorRoles.length > 0
-			? await this.roleAssignmentsRepository.findBy({ roleId: In(moderatorRoles.map(r => r.id)) })
+			? await this.roleAssignmentsRepository.findBy({ roleId: IsOne(moderatorRoles.map(r => r.id)) })
 			: [];
 
 		// Setを経由して重複を除去（ユーザIDは重複する可能性があるので）
@@ -713,11 +731,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		excludeExpire?: boolean,
 	}): Promise<MiUser[]> {
 		const ids = await this.getModeratorIds(opts);
-		return ids.length > 0
-			? await this.usersRepository.findBy({
-				id: In(ids),
-			})
-			: [];
+		const users = await this.cacheService.findUsersById(ids);
+		return users.values().toArray();
 	}
 
 	@bindThis
@@ -725,7 +740,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		const roles = await this.rolesCache.fetch(() => this.rolesRepository.findBy({}));
 		const administratorRoles = roles.filter(r => r.isAdministrator);
 		const assigns = administratorRoles.length > 0 ? await this.roleAssignmentsRepository.findBy({
-			roleId: In(administratorRoles.map(r => r.id)),
+			roleId: IsOne(administratorRoles.map(r => r.id)),
 		}) : [];
 		// TODO: isRootなアカウントも含める
 		return assigns.map(a => a.userId);
@@ -734,10 +749,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	@bindThis
 	public async getAdministrators(): Promise<MiUser[]> {
 		const ids = await this.getAdministratorIds();
-		const users = ids.length > 0 ? await this.usersRepository.findBy({
-			id: In(ids),
-		}) : [];
-		return users;
+		const users = await this.cacheService.findUsersById(ids);
+		return users.values().toArray();
 	}
 
 	@bindThis
@@ -769,13 +782,13 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			userId: userId,
 		});
 
-		this.rolesRepository.update(roleId, {
+		await this.rolesRepository.update(roleId, {
 			lastUsedAt: this.timeService.date,
 		});
 
-		this.globalEventService.publishInternalEvent('userRoleAssigned', created);
+		await this.internalEventService.emit('userRoleAssigned', created);
 
-		const user = await this.usersRepository.findOneByOrFail({ id: userId });
+		const user = await this.cacheService.findUserById(userId);
 
 		if (role.isPublic && user.host === null) {
 			this.notificationService.createNotification(userId, 'roleAssigned', {
@@ -812,15 +825,16 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 
 		await this.roleAssignmentsRepository.delete(existing.id);
 
-		this.rolesRepository.update(roleId, {
+		// TODO collapsed queue
+		await this.rolesRepository.update(roleId, {
 			lastUsedAt: now,
 		});
 
-		this.globalEventService.publishInternalEvent('userRoleUnassigned', existing);
+		await this.internalEventService.emit('userRoleUnassigned', existing);
 
 		if (moderator) {
 			const [user, role] = await Promise.all([
-				this.usersRepository.findOneByOrFail({ id: userId }),
+				this.cacheService.findUserById(userId),
 				this.rolesRepository.findOneByOrFail({ id: roleId }),
 			]);
 			this.moderationLogService.log(moderator, 'unassignRole', {
@@ -840,8 +854,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		const redisPipeline = this.redisForTimelines.pipeline();
 
 		for (const role of roles) {
-			this.fanoutTimelineService.push(`roleTimeline:${role.id}`, note.id, 1000, redisPipeline);
-			this.globalEventService.publishRoleTimelineStream(role.id, 'note', note);
+			await this.fanoutTimelineService.push(`roleTimeline:${role.id}`, note.id, 1000, redisPipeline);
+			await this.globalEventService.publishRoleTimelineStream(role.id, 'note', note);
 		}
 
 		await redisPipeline.exec();
@@ -873,7 +887,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			policies: values.policies,
 		});
 
-		this.globalEventService.publishInternalEvent('roleCreated', created);
+		await this.internalEventService.emit('roleCreated', created);
 
 		if (moderator) {
 			this.moderationLogService.log(moderator, 'createRole', {
@@ -896,7 +910,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		});
 
 		const updated = await this.rolesRepository.findOneByOrFail({ id: role.id });
-		this.globalEventService.publishInternalEvent('roleUpdated', updated);
+		await this.internalEventService.emit('roleUpdated', updated);
 
 		if (moderator) {
 			this.moderationLogService.log(moderator, 'updateRole', {
@@ -921,7 +935,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	@bindThis
 	public async delete(role: MiRole, moderator?: MiUser): Promise<void> {
 		await this.rolesRepository.delete({ id: role.id });
-		this.globalEventService.publishInternalEvent('roleDeleted', role);
+		await this.internalEventService.emit('roleDeleted', role);
 
 		if (moderator) {
 			this.moderationLogService.log(moderator, 'deleteRole', {
@@ -930,15 +944,13 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			});
 		}
 	}
-
 	@bindThis
-	public dispose(): void {
-		this.redisForSub.off('message', this.onMessage);
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
+	public onApplicationShutdown(): void {
+		this.internalEventService.off('roleCreated', this.onRoleCreated);
+		this.internalEventService.off('roleUpdated', this.onRoleUpdated);
+		this.internalEventService.off('roleDeleted', this.onRoleDeleted);
+		this.internalEventService.off('userRoleAssigned', this.onUserRoleAssigned);
+		this.internalEventService.off('userRoleUnassigned', this.onUserRoleUnassigned);
 	}
 
 	@bindThis

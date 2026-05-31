@@ -48,6 +48,10 @@ export class StreamMock extends EventEmitter<StreamEvents> implements IStream {
 		// do nothing
 	}
 
+	public pong(): void {
+		// do nothing
+	}
+
 	public heartbeat(): void {
 		// do nothing
 	}

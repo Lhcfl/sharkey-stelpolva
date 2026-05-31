@@ -2,16 +2,10 @@
  * Languages Loader
  */
 
-import * as fs from 'node:fs';
-import * as yaml from 'js-yaml';
+import { createHash } from 'crypto';
+import { merge, loadOptionalYaml } from './util.js';
 
-export const merge = (...args) => args.reduce((a, c) => ({
-	...a,
-	...c,
-	...Object.entries(a)
-		.filter(([k]) => c && typeof c[k] === 'object')
-		.reduce((a, [k, v]) => (a[k] = merge(v, c[k]), a), {})
-}), {});
+/** @typedef {import('./index.d.ts').ILocale} ILocale */
 
 const languages = [
 	'ar-SA',
@@ -50,34 +44,23 @@ const primaries = {
 	'zh': 'CN',
 };
 
-// 何故か文字列にバックスペース文字が混入することがあり、YAMLが壊れるので取り除く
-//
-// also, we remove the backslashes in front of open braces (the
-// backslashes are only needed to tell `generateDTS.js` that the
-// braces do not represent parameters)
-const clean = (text) => text.replace(new RegExp(String.fromCodePoint(0x08), 'g'), '').replaceAll(new RegExp(/\\+\{/,'g'), '{');
-
-export const tryReadFile = (...rfsArgs) => {
-	const metaUrl = import.meta.url;
-	try {
-		return fs.readFileSync(...rfsArgs);
-	} catch(e) {
-		return "";
-	}
-}
-
 export function build() {
-	// vitestの挙動を調整するため、一度ローカル変数化する必要がある
-	// https://github.com/vitest-dev/vitest/issues/3988#issuecomment-1686599577
-	// https://github.com/misskey-dev/misskey/pull/14057#issuecomment-2192833785
-	const metaUrl = import.meta.url;
-	const sharkeyLocales = languages.reduce((a, c) => (a[c] = yaml.load(clean(tryReadFile(new URL(`../sharkey-locales/${c}.yml`, metaUrl), 'utf-8'))) || {}, a), {});
-	const stpvLocales = languages.reduce((a, c) => (a[c] = yaml.load(clean(tryReadFile(new URL(`../stpv-locales/${c}.yml`, metaUrl), 'utf-8'))) || {}, a), {});
-	const misskeyLocales = languages.reduce((a, c) => (a[c] = yaml.load(clean(tryReadFile(new URL(`${c}.yml`, metaUrl), 'utf-8'))) || {}, a), {});
+	/** @type {Record<string, ILocale>} */
+	const sharkeyLocales = languages.reduce((a, c) => (a[c] = loadOptionalYaml(`../sharkey-locales/${c}.yml`), a), {});
+		/** @type {Record<string, ILocale>} */
+	const misskeyLocales = languages.reduce((a, c) => (a[c] = loadOptionalYaml(`${c}.yml`), a), {});
+		/** @type {Record<string, ILocale>} */
+	const stpvLocales = languages.reduce((a, c) => (a[c] = loadOptionalYaml(`../stelpolva-locales/${c}.yml`), a), {});
+
 	// merge sharkey and misskey's locales. the second argument (sharkey) overwrites the first argument (misskey).
   const locales = merge(misskeyLocales, sharkeyLocales, stpvLocales);
 
-	// 空文字列が入ることがあり、フォールバックが動作しなくなるのでプロパティごと消す
+	/**
+	 * 空文字列が入ることがあり、フォールバックが動作しなくなるのでプロパティごと消す
+	 * @template {Record<string, ILocale> | ILocale} T
+	 * @param {T} obj
+	 * @returns {T}
+	 */
 	const removeEmpty = (obj) => {
 		for (const [k, v] of Object.entries(obj)) {
 			if (v === '') {
@@ -107,4 +90,17 @@ export function build() {
 		})(), a), {});
 }
 
-export default build();
+export const locales = build();
+export default locales;
+
+// MD5 is acceptable because we don't need cryptographic security.
+const md5 = createHash('md5');
+
+// Derive the version hash from locale content exclusively.
+// This avoids the problem of "stuck" translations after modifying locale files.
+const localesText = JSON.stringify(locales);
+md5.update(localesText, 'utf8');
+
+// We can't use regular base64 since this becomes part of a filename.
+// Base64URL avoids special characters that would cause an issue.
+export const localesVersion = md5.digest().toString('base64url');

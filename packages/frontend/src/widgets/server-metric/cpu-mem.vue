@@ -80,7 +80,7 @@ import * as Misskey from 'misskey-js';
 import { v4 as uuid } from 'uuid';
 
 const props = defineProps<{
-	connection: Misskey.ChannelConnection<Misskey.Channels['serverStats']>,
+	connection: Misskey.IChannelConnection<Misskey.Channels['serverStats']>,
 	meta: Misskey.entities.ServerInfoResponse
 }>();
 
@@ -106,7 +106,6 @@ onMounted(() => {
 	props.connection.on('stats', onStats);
 	props.connection.on('statsLog', onStatsLog);
 	props.connection.send('requestLog', {
-		id: Math.random().toString().substring(2, 10),
 		length: 50,
 	});
 });

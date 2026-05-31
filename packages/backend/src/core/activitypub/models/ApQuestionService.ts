@@ -11,9 +11,10 @@ import type { Config } from '@/config.js';
 import type { IPoll } from '@/models/Poll.js';
 import type { MiRemoteUser } from '@/models/User.js';
 import type Logger from '@/logger.js';
+import { UtilityService } from '@/core/UtilityService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { bindThis } from '@/decorators.js';
 import { getApId, getApType, getNullableApId, getOneApId, isQuestion } from '../type.js';
-import { UtilityService } from '@/core/UtilityService.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { ApResolverService } from '../ApResolverService.js';
 import type { Resolver } from '../ApResolverService.js';
@@ -39,6 +40,7 @@ export class ApQuestionService {
 		private apResolverService: ApResolverService,
 		private apLoggerService: ApLoggerService,
 		private utilityService: UtilityService,
+		private readonly cacheService: CacheService,
 	) {
 		this.logger = this.apLoggerService.logger;
 	}
@@ -85,8 +87,7 @@ export class ApQuestionService {
 		const poll = await this.pollsRepository.findOneBy({ noteId: note.id });
 		if (poll == null) throw new Error(`Question is not registered (no poll): ${uri}`);
 
-		const user = await this.usersRepository.findOneBy({ id: poll.userId });
-		if (user == null) throw new Error(`Question is not registered (no user): ${uri}`);
+		const user = await this.cacheService.findUserById(poll.userId);
 		//#endregion
 
 		// resolve new Question object

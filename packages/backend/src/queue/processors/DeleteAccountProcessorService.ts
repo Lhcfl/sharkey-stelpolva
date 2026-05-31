@@ -12,19 +12,20 @@ import { DriveService } from '@/core/DriveService.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiNoteReaction } from '@/models/NoteReaction.js';
+import type { Queues, DbDeleteAccountJobData } from '@/queue/types.js';
 import { EmailService } from '@/core/EmailService.js';
+import { isLocalUser } from '@/models/User.js';
 import { bindThis } from '@/decorators.js';
 import { SearchService } from '@/core/SearchService.js';
 import { ApLogService } from '@/core/ApLogService.js';
 import { ReactionService } from '@/core/ReactionService.js';
-import { QueueService } from '@/core/QueueService.js';
-import { CacheService } from '@/core/CacheService.js';
 import { NoteDeleteService } from '@/core/NoteDeleteService.js';
 import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
-import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
-import * as Acct from '@/misc/acct.js';
+import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
+import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
 import type * as Bull from 'bullmq';
-import type { DbUserDeleteJobData } from '../types.js';
 
 @Injectable()
 export class DeleteAccountProcessorService {
@@ -91,27 +92,47 @@ export class DeleteAccountProcessorService {
 		@Inject(DI.registryItemsRepository)
 		private readonly registryItemsRepository: RegistryItemsRepository,
 
-		private queueService: QueueService,
+		@Inject('queue:scheduleNotePost')
+		private readonly scheduleNotePostQueue: Queues['scheduleNotePost'],
+
 		private driveService: DriveService,
 		private emailService: EmailService,
 		private queueLoggerService: QueueLoggerService,
 		private searchService: SearchService,
 		private reactionService: ReactionService,
 		private readonly apLogService: ApLogService,
-		private readonly cacheService: CacheService,
-		private readonly apPersonService: ApPersonService,
 		private readonly noteDeleteService: NoteDeleteService,
+		private readonly apRendererService: ApRendererService,
+		private readonly userEntityService: UserEntityService,
+		private readonly apDeliverManagerService: ApDeliverManagerService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('delete-account');
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbUserDeleteJobData>): Promise<string | void> {
+	public async process(job: Bull.Job<DbDeleteAccountJobData>): Promise<string> {
 		this.logger.info(`Deleting account of ${job.data.user.id} ...`);
 
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
-			return;
+			return 'skip - user not found';
+		}
+
+		{ // Federate delete
+			if (isLocalUser(user)) {
+				// Federate Delete(Person) activities
+				const activity = this.apRendererService.addContext(this.apRendererService.renderDelete(this.userEntityService.genLocalUserUri(user.id), user));
+
+				const dm = this.apDeliverManagerService.createDeliverManager(user, activity);
+				dm.addNetworkRecipe(); // Send to sharedInbox of known network.
+				dm.addFollowersRecipe(); // Additionally send to regular inbox of followers who lack a sharedInbox.
+				await dm.execute();
+
+				this.logger.info('Delete(Person) activities have been queued.');
+			} else {
+				this.logger.debug('Not sending activities for remote user');
+			}
 		}
 
 		{ // Delete user clips
@@ -147,26 +168,6 @@ export class DeleteAccountProcessorService {
 		}
 
 		{ // Delete user relations
-			await this.cacheService.refreshFollowRelationsFor(user.id);
-			await this.cacheService.userFollowingsCache.delete(user.id);
-			await this.cacheService.userFollowingsCache.delete(user.id);
-			await this.cacheService.userBlockingCache.delete(user.id);
-			await this.cacheService.userBlockedCache.delete(user.id);
-			await this.cacheService.userMutingsCache.delete(user.id);
-			await this.cacheService.userMutingsCache.delete(user.id);
-			await this.cacheService.hibernatedUserCache.delete(user.id);
-			await this.cacheService.renoteMutingsCache.delete(user.id);
-			await this.cacheService.userProfileCache.delete(user.id);
-			await this.cacheService.userByIdCache.delete(user.id);
-			await this.cacheService.userByAcctCache.delete(Acct.toString({ username: user.usernameLower, host: user.host }));
-			await this.cacheService.userFollowStatsCache.delete(user.id);
-			if (user.token) {
-				await this.cacheService.nativeTokenCache.delete(user.token);
-			}
-			if (user.uri) {
-				await this.apPersonService.uriPersonCache.delete(user.uri);
-			}
-
 			await this.followingsRepository.delete({
 				followerId: user.id,
 			});
@@ -274,7 +275,9 @@ export class DeleteAccountProcessorService {
 			}) as MiNoteSchedule[];
 
 			for (const note of scheduledNotes) {
-				await this.queueService.ScheduleNotePostQueue.remove(`schedNote:${note.id}`);
+				await this.scheduleNotePostQueue.remove(`schedNote_${note.id}`);
+				// this is for notes scheduled with 2025.4 or earlier
+				await this.scheduleNotePostQueue.remove(`schedNote:${note.id}`).catch(() => null);
 			}
 
 			await this.noteScheduleRepository.delete({
@@ -409,9 +412,64 @@ export class DeleteAccountProcessorService {
 
 			// soft指定されている場合は物理削除しない
 			if (job.data.soft) {
-				// nop
+				await this.usersRepository.update({ id: user.id }, {
+					followersCount: 0,
+					followingCount: 0,
+					notesCount: 0,
+					avatarId: null,
+					avatarUrl: null,
+					avatarBlurhash: null,
+					bannerId: null,
+					bannerUrl: null,
+					bannerBlurhash: null,
+					backgroundId: null,
+					backgroundUrl: null,
+					backgroundBlurhash: null,
+					avatarDecorations: [],
+					tags: [],
+					emojis: [],
+					score: 0, // WTF is this?
+					noindex: true,
+					isLocked: true,
+					isExplorable: false,
+					requireSigninToViewContents: true,
+					makeNotesFollowersOnlyBefore: null,
+					makeNotesHiddenBefore: null,
+					chatScope: 'none',
+					featured: null,
+					followersUri: null,
+					enableRss: false,
+					allowUnsignedFetch: 'never',
+				});
+				await this.internalEventService.emit('userUpdated', { id: user.id });
+				await this.userProfilesRepository.update({ userId: user.id }, {
+					location: null,
+					birthday: null,
+					listenbrainz: null,
+					description: null,
+					followedMessage: null,
+					fields: [],
+					lang: null,
+					publicReactions: false,
+					followersVisibility: 'private',
+					followingVisibility: 'private',
+					clientData: {},
+					room: {}, // TODO isn't this obsolete?
+					autoAcceptFollowed: false,
+					noCrawle: true,
+					preventAiLearning: true,
+					defaultSensitive: true,
+					autoSensitive: false,
+					pinnedPageId: null,
+					mutedWords: [],
+					hardMutedWords: [],
+					mutedInstances: [],
+					notificationRecieveConfig: {},
+					defaultCW: null,
+				});
+				await this.internalEventService.emit('updateUserProfile', { userId: user.id, keys: null });
 			} else {
-				await this.usersRepository.delete(user.id);
+				await this.usersRepository.delete({ id: user.id });
 			}
 
 			this.logger.info('Account data deleted');

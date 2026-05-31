@@ -14,11 +14,12 @@ import { DriveService } from '@/core/DriveService.js';
 import { createTemp } from '@/misc/create-temp.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { NotificationService } from '@/core/NotificationService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
-import type { DbJobDataWithUser } from '../types.js';
+import type { DbExportBlockingJobData } from '../types.js';
 
 @Injectable()
 export class ExportBlockingProcessorService {
@@ -36,12 +37,13 @@ export class ExportBlockingProcessorService {
 		private driveService: DriveService,
 		private queueLoggerService: QueueLoggerService,
 		private readonly timeService: TimeService,
+		private readonly cacheService: CacheService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-blocking');
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbJobDataWithUser>): Promise<void> {
+	public async process(job: Bull.Job<DbExportBlockingJobData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
@@ -74,18 +76,16 @@ export class ExportBlockingProcessorService {
 				});
 
 				if (blockings.length === 0) {
-					job.updateProgress(100);
+					await job.updateProgress(100);
 					break;
 				}
 
 				cursor = blockings.at(-1)?.id ?? null;
 
-				for (const block of blockings) {
-					const u = await this.usersRepository.findOneBy({ id: block.blockeeId });
-					if (u == null) {
-						exportedCount++; continue;
-					}
+				const blockeeIds = blockings.map(f => f.blockeeId);
+				const blockees = await this.cacheService.findUsersById(blockeeIds);
 
+				for (const u of blockees.values()) {
 					const content = this.utilityService.getFullApAccount(u.username, u.host);
 					await new Promise<void>((res, rej) => {
 						stream.write(content + '\n', err => {
@@ -97,14 +97,14 @@ export class ExportBlockingProcessorService {
 							}
 						});
 					});
-					exportedCount++;
 				}
 
 				const total = await this.blockingsRepository.countBy({
 					blockerId: user.id,
 				});
 
-				job.updateProgress(exportedCount / total);
+				exportedCount += blockings.length;
+				await job.updateProgress(exportedCount / total);
 			}
 
 			stream.end();

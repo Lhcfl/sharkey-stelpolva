@@ -582,3 +582,58 @@ export type FilterUnionByProperty<
 	Property extends string | number | symbol,
 	Condition,
 > = Union extends Record<Property, Condition> ? Union : never;
+
+/**
+ * Strip index signatures from type T, leaving only explicitly-declared properties.
+ */
+export type OmitIndexSignature<T> = {
+	[K in keyof T as string extends K ? never : number extends K ? never : K]: T[K];
+};
+
+/**
+ * General-purpose Option type with support for strongly-typed errors.
+ * Useful when code needs to abort with an error, but exceptions (Error) would be inappropriate.
+ */
+export type Result<TResult, TError = unknown> = SuccessResult<TResult> | ErrorResult<TError>;
+
+type SuccessResult<TResult> = { result: TResult, error?: undefined };
+type ErrorResult<TError> = { result?: undefined, error: TError };
+
+/**
+ * Converts a union type (A | B | C) into an intersection type (A & B & C);
+ * Adapted from the wizardry at https://stackoverflow.com/a/50375286
+ */
+export type UnionToIntersection<T> = (T extends unknown ? (x: T) => void : never) extends ((x: infer I) => void) ? I : never;
+
+/**
+ * Converts a union type (A | B | C) into an interface type (Partial<{ ...a, ...b, ...c }>)>
+ */
+export type UnionToInterface<T> = {
+	[K in keyof UnionToIntersection<T>]: UnionToIntersection<T>[K];
+};
+
+/**
+ * Represents the empty object - {}
+ */
+export type EmptyObject = Record<string, never>;
+
+/**
+ * Creates a "partially partial" type from T, where all keys in P are optional and the rest are required.
+ */
+export type SemiPartial<T, P extends keyof T> = Omit<T, P> & {
+	[Key in P]?: T[Key] | undefined;
+};
+
+/**
+ * Returns the input type T with all nullable properties converted to optional.
+ */
+export type NullableToOptional<T> = Omit<T, NullableKeys<T>> & {
+	[K in NullableKeys<T>]?: T[K] | undefined;
+};
+
+/**
+ * Extracts the keys from T where the value is permitted to be "null".
+ */
+export type NullableKeys<T> = {
+	[K in keyof T]: null extends T[K] ? K : never;
+}[keyof T];

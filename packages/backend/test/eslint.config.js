@@ -5,12 +5,24 @@ import sharedConfig from '../../shared/eslint.config.js';
 export default [
 	...sharedConfig,
 	{
-		files: ['**/*.ts', '**/*.tsx'],
+		ignores: [
+			"**/built/",
+			'**/node_modules/',
+			'*.*',
+			"**/jest.setup.*"
+		],
+	},
+	{
 		languageOptions: {
 			globals: {
 				...globals.node,
 				...globals.jest,
 			},
+		},
+	},
+	{
+		files: ['**/*.ts', '**/*.tsx'],
+		languageOptions: {
 			parserOptions: {
 				parser: tsParser,
 				project: ['./tsconfig.json'],
@@ -23,7 +35,7 @@ export default [
 				'error',
 				{
 					"selector": "CallExpression[callee.property.name='delete'][arguments.length=1] > ObjectExpression[properties.length=0]",
-					"message": "repository.deleteAll() will produce a runtime error. Use repository.deleteAll() instead."
+					"message": "repository.delete({}) will produce a runtime error. Use repository.deleteAll() instead."
 				},
 				{
 					"selector": "CallExpression[callee.property.name='update'][arguments.length>=1] > ObjectExpression[properties.length=0]",
@@ -31,12 +43,5 @@ export default [
 				},
 			],
 		}
-	},
-	{
-		ignores: [
-			"**/built/",
-			'*.*',
-			"**/jest.setup.*"
-		],
 	},
 ];

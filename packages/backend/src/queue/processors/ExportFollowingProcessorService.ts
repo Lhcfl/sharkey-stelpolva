@@ -15,11 +15,12 @@ import { createTemp } from '@/misc/create-temp.js';
 import type { MiFollowing } from '@/models/Following.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { NotificationService } from '@/core/NotificationService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
-import type { DbExportFollowingData } from '../types.js';
+import type { DbExportFollowingJobData } from '../types.js';
 
 @Injectable()
 export class ExportFollowingProcessorService {
@@ -40,12 +41,13 @@ export class ExportFollowingProcessorService {
 		private queueLoggerService: QueueLoggerService,
 		private notificationService: NotificationService,
 		private readonly timeService: TimeService,
+		private readonly cacheService: CacheService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-following');
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbExportFollowingData>): Promise<void> {
+	public async process(job: Bull.Job<DbExportFollowingJobData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
@@ -87,12 +89,10 @@ export class ExportFollowingProcessorService {
 
 				cursor = followings.at(-1)?.id ?? null;
 
-				for (const following of followings) {
-					const u = await this.usersRepository.findOneBy({ id: following.followeeId });
-					if (u == null) {
-						continue;
-					}
+				const followeeIds = followings.map(f => f.followeeId);
+				const followees = await this.cacheService.findUsersById(followeeIds);
 
+				for (const u of followees.values()) {
 					if (job.data.excludeInactive && u.updatedAt && (this.timeService.now - u.updatedAt.getTime() > 1000 * 60 * 60 * 24 * 90)) {
 						continue;
 					}

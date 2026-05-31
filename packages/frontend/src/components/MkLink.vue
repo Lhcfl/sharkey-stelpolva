@@ -21,7 +21,7 @@ import { defineAsyncComponent, ref } from 'vue';
 import { url as local } from '@@/js/config.js';
 import { useTooltip } from '@/use/use-tooltip.js';
 import * as os from '@/os.js';
-import { isEnabledUrlPreview } from '@/instance.js';
+import { instance } from '@/instance.js';
 import type { MkABehavior } from '@/components/global/MkA.vue';
 import { warningExternalWebsite } from '@/utility/warning-external-website.js';
 import { maybeMakeRelative } from '@@/js/url.js';
@@ -40,7 +40,7 @@ const target = self ? null : '_blank';
 
 const el = ref<HTMLElement | { $el: HTMLElement }>();
 
-if (isEnabledUrlPreview.value) {
+if (instance.enableUrlPreview) {
 	useTooltip(el, (showing) => {
 		const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkUrlPreviewPopup.vue')), {
 			showing,

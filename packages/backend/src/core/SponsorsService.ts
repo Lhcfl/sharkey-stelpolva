@@ -8,6 +8,7 @@ import type { MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { CacheManagementService, type ManagedRedisKVCache } from '@/global/CacheManagementService.js';
+import { HttpRequestService } from '@/core/HttpRequestService.js';
 
 export interface Sponsor {
 	MemberId: number;
@@ -39,15 +40,16 @@ export class SponsorsService {
 	constructor(
 		@Inject(DI.meta)
 		private readonly meta: MiMeta,
+		private readonly httpRequestService: HttpRequestService,
 
 		cacheManagementService: CacheManagementService,
 	) {
 		this.cache = cacheManagementService.createRedisKVCache<Sponsor[]>('sponsors', {
 			lifetime: 1000 * 60 * 60,
 			memoryCacheLifetime: 1000 * 60,
-			fetcher: (key) => {
-				if (key === 'instance') return this.fetchInstanceSponsors();
-				return this.fetchSharkeySponsors();
+			fetcher: async (key) => {
+				if (key === 'instance') return await this.fetchInstanceSponsors();
+				return await this.fetchSharkeySponsors();
 			},
 			toRedisConverter: (value) => JSON.stringify(value),
 			fromRedisConverter: (value) => JSON.parse(value),
@@ -56,13 +58,12 @@ export class SponsorsService {
 
 	@bindThis
 	private async fetchInstanceSponsors(): Promise<Sponsor[]> {
-		if (!(this.meta.donationUrl && this.meta.donationUrl.includes('opencollective.com'))) {
+		if (!this.meta.donationUrl?.startsWith('https://opencollective.com')) {
 			return [];
 		}
 
 		try {
-			// TODO use HTTP service
-			const backers = await fetch(`${this.meta.donationUrl}/members/users.json`).then((response) => response.json() as Promise<Sponsor[]>);
+			const backers = await this.httpRequestService.getJson<Sponsor[]>(`${this.meta.donationUrl}/members/users.json`);
 
 			// Merge both together into one array and make sure it only has Active subscriptions
 			const allSponsors = [...backers].filter(sponsor => sponsor.isActive && sponsor.role === 'BACKER' && sponsor.tier);
@@ -77,9 +78,8 @@ export class SponsorsService {
 	@bindThis
 	private async fetchSharkeySponsors(): Promise<Sponsor[]> {
 		try {
-			// TODO use HTTP service
-			const backers = await fetch('https://opencollective.com/sharkey/tiers/backer/all.json').then((response) => response.json() as Promise<Sponsor[]>);
-			const sponsorsOC = await fetch('https://opencollective.com/sharkey/tiers/sponsor/all.json').then((response) => response.json() as Promise<Sponsor[]>);
+			const backers = await this.httpRequestService.getJson<Sponsor[]>('https://opencollective.com/sharkey/tiers/backer/all.json');
+			const sponsorsOC = await this.httpRequestService.getJson<Sponsor[]>('https://opencollective.com/sharkey/tiers/sponsor/all.json');
 
 			// Merge both together into one array and make sure it only has Active subscriptions
 			const allSponsors = [...sponsorsOC, ...backers].filter(sponsor => sponsor.isActive);

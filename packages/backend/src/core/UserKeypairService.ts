@@ -4,25 +4,20 @@
  */
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import * as Redis from 'ioredis';
-import { In } from 'typeorm';
 import type { MiUser } from '@/models/User.js';
 import type { UserKeypairsRepository } from '@/models/_.js';
 import type { MiUserKeypair } from '@/models/UserKeypair.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
+import { IsOne } from '@/misc/is-one.js';
 import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/CacheManagementService.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
-import type { InternalEventTypes } from '@/core/GlobalEventService.js';
+import { InternalEventService, type InternalEventTypes } from '@/global/InternalEventService.js';
 
 @Injectable()
 export class UserKeypairService implements OnApplicationShutdown {
 	public readonly userKeypairCache: ManagedQuantumKVCache<MiUserKeypair>;
 
 	constructor(
-		@Inject(DI.redis)
-		private redisClient: Redis.Redis,
-
 		@Inject(DI.userKeypairsRepository)
 		private userKeypairsRepository: UserKeypairsRepository,
 
@@ -35,7 +30,7 @@ export class UserKeypairService implements OnApplicationShutdown {
 			fetcher: async userId => await this.userKeypairsRepository.findOneByOrFail({ userId }),
 			optionalFetcher: async userId => await this.userKeypairsRepository.findOneBy({ userId }),
 			bulkFetcher: async userIds => {
-				const keypairs = await this.userKeypairsRepository.findBy({ userId: In(userIds) });
+				const keypairs = await this.userKeypairsRepository.findBy({ userId: IsOne(userIds) });
 				return keypairs.map(keypair => [keypair.userId, keypair]);
 			},
 		});
@@ -46,6 +41,11 @@ export class UserKeypairService implements OnApplicationShutdown {
 	@bindThis
 	public async getUserKeypair(userId: MiUser['id']): Promise<MiUserKeypair> {
 		return await this.userKeypairCache.fetch(userId);
+	}
+
+	@bindThis
+	public async getUserKeypairMaybe(userId: MiUser['id']): Promise<MiUserKeypair | undefined> {
+		return await this.userKeypairCache.fetchMaybe(userId);
 	}
 
 	@bindThis

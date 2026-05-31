@@ -12,6 +12,8 @@ import type { MiLocalUser } from '@/models/User.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { SigninEntityService } from '@/core/entities/SigninEntityService.js';
 import { bindThis } from '@/decorators.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
+import { CacheService } from '@/core/CacheService.js';
 import { EmailService } from '@/core/EmailService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
@@ -30,6 +32,7 @@ export class SigninService {
 		private notificationService: NotificationService,
 		private idService: IdService,
 		private globalEventService: GlobalEventService,
+		private readonly cacheService: CacheService,
 	) {
 	}
 
@@ -46,13 +49,13 @@ export class SigninService {
 				success: true,
 			});
 
-			this.globalEventService.publishMainStream(user.id, 'signin', await this.signinEntityService.pack(record));
+			await this.globalEventService.publishMainStream(user.id, 'signin', await this.signinEntityService.pack(record));
 
-			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
+			const profile = await this.cacheService.userProfileCache.fetch(user.id);
 			if (profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, 'New login / ログインがありました',
+				trackPromise(this.emailService.sendEmail(profile.email, 'New login / ログインがありました',
 					'There is a new login. If you do not recognize this login, update the security status of your account, including changing your password. / 新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。',
-					'There is a new login. If you do not recognize this login, update the security status of your account, including changing your password. / 新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。');
+					'There is a new login. If you do not recognize this login, update the security status of your account, including changing your password. / 新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。'));
 			}
 		});
 

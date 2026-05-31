@@ -6,6 +6,8 @@
 import { afterEach, beforeEach, describe, expect, jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomString } from '../utils.js';
+import { FakeQueueService } from '../misc/FakeQueueService.js';
+import type { Queues } from '@/queue/types.js';
 import { MiUser } from '@/models/User.js';
 import { MiWebhook, UsersRepository, WebhooksRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -28,7 +30,7 @@ describe('UserWebhookService', () => {
 	let userWebhooksRepository: WebhooksRepository;
 	let idService: IdService;
 	let cacheManagementService: CacheManagementService;
-	let queueService: jest.Mocked<QueueService>;
+	let userWebhookDeliverQueue: Queues['userWebhookDeliver'];
 
 	// --------------------------------------------------------------------------------------
 
@@ -69,7 +71,7 @@ describe('UserWebhookService', () => {
 					CoreModule,
 				],
 			})
-			.overrideProvider(QueueService).useValue({ userWebhookDeliver: jest.fn() })
+			.overrideProvider(QueueService).useClass(FakeQueueService)
 			.compile();
 
 		await app.init();
@@ -81,7 +83,9 @@ describe('UserWebhookService', () => {
 		service = app.get(UserWebhookService);
 		idService = app.get(IdService);
 		cacheManagementService = app.get(CacheManagementService);
-		queueService = app.get(QueueService) as jest.Mocked<QueueService>;
+		userWebhookDeliverQueue = app.get<Queues['userWebhookDeliver']>('queue:userWebhookDeliver');
+
+		await userWebhookDeliverQueue.drain(true);
 	});
 
 	afterAll(async () => {
@@ -95,8 +99,8 @@ describe('UserWebhookService', () => {
 	afterEach(async () => {
 		await usersRepository.deleteAll();
 		await userWebhooksRepository.deleteAll();
-		queueService.userWebhookDeliver.mockReset();
-		cacheManagementService.clear();
+		await userWebhookDeliverQueue.drain(true);
+		await cacheManagementService.clear();
 	});
 
 	// --------------------------------------------------------------------------------------
@@ -246,8 +250,9 @@ describe('UserWebhookService', () => {
 				});
 				await service.enqueueUserWebhook(webhook.userId, 'note', { foo: 'bar' } as any);
 
-				expect(queueService.userWebhookDeliver).toHaveBeenCalledTimes(1);
-				expect(queueService.userWebhookDeliver.mock.calls[0][0] as MiWebhook).toEqual(webhook);
+				const jobs = await userWebhookDeliverQueue.getJobs();
+				expect(jobs.length).toBe(1);
+				expect(jobs[0].data.webhookId).toBe(webhook.id);
 			});
 
 			test('非アクティブなWebhookはキューに追加されない', async () => {
@@ -257,7 +262,8 @@ describe('UserWebhookService', () => {
 				});
 				await service.enqueueUserWebhook(webhook.userId, 'note', { foo: 'bar' } as any);
 
-				expect(queueService.userWebhookDeliver).not.toHaveBeenCalled();
+				const jobs = await userWebhookDeliverQueue.getJobs();
+				expect(jobs.length).toBe(0);
 			});
 
 			test('未許可のイベント種別が渡された場合はWebhookはキューに追加されない', async () => {
@@ -272,7 +278,8 @@ describe('UserWebhookService', () => {
 				await service.enqueueUserWebhook(webhook1.userId, 'renote', { foo: 'bar' } as any);
 				await service.enqueueUserWebhook(webhook2.userId, 'renote', { foo: 'bar' } as any);
 
-				expect(queueService.userWebhookDeliver).not.toHaveBeenCalled();
+				const jobs = await userWebhookDeliverQueue.getJobs();
+				expect(jobs.length).toBe(0);
 			});
 
 			test('ユーザIDが異なるWebhookはキューに追加されない', async () => {
@@ -282,7 +289,8 @@ describe('UserWebhookService', () => {
 				});
 				await service.enqueueUserWebhook(idService.gen(), 'note', { foo: 'bar' } as any);
 
-				expect(queueService.userWebhookDeliver).not.toHaveBeenCalled();
+				const jobs = await userWebhookDeliverQueue.getJobs();
+				expect(jobs.length).toBe(0);
 			});
 
 			test('混在した時、有効かつ許可されたイベント種別のみ', async () => {
@@ -309,8 +317,9 @@ describe('UserWebhookService', () => {
 				});
 				await service.enqueueUserWebhook(userId, 'note', { foo: 'bar' } as any);
 
-				expect(queueService.userWebhookDeliver).toHaveBeenCalledTimes(1);
-				expect(queueService.userWebhookDeliver.mock.calls[0][0] as MiWebhook).toEqual(webhook1);
+				const jobs = await userWebhookDeliverQueue.getJobs();
+				expect(jobs.length).toBe(1);
+				expect(jobs[0].data.webhookId).toBe(webhook1.id);
 			});
 		});
 	});

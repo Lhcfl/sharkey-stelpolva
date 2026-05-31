@@ -5,11 +5,10 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import type { AntennasRepository } from '@/models/_.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
-import type { GlobalEvents } from '@/core/GlobalEventService.js';
+import type { AntennaEventPayload } from '@/core/GlobalEventService.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import { type Channel, NoteChannel, type MiChannelService } from '../channel.js';
 
@@ -33,7 +32,6 @@ class AntennaChannel extends NoteChannel {
 	@bindThis
 	public async init(params: JsonObject): Promise<boolean> {
 		if (!this.user) return false;
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
 
 		if (typeof params.antennaId !== 'string') return false;
 		this.antennaId = params.antennaId;
@@ -51,7 +49,7 @@ class AntennaChannel extends NoteChannel {
 	}
 
 	@bindThis
-	private async onEvent(data: GlobalEvents['antenna']['payload']) {
+	private async onEvent(data: AntennaEventPayload) {
 		const preparedNote = await this.noteEntityService.pack(data.body.id, this.user, { detail: true });
 
 		// TODO this duplicate work could be avoided if the visibility data were returned from NoteEntityService.pack().
@@ -64,7 +62,7 @@ class AntennaChannel extends NoteChannel {
 	@bindThis
 	public dispose() {
 		// Unsubscribe events
-		this.subscriber?.off(`antennaStream:${this.antennaId}`, this.onEvent);
+		this.subscriber.off(`antennaStream:${this.antennaId}`, this.onEvent);
 	}
 }
 

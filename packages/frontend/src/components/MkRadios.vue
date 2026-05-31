@@ -8,6 +8,7 @@ import { defineComponent, h, ref, watch } from 'vue';
 import type { VNode } from 'vue';
 import MkRadio from './MkRadio.vue';
 
+// TODO add types for this
 export default defineComponent({
 	props: {
 		modelValue: {

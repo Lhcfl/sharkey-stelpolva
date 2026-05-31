@@ -19,6 +19,7 @@ describe('UtilityService', () => {
 		const config = {
 			url: 'https://example.com',
 			host: 'example.com',
+			id: 'aidx',
 		} as unknown as Config;
 
 		meta = {
@@ -174,6 +175,88 @@ describe('UtilityService', () => {
 				{ softwareName: 'Test', softwareVersion: '1-2-3' },
 				true, 'regexp matching the version',
 			);
+		});
+	});
+
+	describe('parseAcct', () => {
+		test('should accept string', () => {
+			const input = 'user@1.example.com';
+			const result = utilityService.parseAcct(input);
+			expect(result).toEqual({
+				username: 'user',
+				host: '1.example.com',
+			});
+		});
+
+		test('should accept object', () => {
+			const input = {
+				username: 'user',
+				host: '1.example.com',
+			};
+			const result = utilityService.parseAcct(input);
+			expect(result).toEqual({
+				username: 'user',
+				host: '1.example.com',
+			});
+		});
+
+		test('should normalize leading @', () => {
+			const input = '@user@1.example.com';
+			const result = utilityService.parseAcct(input);
+			expect(result).toEqual({
+				username: 'user',
+				host: '1.example.com',
+			});
+		});
+
+		test('should normalize capital host', () => {
+			const input = 'user@1.EXAMPLE.com';
+			const result = utilityService.parseAcct(input);
+			expect(result).toEqual({
+				username: 'user',
+				host: '1.example.com',
+			});
+		});
+
+		// TODO find an example
+		// test('should normalize unicode host', () => {
+		//
+		// });
+
+		test('should normalize local host', () => {
+			const input = 'user@example.com';
+			const result = utilityService.parseAcct(input);
+			expect(result).toEqual({
+				username: 'user',
+				host: null,
+			});
+		});
+
+		test('should normalize custom local host', () => {
+			const input = 'user';
+			const result = utilityService.parseAcct(input, undefined, '1.example.com');
+			expect(result).toEqual({
+				username: 'user',
+				host: '1.example.com',
+			});
+		});
+
+		test('should normalize username', () => {
+			const input = 'UsEr@1.example.com';
+			const result = utilityService.parseAcct(input);
+			expect(result).toEqual({
+				username: 'user',
+				host: '1.example.com',
+			});
+		});
+
+		test('should preserve username when usernameLower is false', () => {
+			const input = 'UsEr@1.example.com';
+			const result = utilityService.parseAcct(input, false);
+			expect(result).toEqual({
+				username: 'UsEr',
+				host: '1.example.com',
+			});
 		});
 	});
 });

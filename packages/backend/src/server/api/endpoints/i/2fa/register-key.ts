@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as argon2 from 'argon2';
 import { Inject, Injectable } from '@nestjs/common';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -25,16 +24,16 @@ export const meta = {
 	},
 
 	errors: {
-		userNotFound: {
-			message: 'User not found.',
-			code: 'USER_NOT_FOUND',
-			id: '652f899f-66d4-490e-993e-6606c8ec04c3',
-		},
-
 		incorrectPassword: {
 			message: 'Incorrect password.',
 			code: 'INCORRECT_PASSWORD',
 			id: '38769596-efe2-4faf-9bec-abbb3f2cd9ba',
+		},
+
+		incorrectTotp: {
+			message: 'Incorrect 2FA code.',
+			code: 'INCORRECT_TOTP',
+			id: 'cdf1235b-ac71-46d4-a3a6-84ccce48df6f',
 		},
 
 		twoFactorNotEnabled: {
@@ -200,44 +199,24 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private userAuthService: UserAuthService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const token = ps.token;
-			const profile = await this.userProfilesRepository.findOne({
-				where: {
-					userId: me.id,
-				},
-				relations: ['user'],
-			});
-
-			if (profile == null) {
-				throw new ApiError(meta.errors.userNotFound);
-			}
-
-			// Compare password
-			if (profile.twoFactorEnabled) {
-				if (token == null) {
-					throw new Error('authentication failed');
-				}
-
-				try {
-					await this.userAuthService.twoFactorAuthenticate(profile, token);
-				} catch (e) {
-					throw new Error('authentication failed');
-				}
-			}
-
-			const passwordMatched = await argon2.verify(profile.password ?? '', ps.password);
-			if (!passwordMatched) {
-				throw new ApiError(meta.errors.incorrectPassword);
-			}
+			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });
 
 			if (!profile.twoFactorEnabled) {
 				throw new ApiError(meta.errors.twoFactorNotEnabled);
 			}
 
+			if (!await this.userAuthService.checkPassword(profile, ps.password)) {
+				throw new ApiError(meta.errors.incorrectPassword);
+			}
+
+			if (!await this.userAuthService.check2FA(profile, ps.token)) {
+				throw new ApiError(meta.errors.incorrectTotp);
+			}
+
 			return await this.webAuthnService.initiateRegistration(
 				me.id,
-				profile.user?.username ?? me.id,
-				profile.user?.name ?? undefined,
+				me.username,
+				me.name ?? undefined,
 			);
 		});
 	}

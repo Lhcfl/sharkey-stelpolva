@@ -9,18 +9,16 @@
 
 import cluster from 'node:cluster';
 import chalk from 'chalk';
-import Xev from 'xev';
-import { coreLogger, coreEnvService, coreLoggerService } from '@/boot/coreLogger.js';
+import { coreLogger, coreEnvService } from '@/boot/coreLogger.js';
 import { prepEnv } from '@/boot/prepEnv.js';
 import { masterMain } from './master.js';
 import { workerMain } from './worker.js';
 import { readyRef } from './ready.js';
 
+// TODO make this customizable
 process.title = `Misskey (${cluster.isPrimary ? 'master' : 'worker'})`;
 
 prepEnv();
-
-const ev = new Xev();
 
 // We wrap this in a main function, that gets called,
 // because not all platforms support top level await :/
@@ -28,7 +26,7 @@ const ev = new Xev();
 async function main() {
 	const envOption = coreEnvService.options;
 	const clusterLogger = coreLogger.createSubLogger('cluster', 'orange');
-	const logger = coreLogger;
+	const bootLogger = coreLogger.createSubLogger('boot', 'magenta');
 
 	//#region Events
 	// Listen new workers
@@ -51,32 +49,30 @@ async function main() {
 
 	// Dying away...
 	process.on('disconnect', () => {
-		logger.warn('IPC channel disconnected! The process may soon die.');
+		coreLogger.warn('IPC channel disconnected! The process may soon die.');
 	});
 	process.on('beforeExit', code => {
-		logger.warn(`Event loop died! Process will exit with code ${code}.`);
+		coreLogger.warn(`Event loop died! Process will exit with code ${code}.`);
 	});
 	process.on('exit', code => {
-		logger.info(`The process is going to exit with code ${code}`);
+		coreLogger.info(`The process is going to exit with code ${code}`);
 	});
 	//#endregion
 
 	if (!envOption.disableClustering) {
 		if (cluster.isPrimary) {
-			logger.info(`Start main process... pid: ${process.pid}`);
-			await masterMain(coreLoggerService, coreEnvService);
-			ev.mount();
+			bootLogger.info(`Start main process... pid: ${process.pid}`);
+			await masterMain(bootLogger);
 		} else if (cluster.isWorker) {
-			logger.info(`Start worker process... pid: ${process.pid}`);
-			await workerMain(coreLoggerService, coreEnvService);
+			bootLogger.info(`Start worker process... pid: ${process.pid}`);
+			await workerMain(bootLogger);
 		} else {
 			throw new Error('Unknown process type');
 		}
 	} else {
 		// 非clusterの場合はMasterのみが起動するため、Workerの処理は行わない(cluster.isWorker === trueの状態でこのブロックに来ることはない)
-		logger.info(`Start main process... pid: ${process.pid}`);
-		await masterMain(coreLoggerService, coreEnvService);
-		ev.mount();
+		bootLogger.info(`Start main process... pid: ${process.pid}`);
+		await masterMain(bootLogger);
 	}
 
 	readyRef.value = true;

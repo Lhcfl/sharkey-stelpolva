@@ -7,14 +7,19 @@ import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import * as yaml from 'js-yaml';
-import { globSync } from 'glob';
+import fastGlob from 'fast-glob';
 import ipaddr from 'ipaddr.js';
-import Logger from './logger.js';
+import { coreLogger } from '@/boot/coreLogger.js';
+import { QUEUE_TYPES } from '@/queue/const.js';
+import type { QueueType } from '@/queue/types.js';
+import type { UnionToIntersection } from '@/types.js';
+import type { Logger } from './logger.js';
 import type * as Sentry from '@sentry/node';
 import type * as SentryVue from '@sentry/vue';
 import type { RedisOptions } from 'ioredis';
 import type { IPv4, IPv6 } from 'ipaddr.js';
-import type { LoggerService } from '@/core/LoggerService.js';
+
+/* eslint-disable no-restricted-properties */
 
 type RedisOptionsSource = Partial<RedisOptions> & {
 	host?: string;
@@ -26,10 +31,23 @@ type RedisOptionsSource = Partial<RedisOptions> & {
 	prefix?: string;
 };
 
+const QUEUE_FIELDS = ['JobConcurrency', 'JobPerSec', 'JobMaxAttempts'] as const;
+type QueueField = typeof QUEUE_FIELDS[number];
+
+type QueueConfigUnion = {
+	[Q in QueueType]: {
+		[F in `${Q}${QueueField}`]: number;
+	};
+}[QueueType];
+type QueueConfigIntersection = UnionToIntersection<QueueConfigUnion>;
+type QueueConfig = {
+	[K in keyof QueueConfigIntersection]: QueueConfigIntersection[K] | null;
+};
+
 /**
  * 設定ファイルの型
  */
-type Source = {
+type Source = Partial<QueueConfig> & {
 	url?: string;
 	port?: number;
 	address?: string;
@@ -108,16 +126,9 @@ type Source = {
 	outgoingAddress?: string;
 	outgoingAddressFamily?: 'ipv4' | 'ipv6' | 'dual';
 
-	deliverJobConcurrency?: number;
-	inboxJobConcurrency?: number;
-	relationshipJobConcurrency?: number;
+	// Alias for legacy config keys
 	backgroundJobConcurrency?: number;
-	deliverJobPerSec?: number;
-	inboxJobPerSec?: number;
-	relationshipJobPerSec?: number;
 	backgroundJobPerSec?: number;
-	deliverJobMaxAttempts?: number;
-	inboxJobMaxAttempts?: number;
 	backgroundJobMaxAttempts?: number;
 
 	mediaDirectory?: string;
@@ -220,7 +231,7 @@ function parseIpOrMask(ipOrMask: string): CIDR | null {
 	return null;
 }
 
-export type Config = {
+export type Config = QueueConfig & {
 	url: string;
 	port: number;
 	address: string;
@@ -275,17 +286,6 @@ export type Config = {
 	id: string;
 	outgoingAddress: string | undefined;
 	outgoingAddressFamily: 'ipv4' | 'ipv6' | 'dual' | undefined;
-	deliverJobConcurrency: number | undefined;
-	inboxJobConcurrency: number | undefined;
-	relationshipJobConcurrency: number | undefined;
-	backgroundJobConcurrency: number | undefined;
-	deliverJobPerSec: number | undefined;
-	inboxJobPerSec: number | undefined;
-	relationshipJobPerSec: number | undefined;
-	backgroundJobPerSec: number | undefined;
-	deliverJobMaxAttempts: number | undefined;
-	inboxJobMaxAttempts: number | undefined;
-	backgroundJobMaxAttempts: number | undefined;
 	proxyRemoteFiles: boolean | undefined;
 	customMOTD: string[] | undefined;
 	signToActivityPubGet: boolean;
@@ -367,19 +367,16 @@ const _dirname = dirname(_filename);
 /**
  * Path of configuration directory
  */
-const dir = process.env.MISSKEY_CONFIG_DIR ?? `${_dirname}/../../../.config`;
+const dir = resolve(process.env.MISSKEY_CONFIG_DIR ?? `${_dirname}/../../../.config`);
 
 /**
  * Path of configuration file
  */
-const path = process.env.MISSKEY_CONFIG_YML
-	? resolve(dir, process.env.MISSKEY_CONFIG_YML)
-	: process.env.NODE_ENV === 'test'
-		? resolve(dir, 'test.yml')
-		: resolve(dir, 'default.yml');
+const path = process.env.MISSKEY_CONFIG_YML ?? (process.env.NODE_ENV === 'test' ? 'test.yml' : 'default.yml');
 
-export function loadConfig(loggerService: LoggerService): Config {
-	const configLogger = loggerService.getLogger('config');
+export function loadConfig(logger?: Logger): Config {
+	logger ??= coreLogger;
+	const configLogger = logger.createSubLogger('config');
 
 	const meta = JSON.parse(fs.readFileSync(`${_dirname}/../../../built/meta.json`, 'utf-8'));
 
@@ -392,7 +389,7 @@ export function loadConfig(loggerService: LoggerService): Config {
 		JSON.parse(fs.readFileSync(`${_dirname}/../../../built/_frontend_embed_vite_/manifest.json`, 'utf-8'))
 		: { 'src/boot.ts': { file: 'src/boot.ts' } };
 
-	const configFiles = globSync(path).sort();
+	const configFiles = fastGlob.globSync(path, { cwd: dir, absolute: true }).sort();
 
 	if (configFiles.length === 0
 			&& !process.env['MK_WARNED_ABOUT_CONFIG']) {
@@ -432,6 +429,14 @@ export function loadConfig(loggerService: LoggerService): Config {
 	// nullish => 300 (default)
 	// 0 => undefined (disabled)
 	const slowQueryThreshold = (config.db.slowQueryThreshold ?? 300) || undefined;
+
+	const queueConfig = {} as QueueConfig;
+	for (const queue of QUEUE_TYPES) {
+		for (const field of QUEUE_FIELDS) {
+			const key = `${queue}${field}`;
+			queueConfig[key] = config[key] ?? null;
+		}
+	}
 
 	return {
 		version,
@@ -483,17 +488,12 @@ export function loadConfig(loggerService: LoggerService): Config {
 		clusterLimit: config.clusterLimit,
 		outgoingAddress: config.outgoingAddress,
 		outgoingAddressFamily: config.outgoingAddressFamily,
-		deliverJobConcurrency: config.deliverJobConcurrency,
-		inboxJobConcurrency: config.inboxJobConcurrency,
-		relationshipJobConcurrency: config.relationshipJobConcurrency,
-		backgroundJobConcurrency: config.backgroundJobConcurrency,
-		deliverJobPerSec: config.deliverJobPerSec,
-		inboxJobPerSec: config.inboxJobPerSec,
-		relationshipJobPerSec: config.relationshipJobPerSec,
-		backgroundJobPerSec: config.backgroundJobPerSec,
-		deliverJobMaxAttempts: config.deliverJobMaxAttempts,
-		inboxJobMaxAttempts: config.inboxJobMaxAttempts,
-		backgroundJobMaxAttempts: config.backgroundJobMaxAttempts,
+		// Correct queue config
+		...queueConfig,
+		// Legacy queue config
+		backgroundTaskJobConcurrency: queueConfig.backgroundTaskJobConcurrency ?? config.backgroundJobConcurrency ?? null,
+		backgroundTaskJobPerSec: queueConfig.backgroundTaskJobPerSec ?? config.backgroundJobPerSec ?? null,
+		backgroundTaskJobMaxAttempts: queueConfig.backgroundTaskJobMaxAttempts ?? config.backgroundJobMaxAttempts ?? null,
 		proxyRemoteFiles: config.proxyRemoteFiles,
 		customMOTD: config.customMOTD,
 		signToActivityPubGet: config.signToActivityPubGet ?? true,

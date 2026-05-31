@@ -90,6 +90,8 @@ import type {
 	AdminQueueJobsResponse,
 	AdminQueuePromoteJobsRequest,
 	AdminQueueQueueStatsRequest,
+	AdminQueueQueueStatsResponse,
+	AdminQueueQueuesResponse,
 	AdminQueueRemoveJobRequest,
 	AdminQueueRetryJobRequest,
 	AdminQueueShowJobRequest,
@@ -436,6 +438,7 @@ import type {
 	IImportFollowingRequest,
 	IImportMutingRequest,
 	IImportNotesRequest,
+	IImportNotesResponse,
 	IImportUserListsRequest,
 	IMoveRequest,
 	IMoveResponse,
@@ -749,8 +752,8 @@ export type Endpoints = {
 	'admin/queue/inbox-delayed': { req: EmptyRequest; res: AdminQueueInboxDelayedResponse };
 	'admin/queue/jobs': { req: AdminQueueJobsRequest; res: AdminQueueJobsResponse };
 	'admin/queue/promote-jobs': { req: AdminQueuePromoteJobsRequest; res: EmptyResponse };
-	'admin/queue/queue-stats': { req: AdminQueueQueueStatsRequest; res: EmptyResponse };
-	'admin/queue/queues': { req: EmptyRequest; res: EmptyResponse };
+	'admin/queue/queue-stats': { req: AdminQueueQueueStatsRequest; res: AdminQueueQueueStatsResponse };
+	'admin/queue/queues': { req: EmptyRequest; res: AdminQueueQueuesResponse };
 	'admin/queue/remove-job': { req: AdminQueueRemoveJobRequest; res: EmptyResponse };
 	'admin/queue/retry-job': { req: AdminQueueRetryJobRequest; res: EmptyResponse };
 	'admin/queue/show-job': { req: AdminQueueShowJobRequest; res: EmptyResponse };
@@ -977,7 +980,7 @@ export type Endpoints = {
 	'i/import-blocking': { req: IImportBlockingRequest; res: EmptyResponse };
 	'i/import-following': { req: IImportFollowingRequest; res: EmptyResponse };
 	'i/import-muting': { req: IImportMutingRequest; res: EmptyResponse };
-	'i/import-notes': { req: IImportNotesRequest; res: EmptyResponse };
+	'i/import-notes': { req: IImportNotesRequest; res: IImportNotesResponse };
 	'i/import-user-lists': { req: IImportUserListsRequest; res: EmptyResponse };
 	'i/move': { req: IMoveRequest; res: IMoveResponse };
 	'i/notifications': { req: INotificationsRequest; res: INotificationsResponse };

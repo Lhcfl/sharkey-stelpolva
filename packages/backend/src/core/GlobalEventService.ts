@@ -4,11 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import * as Redis from 'ioredis';
-import * as Reversi from 'misskey-reversi';
-import type { MiChannel } from '@/models/Channel.js';
 import type { MiUser } from '@/models/User.js';
-import type { MiUserProfile } from '@/models/UserProfile.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiAntenna } from '@/models/Antenna.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
@@ -17,22 +13,18 @@ import type { MiUserList } from '@/models/UserList.js';
 import type { MiAbuseUserReport } from '@/models/AbuseUserReport.js';
 import type { MiSignin } from '@/models/Signin.js';
 import type { MiPage } from '@/models/Page.js';
-import type { MiWebhook } from '@/models/Webhook.js';
-import type { MiSystemWebhook } from '@/models/SystemWebhook.js';
-import type { MiMeta } from '@/models/Meta.js';
-import type { MiAvatarDecoration, MiChatMessage, MiChatRoom, MiReversiGame, MiRole, MiRoleAssignment } from '@/models/_.js';
+import type { MiChatMessage, MiChatRoom, MiReversiGame, MiRole } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
+import type { EmptyObject, Serialized } from '@/types.js';
 import { bindThis } from '@/decorators.js';
-import type { Serialized } from '@/types.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
-import { trackPromise } from '@/misc/promise-tracker.js';
-import type Emitter from 'strict-event-emitter-types';
-import type { EventEmitter } from 'events';
+import type { InternalEventTypes } from '@/global/InternalEventService.js';
+import type * as Redis from 'ioredis';
+import type * as Reversi from 'misskey-reversi';
 
 //#region Stream type-body definitions
-export interface BroadcastTypes {
+export interface BroadcastEventTypes {
 	emojiAdded: {
 		emoji: Packed<'EmojiDetailed'>;
 	};
@@ -116,10 +108,7 @@ export interface NoteEventTypes {
 	deleted: {
 		deletedAt: Date;
 	};
-	updated: {
-		cw: string | null;
-		text: string;
-	};
+	updated: EmptyObject;
 	reacted: {
 		reaction: string;
 		emoji?: {
@@ -143,6 +132,7 @@ export interface NoteEventTypes {
 type NoteStreamEventTypes = {
 	[key in keyof NoteEventTypes]: {
 		id: MiNote['id'];
+		userId: MiUser['id'];
 		body: NoteEventTypes[key];
 	};
 };
@@ -221,7 +211,7 @@ export interface ReversiGameEventTypes {
 // https://stackoverflow.com/questions/49311989/can-i-infer-the-type-of-a-value-using-extends-keyof-type
 // VS Codeの展開を防止するためにEvents型を定義
 type Events<T extends object> = { [K in keyof T]: { type: K; body: T[K]; } };
-type EventUnionFromDictionary<
+export type EventUnionFromDictionary<
 	T extends object,
 	U = Events<T>,
 > = U[keyof U];
@@ -234,130 +224,90 @@ type UndefinedAsNullAll<T> = {
 	[K in keyof T]: T[K] extends undefined ? null : T[K];
 };
 
-export interface InternalEventTypes {
-	userChangeSuspendedState: { id: MiUser['id']; isSuspended: MiUser['isSuspended']; };
-	userChangeDeletedState: { id: MiUser['id']; isDeleted: MiUser['isDeleted']; };
-	userTokenRegenerated: { id: MiUser['id']; oldToken: string; newToken: string; };
-	/** @deprecated Use userUpdated or usersUpdated instead */
-	remoteUserUpdated: { id: MiUser['id']; };
-	/** @deprecated Use userUpdated or usersUpdated instead */
-	localUserUpdated: { id: MiUser['id']; };
-	usersUpdated: { ids: MiUser['id'][]; };
-	userUpdated: { id: MiUser['id']; };
-	follow: { followerId: MiUser['id']; followeeId: MiUser['id']; };
-	unfollow: { followerId: MiUser['id']; followeeId: MiUser['id']; };
-	blockingCreated: { blockerId: MiUser['id']; blockeeId: MiUser['id']; };
-	blockingDeleted: { blockerId: MiUser['id']; blockeeId: MiUser['id']; };
-	policiesUpdated: MiRole['policies'];
-	roleCreated: MiRole;
-	roleDeleted: MiRole;
-	roleUpdated: MiRole;
-	userRoleAssigned: MiRoleAssignment;
-	userRoleUnassigned: MiRoleAssignment;
-	webhookCreated: { id: MiWebhook['id'] };
-	webhookDeleted: { id: MiWebhook['id'] };
-	webhookUpdated: { id: MiWebhook['id'] };
-	systemWebhookCreated: { id: MiSystemWebhook['id'] };
-	systemWebhookDeleted: { id: MiSystemWebhook['id'] };
-	systemWebhookUpdated: { id: MiSystemWebhook['id'] };
-	antennaCreated: MiAntenna;
-	antennaDeleted: MiAntenna;
-	antennaUpdated: MiAntenna;
-	avatarDecorationCreated: MiAvatarDecoration;
-	avatarDecorationDeleted: MiAvatarDecoration;
-	avatarDecorationUpdated: MiAvatarDecoration;
-	metaUpdated: { before?: MiMeta; after: MiMeta; };
-	followChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };
-	unfollowChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };
-	updateUserProfile: { userId: MiUserProfile['userId'] };
-	mute: { muterId: MiUser['id']; muteeId: MiUser['id']; };
-	unmute: { muterId: MiUser['id']; muteeId: MiUser['id']; };
-	userListMemberAdded: { userListId: MiUserList['id']; memberId: MiUser['id']; };
-	userListMemberUpdated: { userListId: MiUserList['id']; memberId: MiUser['id']; };
-	userListMemberRemoved: { userListId: MiUserList['id']; memberId: MiUser['id']; };
-	userListMemberBulkAdded: { userListIds: MiUserList['id'][]; memberId: MiUser['id']; };
-	userListMemberBulkUpdated: { userListIds: MiUserList['id'][]; memberId: MiUser['id']; };
-	userListMemberBulkRemoved: { userListIds: MiUserList['id'][]; memberId: MiUser['id']; };
-	quantumCacheUpdated: { name: string, keys: string[] };
-	quantumCacheReset: { name: string };
-	collapsedQueueDefer: { name: string, key: string, deferred: boolean };
-	collapsedQueueEnqueue: { name: string, key: string, value: unknown };
-}
-
-type EventTypesToEventPayload<T> = EventUnionFromDictionary<UndefinedAsNullAll<SerializedAll<T>>>;
+type EventTypesToEventPayload<T extends object> = EventUnionFromDictionary<UndefinedAsNullAll<SerializedAll<T>> | T>;
 
 // name/messages(spec) pairs dictionary
-export type GlobalEvents = {
-	internal: {
-		name: 'internal';
-		payload: EventTypesToEventPayload<InternalEventTypes>;
-	};
-	broadcast: {
-		name: 'broadcast';
-		payload: EventTypesToEventPayload<BroadcastTypes>;
-	};
-	main: {
-		name: `mainStream:${MiUser['id']}`;
-		payload: EventTypesToEventPayload<MainEventTypes>;
-	};
-	drive: {
-		name: `driveStream:${MiUser['id']}`;
-		payload: EventTypesToEventPayload<DriveEventTypes>;
-	};
-	note: {
-		name: `noteStream:${MiNote['id']}`;
-		payload: EventTypesToEventPayload<NoteStreamEventTypes>;
-	};
-	userList: {
-		name: `userListStream:${MiUserList['id']}`;
-		payload: EventTypesToEventPayload<UserListEventTypes>;
-	};
-	roleTimeline: {
-		name: `roleTimelineStream:${MiRole['id']}`;
-		payload: EventTypesToEventPayload<RoleTimelineEventTypes>;
-	};
-	antenna: {
-		name: `antennaStream:${MiAntenna['id']}`;
-		payload: EventTypesToEventPayload<AntennaEventTypes>;
-	};
-	admin: {
-		name: `adminStream:${MiUser['id']}`;
-		payload: EventTypesToEventPayload<AdminEventTypes>;
-	};
-	notes: {
-		name: 'notesStream';
-		payload: Serialized<Packed<'Note'>>;
-	};
-	chatUser: {
-		name: `chatUserStream:${MiUser['id']}-${MiUser['id']}`;
-		payload: EventTypesToEventPayload<ChatEventTypes>;
-	};
-	chatRoom: {
-		name: `chatRoomStream:${MiChatRoom['id']}`;
-		payload: EventTypesToEventPayload<ChatEventTypes>;
-	};
-	reversi: {
-		name: `reversiStream:${MiUser['id']}`;
-		payload: EventTypesToEventPayload<ReversiEventTypes>;
-	};
-	reversiGame: {
-		name: `reversiGameStream:${MiReversiGame['id']}`;
-		payload: EventTypesToEventPayload<ReversiGameEventTypes>;
-	};
+export type InternalEventPayload = EventTypesToEventPayload<InternalEventTypes>;
+export type BroadcastEventPayload = EventTypesToEventPayload<BroadcastEventTypes>;
+export type NotesStreamEventPayload = Serialized<Packed<'Note'>>;
+export type NoteStreamEventPayload = EventTypesToEventPayload<NoteStreamEventTypes>;
+export type MainEventPayload = EventTypesToEventPayload<MainEventTypes>;
+export type DriveEventPayload = EventTypesToEventPayload<DriveEventTypes>;
+export type UserListEventPayload = EventTypesToEventPayload<UserListEventTypes>;
+export type RoleTimelineEventPayload = EventTypesToEventPayload<RoleTimelineEventTypes>;
+export type AntennaEventPayload = EventTypesToEventPayload<AntennaEventTypes>;
+export type AdminEventPayload = EventTypesToEventPayload<AdminEventTypes>;
+export type ChatEventPayload = EventTypesToEventPayload<ChatEventTypes>;
+export type ReversiEventPayload = EventTypesToEventPayload<ReversiEventTypes>;
+export type ReversiGameEventPayload = EventTypesToEventPayload<ReversiGameEventTypes>;
+export type GlobalEventsMap = {
+	internal: [InternalEventPayload];
+	broadcast: [BroadcastEventPayload];
+	notesStream: [NotesStreamEventPayload];
+} & {
+	[k: `noteStream:${MiNote['id']}`]: [NoteStreamEventPayload];
+} & {
+	[k: `mainStream:${MiUser['id']}`]: [MainEventPayload];
+} & {
+	[k: `driveStream:${MiUser['id']}`]: [DriveEventPayload];
+} & {
+	[k: `userListStream:${MiUserList['id']}`]: [UserListEventPayload];
+} & {
+	[k: `roleTimelineStream:${MiRole['id']}`]: [RoleTimelineEventPayload];
+} & {
+	[k: `antennaStream:${MiAntenna['id']}`]: [AntennaEventPayload];
+} & {
+	[k: `adminStream:${MiUser['id']}`]: [AdminEventPayload];
+} & {
+	[k: `chatUserStream:${MiUser['id']}-${MiUser['id']}`]: [ChatEventPayload];
+} & {
+	[k: `chatRoomStream:${MiChatRoom['id']}`]: [ChatEventPayload];
+} & {
+	[k: `reversiStream:${MiUser['id']}`]: [ReversiEventPayload];
+} & {
+	[k: `reversiGameStream:${MiReversiGame['id']}`]: [ReversiGameEventPayload];
 };
 
+type TranslateEventToLegacy<Name extends keyof GlobalEventsMap> = {
+	name: Name,
+	payload: GlobalEventsMap[Name] extends [infer Payload] ? Payload : never;
+};
+
+/**
+ * @deprecated This is provided for backwards-compatibility only, please use the direct exports instead.
+ */
+export interface GlobalEvents {
+	internal: TranslateEventToLegacy<'internal'>;
+	broadcast: TranslateEventToLegacy<'broadcast'>;
+	main: TranslateEventToLegacy<`mainStream:${MiUser['id']}`>;
+	drive: TranslateEventToLegacy<`driveStream:${MiUser['id']}`>;
+	note: TranslateEventToLegacy<`noteStream:${MiNote['id']}`>;
+	userList: TranslateEventToLegacy<`userListStream:${MiUserList['id']}`>;
+	roleTimeline: TranslateEventToLegacy<`roleTimelineStream:${MiRole['id']}`>;
+	antenna: TranslateEventToLegacy<`antennaStream:${MiAntenna['id']}`>;
+	admin: TranslateEventToLegacy<`adminStream:${MiUser['id']}`>;
+	notes: TranslateEventToLegacy<'notesStream'>;
+	chatUser: TranslateEventToLegacy<`chatUserStream:${MiUser['id']}-${MiUser['id']}`>;
+	chatRoom: TranslateEventToLegacy<`chatRoomStream:${MiChatRoom['id']}`>;
+	reversi: TranslateEventToLegacy<`reversiStream:${MiUser['id']}`>;
+	reversiGame: TranslateEventToLegacy<`reversiGameStream:${MiReversiGame['id']}`>;
+}
+
 // API event definitions
-// ストリームごとのEmitterの辞書を用意
-type EventEmitterDictionary = { [x in keyof GlobalEvents]: Emitter.default<EventEmitter, { [y in GlobalEvents[x]['name']]: (e: GlobalEvents[x]['payload']) => void }> };
-// 共用体型を交差型にする型 https://stackoverflow.com/questions/54938141/typescript-convert-union-to-intersection
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
-// Emitter辞書から共用体型を作り、UnionToIntersectionで交差型にする
-export type StreamEventEmitter = UnionToIntersection<EventEmitterDictionary[keyof GlobalEvents]>;
-// { [y in name]: (e: spec) => void }をまとめてその交差型をEmitterにかけるとts(2590)にひっかかる
+export type GlobalEventNames = keyof GlobalEventsMap;
+export type GlobalEventPayload<E extends GlobalEventNames> = GlobalEventsMap[E] extends [infer Payload] ? Payload : never;
+export type GlobalEventTypes<E extends GlobalEventNames> = GlobalEventPayload<E> extends { type: infer Type, body: GlobalEventBodies<E> } ? Type : null;
+export type GlobalEventBodies<E extends GlobalEventNames> = GlobalEventPayload<E> extends { type: string, body: infer Body } ? Body : GlobalEventPayload<E>;
+export type GlobalEventBody<E extends GlobalEventNames, Type extends GlobalEventTypes<E>> = Type extends null
+	? GlobalEventPayload<E>
+	: Extract<GlobalEventPayload<E>, { type: Type, body: GlobalEventBodies<E> }>['body'];
+export type GlobalEvent<E extends GlobalEventNames> = {
+	node?: string;
+	channel: E;
+	message: GlobalEvent<E> extends [infer Payload] ? Payload : never;
+};
 
-// provide stream channels union
-export type StreamChannels = GlobalEvents[keyof GlobalEvents]['name'];
-
+// TODO extract a common EventBus<TMap> class from InternalEventService, then use that for each stream type.
 @Injectable()
 export class GlobalEventService {
 	constructor(
@@ -366,13 +316,11 @@ export class GlobalEventService {
 
 		@Inject(DI.redisForPub)
 		private redisForPub: Redis.Redis,
-
-		private readonly internalEventService: InternalEventService,
 	) {
 	}
 
 	@bindThis
-	private async publish(channel: StreamChannels, type: string | null, value?: any): Promise<void> {
+	private async publish<Name extends GlobalEventNames, Type extends GlobalEventTypes<Name>>(channel: Name, type: Type, value: GlobalEventBody<Name, Type>): Promise<void> {
 		const message = type == null ? value : value == null ?
 			{ type: type, body: null } :
 			{ type: type, body: value };
@@ -383,54 +331,39 @@ export class GlobalEventService {
 		}));
 	}
 
-	/** @deprecated use InternalEventService instead */
 	@bindThis
-	public publishInternalEvent<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K]): void {
-		trackPromise(this.internalEventService.emit(type, value));
-	}
-
-	/** @deprecated use InternalEventService instead */
-	@bindThis
-	public async publishInternalEventAsync<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K]): Promise<void> {
-		await this.internalEventService.emit(type, value);
+	public async publishBroadcastStream<Type extends GlobalEventTypes<'broadcast'>>(type: Type, value: GlobalEventBody<'broadcast', Type>): Promise<void> {
+		await this.publish('broadcast', type, value);
 	}
 
 	@bindThis
-	public async publishBroadcastStream<K extends keyof BroadcastTypes>(type: K, value?: BroadcastTypes[K]): Promise<void> {
-		await this.publish('broadcast', type, typeof value === 'undefined' ? null : value);
+	public async publishMainStream<Id extends MiUser['id'], Type extends GlobalEventTypes<`mainStream:${Id}`>>(userId: Id, type: Type, value: GlobalEventBody<`mainStream:${Id}`, Type>): Promise<void> {
+		await this.publish(`mainStream:${userId}`, type, value);
 	}
 
 	@bindThis
-	public async publishMainStream<K extends keyof MainEventTypes>(userId: MiUser['id'], type: K, value?: MainEventTypes[K]): Promise<void> {
-		await this.publish(`mainStream:${userId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishDriveStream<Id extends MiUser['id'], Type extends GlobalEventTypes<`driveStream:${Id}`>>(userId: Id, type: Type, value: GlobalEventBody<`driveStream:${Id}`, Type>): Promise<void> {
+		await this.publish(`driveStream:${userId}`, type, value);
 	}
 
 	@bindThis
-	public async publishDriveStream<K extends keyof DriveEventTypes>(userId: MiUser['id'], type: K, value?: DriveEventTypes[K]): Promise<void> {
-		await this.publish(`driveStream:${userId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishNoteStream<Id extends MiNote['id'], Type extends GlobalEventTypes<`noteStream:${Id}`>>(noteId: Id, type: Type, value: GlobalEventBody<`noteStream:${Id}`, Type>): Promise<void> {
+		await this.publish(`noteStream:${noteId}`, type, value);
 	}
 
 	@bindThis
-	public async publishNoteStream<K extends keyof NoteEventTypes>(noteId: MiNote['id'], type: K, value?: NoteEventTypes[K]): Promise<void> {
-		await this.publish(`noteStream:${noteId}`, type, {
-			id: noteId,
-			body: value,
-		});
+	public async publishUserListStream<Id extends MiUserList['id'], Type extends GlobalEventTypes<`userListStream:${Id}`>>(userListId: Id, type: Type, value: GlobalEventBody<`userListStream:${Id}`, Type>): Promise<void> {
+		await this.publish(`userListStream:${userListId}`, type, value);
 	}
 
 	@bindThis
-	public async publishUserListStream<K extends keyof UserListEventTypes>(listId: MiUserList['id'], type: K, value?: UserListEventTypes[K]): Promise<void> {
-		await this.publish(`userListStream:${listId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishAntennaStream<Id extends MiAntenna['id'], Type extends GlobalEventTypes<`antennaStream:${Id}`>>(antennaId: Id, type: Type, value: GlobalEventBody<`antennaStream:${Id}`, Type>): Promise<void> {
+		await this.publish(`antennaStream:${antennaId}`, type, value);
 	}
 
 	@bindThis
-	public async publishAntennaStream<K extends keyof AntennaEventTypes>(antennaId: MiAntenna['id'], type: K, value?: AntennaEventTypes[K]): Promise<void> {
-		await this.publish(`antennaStream:${antennaId}`, type, typeof value === 'undefined' ? null : value);
-	}
-
-	@bindThis
-	public async publishRoleTimelineStream<K extends keyof RoleTimelineEventTypes>(roleId: MiRole['id'], type: K, value?: RoleTimelineEventTypes[K]): Promise<void> {
-		await this.publish(`roleTimelineStream:${roleId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishRoleTimelineStream<Id extends MiUser['id'], Type extends GlobalEventTypes<`roleTimelineStream:${Id}`>>(userId: Id, type: Type, value: GlobalEventBody<`roleTimelineStream:${Id}`, Type>): Promise<void> {
+		await this.publish(`roleTimelineStream:${userId}`, type, value);
 	}
 
 	@bindThis
@@ -439,27 +372,27 @@ export class GlobalEventService {
 	}
 
 	@bindThis
-	public async publishAdminStream<K extends keyof AdminEventTypes>(userId: MiUser['id'], type: K, value?: AdminEventTypes[K]): Promise<void> {
-		await this.publish(`adminStream:${userId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishAdminStream<Id extends MiUser['id'], Type extends GlobalEventTypes<`adminStream:${Id}`>>(userId: Id, type: Type, value: GlobalEventBody<`adminStream:${Id}`, Type>): Promise<void> {
+		await this.publish(`adminStream:${userId}`, type, value);
 	}
 
 	@bindThis
-	public async publishChatUserStream<K extends keyof ChatEventTypes>(fromUserId: MiUser['id'], toUserId: MiUser['id'], type: K, value?: ChatEventTypes[K]): Promise<void> {
-		await this.publish(`chatUserStream:${fromUserId}-${toUserId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishChatUserStream<FromId extends MiUser['id'], ToId extends MiUser['id'], Type extends GlobalEventTypes<`chatUserStream:${FromId}-${ToId}`>>(fromUserId: FromId, toUserId: ToId, type: Type, value: GlobalEventBody<`chatUserStream:${FromId}-${ToId}`, Type>): Promise<void> {
+		await this.publish(`chatUserStream:${fromUserId}-${toUserId}`, type, value);
 	}
 
 	@bindThis
-	public async publishChatRoomStream<K extends keyof ChatEventTypes>(toRoomId: MiChatRoom['id'], type: K, value?: ChatEventTypes[K]): Promise<void> {
-		await this.publish(`chatRoomStream:${toRoomId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishChatRoomStream<Id extends MiChatRoom['id'], Type extends GlobalEventTypes<`chatRoomStream:${Id}`>>(chatRoomId: Id, type: Type, value: GlobalEventBody<`chatRoomStream:${Id}`, Type>): Promise<void> {
+		await this.publish(`chatRoomStream:${chatRoomId}`, type, value);
 	}
 
 	@bindThis
-	public async publishReversiStream<K extends keyof ReversiEventTypes>(userId: MiUser['id'], type: K, value?: ReversiEventTypes[K]): Promise<void> {
-		await this.publish(`reversiStream:${userId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishReversiStream<Id extends MiUser['id'], Type extends GlobalEventTypes<`reversiStream:${Id}`>>(userId: Id, type: Type, value: GlobalEventBody<`reversiStream:${Id}`, Type>): Promise<void> {
+		await this.publish(`reversiStream:${userId}`, type, value);
 	}
 
 	@bindThis
-	public async publishReversiGameStream<K extends keyof ReversiGameEventTypes>(gameId: MiReversiGame['id'], type: K, value?: ReversiGameEventTypes[K]): Promise<void> {
-		await this.publish(`reversiGameStream:${gameId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishReversiGameStream<Id extends MiReversiGame['id'], Type extends GlobalEventTypes<`reversiGameStream:${Id}`>>(reversiGameId: Id, type: Type, value: GlobalEventBody<`reversiGameStream:${Id}`, Type>): Promise<void> {
+		await this.publish(`reversiGameStream:${reversiGameId}`, type, value);
 	}
 }

@@ -32,7 +32,7 @@ describe(extractMediaFromMfm, () => {
 			{
 				type: 'Image',
 				url: 'https://example.com/images/2.png',
-				name: null,
+				name: undefined,
 			},
 			{
 				type: 'Image',

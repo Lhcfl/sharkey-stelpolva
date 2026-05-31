@@ -4,10 +4,10 @@
 
 ```ts
 
-import type { AuthenticationResponseJSON } from '@simplewebauthn/types';
+import type { AuthenticationResponseJSON } from '@simplewebauthn/server';
 import { EventEmitter } from 'eventemitter3';
 import type { Options } from 'reconnecting-websocket';
-import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/types';
+import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server';
 
 // Warning: (ae-forgotten-export) The symbol "components" needs to be exported by the entry point index.d.ts
 //
@@ -305,7 +305,13 @@ type AdminQueueJobsResponse = operations['admin___queue___jobs']['responses']['2
 type AdminQueuePromoteJobsRequest = operations['admin___queue___promote-jobs']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type AdminQueueQueuesResponse = operations['admin___queue___queues']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminQueueQueueStatsRequest = operations['admin___queue___queue-stats']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminQueueQueueStatsResponse = operations['admin___queue___queue-stats']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type AdminQueueRemoveJobRequest = operations['admin___queue___remove-job']['requestBody']['content']['application/json'];
@@ -657,6 +663,15 @@ type BlockingListRequest = operations['blocking___list']['requestBody']['content
 type BlockingListResponse = operations['blocking___list']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+export type BroadcastEvents = {
+    noteUpdated: (payload: NoteUpdatedEvent) => void;
+    emojiAdded: (payload: EmojiAdded) => void;
+    emojiUpdated: (payload: EmojiUpdated) => void;
+    emojiDeleted: (payload: EmojiDeleted) => void;
+    announcementCreated: (payload: AnnouncementCreated) => void;
+};
+
+// @public (undocumented)
 type BubbleGameRankingRequest = operations['bubble-game___ranking']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -854,21 +869,19 @@ export type Channels = {
         };
         receives: {
             requestLog: {
-                id: string | number;
-                length: number;
+                length?: number;
             };
         };
     };
     queueStats: {
         params: null;
         events: {
-            stats: (payload: QueueStats) => void;
-            statsLog: (payload: QueueStatsLog) => void;
+            stats: (payload: QueueLogs) => void;
+            statsLog: (payload: QueueLogs[]) => void;
         };
         receives: {
             requestLog: {
-                id: string | number;
-                length: number;
+                length?: number;
             };
         };
     };
@@ -1523,8 +1536,8 @@ declare namespace entities {
         ModerationLog,
         ServerStats,
         ServerStatsLog,
-        QueueStats,
-        QueueStatsLog,
+        QUEUE_TYPES,
+        QueueType,
         EmojiAdded,
         EmojiUpdated,
         EmojiDeleted,
@@ -1632,6 +1645,8 @@ declare namespace entities {
         AdminQueueJobsResponse,
         AdminQueuePromoteJobsRequest,
         AdminQueueQueueStatsRequest,
+        AdminQueueQueueStatsResponse,
+        AdminQueueQueuesResponse,
         AdminQueueRemoveJobRequest,
         AdminQueueRetryJobRequest,
         AdminQueueShowJobRequest,
@@ -1978,6 +1993,7 @@ declare namespace entities {
         IImportFollowingRequest,
         IImportMutingRequest,
         IImportNotesRequest,
+        IImportNotesResponse,
         IImportUserListsRequest,
         IMoveRequest,
         IMoveResponse,
@@ -2251,7 +2267,12 @@ declare namespace entities {
         Page,
         PageBlock,
         Channel,
+        QueueStat,
+        QueueStats,
+        QueueLog,
+        QueueLogs,
         QueueCount,
+        QueueCounts,
         Antenna,
         Clip,
         FederationInstance,
@@ -2675,6 +2696,9 @@ type IImportMutingRequest = operations['i___import-muting']['requestBody']['cont
 type IImportNotesRequest = operations['i___import-notes']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type IImportNotesResponse = operations['i___import-notes']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type IImportUserListsRequest = operations['i___import-user-lists']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -2831,6 +2855,8 @@ export interface IStream extends EventEmitter<StreamEvents> {
     heartbeat(): void;
     // (undocumented)
     ping(): void;
+    // (undocumented)
+    pong(): void;
     // Warning: (ae-forgotten-export) The symbol "SharedConnection" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -3409,6 +3435,47 @@ type NotesVersionsRequest = operations['notes___versions']['requestBody']['conte
 type NotesVersionsResponse = operations['notes___versions']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+export type NoteUpdatedEvent = {
+    id: Note['id'];
+} & ({
+    type: 'reacted';
+    body: {
+        reaction: string;
+        emoji?: {
+            name: string;
+            url: string;
+        } | null;
+        userId: User['id'];
+    };
+} | {
+    type: 'unreacted';
+    body: {
+        reaction: string;
+        userId: User['id'];
+    };
+} | {
+    type: 'updated';
+    body: Record<string, never>;
+} | {
+    type: 'deleted';
+    body: {
+        deletedAt: string;
+    };
+} | {
+    type: 'pollVoted';
+    body: {
+        choice: number;
+        userId: User['id'];
+    };
+} | {
+    type: 'replied';
+    body: {
+        id: Note['id'];
+        userId: User['id'];
+    };
+});
+
+// @public (undocumented)
 export const noteVisibilities: readonly ["public", "home", "followers", "specified"];
 
 // @public (undocumented)
@@ -3469,7 +3536,7 @@ type PagesUnlikeRequest = operations['pages___unlike']['requestBody']['content']
 type PagesUpdateRequest = operations['pages___update']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-function parse(_acct: string): Acct;
+function parse(acct: string, lower?: boolean): Acct;
 
 // Warning: (ae-forgotten-export) The symbol "Values" needs to be exported by the entry point index.d.ts
 //
@@ -3505,32 +3572,28 @@ type PureRenote = Omit<Note, 'renote' | 'renoteId' | 'reply' | 'replyId' | 'text
 } & NonNullableRecord<Pick<Note, 'renote' | 'renoteId'>>;
 
 // @public (undocumented)
+const QUEUE_TYPES: readonly ["system", "endedPollNotification", "deliver", "inbox", "db", "relationship", "objectStorage", "userWebhookDeliver", "systemWebhookDeliver", "scheduleNotePost", "backgroundTask"];
+
+// @public (undocumented)
 type QueueCount = components['schemas']['QueueCount'];
 
 // @public (undocumented)
-type QueueStats = {
-    deliver: {
-        activeSincePrevTick: number;
-        active: number;
-        waiting: number;
-        delayed: number;
-    };
-    inbox: {
-        activeSincePrevTick: number;
-        active: number;
-        waiting: number;
-        delayed: number;
-    };
-    background: {
-        activeSincePrevTick: number;
-        active: number;
-        waiting: number;
-        delayed: number;
-    };
-};
+type QueueCounts = components['schemas']['QueueCounts'];
 
 // @public (undocumented)
-type QueueStatsLog = QueueStats[];
+type QueueLog = components['schemas']['QueueLog'];
+
+// @public (undocumented)
+type QueueLogs = components['schemas']['QueueLogs'];
+
+// @public (undocumented)
+type QueueStat = components['schemas']['QueueStat'];
+
+// @public (undocumented)
+type QueueStats = components['schemas']['QueueStats'];
+
+// @public (undocumented)
+type QueueType = typeof QUEUE_TYPES[number];
 
 // @public (undocumented)
 type RenoteMuteCreateRequest = operations['renote-mute___create']['requestBody']['content']['application/json'];
@@ -3783,6 +3846,8 @@ export class Stream extends EventEmitter<StreamEvents> implements IStream {
     // (undocumented)
     ping(): void;
     // (undocumented)
+    pong(): void;
+    // (undocumented)
     removeSharedConnection(connection: SharedConnection): void;
     // (undocumented)
     removeSharedConnectionPool(pool: Pool): void;
@@ -3797,12 +3862,12 @@ export class Stream extends EventEmitter<StreamEvents> implements IStream {
     useChannel<C extends keyof Channels>(channel: C, params?: Channels[C]['params'], name?: string): ChannelConnection<Channels[C]>;
 }
 
-// Warning: (ae-forgotten-export) The symbol "BroadcastEvents" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 export type StreamEvents = {
     _connected_: void;
     _disconnected_: void;
+    _ping_: void;
+    _pong_: void;
 } & BroadcastEvents;
 
 // Warning: (ae-forgotten-export) The symbol "SwitchCase" needs to be exported by the entry point index.d.ts
@@ -3843,7 +3908,7 @@ type TestRequest = operations['test']['requestBody']['content']['application/jso
 type TestResponse = operations['test']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
-function toString(acct: Acct): string;
+function toString(acct: Acct, lower?: boolean): string;
 
 // @public (undocumented)
 type User = components['schemas']['User'];
@@ -4040,8 +4105,8 @@ type V2AdminEmojiListResponse = operations['v2___admin___emoji___list']['respons
 // Warnings were encountered during analysis:
 //
 // built/entities.d.ts:32:5 - (ae-forgotten-export) The symbol "ModerationLogPayloads" needs to be exported by the entry point index.d.ts
-// built/streaming.types.d.ts:219:13 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
-// built/streaming.types.d.ts:233:13 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
+// built/streaming.types.d.ts:217:13 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
+// built/streaming.types.d.ts:231:13 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

@@ -5,14 +5,13 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AntennasRepository, UserListsRepository } from '@/models/_.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
+import type { AntennasRepository } from '@/models/_.js';
 import { AntennaEntityService } from '@/core/entities/AntennaEntityService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { UserListService } from '@/core/UserListService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../error.js';
-
 export const meta = {
 	tags: ['antennas'],
 
@@ -91,13 +90,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.antennasRepository)
 		private antennasRepository: AntennasRepository,
 
-		@Inject(DI.userListsRepository)
-		private userListsRepository: UserListsRepository,
-
 		private antennaEntityService: AntennaEntityService,
-		private globalEventService: GlobalEventService,
 		private readonly timeService: TimeService,
 		private readonly userListService: UserListService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.keywords && ps.excludeKeywords) {
@@ -146,7 +142,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				lastUsedAt: this.timeService.date,
 			});
 
-			this.globalEventService.publishInternalEvent('antennaUpdated', await this.antennasRepository.findOneByOrFail({ id: antenna.id }));
+			await this.internalEventService.emit('antennaUpdated', await this.antennasRepository.findOneByOrFail({ id: antenna.id }));
 
 			return await this.antennaEntityService.pack(antenna.id);
 		});

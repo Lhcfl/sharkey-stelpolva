@@ -8,7 +8,7 @@ import { In, IsNull } from 'typeorm';
 import { Feed } from 'feed';
 import { parse as mfmParse } from 'mfm-js';
 import { DI } from '@/di-symbols.js';
-import type { DriveFilesRepository, NotesRepository, UserProfilesRepository } from '@/models/_.js';
+import type { DriveFilesRepository, NotesRepository, UserProfilesRepository, MiNote } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import type { MiUser } from '@/models/User.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
@@ -17,6 +17,7 @@ import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 import { MfmService } from "@/core/MfmService.js";
 import { TimeService } from '@/global/TimeService.js';
+import { CacheService } from '@/core/CacheService.js';
 
 @Injectable()
 export class FeedService {
@@ -38,6 +39,7 @@ export class FeedService {
 		private idService: IdService,
 		private mfmService: MfmService,
 		private readonly timeService: TimeService,
+		private readonly cacheService: CacheService,
 	) {
 	}
 
@@ -48,17 +50,18 @@ export class FeedService {
 			name: user.name ?? user.username,
 		};
 
-		const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
-
-		const notes = user.requireSigninToViewContents ? [] : await this.notesRepository.find({
-			where: {
-				userId: user.id,
-				renoteId: IsNull(),
-				visibility: In(['public', 'home']),
-			},
-			order: { id: -1 },
-			take: 20,
-		});
+		const [profile, notes] = await Promise.all([
+			this.cacheService.userProfileCache.fetch(user.id),
+			user.requireSigninToViewContents ? [] as MiNote[] : this.notesRepository.find({
+				where: {
+					userId: user.id,
+					renoteId: IsNull(),
+					visibility: In(['public', 'home']),
+				},
+				order: { id: -1 },
+				take: 20,
+			}),
+		]);
 
 		const feed = new Feed({
 			id: author.link,
@@ -79,6 +82,7 @@ export class FeedService {
 		const followersOnlyBefore = user.makeNotesFollowersOnlyBefore;
 		const hiddenBefore = user.makeNotesHiddenBefore;
 
+		const visibleNotes: MiNote[] = [];
 		for (const note of notes) {
 			const createdAt = new Date(this.idService.parse(note.id).date);
 
@@ -86,10 +90,16 @@ export class FeedService {
 				continue;
 			}
 
-			const files = note.fileIds.length > 0 ? await this.driveFilesRepository.findBy({
-				id: In(note.fileIds),
-			}) : [];
-			const file = files.find(file => file.type.startsWith('image/'));
+			visibleNotes.push(note);
+		}
+
+		const fileIds = visibleNotes.flatMap(note => note.fileIds);
+		const files = fileIds.length > 0 ? await this.driveFilesRepository.findBy({
+			id: In(fileIds),
+		}) : [];
+
+		for (const note of visibleNotes) {
+			const file = files.find(file => note.fileIds.includes(file.id) && file.type.startsWith('image/'));
 			const text = note.text;
 
 			feed.addItem({
@@ -105,6 +115,7 @@ export class FeedService {
 		return feed;
 	}
 
+	// TODO use NoteVisibilityService instead
 	// this logic is copied from NoteEntityService.hideNote
 	private shouldHideNote(reference: number | null, createdAt: Date): boolean {
 		if ((reference !== null)

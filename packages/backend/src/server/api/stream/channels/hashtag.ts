@@ -8,7 +8,6 @@ import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import { type Channel, NoteChannel, type MiChannelService } from '../channel.js';
 
@@ -28,7 +27,6 @@ class HashtagChannel extends NoteChannel {
 
 	@bindThis
 	public async init(params: JsonObject): Promise<boolean> {
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
 		if (!Array.isArray(params.q)) return false;
 		if (!params.q.every((x): x is string[] => (
 			Array.isArray(x) &&
@@ -56,7 +54,7 @@ class HashtagChannel extends NoteChannel {
 
 	@bindThis
 	public dispose() {
-		this.subscriber?.off('notesStream', this.onNote);
+		this.subscriber.off('notesStream', this.onNote);
 	}
 }
 

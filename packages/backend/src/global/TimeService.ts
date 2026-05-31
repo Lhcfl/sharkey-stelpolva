@@ -17,6 +17,11 @@ const timerTokenSymbol = Symbol('timerToken');
 export abstract class TimeService<TTimer extends Timer = Timer> implements OnApplicationShutdown {
 	protected readonly timers = new Map<symbol, TTimer>();
 
+	private _isDisposed = false;
+	protected get isDisposed() {
+		return this._isDisposed;
+	}
+
 	protected constructor() {}
 
 	/**
@@ -35,6 +40,8 @@ export abstract class TimeService<TTimer extends Timer = Timer> implements OnApp
 	public startTimer<T>(callback: (value: T) => void, delay: number, opts: TimerOpts | undefined, value: T): TimerHandle;
 	@bindThis
 	public startTimer<T = undefined>(callback: (value: T) => void, delay: number, opts?: TimerOpts, value?: T): TimerHandle {
+		this.throwIfDisposed();
+
 		const timerId = Symbol();
 		const repeating = opts?.repeated ?? false;
 
@@ -50,6 +57,8 @@ export abstract class TimeService<TTimer extends Timer = Timer> implements OnApp
 	public startPromiseTimer<T>(delay: number, value: T, opts?: PromiseTimerOpts): PromiseTimerHandle<T>;
 	@bindThis
 	public startPromiseTimer<T = undefined>(delay: number, value?: T, opts?: PromiseTimerOpts): PromiseTimerHandle<T> {
+		this.throwIfDisposed();
+
 		const timerId = Symbol();
 		const abortController = new AbortController();
 		const abortSignal = opts?.signal ? AbortSignal.any([abortController.signal, opts.signal]) : abortController.signal;
@@ -89,7 +98,10 @@ export abstract class TimeService<TTimer extends Timer = Timer> implements OnApp
 	 * Safe to call with invalid or expired IDs.
 	 */
 	@bindThis
-	public stopTimer(handle: TimerHandle | PromiseTimerHandle): boolean {
+	public stopTimer(handle: TimerHandle | PromiseTimerHandle | null | undefined): boolean {
+		if (this.isDisposed) return false;
+		if (handle == null) return false;
+
 		const id = typeof(handle) === 'object' ? handle[timerTokenSymbol] : handle;
 		const reg = this.timers.get(id);
 		if (!reg) return false;
@@ -101,6 +113,13 @@ export abstract class TimeService<TTimer extends Timer = Timer> implements OnApp
 
 	protected abstract stopNativeTimer(reg: TTimer): void;
 
+	@bindThis
+	protected throwIfDisposed() {
+		if (this.isDisposed) {
+			throw new Error('TimeService is already disposed');
+		}
+	}
+
 	/**
 	 * Cleanup all handles and references.
 	 * Safe to call multiple times.
@@ -109,6 +128,9 @@ export abstract class TimeService<TTimer extends Timer = Timer> implements OnApp
 	 */
 	@bindThis
 	public dispose(): void {
+		if (this.isDisposed) return;
+		this._isDisposed = true;
+
 		for (const reg of this.timers.values()) {
 			this.stopNativeTimer(reg);
 		}
@@ -116,7 +138,7 @@ export abstract class TimeService<TTimer extends Timer = Timer> implements OnApp
 	}
 
 	@bindThis
-	onApplicationShutdown(): void {
+	public onApplicationShutdown(): void {
 		this.dispose();
 	}
 }
@@ -159,12 +181,15 @@ export class NativeTimeService extends TimeService<NativeTimer> implements OnApp
 	}
 
 	protected startNativeTimer(timerId: symbol, repeating: boolean, callback: () => void, delay: number): NativeTimer {
-		// Wrap the caller's callback to make sure we clean up the registration.
-		const wrappedCallback = () => {
-			if (!repeating)
-			this.timers.delete(timerId);
-			callback();
-		};
+		const wrappedCallback = repeating
+			// Repeating timer callbacks can be used as-is.
+			? callback
+
+			// Wrap one-shot (non-repeating) timer callbacks to make sure we clean up the registration.
+			: () => {
+				this.timers.delete(timerId);
+				callback();
+			};
 
 		const timeout = repeating
 			? global.setInterval(wrappedCallback, delay)

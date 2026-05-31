@@ -25,6 +25,7 @@ function generateDummyUser(now: number, override?: Partial<MiUser>): MiUser {
 		updatedAt: new Date(now - oneDayMillis * 7),
 		lastFetchedAt: new Date(now - oneDayMillis * 5),
 		lastActiveDate: new Date(now - oneDayMillis * 3),
+		deletedAt: null,
 		hideOnlineStatus: false,
 		username: 'dummy1',
 		usernameLower: 'dummy1',
@@ -481,7 +482,6 @@ export class WebhookTestService {
 			badgeRoles: [],
 			isAdmin: false,
 			isModerator: false,
-			isSystem: false,
 			instance: undefined,
 			...override,
 		};
@@ -498,6 +498,7 @@ export class WebhookTestService {
 			createdAt: this.timeService.date.toISOString(),
 			updatedAt: user.updatedAt?.toISOString() ?? null,
 			lastFetchedAt: user.lastFetchedAt?.toISOString() ?? null,
+			deletedAt: null,
 			bannerUrl: user.bannerId == null ? null : user.bannerUrl,
 			bannerBlurhash: user.bannerId == null ? null : user.bannerBlurhash,
 			backgroundUrl: user.backgroundId == null ? null : user.backgroundUrl,

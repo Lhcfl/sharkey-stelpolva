@@ -12,9 +12,6 @@ import { Redis } from 'ioredis';
 import { api, post, randomString, sendEnvUpdateRequest, signup, uploadUrl, withNotesCount, initTestDb } from '../utils.js';
 import { loadConfig } from '@/config.js';
 import { MiInstance } from '@/models/Instance.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import { NativeTimeService } from '@/global/TimeService.js';
-import { EnvService } from '@/global/EnvService.js';
 
 async function genHost() {
 	const hostname = randomString() + '.example.com';
@@ -36,8 +33,7 @@ let redisForTimelines: Redis;
 
 describe('Timelines', () => {
 	beforeAll(async () => {
-		const loggerService = new LoggerService(console, new NativeTimeService(), new EnvService());
-		redisForTimelines = new Redis(loadConfig(loggerService).redisForTimelines);
+		redisForTimelines = new Redis(loadConfig().redisForTimelines);
 	});
 
 	afterAll(() => {

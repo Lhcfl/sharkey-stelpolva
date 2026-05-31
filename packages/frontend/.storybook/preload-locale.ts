@@ -4,10 +4,10 @@
  */
 
 import { writeFile } from 'node:fs/promises';
-import locales from '../../../locales/index.js';
+import { locales } from 'locales';
 
 await writeFile(
 	new URL('locale.js', import.meta.url),
-	`export default ${JSON.stringify(locales['ja-JP'], undefined, 2)};`,
+	`export default ${JSON.stringify(locales['en-US'], undefined, 2)};`,
 	'utf8',
 );

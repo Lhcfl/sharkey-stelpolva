@@ -8,7 +8,6 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AntennasRepository } from '@/models/_.js';
 import { AntennaEntityService } from '@/core/entities/AntennaEntityService.js';
 import { DI } from '@/di-symbols.js';
-import { promiseMap } from '@/misc/promise-map.js';
 
 export const meta = {
 	tags: ['antennas', 'account'],
@@ -53,7 +52,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				userId: me.id,
 			});
 
-			return await promiseMap(antennas, async x => await this.antennaEntityService.pack(x), { limit: 4 });
+			return await this.antennaEntityService.packMany(antennas);
 		});
 	}
 }

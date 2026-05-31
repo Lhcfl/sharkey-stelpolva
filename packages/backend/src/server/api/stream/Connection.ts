@@ -3,146 +3,358 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as WebSocket from 'ws';
-import type { MiUser } from '@/models/User.js';
-import type { MiAccessToken } from '@/models/AccessToken.js';
-import type { Packed } from '@/misc/json-schema.js';
-import type { NotificationService } from '@/core/NotificationService.js';
+import { EventEmitter } from 'events';
+import { WebSocket } from 'ws';
+import { CountingSet } from '@/misc/CountingSet.js';
+import { SkEventSource } from '@/misc/SkEventEmitter.js';
+import { IdentifiableError, errorCodes } from '@/misc/identifiable-error.js';
 import { bindThis } from '@/decorators.js';
-import { CacheService } from '@/core/CacheService.js';
-import type { MiFollowing, MiUserProfile, NoteFavoritesRepository, NoteReactionsRepository, NotesRepository } from '@/models/_.js';
-import type { StreamEventEmitter, GlobalEvents } from '@/core/GlobalEventService.js';
-import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { isJsonObject } from '@/misc/json-value.js';
-import type { JsonObject, JsonValue } from '@/misc/json-value.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import { TimeService, type TimerHandle } from '@/global/TimeService.js';
+import { isJsonObject, type JsonObject, type JsonValue } from '@/misc/json-value.js';
+import type { MiUser } from '@/models/User.js';
+import type { MiUserProfile } from '@/models/UserProfile.js';
+import type { MiNote } from '@/models/Note.js';
+import type { MiAccessToken } from '@/models/AccessToken.js';
+import type { NotificationService } from '@/core/NotificationService.js';
+import type { RateLimit } from '@/misc/rate-limit-utils.js';
+import type { CacheService } from '@/core/CacheService.js';
+import type { NotesRepository } from '@/models/_.js';
+import type { GlobalEventNames, GlobalEvent, BroadcastEventPayload, NoteStreamEventPayload, GlobalEventsMap } from '@/core/GlobalEventService.js';
+import type { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
+import type { LoggerService } from '@/core/LoggerService.js';
+import type { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
+import type { TimeService } from '@/global/TimeService.js';
+import type { WebSocketUser } from '@/server/api/stream/WebSocketUser.js';
+import type { ChannelsService } from '@/server/api/stream/ChannelsService.js';
+import type { Channel } from '@/server/api/stream/channel.js';
 import type Logger from '@/logger.js';
-import { QueryService } from '@/core/QueryService.js';
-import type { ChannelsService } from './ChannelsService.js';
-import type { EventEmitter } from 'events';
-import type Channel from './channel.js';
+import type { Redis } from 'ioredis';
+import type { NoteUpdatedEvent } from 'misskey-js';
 
-const MAX_CHANNELS_PER_CONNECTION = 32;
-const MAX_SUBSCRIPTIONS_PER_CONNECTION = 512;
+// TODO convert these to "performance" settings.
+
+/**
+ * Maximum number of simultaneous connections by client (user ID or IP address).
+ * Exceeding this will result in an error and socket closure.
+ */
+export const MaxConnectionsPerClient = 32;
+
+/**
+ * Maximum number of logical communication channels allowed per single connection.
+ * Exceeding this will fail silently.
+ *
+ * (not to be confused with native WS channels, or the Misskey feature of the same name.)
+ */
+export const MaxChannelsPerConnection = 32;
+
+/**
+ * Maximum number of note subscriptions allowed per single connection.
+ * Exceeding this will automatically remove the oldest subscription to make room.
+ */
+export const MaxSubscriptionsPerChannel = 512;
+
+/**
+ * Maximum number of milliseconds to wait for close() before terminating immediately.
+ * https://github.com/websockets/ws/blob/master/doc/ws.md#new-websocketserveroptions-callback
+ */
+export const CloseTimeout = 1000 * 10; // 10 seconds
+
+/**
+ * Maximum number of pending connections to accumulate before silently dropping requests.
+ * Default (511) is taken from ws library, which took it from net.js.
+ * https://github.com/websockets/ws/blob/master/doc/ws.md#new-websocketserveroptions-callback
+ */
+export const ConnectionBacklogLimit = 511;
+
+/**
+ * Connection status values:
+ * * "ready" - native websocket is connected and authenticated, but the Connection wrapper is not initialized yet.
+ * * "opening" - Connection is initializing, but not ready yet. (initial state)
+ * * "opened" - Connection is alive and ready.
+ * * "closing" - Connection is shutting down, but the native socket is not disposed yet
+ * * "closed" - Connection and socket are shut down. (terminal state)
+ */
+export type ConnectionState = 'ready' | 'opening' | 'opened' | 'closing' | 'closed';
+
+export type ConnectionEvents = {
+	/**
+	 * Emitted when the connection moves from one state to another.
+	 */
+	connectionStateChanged: {
+		oldState: ConnectionState;
+		newState: ConnectionState;
+		connection: Connection;
+	};
+
+	/**
+	 * Emitted when the connection state changes to "opened".
+	 */
+	open: {
+		connection: Connection;
+	};
+
+	/**
+	 * Emitted when the connection state changes to "closed".
+	 */
+	close: WebSocketClosure & {
+		connection: Connection;
+	};
+
+	/**
+	 * Emitted when the client receives a PING or PONG heartbeat.
+	 */
+	heartbeat: {
+		lastActive: Date;
+		connection: Connection;
+	};
+
+	/**
+	 * Emitted when an error is emitted by the underlying websocket.
+	 */
+	error: {
+		error: unknown;
+		connection: Connection;
+	};
+};
+
+/**
+ * "close" message sent or received through the socket.
+ */
+export interface WebSocketClosure {
+	code: number;
+	message?: string | Buffer;
+}
+
+export interface WebSocketClient {
+	/** Unique identifier, derived from IP and/or user ID. */
+	uid: string;
+
+	/** Client's IP address */
+	ip: string;
+
+	/** Authenticated user, or null if unauthenticated. */
+	user: WebSocketUser | null;
+
+	/** Client user's auth token, or null if unauthenticated or secure (using native token). */
+	token: MiAccessToken | null;
+}
+
+// Rather high limit because when catching up at the top of a timeline, the frontend may render many many notes.
+// Each of which causes a message via `useNoteCapture` to ask for realtime updates of that note.
+// Up to 4000 messages, then 20 per second
+export const SocketMessageRateLimit = {
+	type: 'bucket',
+	key: 'wsmessage',
+	size: 4000,
+	dripRate: 50,
+} as const satisfies RateLimit;
+
+// Up to 30 connections, then 1 per 10 seconds
+export const SocketConnectRateLimit = {
+	type: 'bucket',
+	key: 'wsconnect',
+	size: 30,
+	dripRate: 10 * 1000,
+} as const satisfies RateLimit;
 
 /**
  * Main stream connection
  */
-// eslint-disable-next-line import/no-default-export
-export default class Connection {
-	public user?: MiUser;
-	public token?: MiAccessToken;
-	private wsConnection?: WebSocket.WebSocket;
-	public subscriber?: StreamEventEmitter;
-	private channels = new Map<string, Channel>();
-	private subscribingNotes = new Map<string, number>();
-	public userProfile: MiUserProfile | null = null;
-	public following: Map<string, Omit<MiFollowing, 'isFollowerHibernated'>> = new Map();
-	public followingChannels: Set<string> = new Set();
-	public userIdsWhoMeMuting: Set<string> = new Set();
-	public userIdsWhoBlockingMe: Set<string> = new Set();
-	public userIdsWhoMeMutingRenotes: Set<string> = new Set();
-	public userMutedInstances: Set<string> = new Set();
-	public userMutedThreads: Set<string> = new Set();
-	public userMutedNotes: Set<string> = new Set();
-	public myRecentReactions: Map<string, string> = new Map();
-	public myRecentRenotes: Set<string> = new Set();
-	public myRecentFavorites: Set<string> = new Set();
-	private fetchIntervalId: TimerHandle | null = null;
-	private closingConnection = false;
-	private logger: Logger;
+export class Connection extends SkEventSource<ConnectionEvents> {
+	/**
+	 * Connection-specific sub-EV mirroring events from the global bus.
+	 */
+	public readonly subscriber = new EventEmitter<GlobalEventsMap>();
+	private readonly logger: Logger;
+
+	private readonly channels = new Map<string, Channel>();
+	private readonly subscribingNotes = new CountingSet<MiNote['id']>();
+
+	private _state: ConnectionState = 'ready';
+	private _lastActive: Date;
+
+	/**
+	 * Returns the current state of this connection
+	 */
+	public get state(): ConnectionState {
+		return this._state;
+	}
+
+	/**
+	 * Returns the last-active timestamp as a number
+	 */
+	public get lastActiveAt(): number {
+		return this._lastActive.valueOf();
+	}
+
+	/**
+	 * Returns the last-active timestamp as a Date
+	 */
+	public get lastActive(): Date {
+		return this._lastActive;
+	}
+
+	/**
+	 * Returns true if this connection is alive and ready ("opened" state) or false for any other state.
+	 */
+	public get isActive(): boolean {
+		return this._state === 'opened';
+	}
+
+	/**
+	 * Returns the WebSocket client user.
+	 */
+	public get wsUser(): WebSocketUser | null {
+		return this.client.user;
+	}
+
+	/**
+	 * Returns the authenticated client user.
+	 * This value is kept up-to-date by Quantum cache integration.
+	 */
+	public get user(): MiUser | undefined {
+		return this.client.user?.user;
+	}
+
+	/**
+	 * Returns the authenticated client user's profile.
+	 * This value is kept up-to-date by Quantum cache integration.
+	 */
+	public get userProfile(): MiUserProfile | undefined {
+		return this.client.user?.userProfile;
+	}
+
+	/**
+	 * Returns the authenticated client user's followed channels.
+	 * This value is kept up-to-date by IPC events.
+	 */
+	public get followingChannels(): ReadonlySet<string> | undefined {
+		return this.client.user?.followingChannels;
+	}
+
+	/**
+	 * Returns the authenticated client user's list of muted instance hostnames.
+	 * This value is kept up-to-date by Quantum cache integration.
+	 */
+	public get userMutedInstances(): ReadonlySet<string> | undefined {
+		return this.client.user?.mutedInstances;
+	}
+
+	/**
+	 * Returns the authenticated client user's list of muted thread IDs.
+	 * This value is kept up-to-date by Quantum cache integration.
+	 */
+	public get userMutedThreads(): ReadonlySet<string> | undefined {
+		return this.client.user?.mutedThreads;
+	}
+
+	/**
+	 * Returns the authenticated client user's list of muted note IDs.
+	 * This value is kept up-to-date by Quantum cache integration.
+	 */
+	public get userMutedNotes(): ReadonlySet<string> | undefined {
+		return this.client.user?.mutedNotes;
+	}
+
+	/**
+	 * Returns the authenticated client user's recent note reactions.
+	 * This value is refreshed every 10 seconds.
+	 */
+	public get myRecentReactions(): ReadonlyMap<string, string> | undefined {
+		return this.client.user?.recentReactions;
+	}
+
+	/**
+	 * Returns the authenticated client user's recent renotes.
+	 * This value is refreshed every 10 seconds.
+	 */
+	public get myRecentRenotes(): ReadonlySet<string> | undefined {
+		return this.client.user?.recentRenotes;
+	}
+
+	/**
+	 * Returns the authenticated client user's recent note favorites.
+	 * This value is refreshed every 10 seconds.
+	 */
+	public get myRecentFavorites(): ReadonlySet<string> | undefined {
+		return this.client.user?.recentFavorites;
+	}
 
 	constructor(
-		private readonly noteReactionsRepository: NoteReactionsRepository,
-		private readonly noteFavoritesRepository: NoteFavoritesRepository,
-		private readonly queryService: QueryService,
-		private channelsService: ChannelsService,
-		private notificationService: NotificationService,
-		public readonly cacheService: CacheService,
-		private channelFollowingService: ChannelFollowingService,
-		private notesRepository: NotesRepository,
-		private noteEntityService: NoteEntityService,
+		private readonly redisForSub: Redis,
+		private readonly channelsService: ChannelsService,
+		private readonly notificationService: NotificationService,
+		private readonly cacheService: CacheService,
+		private readonly notesRepository: NotesRepository,
+		private readonly noteVisibilityService: NoteVisibilityService,
 		private readonly timeService: TimeService,
-
+		private readonly skRateLimiterService: SkRateLimiterService,
 		loggerService: LoggerService,
 
-		user: MiUser | null | undefined,
-		token: MiAccessToken | null | undefined,
-		private ip: string,
-		private readonly rateLimiter: () => Promise<boolean>,
+		/** Consolidated client info */
+		public readonly client: WebSocketClient,
+
+		/** Underlying websocket connection */
+		private readonly wsConnection: WebSocket,
 	) {
-		if (user) this.user = user;
-		if (token) this.token = token;
-
+		super();
 		this.logger = loggerService.getLogger('streaming', 'coral');
-	}
+		this._lastActive = timeService.date;
 
-	@bindThis
-	public async fetch() {
-		if (this.user == null) return;
-		const [userProfile, following, followingChannels, userIdsWhoMeMuting, userIdsWhoBlockingMe, userIdsWhoMeMutingRenotes, threadMutings, noteMutings, myRecentReactions, myRecentFavorites, myRecentRenotes] = await Promise.all([
-			this.cacheService.userProfileCache.fetch(this.user.id),
-			this.cacheService.userFollowingsCache.fetch(this.user.id),
-			this.cacheService.userFollowingChannelsCache.fetch(this.user.id),
-			this.cacheService.userMutingsCache.fetch(this.user.id),
-			this.cacheService.userBlockedCache.fetch(this.user.id),
-			this.cacheService.renoteMutingsCache.fetch(this.user.id),
-			this.cacheService.threadMutingsCache.fetch(this.user.id),
-			this.cacheService.noteMutingsCache.fetch(this.user.id),
-			this.noteReactionsRepository.find({
-				where: { userId: this.user.id },
-				select: { noteId: true, reaction: true },
-				order: { id: 'desc' },
-				take: 100,
-			}),
-			this.noteFavoritesRepository.find({
-				where: { userId: this.user.id },
-				select: { noteId: true },
-				order: { id: 'desc' },
-				take: 100,
-			}),
-			this.queryService
-				.andIsRenote(this.notesRepository.createQueryBuilder('note'), 'note')
-				.andWhere({ userId: this.user.id })
-				.orderBy({ id: 'DESC' })
-				.limit(100)
-				.select('note.renoteId', 'renoteId')
-				.getRawMany<{ renoteId: string }>(),
-		]);
-		this.userProfile = userProfile;
-		this.following = following;
-		this.followingChannels = followingChannels;
-		this.userIdsWhoMeMuting = userIdsWhoMeMuting;
-		this.userIdsWhoBlockingMe = userIdsWhoBlockingMe;
-		this.userIdsWhoMeMutingRenotes = userIdsWhoMeMutingRenotes;
-		this.userMutedInstances = new Set(userProfile.mutedInstances);
-		this.userMutedThreads = threadMutings;
-		this.userMutedNotes = noteMutings;
-		this.myRecentReactions = new Map(myRecentReactions.map(r => [r.noteId, r.reaction]));
-		this.myRecentFavorites = new Set(myRecentFavorites.map(f => f.noteId ));
-		this.myRecentRenotes = new Set(myRecentRenotes.map(r => r.renoteId ));
-	}
-
-	@bindThis
-	public async init() {
-		if (this.user != null) {
-			await this.fetch();
-
-			if (!this.fetchIntervalId) {
-				this.fetchIntervalId = this.timeService.startTimer(this.fetch, 1000 * 10, { repeated: true });
-			}
+		// Sanity check
+		if (wsConnection.readyState !== WebSocket.CONNECTING && wsConnection.readyState !== WebSocket.OPEN) {
+			throw new IdentifiableError(errorCodes.assertionFailed, `Attempted to create Connection from invalid WebSocket readyState ${wsConnection.readyState}`);
 		}
+
+		// Attach to the user instance.
+		// WebSocketUser will automatically bind to our event listeners, so we don't need to do anything else with it.
+		client.user?.attach(this);
+
+		// Bind the "close" and "error" events immediately, in case the client disconnects before "init" is called.
+		wsConnection.on('close', this.onWsConnectionClose);
+		wsConnection.on('error', this.onWsConnectionError);
+	}
+
+	/**
+	 * Updates the connection state and fires events.
+	 * State is **always** updated before any await calls.
+	 */
+	@bindThis
+	private async setState(newState: ConnectionState): Promise<void> {
+		this._state = newState;
+
+		await this.emit('connectionStateChanged', {
+			oldState: this._state,
+			newState,
+		});
+	}
+
+	/**
+	 * Initializes the client connection.
+	 * No-op if already connected/connecting, and throws if already closed.
+	 */
+	@bindThis
+	public async open() {
+		if (this._state === 'opening') return;
+		if (this._state === 'opened') return;
+		if (this._state !== 'ready') throw new IdentifiableError(errorCodes.websocketError, 'Cannot re-open a closed socket connection');
+
+		// Set up external events
+		this.redisForSub.on('message', this.onRedisMessage);
+		this.subscriber.on('broadcast', this.onSubscriberBroadcast);
+		this.wsConnection.on('message', this.onWsConnectionMessage);
+		this.wsConnection.on('ping', this.onWsConnectionPing);
+		this.wsConnection.on('pong', this.onWsConnectionPong);
+
+		// Mark as online.
+		this._lastActive = this.timeService.date;
+		await this.setState('opened');
+		await this.emit('open', {});
 	}
 
 	@bindThis
-	public async listen(subscriber: EventEmitter, wsConnection: WebSocket.WebSocket) {
-		this.subscriber = subscriber;
-
-		this.wsConnection = wsConnection;
-		this.wsConnection.on('message', this.onWsConnectionMessage);
-		this.subscriber.on('broadcast', this.onBroadcastMessage);
+	private onRedisMessage(_: string, data: string): void {
+		const { channel, message } = JSON.parse(data) as GlobalEvent<GlobalEventNames>;
+		this.subscriber.emit(channel, message);
 	}
 
 	/**
@@ -150,22 +362,21 @@ export default class Connection {
 	 */
 	@bindThis
 	private async onWsConnectionMessage(data: WebSocket.RawData) {
+		// Check connection status.
+		// Don't throw, since we might end up here if the buffer still has messages after the socket closes.
+		if (!this.isActive) return;
+
+		// Check rate limit.
+		// Don't throw, since we don't want client errors to generate confusing error spam for admins.
+		if (!await this.tickRateLimit()) return;
+
+		// Mark as active
+		this._lastActive = this.timeService.date;
+
 		let obj: JsonObject;
-
-		if (this.closingConnection) return;
-
-		// The rate limit is very high, so we can safely disconnect any client that hits it.
-		if (await this.rateLimiter()) {
-			this.logger.warn(`Closing a connection from ${this.ip} (user=${this.user?.id}}) due to an excessive influx of messages.`);
-
-			this.closingConnection = true;
-			this.wsConnection?.close(1008, 'Disconnected - too many requests');
-			return;
-		}
-
 		try {
 			obj = JSON.parse(data.toString());
-		} catch (e) {
+		} catch {
 			return;
 		}
 
@@ -173,21 +384,77 @@ export default class Connection {
 
 		switch (type) {
 			case 'readNotification': await this.onReadNotification(); break;
-			case 'subNote': this.onSubscribeNote(body); break;
-			case 's': this.onSubscribeNote(body); break; // alias
-			case 'sr': this.onSubscribeNote(body); break;
+			case 'subNote': await this.onSubscribeNote(body); break;
+			case 's': await this.onSubscribeNote(body); break; // alias
+			case 'sr': await this.onSubscribeNote(body); break; // alias
 			case 'unsubNote': this.onUnsubscribeNote(body); break;
 			case 'un': this.onUnsubscribeNote(body); break; // alias
-			case 'connect': this.onChannelConnectRequested(body); break;
+			case 'connect': await this.onChannelConnectRequested(body); break;
 			case 'disconnect': this.onChannelDisconnectRequested(body); break;
 			case 'channel': this.onChannelMessageRequested(body); break;
 			case 'ch': this.onChannelMessageRequested(body); break; // alias
+			// misskey-js uses these instead of the "normal" websocket ping
+			case 'ping': await this.onWsConnectionPingMessage(); break;
+			case 'h': await this.onWsConnectionPingMessage(); break; // alias
+			case 'pong': await this.onWsConnectionPongMessage(); break;
 		}
 	}
 
 	@bindThis
-	private onBroadcastMessage(data: GlobalEvents['broadcast']['payload']) {
-		this.sendMessageToWs(data.type, data.body);
+	private async onWsConnectionPingMessage(): Promise<void> {
+		// Handle as ping
+		await this.onWsConnectionPing();
+
+		// And manually pong
+		await this.pongWs();
+	}
+
+	@bindThis
+	private async onWsConnectionPongMessage(): Promise<void> {
+		// Handle as pong
+		await this.onWsConnectionPong();
+	}
+
+	@bindThis
+	private async onWsConnectionClose(code: number, message: Buffer): Promise<void> {
+		await this.close(code, message);
+	}
+
+	@bindThis
+	private async onWsConnectionError(error: unknown): Promise<void> {
+		await this.emit('error', { error });
+	}
+
+	@bindThis
+	private async onWsConnectionPing(): Promise<void> {
+		this._lastActive = this.timeService.date;
+		await this.emit('heartbeat', { lastActive: this._lastActive });
+	}
+
+	@bindThis
+	private async onWsConnectionPong(): Promise<void> {
+		this._lastActive = this.timeService.date;
+		await this.emit('heartbeat', { lastActive: this._lastActive });
+	}
+
+	@bindThis
+	private async tickRateLimit(): Promise<boolean> {
+		// limit() both increments and checks the limit in a single call.
+		// Discard the other results since we have no way of communicating limit status back to a client :(
+		const { blocked } = await this.skRateLimiterService.limit(SocketMessageRateLimit, this.client.uid);
+		if (!blocked) {
+			return true;
+		}
+
+		// The rate limit is very high, so we can safely disconnect any client that hits it.
+		this.logger.warn(`Closing a connection from ${this.client.ip} (user=${this.user?.id}}) due to an excessive influx of messages.`);
+		await this.close(1008, 'Disconnected - too many requests');
+		return false;
+	}
+
+	@bindThis
+	private async onSubscriberBroadcast(data: BroadcastEventPayload) {
+		await this.sendMessageToWs(data.type, data.body);
 	}
 
 	@bindThis
@@ -200,26 +467,42 @@ export default class Connection {
 	 * 投稿購読要求時
 	 */
 	@bindThis
-	private onSubscribeNote(payload: JsonValue | undefined) {
+	private async onSubscribeNote(payload: JsonValue | undefined) {
 		if (!isJsonObject(payload)) return;
 		if (!payload.id || typeof payload.id !== 'string') return;
 
-		const current = this.subscribingNotes.get(payload.id) ?? 0;
-		const updated = current + 1;
-		this.subscribingNotes.set(payload.id, updated);
-
-		// Limit the number of distinct notes that can be subscribed to.
-		while (this.subscribingNotes.size > MAX_SUBSCRIPTIONS_PER_CONNECTION) {
-			// Map maintains insertion order, so first key is always the oldest
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const oldestKey = this.subscribingNotes.keys().next().value!;
-
-			this.subscribingNotes.delete(oldestKey);
-			this.subscriber?.off(`noteStream:${oldestKey}`, this.onNoteStreamMessage);
+		// If already connected, then just bump count and skip other checks.
+		if (this.subscribingNotes.add(payload.id) > 1) {
+			return;
 		}
 
-		if (updated === 1) {
-			this.subscriber?.on(`noteStream:${payload.id}`, this.onNoteStreamMessage);
+		// Make sure the note exists.
+		const note = await this.notesRepository.findOne({
+			where: { id: payload.id },
+			relations: {
+				reply: true,
+				renote: true,
+			},
+		});
+		if (!note) {
+			return;
+		}
+
+		// TODO cache this
+		// Make sure the user can access the note.
+		const { accessible } = await this.noteVisibilityService.checkNoteVisibilityAsync(note, this.user);
+		if (!accessible) {
+			return;
+		}
+
+		// Checks ok; set up the connection.
+		this.subscriber.on(`noteStream:${payload.id}`, this.onNoteStreamMessage);
+
+		// Limit the number of distinct notes that can be subscribed to.
+		while (this.subscribingNotes.size > MaxSubscriptionsPerChannel) {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const oldestKey = this.subscribingNotes.oldest()!;
+			this.disconnectNoteEvents(oldestKey);
 		}
 	}
 
@@ -231,52 +514,96 @@ export default class Connection {
 		if (!isJsonObject(payload)) return;
 		if (!payload.id || typeof payload.id !== 'string') return;
 
-		const current = this.subscribingNotes.get(payload.id);
-		if (current == null) return;
-		const updated = current - 1;
-		this.subscribingNotes.set(payload.id, updated);
-		if (updated <= 0) {
-			this.subscribingNotes.delete(payload.id);
-			this.subscriber?.off(`noteStream:${payload.id}`, this.onNoteStreamMessage);
+		// Stop tracking, but don't unsubscribe unless this was the last stack.
+		if (this.subscribingNotes.remove(payload.id) < 1) {
+			this.disconnectNoteEvents(payload.id);
 		}
 	}
 
+	/**
+	 * Callback for Note Stream (noteStream:{id}), not the other one.
+	 * This is subscribed only for notes that the client requests.
+	 */
 	@bindThis
-	private async onNoteStreamMessage(data: GlobalEvents['note']['payload']) {
-		const note = await this.notesRepository.findOne({
-			where: { id: data.body.id },
-			relations: { reply: true, renote: true },
-		});
-		if (!note && data.type !== 'deleted') return;
-
-		if (note) {
-			// Skip and stop tracking if the message contains a note the user can't or shouldn't see.
-			const { accessible, silence } = await this.noteEntityService.noteVisibilityService.checkNoteVisibilityAsync(note, this.user);
-			if (!accessible || silence) {
-				this.onUnsubscribeNote({ id: data.body.id });
+	private async onNoteStreamMessage(payload: NoteStreamEventPayload) {
+		if (payload.type === 'deleted') {
+			// Unsubscribe from deleted notes
+			this.disconnectNoteEvents(payload.body.id);
+		} else {
+			// Make sure author/user blocks haven't changed
+			const { accessible } = await this.checkUserRelation(payload.body.userId);
+			if (!accessible) {
+				this.disconnectNoteEvents(payload.body.id);
 				return;
 			}
 		}
 
-		this.sendMessageToWs('noteUpdated', {
-			id: data.body.id,
-			type: data.type,
-			body: data.body.body,
-		});
+		// Check access to interactions.
+		// Don't disconnect, but *do* suppress the notification!
+		if (payload.type === 'replied' || payload.type === 'reacted' || payload.type === 'unreacted' || payload.type === 'pollVoted') {
+			const { accessible, silence } = await this.checkUserRelation(payload.body.body.userId);
+			if (!accessible || silence) {
+				return;
+			}
+		}
+
+		// Checks ok; send message to client.
+		const mappedPayload = {
+			type: payload.type,
+			id: payload.body.id,
+			body: payload.body.body,
+		} as NoteUpdatedEvent;
+		await this.sendMessageToWs('noteUpdated', mappedPayload);
+	}
+
+	@bindThis
+	private async checkUserRelation(targetUserId: MiUser['id']): Promise<{ accessible: boolean, silence: boolean }> {
+		if (!this.user) {
+			// If unauthenticated (not logged in), then check viewer privacy settings.
+			// Consider deleted users to be restricted.
+			const target = await this.cacheService.findOptionalUserById(targetUserId);
+			return {
+				accessible: target != null && !target.requireSigninToViewContents,
+				silence: false,
+			};
+		} else if (this.user.id !== targetUserId) {
+			// If authenticated, then check target->viewer blocks and viewer->target mutes.
+			const relation = await this.cacheService.getUserRelation(this.user.id, targetUserId);
+			return {
+				accessible: !relation.isBlocked,
+				silence: relation.isMuting || relation.isMutingInstance,
+			};
+		} else {
+			// Always allow self-access.
+			return {
+				accessible: true,
+				silence: false,
+			};
+		}
+	}
+
+	/**
+	 * Stops tracking the provided note and cleans up all related state.
+	 * Does nothing if the note isn't tracked.
+	 */
+	@bindThis
+	public disconnectNoteEvents(noteId: string): void {
+		this.subscribingNotes.zero(noteId);
+		this.subscriber.off(`noteStream:${noteId}`, this.onNoteStreamMessage);
 	}
 
 	/**
 	 * チャンネル接続要求時
 	 */
 	@bindThis
-	private onChannelConnectRequested(payload: JsonValue | undefined) {
+	private async onChannelConnectRequested(payload: JsonValue | undefined) {
 		if (!isJsonObject(payload)) return;
 		const { channel, id, params, pong } = payload;
 		if (typeof id !== 'string') return;
 		if (typeof channel !== 'string') return;
 		if (typeof pong !== 'boolean' && typeof pong !== 'undefined' && pong !== null) return;
 		if (typeof params !== 'undefined' && !isJsonObject(params)) return;
-		this.connectChannel(id, params, channel, pong ?? undefined);
+		await this.connectChannel(id, params, channel, pong ?? undefined);
 	}
 
 	/**
@@ -294,16 +621,44 @@ export default class Connection {
 	 * クライアントにメッセージ送信
 	 */
 	@bindThis
-	public sendMessageToWs(type: string, payload: JsonObject) {
-		if (!this.wsConnection) throw new Error('Cannot send: not connected');
-		this.wsConnection.send(JSON.stringify({
+	public async sendMessageToWs<T extends Record<string, unknown>>(type: string, payload?: T): Promise<void> {
+		// Don't throw, since we might end up here if an async call completes while the connection is closing.
+		if (!this.isActive) return;
+
+		const message = JSON.stringify({
 			type: type,
 			body: payload,
-		}));
+		});
+
+		await new Promise<void>((resolve, reject) => {
+			this.wsConnection.send(message, (err?: unknown) => {
+				if (err != null) reject(err);
+				else resolve();
+			});
+		});
+	}
+
+	@bindThis
+	public async pingWs(): Promise<void> {
+		// Don't throw, since we might end up here if the cleanup timer executes while the connection is closing.
+		if (!this.isActive) return;
+
+		// Ping as data message (instead of control) for compat with browser socket implementations.
+		await this.sendMessageToWs('ping', {});
+	}
+
+	@bindThis
+	public async pongWs(): Promise<void> {
+		// Don't throw, since we might end up here if the cleanup timer executes while the connection is closing.
+		if (!this.isActive) return;
+
+		// Pong as data message (instead of control) for compat with browser socket implementations.
+		await this.sendMessageToWs('pong', {});
 	}
 
 	/**
 	 * チャンネルに接続
+	 * TODO rate-limit connect/disconnect cycles
 	 */
 	@bindThis
 	public async connectChannel(id: string, params: JsonObject | undefined, channel: string, pong = false) {
@@ -311,7 +666,7 @@ export default class Connection {
 			this.disconnectChannel(id);
 		}
 
-		if (this.channels.size >= MAX_CHANNELS_PER_CONNECTION) {
+		if (this.channels.size >= MaxChannelsPerConnection) {
 			return;
 		}
 
@@ -321,30 +676,31 @@ export default class Connection {
 			return;
 		}
 
-		if (this.token && ((channelService.kind && !this.token.permission.some(p => p === channelService.kind))
+		if (this.client.token && ((channelService.kind && !this.client.token.permission.some(p => p === channelService.kind))
 			|| (!channelService.kind && channelService.requireCredential))) {
 			return;
 		}
 
-		// 共有可能チャンネルに接続しようとしていて、かつそのチャンネルに既に接続していたら無意味なので無視
-		if (channelService.shouldShare) {
-			for (const c of this.channels.values()) {
-				if (c.chName === channel) {
-					return;
-				}
-			}
-		}
+		// // 共有可能チャンネルに接続しようとしていて、かつそのチャンネルに既に接続していたら無意味なので無視
+		// if (channelService.shouldShare) {
+		// 	for (const c of this.channels.values()) {
+		// 		if (c.chName === channel) {
+		// 			// this.channels.set(id, c);
+		// 			return;
+		// 		}
+		// 	}
+		// }
 
 		const ch: Channel = channelService.create(id, this);
-		this.channels.set(ch.id, ch);
+		this.channels.set(id, ch);
 		const valid = await ch.init(params ?? {});
-		if (typeof valid === 'boolean' && !valid) {
+		if (valid === false) {
 			this.disconnectChannel(id);
 			return;
 		}
 
 		if (pong) {
-			this.sendMessageToWs('connected', {
+			await this.sendMessageToWs('connected', {
 				id: id,
 			});
 		}
@@ -385,19 +741,69 @@ export default class Connection {
 	 * ストリームが切れたとき
 	 */
 	@bindThis
-	public dispose() {
-		if (this.fetchIntervalId) this.timeService.stopTimer(this.fetchIntervalId);
-		for (const c of this.channels.values()) {
-			if (c.dispose) c.dispose();
-		}
-		for (const k of this.subscribingNotes.keys()) {
-			this.subscriber?.off(`noteStream:${k}`, this.onNoteStreamMessage);
-		}
-		this.subscriber?.off('broadcast', this.onBroadcastMessage);
-		this.wsConnection?.off('message', this.onWsConnectionMessage);
+	public async dispose() {
+		await this.close(1001, 'Server is shutting down');
+	}
 
-		this.fetchIntervalId = null;
-		this.channels.clear();
-		this.subscribingNotes.clear();
+	/**
+	 * Closes the connection, or no-op if not connected.
+	 */
+	@bindThis
+	public async close(code: number, message: string | Buffer | undefined): Promise<void> {
+		if (this._state === 'closing') return;
+		if (this._state === 'closed') return;
+
+		// Update to closing before any async calls.
+		await this.setState('closing');
+
+		try {
+			// Dispose active channels
+			for (const c of this.channels.values()) {
+				if (c.dispose) c.dispose();
+			}
+			this.channels.clear();
+
+			// Dispose note subscriptions
+			for (const k of this.subscribingNotes) {
+				this.subscriber.off(`noteStream:${k}`, this.onNoteStreamMessage);
+			}
+			this.subscribingNotes.clear();
+
+			// Disconnect external events
+			this.redisForSub.off('message', this.onRedisMessage);
+			this.subscriber.off('broadcast', this.onSubscriberBroadcast);
+			this.wsConnection.off('message', this.onWsConnectionMessage);
+			this.wsConnection.off('ping', this.onWsConnectionPing);
+			this.wsConnection.off('pong', this.onWsConnectionPong);
+			this.wsConnection.off('close', this.onWsConnectionClose);
+			this.wsConnection.off('error', this.onWsConnectionError);
+
+			// Disconnect the client.
+			this.wsConnection.close(code, message);
+		} finally {
+			// Move to terminal state.
+			await this.setState('closed');
+			await this.emit('close', { code, message });
+
+			// Disconnect internal events *after* terminal state!!
+			this.removeAllListeners();
+		}
+	}
+
+	public emit<K extends keyof ConnectionEvents>(type: K, value: ConnectionEvents[K], context?: Record<string, never>): Promise<void>;
+	public emit<K extends keyof ConnectionEvents>(type: K, value: Omit<ConnectionEvents[K], 'connection'>, context?: Record<string, never>): Promise<void>;
+	@bindThis
+	public async emit<K extends keyof ConnectionEvents>(type: K, value: ConnectionEvents[K] | Omit<ConnectionEvents[K], 'connection'>, context?: Record<string, never>): Promise<void> {
+		const actualValue = {
+			...value,
+			connection: this,
+		} as ConnectionEvents[K];
+		await super.emit(type, actualValue, context);
+	}
+
+	@bindThis
+	public removeAllListeners<K extends (keyof ConnectionEvents) | GlobalEventNames>(type?: K): void {
+		this.subscriber.removeAllListeners(type as GlobalEventNames);
+		super.removeAllListeners(type as keyof ConnectionEvents);
 	}
 }

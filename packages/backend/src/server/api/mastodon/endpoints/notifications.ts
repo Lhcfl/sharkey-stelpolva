@@ -8,9 +8,9 @@ import { MastodonEntity } from 'megalodon';
 import { parseTimelineArgs, TimelineArgs } from '@/server/api/mastodon/argsUtils.js';
 import { MastodonConverters } from '@/server/api/mastodon/MastodonConverters.js';
 import { attachMinMaxPagination } from '@/server/api/mastodon/pagination.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import { MastodonClientService } from '../MastodonClientService.js';
 import type { FastifyInstance } from 'fastify';
-import { promiseMap } from '@/misc/promise-map.js';
 
 interface ApiNotifyMastodonRoute {
 	Params: {
@@ -30,7 +30,7 @@ export class ApiNotificationsMastodon {
 		fastify.get<ApiNotifyMastodonRoute>('/v1/notifications', async (request, reply) => {
 			const { client, me } = await this.clientService.getAuthClient(request);
 			const data = await client.getNotifications(parseTimelineArgs(request.query));
-			const notifications = await promiseMap(data.data, async n => await this.mastoConverters.convertNotification(n, me), { limit: 4 });
+			const notifications = await promiseMap(data.data, async n => await this.mastoConverters.convertNotification(n, me), { limiter: 4 });
 			const response: MastodonEntity.Notification[] = [];
 			for (const notification of notifications) {
 				// Notifications for inaccessible notes will be null and should be ignored

@@ -5,11 +5,10 @@
 		"declaration": true,
 		"declarationMap": true,
 		"removeComments": false,
-		"baseUrl": ".",
+		"rootDir": ".",
 		"outDir": "../../built/_sw_dist_",
 		"paths": {
 			"@/*": ["./src/*"],
-			"@@/*": ["../frontend-shared/*"]
 		},
 		"typeRoots": [
 			"./node_modules/@types",
@@ -18,8 +17,5 @@
 	},
 	"include": [
 		"src/**/*.ts"
-	],
-	"exclude": [
-		"node_modules"
 	]
 }

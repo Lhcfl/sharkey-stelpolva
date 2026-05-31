@@ -10,7 +10,6 @@ import { bindThis } from '@/decorators.js';
 import { ReversiService } from '@/core/ReversiService.js';
 import { ReversiGameEntityService } from '@/core/entities/ReversiGameEntityService.js';
 import { isJsonObject } from '@/misc/json-value.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
 import Channel, { type MiChannelService } from '../channel.js';
 
@@ -32,7 +31,6 @@ class ReversiGameChannel extends Channel {
 
 	@bindThis
 	public async init(params: JsonObject) {
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
 		if (typeof params.gameId !== 'string') return;
 		this.gameId = params.gameId;
 
@@ -104,7 +102,7 @@ class ReversiGameChannel extends Channel {
 	@bindThis
 	public dispose() {
 		// Unsubscribe events
-		this.subscriber?.off(`reversiGameStream:${this.gameId}`, this.send);
+		this.subscriber.off(`reversiGameStream:${this.gameId}`, this.send);
 	}
 }
 

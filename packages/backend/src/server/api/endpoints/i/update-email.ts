@@ -5,7 +5,6 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import ms from 'ms';
-import * as argon2 from 'argon2';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { MiMeta, UserProfilesRepository } from '@/models/_.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
@@ -13,7 +12,10 @@ import { EmailService } from '@/core/EmailService.js';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
+import { CacheService } from '@/core/CacheService.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
 import { ApiError } from '../../error.js';
 
@@ -32,6 +34,12 @@ export const meta = {
 			message: 'Incorrect password.',
 			code: 'INCORRECT_PASSWORD',
 			id: 'e54c1d7e-e7d6-4103-86b6-0a95069b4ad3',
+		},
+
+		incorrectTotp: {
+			message: 'Incorrect 2FA code.',
+			code: 'INCORRECT_TOTP',
+			id: 'cdf1235b-ac71-46d4-a3a6-84ccce48df6f',
 		},
 
 		unavailable: {
@@ -79,26 +87,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private emailService: EmailService,
 		private userAuthService: UserAuthService,
 		private globalEventService: GlobalEventService,
+		private readonly cacheService: CacheService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const token = ps.token;
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });
 
-			if (profile.twoFactorEnabled) {
-				if (token == null) {
-					throw new Error('authentication failed');
-				}
-
-				try {
-					await this.userAuthService.twoFactorAuthenticate(profile, token);
-				} catch (e) {
-					throw new Error('authentication failed');
-				}
+			if (!await this.userAuthService.checkPassword(profile, ps.password)) {
+				throw new ApiError(meta.errors.incorrectPassword);
 			}
 
-			const passwordMatched = await argon2.verify(profile.password!, ps.password);
-			if (!passwordMatched) {
-				throw new ApiError(meta.errors.incorrectPassword);
+			if (!await this.userAuthService.check2FA(profile, ps.token)) {
+				throw new ApiError(meta.errors.incorrectTotp);
 			}
 
 			if (ps.email != null) {
@@ -116,13 +116,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				emailVerifyCode: null,
 			});
 
-			const iObj = await this.userEntityService.pack(me.id, me, {
+			const iObj = await this.userEntityService.pack(me, me, {
 				schema: 'MeDetailed',
 				includeSecrets: true,
 			});
 
 			// Publish meUpdated event
-			this.globalEventService.publishMainStream(me.id, 'meUpdated', iObj);
+			await this.globalEventService.publishMainStream(me.id, 'meUpdated', iObj);
 
 			if (ps.email != null) {
 				const code = secureRndstr(16, { chars: L_CHARS });
@@ -133,11 +133,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 				const link = `${this.config.url}/verify-email/${code}`;
 
-				this.emailService.sendEmail(ps.email, 'Email verification',
+				trackPromise(this.emailService.sendEmail(ps.email, 'Email verification',
 					`To verify email, please click this link:<br><a href="${link}">${link}</a>`,
-					`To verify email, please click this link: ${link}`);
+					`To verify email, please click this link: ${link}`));
 			}
 
+			await this.internalEventService.emit('updateUserProfile', { userId: me.id, keys: ['emailVerifyCode'] });
 			return iObj;
 		});
 	}

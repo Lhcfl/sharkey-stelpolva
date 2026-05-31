@@ -13,6 +13,7 @@ import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { IdService } from '@/core/IdService.js';
 import { QueryService } from '@/core/QueryService.js';
+import { UserService } from '@/core/UserService.js';
 import { MiLocalUser } from '@/models/User.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
 import { ApiError } from '../../error.js';
@@ -83,6 +84,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
 		private queryService: QueryService,
+		private readonly userService: UserService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
@@ -95,6 +97,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.withReplies && ps.withFiles) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
 
+			if (me) {
+				this.userService.markUserActive(me);
+			}
+
 			if (!this.serverSettings.enableFanoutTimeline) {
 				const timeline = await this.getFromDb({
 					untilId,
@@ -105,12 +111,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withBots: ps.withBots,
 					withRenotes: ps.withRenotes,
 				}, me);
-
-				if (me) {
-					process.nextTick(() => {
-						this.activeUsersChart.read(me);
-					});
-				}
 
 				return await this.noteEntityService.packMany(timeline, me);
 			}
@@ -139,12 +139,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withRenotes: ps.withRenotes,
 				}, me),
 			});
-
-			if (me) {
-				process.nextTick(() => {
-					this.activeUsersChart.read(me);
-				});
-			}
 
 			return timeline;
 		});

@@ -3,21 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { In } from 'typeorm';
+import { Inject, Injectable, type OnApplicationShutdown } from '@nestjs/common';
+import { In, type PartialEntityUpdate } from 'typeorm';
 import type { InstancesRepository } from '@/models/_.js';
 import type { MiMeta } from '@/models/Meta.js';
 import type { MiInstance } from '@/models/Instance.js';
-import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 import { IdService } from '@/core/IdService.js';
 import { DI } from '@/di-symbols.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/CacheManagementService.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
-import { diffArraysSimple } from '@/misc/diff-arrays.js';
-import { bindThis } from '@/decorators.js';
 import { TimeService } from '@/global/TimeService.js';
-import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
+import { UtilityService } from '@/core/UtilityService.js';
+import { RemoteLoggerService } from '@/core/RemoteLoggerService.js';
+import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/CacheManagementService.js';
+import { InternalEventService, type InternalEventTypes } from '@/global/InternalEventService.js';
+import { diffArrays } from '@/misc/diff-arrays.js';
+import { bindThis } from '@/decorators.js';
 
 @Injectable()
 export class FederatedInstanceService implements OnApplicationShutdown {
@@ -71,12 +70,12 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 			},
 		});
 
-		this.internalEventService.on('metaUpdated', this.onMetaUpdated, { ignoreRemote: true });
+		this.internalEventService.on('metaUpdated', this.onMetaUpdated);
 	}
 
 	@bindThis
 	public async fetchOrRegister(host: string): Promise<MiInstance> {
-		return this.federatedInstanceCache.fetch(host);
+		return await this.federatedInstanceCache.fetch(host);
 		/*
 		host = this.utilityService.toPuny(host);
 
@@ -109,8 +108,13 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 	}
 
 	@bindThis
+	public async refresh(host: string): Promise<MiInstance> {
+		return await this.federatedInstanceCache.refresh(host);
+	}
+
+	@bindThis
 	public async fetch(host: string): Promise<MiInstance> {
-		return this.federatedInstanceCache.fetch(host);
+		return await this.federatedInstanceCache.fetch(host);
 		/*
 		host = this.utilityService.toPuny(host);
 
@@ -130,7 +134,7 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async update(id: MiInstance['id'], data: QueryDeepPartialEntity<MiInstance>): Promise<MiInstance> {
+	public async update(id: MiInstance['id'], data: PartialEntityUpdate<MiInstance>): Promise<MiInstance> {
 		const result = await this.instancesRepository.createQueryBuilder().update()
 			.set(data)
 			.where('id = :id', { id })
@@ -167,20 +171,31 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async onMetaUpdated(body: InternalEventTypes['metaUpdated']): Promise<void> {
+	private onMetaUpdated(body: InternalEventTypes['metaUpdated']): void {
 		const { before, after } = body;
-		const changed = (
-			diffArraysSimple(before?.blockedHosts, after.blockedHosts) ||
-			diffArraysSimple(before?.silencedHosts, after.silencedHosts) ||
-			diffArraysSimple(before?.mediaSilencedHosts, after.mediaSilencedHosts) ||
-			diffArraysSimple(before?.federationHosts, after.federationHosts) ||
-			diffArraysSimple(before?.bubbleInstances, after.bubbleInstances)
-		);
+		const diffs = [
+			diffArrays(before.blockedHosts, after.blockedHosts),
+			diffArrays(before.silencedHosts, after.silencedHosts),
+			diffArrays(before.mediaSilencedHosts, after.mediaSilencedHosts),
+			diffArrays(before.federationHosts, after.federationHosts),
+			diffArrays(before.bubbleInstances, after.bubbleInstances),
+		];
 
-		if (changed) {
-			// We have to clear the whole thing, otherwise subdomains won't be synced.
-			// This gets fired in *each* process so don't do anything to trigger cache notifications!
-			this.federatedInstanceCache.clear();
+		const changed = diffs.map(r => [r.added, r.removed]).flat(2).map(h => `.${this.utilityService.toPuny(h)}`);
+		const changedHosts = new Set(changed);
+
+		// Each process does this separately, so only scan our own cache.
+		for (const h of this.federatedInstanceCache.keys()) {
+			const host = `.${this.utilityService.toPuny(h)}`;
+
+			// Check if host or any base-domain was changed
+			for (let i = 0; i >= 0; i = host.indexOf('.', i + 1)) {
+				const candidate = host.substring(i);
+				if (changedHosts.has(candidate)) {
+					this.federatedInstanceCache.drop(h);
+					break; // exit inner loop only
+				}
+			}
 		}
 	}
 

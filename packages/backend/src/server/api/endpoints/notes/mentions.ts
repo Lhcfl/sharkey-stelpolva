@@ -6,12 +6,11 @@
 import { Brackets } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import type { NotesRepository, FollowingsRepository } from '@/models/_.js';
-import { MiNote } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
+import { UserService } from '@/core/UserService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { DI } from '@/di-symbols.js';
-import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -43,7 +42,7 @@ export const paramDef = {
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
-		visibility: { type: 'string' },
+		visibility: { type: 'string', enum: ['public', 'home', 'followers', 'specified'] },
 	},
 	required: [],
 } as const;
@@ -59,61 +58,62 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
-		private readonly activeUsersChart: ActiveUsersChart,
+		private readonly userService: UserService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			this.userService.markUserActive(me);
+
 			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
-				.innerJoin(qb => {
-					qb
-						.select('note.id', 'id')
-						.from(qbb => qbb
-							.select('note.id', 'id')
-							.from(MiNote, 'note')
-							.where(new Brackets(qbbb => qbbb
-								// DM to me
-								.orWhere(':meIdAsList <@ note.visibleUserIds')
-								// Mentions me
-								.orWhere(':meIdAsList <@ note.mentions'),
-							))
-							.setParameters({ meIdAsList: [me.id] })
-						, 'source')
-						.innerJoin(MiNote, 'note', 'note.id = source.id')
-						.innerJoinAndSelect('note.user', 'user')
-						.leftJoinAndSelect('note.reply', 'reply')
-						.leftJoinAndSelect('note.renote', 'renote')
-						.leftJoinAndSelect('reply.user', 'replyUser')
-						.leftJoinAndSelect('renote.user', 'renoteUser');
+				.limit(ps.limit)
+				.setParameters({
+					meId: me.id,
+					meIdAsList: [me.id],
+				});
 
-					this.queryService.generateVisibilityQuery(qb, me);
-					this.queryService.generateBlockedHostQueryForNote(qb);
-					this.queryService.generateSuspendedUserQueryForNote(qb);
-					this.queryService.generateSilencedUserQueryForNotes(qb, me);
-					this.queryService.generateMutedUserQueryForNotes(qb, me);
-					this.queryService.generateMutedNoteThreadQuery(qb, me);
-					this.queryService.generateBlockedUserQueryForNotes(qb, me);
-					// A renote can't mention a user, so it will never appear here anyway.
-					//this.queryService.generateMutedUserRenotesQueryForNotes(qb, me);
+			// Visibility check is covered in a more-efficient way below.
+			// this.queryService.generateVisibilityQuery(query, me);
+			this.queryService.generateBlockedHostQueryForNote(query);
+			this.queryService.generateSuspendedUserQueryForNote(query);
+			this.queryService.generateSilencedUserQueryForNotes(query, me);
+			this.queryService.generateMutedUserQueryForNotes(query, me);
+			this.queryService.generateMutedNoteThreadQuery(query, me);
+			// Blocked check is conditionally-applied below.
+			// this.queryService.generateBlockedUserQueryForNotes(query, me);
+			// A renote can't mention a user, so it will never appear here anyway.
+			//this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
 
-					if (ps.visibility) {
-						qb.andWhere('note.visibility = :visibility', { visibility: ps.visibility });
-					}
+			if (ps.visibility === 'specified') {
+				// DM to me
+				query
+					.andWhere('note.visibility = \'specified\'')
+					.andWhere(':meIdAsList <@ note.visibleUserIds');
+			} else if (ps.visibility) {
+				// Non-DM that mentions me
+				query
+					.andWhere('note.visibility = :visibility', { visibility: ps.visibility })
+					.andWhere(':meIdAsList <@ note.mentions');
+			} else {
+				query
+					.andWhere(new Brackets(qb => qb
+						// DM to me
+						.orWhere(new Brackets(qbb => qbb
+							.andWhere('note.visibility = \'specified\'')
+							.andWhere(':meIdAsList <@ note.visibleUserIds')))
+						// Non-DM that mentions me
+						.orWhere(new Brackets(qbb => qbb
+							.andWhere('note.visibility != \'specified\'')
+							.andWhere(':meIdAsList <@ note.mentions'))),
+					));
+			}
 
-					if (ps.following) {
-						this.queryService
-							.andFollowingUser(qb, ':meId', 'note.userId')
-							.setParameters({ meId: me.id });
-					}
-
-					return qb;
-				}, 'source', 'source.id = note.id')
-				.limit(ps.limit);
+			// We can't be following a user who blocks us / is blocked by us, so only one check is needed.
+			if (ps.following) {
+				this.queryService.andFollowingUser(query, ':meId', 'note.userId');
+			} else {
+				this.queryService.generateBlockedUserQueryForNotes(query, me);
+			}
 
 			const mentions = await query.getMany();
-
-			process.nextTick(() => {
-				this.activeUsersChart.read(me);
-			});
-
 			return await this.noteEntityService.packMany(mentions, me);
 		});
 	}

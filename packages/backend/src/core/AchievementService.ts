@@ -10,6 +10,8 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { TimeService } from '@/global/TimeService.js';
+import { CacheService } from '@/core/CacheService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { ACHIEVEMENT_TYPES } from '@/models/UserProfile.js';
 
 @Injectable()
@@ -20,6 +22,8 @@ export class AchievementService {
 
 		private notificationService: NotificationService,
 		private readonly timeService: TimeService,
+		private readonly cacheService: CacheService,
+		private readonly internalEventService: InternalEventService,
 	) {
 	}
 
@@ -32,16 +36,18 @@ export class AchievementService {
 
 		const date = this.timeService.now;
 
-		const profile = await this.userProfilesRepository.findOneByOrFail({ userId: userId });
+		const profile = await this.cacheService.userProfileCache.fetch(userId);
 
 		if (profile.achievements.some(a => a.name === type)) return;
 
+		// TODO this should be a separate table
 		await this.userProfilesRepository.update(userId, {
 			achievements: [...profile.achievements, {
 				name: type,
 				unlockedAt: date,
 			}],
 		});
+		await this.internalEventService.emit('updateUserProfile', { userId: userId, keys: ['achievements'] });
 
 		this.notificationService.createNotification(userId, 'achievementEarned', {
 			achievement: type,

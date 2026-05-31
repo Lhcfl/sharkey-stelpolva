@@ -13,7 +13,7 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import type { IActivity } from '@/core/activitypub/type.js';
 import { ThinUser } from '@/queue/types.js';
-import { CacheService } from '@/core/CacheService.js';
+import { CacheManagementService, type ManagedMemorySingleCache } from '@/global/CacheManagementService.js';
 
 interface IRecipe {
 	type: string;
@@ -28,11 +28,18 @@ interface IDirectRecipe extends IRecipe {
 	to: MiRemoteUser;
 }
 
+interface INetworkRecipe extends IRecipe {
+	type: 'Network';
+}
+
 const isFollowers = (recipe: IRecipe): recipe is IFollowersRecipe =>
 	recipe.type === 'Followers';
 
 const isDirect = (recipe: IRecipe): recipe is IDirectRecipe =>
 	recipe.type === 'Direct';
+
+const isNetwork = (recipe: IRecipe): recipe is INetworkRecipe =>
+	recipe.type === 'Network';
 
 class DeliverManager {
 	private actor: ThinUser;
@@ -41,18 +48,21 @@ class DeliverManager {
 
 	/**
 	 * Constructor
+	 * @param networkCache
+	 * @param followingsRepository
 	 * @param queueService
-	 * @param cacheService
 	 * @param actor Actor
 	 * @param activity Activity to deliver
 	 */
 	constructor(
+		private readonly networkCache: ManagedMemorySingleCache<{ sharedInbox: string }[]>,
+		private followingsRepository: FollowingsRepository,
 		private queueService: QueueService,
-		private readonly cacheService: CacheService,
 
 		actor: { id: MiUser['id']; host: null; },
 		activity: IActivity | null,
 	) {
+		// TODO utilityService.assertActiveLocalUser
 		// 型で弾いてはいるが一応ローカルユーザーかチェック
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (actor.host != null) throw new Error(`deliver failed for ${actor.id}: host is not null`);
@@ -91,6 +101,18 @@ class DeliverManager {
 	}
 
 	/**
+	 * Add recipe for known-network deliver
+	 */
+	@bindThis
+	public addNetworkRecipe(): void {
+		const recipe: INetworkRecipe = {
+			type: 'Network',
+		};
+
+		this.addRecipe(recipe);
+	}
+
+	/**
 	 * Add recipe
 	 * @param recipe Recipe
 	 */
@@ -108,20 +130,45 @@ class DeliverManager {
 		// key: inbox URL, value: whether it is sharedInbox
 		const inboxes = new Map<string, boolean>();
 
+		// Process network recipe first so that later recipes can override / extend
+		if (this.recipes.some(r => isNetwork(r))) {
+			const sharedInboxes = await this.networkCache.fetch(async () => {
+				const followings = await this.followingsRepository.find({
+					where: [
+						{ followerSharedInbox: Not(IsNull()), isFollowerHibernated: false },
+						{ followeeSharedInbox: Not(IsNull()), isFollowerHibernated: false },
+					],
+					select: ['followerSharedInbox', 'followeeSharedInbox'],
+				});
+
+				return followings.map(f => ({
+					sharedInbox: (f.followerSharedInbox ?? f.followeeSharedInbox) as string,
+				}));
+			});
+
+			for (const { sharedInbox } of sharedInboxes) {
+				inboxes.set(sharedInbox, true);
+			}
+		}
+
 		// build inbox list
 		// Process follower recipes first to avoid duplication when processing direct recipes later.
 		if (this.recipes.some(r => isFollowers(r))) {
 			// followers deliver
+			// TODO: SELECT DISTINCT ON ("followerSharedInbox") "followerSharedInbox" みたいな問い合わせにすればよりパフォーマンス向上できそう
 			// ただ、sharedInboxがnullなリモートユーザーも稀におり、その対応ができなさそう？
-			const followers = await this.cacheService.userFollowersCache
-				.fetch(this.actor.id)
-				.then(f => Array
-					.from(f.values())
-					.filter(f => f.followerHost != null)
-					.map(f => ({
-						followerInbox: f.followerInbox,
-						followerSharedInbox: f.followerSharedInbox,
-					})));
+			const followers = await this.followingsRepository.find({
+				where: {
+					followeeId: this.actor.id,
+					followerHost: Not(IsNull()),
+					isFollowerHibernated: false,
+				},
+				select: {
+					followerSharedInbox: true,
+					followerInbox: true,
+					followerId: true,
+				},
+			});
 
 			for (const following of followers) {
 				if (following.followerSharedInbox) {
@@ -149,10 +196,17 @@ class DeliverManager {
 
 @Injectable()
 export class ApDeliverManagerService {
+	private readonly networkCache: ManagedMemorySingleCache<{ sharedInbox: string }[]>;
+
 	constructor(
+		@Inject(DI.followingsRepository)
+		private followingsRepository: FollowingsRepository,
+
 		private queueService: QueueService,
-		private readonly cacheService: CacheService,
+
+		cacheManagementService: CacheManagementService,
 	) {
+		this.networkCache = cacheManagementService.createMemorySingleCache<{ sharedInbox: string }[]>('network', { lifetime: 1000 * 30 }); // 30 seconds
 	}
 
 	/**
@@ -163,8 +217,9 @@ export class ApDeliverManagerService {
 	@bindThis
 	public async deliverToFollowers(actor: { id: MiLocalUser['id']; host: null; }, activity: IActivity): Promise<void> {
 		const manager = new DeliverManager(
+			this.networkCache,
+			this.followingsRepository,
 			this.queueService,
-			this.cacheService,
 			actor,
 			activity,
 		);
@@ -181,8 +236,9 @@ export class ApDeliverManagerService {
 	@bindThis
 	public async deliverToUser(actor: { id: MiLocalUser['id']; host: null; }, activity: IActivity, to: MiRemoteUser): Promise<void> {
 		const manager = new DeliverManager(
+			this.networkCache,
+			this.followingsRepository,
 			this.queueService,
-			this.cacheService,
 			actor,
 			activity,
 		);
@@ -199,8 +255,9 @@ export class ApDeliverManagerService {
 	@bindThis
 	public async deliverToUsers(actor: { id: MiLocalUser['id']; host: null; }, activity: IActivity, targets: MiRemoteUser[]): Promise<void> {
 		const manager = new DeliverManager(
+			this.networkCache,
+			this.followingsRepository,
 			this.queueService,
-			this.cacheService,
 			actor,
 			activity,
 		);
@@ -211,8 +268,9 @@ export class ApDeliverManagerService {
 	@bindThis
 	public createDeliverManager(actor: { id: MiUser['id']; host: null; }, activity: IActivity | null): DeliverManager {
 		return new DeliverManager(
+			this.networkCache,
+			this.followingsRepository,
 			this.queueService,
-			this.cacheService,
 
 			actor,
 			activity,

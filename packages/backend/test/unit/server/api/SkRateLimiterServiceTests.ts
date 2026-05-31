@@ -6,33 +6,58 @@
 import { GodOfTimeService } from '../../../misc/GodOfTimeService.js';
 import { MockEnvService } from '../../../misc/MockEnvService.js';
 import { MockInternalEventService } from '../../../misc/MockInternalEventService.js';
+import { MockConsole } from '../../../misc/MockConsole.js';
 import { MockRedis } from '../../../misc/MockRedis.js';
 import type { MiUser } from '@/models/User.js';
 import type { RolePolicies, RoleService } from '@/core/RoleService.js';
 import type { Config } from '@/config.js';
+import type { Logger } from '@/logger.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
 import { BucketRateLimit, Keyed, LegacyRateLimit } from '@/misc/rate-limit-utils.js';
 import { CacheManagementService } from '@/global/CacheManagementService.js';
+import { LoggerService } from '@/core/LoggerService.js';
 
 describe(SkRateLimiterService, () => {
+	// Real service instances
 	let cacheManagementService: CacheManagementService;
+	let globalLogger: Logger;
+
+	// Mock service instances
 	let mockInternalEventService: MockInternalEventService;
 	let mockTimeService: GodOfTimeService;
 	let mockRedis: MockRedis;
 	let mockEnvService: MockEnvService;
-	let serviceUnderTest: () => SkRateLimiterService;
 	let mockDefaultUserPolicies: Partial<RolePolicies>;
 	let mockUserPolicies: Record<string, Partial<RolePolicies>>;
 	let mockRoleService: RoleService;
+	let mockConsole: MockConsole;
+
+	// Test subject
+	let serviceUnderTest: () => SkRateLimiterService;
 
 	beforeAll(() => {
 		mockTimeService = new GodOfTimeService();
 		mockEnvService = new MockEnvService();
 
 		mockRedis = new MockRedis(mockTimeService);
-		const fakeConfig = { host: 'example.com' } as unknown as Config;
-		mockInternalEventService = new MockInternalEventService(fakeConfig);
-		cacheManagementService = new CacheManagementService(mockRedis, mockTimeService, mockInternalEventService);
+		const fakeConfig = {
+			url: 'https://example.com',
+			host: 'example.com',
+			id: 'aidx',
+		} as unknown as Config;
+		mockInternalEventService = MockInternalEventService.create({
+			config: fakeConfig,
+			timeService: mockTimeService,
+			redisForSub: mockRedis,
+			redisForPub: mockRedis,
+		});
+
+		mockConsole = new MockConsole();
+
+		const loggerService = new LoggerService(mockConsole, mockTimeService, mockEnvService);
+		globalLogger = loggerService.getLogger('global');
+
+		cacheManagementService = new CacheManagementService(mockRedis, mockTimeService, mockInternalEventService, globalLogger);
 	});
 
 	afterAll(() => {
@@ -42,6 +67,12 @@ describe(SkRateLimiterService, () => {
 
 	beforeEach(() => {
 		mockTimeService.reset();
+		mockConsole.mockReset();
+		mockInternalEventService.mockReset();
+		mockRedis.mockReset();
+
+		mockEnvService.mockReset();
+		mockEnvService.env.NODE_ENV = 'production';
 
 		mockDefaultUserPolicies = { rateLimitFactor: 1 };
 		mockUserPolicies = {};
@@ -60,11 +91,6 @@ describe(SkRateLimiterService, () => {
 
 	afterEach(() => {
 		cacheManagementService.dispose();
-		mockInternalEventService.mockReset();
-		mockRedis.mockReset();
-
-		mockEnvService.mockReset();
-		mockEnvService.env.NODE_ENV = 'production';
 	});
 
 	describe('limit', () => {

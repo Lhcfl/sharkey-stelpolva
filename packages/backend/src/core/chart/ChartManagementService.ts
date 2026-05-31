@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-
+import { Injectable, type BeforeApplicationShutdown, type OnApplicationBootstrap } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 import { ChartLoggerService } from '@/core/chart/ChartLoggerService.js';
 import { TimeService, type TimerHandle } from '@/global/TimeService.js';
-import Logger from '@/logger.js';
+import { EnvService } from '@/global/EnvService.js';
+import type { Logger } from '@/logger.js';
+import type { IChart } from '@/core/chart/core.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import FederationChart from './charts/federation.js';
 import NotesChart from './charts/notes.js';
@@ -22,13 +23,12 @@ import PerUserReactionsChart from './charts/per-user-reactions.js';
 import PerUserFollowingChart from './charts/per-user-following.js';
 import PerUserDriveChart from './charts/per-user-drive.js';
 import ApRequestChart from './charts/ap-request.js';
-import type { OnApplicationShutdown } from '@nestjs/common';
 
 @Injectable()
-export class ChartManagementService implements OnApplicationShutdown {
-	private charts;
+export class ChartManagementService implements BeforeApplicationShutdown, OnApplicationBootstrap {
 	private saveIntervalId: TimerHandle;
 	private readonly logger: Logger;
+	private readonly charts: IChart[];
 
 	constructor(
 		private federationChart: FederationChart,
@@ -44,6 +44,7 @@ export class ChartManagementService implements OnApplicationShutdown {
 		private perUserDriveChart: PerUserDriveChart,
 		private apRequestChart: ApRequestChart,
 		private readonly timeService: TimeService,
+		private readonly envService: EnvService,
 
 		chartLoggerService: ChartLoggerService,
 	) {
@@ -65,32 +66,54 @@ export class ChartManagementService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async start() {
+	public onApplicationBootstrap(): void {
+		if (this.envService.env.NODE_ENV === 'test') {
+			this.logger.debug('Skipping startup; ChartManagementService disabled in TEST environment.');
+			return;
+		}
+
+		this.start();
+	}
+
+	@bindThis
+	private start(): void {
+		// TODO random offset so different processes don't clash
 		// 20分おきにメモリ情報をDBに書き込み
 		this.saveIntervalId = this.timeService.startTimer(async () => {
-			for (const chart of this.charts) {
-				await chart.save();
-			}
-			this.logger.info('All charts saved');
+			await this.saveAll('timer');
 		}, 1000 * 60 * 20, { repeated: true });
+
+		this.logger.debug('Started ChartManagementService timer.');
 	}
 
 	@bindThis
-	public async dispose(): Promise<void> {
+	private async dispose(): Promise<void> {
 		this.timeService.stopTimer(this.saveIntervalId);
-		if (process.env.NODE_ENV !== 'test') {
-			this.logger.info('Saving charts for shutdown...');
-			for (const chart of this.charts) {
-				await chart.save().catch(err => {
-					this.logger.error(`Error saving chart: ${renderInlineError(err)}`);
-				});
-			}
-			this.logger.info('All charts saved');
-		}
+		this.logger.debug('Stopped ChartManagementService timer.');
+
+		await this.saveAll('shutdown');
 	}
 
 	@bindThis
-	async onApplicationShutdown(signal: string): Promise<void> {
+	private async saveAll(reason: string): Promise<void> {
+		this.logger.info(`Saving charts for ${reason}...`);
+		for (const chart of this.charts) {
+			try {
+				await chart.save();
+			} catch (err) {
+				this.logger.error(`Error saving chart: ${renderInlineError(err)}`);
+			}
+		}
+		this.logger.info('All charts saved');
+	}
+
+	@bindThis
+	public async beforeApplicationShutdown(): Promise<void> {
+		if (this.envService.env.NODE_ENV === 'test') {
+			this.logger.debug('Skipping shutdown; ChartManagementService disabled in TEST environment.');
+			return;
+		}
+
 		await this.dispose();
 	}
 }

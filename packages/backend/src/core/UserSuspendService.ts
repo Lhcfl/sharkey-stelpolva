@@ -4,19 +4,16 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { Not, IsNull, DataSource } from 'typeorm';
-import type { FollowingsRepository, FollowRequestsRepository, UsersRepository } from '@/models/_.js';
-import { MiUser } from '@/models/User.js';
+import { Not, IsNull, type DataSource } from 'typeorm';
+import type { MiUser, FollowingsRepository, UsersRepository } from '@/models/_.js';
 import { QueueService } from '@/core/QueueService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
+import { isSystemAccount } from '@/misc/is-system-account.js';
 import { RelationshipJobData } from '@/queue/types.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { isSystemAccount } from '@/misc/is-system-account.js';
-import { CacheService } from '@/core/CacheService.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
 
 @Injectable()
@@ -28,18 +25,13 @@ export class UserSuspendService {
 		@Inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
-		@Inject(DI.followRequestsRepository)
-		private followRequestsRepository: FollowRequestsRepository,
-
 		@Inject(DI.db)
 		private db: DataSource,
 
 		private userEntityService: UserEntityService,
 		private queueService: QueueService,
-		private globalEventService: GlobalEventService,
 		private apRendererService: ApRendererService,
 		private moderationLogService: ModerationLogService,
-		private readonly cacheService: CacheService,
 		private readonly internalEventService: InternalEventService,
 	) {}
 
@@ -81,7 +73,7 @@ export class UserSuspendService {
 
 	@bindThis
 	public async postSuspend(user: MiUser): Promise<void> {
-		this.globalEventService.publishInternalEvent('userChangeSuspendedState', { id: user.id, isSuspended: true });
+		await this.internalEventService.emit('userChangeSuspendedState', { id: user.id, isSuspended: true });
 
 		/*
 		this.followRequestsRepository.delete({
@@ -122,7 +114,7 @@ export class UserSuspendService {
 
 	@bindThis
 	public async postUnsuspend(user: MiUser): Promise<void> {
-		this.globalEventService.publishInternalEvent('userChangeSuspendedState', { id: user.id, isSuspended: false });
+		await this.internalEventService.emit('userChangeSuspendedState', { id: user.id, isSuspended: false });
 
 		if (this.userEntityService.isLocalUser(user)) {
 			// 知り得る全SharedInboxにUndo Delete配信
@@ -154,20 +146,22 @@ export class UserSuspendService {
 
 	@bindThis
 	private async unFollowAll(follower: MiUser) {
-		const followings = await this.cacheService.userFollowingsCache.fetch(follower.id)
-			.then(fs => Array.from(fs.values()).filter(f => f.followeeHost != null));
+		const followings = await this.followingsRepository.find({
+			where: { followerId: follower.id, followeeHost: Not(IsNull()) },
+			select: { followerId: true },
+		});
 
-		const jobs: RelationshipJobData[] = [];
+		const jobs: Omit<RelationshipJobData, 'type'>[] = [];
 		for (const following of followings) {
-			if (following.followeeId && following.followerId) {
+			if (following.followeeId) {
 				jobs.push({
-					from: { id: following.followerId },
+					from: { id: follower.id },
 					to: { id: following.followeeId },
 					silent: true,
 				});
 			}
 		}
-		this.queueService.createUnfollowJob(jobs);
+		await this.queueService.createUnfollowJob(jobs);
 	}
 
 	@bindThis

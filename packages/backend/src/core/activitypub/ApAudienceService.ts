@@ -41,7 +41,7 @@ export class ApAudienceService {
 		const resolved = await promiseMap(others, async x => {
 			return await this.apPersonService.resolvePerson(x, resolver).catch(() => null) as MiUser | null;
 		}, {
-			limit: 2,
+			limiter: 2,
 		});
 		const mentionedUsers = resolved.filter(x => x != null);
 

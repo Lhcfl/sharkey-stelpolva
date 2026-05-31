@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as argon2 from 'argon2';
 import { Inject, Injectable } from '@nestjs/common';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -13,6 +12,7 @@ import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 
 export const meta = {
 	requireCredential: true,
@@ -30,6 +30,12 @@ export const meta = {
 			message: 'Incorrect password.',
 			code: 'INCORRECT_PASSWORD',
 			id: '7add0395-9901-4098-82f9-4f67af65f775',
+		},
+
+		incorrectTotp: {
+			message: 'Incorrect 2FA code.',
+			code: 'INCORRECT_TOTP',
+			id: 'cdf1235b-ac71-46d4-a3a6-84ccce48df6f',
 		},
 	},
 } as const;
@@ -52,26 +58,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 		private userAuthService: UserAuthService,
 		private globalEventService: GlobalEventService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const token = ps.token;
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });
 
-			if (profile.twoFactorEnabled) {
-				if (token == null) {
-					throw new Error('authentication failed');
-				}
-
-				try {
-					await this.userAuthService.twoFactorAuthenticate(profile, token);
-				} catch (e) {
-					throw new Error('authentication failed');
-				}
+			if (!await this.userAuthService.checkPassword(profile, ps.password)) {
+				throw new ApiError(meta.errors.incorrectPassword);
 			}
 
-			const passwordMatched = await argon2.verify(profile.password ?? '', ps.password);
-			if (!passwordMatched) {
-				throw new ApiError(meta.errors.incorrectPassword);
+			if (!await this.userAuthService.check2FA(profile, ps.token)) {
+				throw new ApiError(meta.errors.incorrectTotp);
 			}
 
 			await this.userProfilesRepository.update(me.id, {
@@ -80,9 +77,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				twoFactorEnabled: false,
 				usePasswordLessLogin: false,
 			});
+			await this.internalEventService.emit('updateUserProfile', { userId: me.id, keys: ['twoFactorSecret', 'twoFactorBackupSecret', 'twoFactorEnabled', 'usePasswordLessLogin'] });
 
 			// Publish meUpdated event
-			this.globalEventService.publishMainStream(me.id, 'meUpdated', await this.userEntityService.pack(me.id, me, {
+			await this.globalEventService.publishMainStream(me.id, 'meUpdated', await this.userEntityService.pack(me.id, me, {
 				schema: 'MeDetailed',
 				includeSecrets: true,
 			}));

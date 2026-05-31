@@ -10,7 +10,7 @@ import {
 	generateRegistrationOptions, verifyAuthenticationResponse,
 	verifyRegistrationResponse,
 } from '@simplewebauthn/server';
-import { AttestationFormat, isoCBOR, isoUint8Array } from '@simplewebauthn/server/helpers';
+import { isoCBOR, isoUint8Array } from '@simplewebauthn/server/helpers';
 import { DI } from '@/di-symbols.js';
 import type { MiMeta, UserSecurityKeysRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -27,7 +27,7 @@ import type {
 	PublicKeyCredentialCreationOptionsJSON,
 	PublicKeyCredentialRequestOptionsJSON,
 	RegistrationResponseJSON,
-} from '@simplewebauthn/types';
+} from '@simplewebauthn/server';
 
 @Injectable()
 export class WebAuthnService {
@@ -76,14 +76,14 @@ export class WebAuthnService {
 			userID: isoUint8Array.fromUTF8String(userId),
 			userName: userName,
 			userDisplayName: userDisplayName,
-			attestationType: 'indirect',
+			attestationType: 'none', // don't require anti-tamper, root detection, or other device attestation anti-features
 			excludeCredentials: keys.map(key => (<{ id: string; transports?: AuthenticatorTransportFuture[]; }>{
 				id: key.id,
 				transports: key.transports ?? undefined,
 			})),
 			authenticatorSelection: {
-				residentKey: 'required',
-				userVerification: 'preferred',
+				residentKey: 'required', // prevent client device from discarding the key
+				userVerification: 'preferred', // request that user provides PIN or fingerprint, but allow device to skip if not supported
 			},
 		});
 
@@ -96,8 +96,6 @@ export class WebAuthnService {
 	public async verifyRegistration(userId: MiUser['id'], response: RegistrationResponseJSON): Promise<{
 		credentialID: string;
 		credentialPublicKey: Uint8Array;
-		attestationObject: Uint8Array;
-		fmt: AttestationFormat;
 		counter: number;
 		userVerified: boolean;
 		credentialDeviceType: CredentialDeviceType;
@@ -121,7 +119,9 @@ export class WebAuthnService {
 				expectedChallenge: challenge,
 				expectedOrigin: relyingParty.origin,
 				expectedRPID: relyingParty.rpId,
-				requireUserVerification: true,
+				requireUserVerification: false, // don't require the user to enter a PIN or swipe fingerprint
+				requireUserPresence: false, // don't require Human Presence detection
+				attestationSafetyNetEnforceCTSCheck: false, // allow login from rooted devices
 			});
 		} catch (error) {
 			this.logger.error(error as Error, 'Error authenticating webauthn');
@@ -139,8 +139,6 @@ export class WebAuthnService {
 		return {
 			credentialID: registrationInfo.credential.id,
 			credentialPublicKey: registrationInfo.credential.publicKey,
-			attestationObject: registrationInfo.attestationObject,
-			fmt: registrationInfo.fmt,
 			counter: registrationInfo.credential.counter,
 			userVerified: registrationInfo.userVerified,
 			credentialDeviceType: registrationInfo.credentialDeviceType,
@@ -228,7 +226,7 @@ export class WebAuthnService {
 					counter: key.counter,
 					transports: key.transports ? key.transports as AuthenticatorTransportFuture[] : undefined,
 				},
-				requireUserVerification: true,
+				requireUserVerification: false, // don't require the user to enter a PIN or swipe fingerprint
 			});
 		} catch (error) {
 			throw new IdentifiableError('b18c89a7-5b5e-4cec-bb5b-0419f332d430', `verification failed`, true, error);
@@ -308,7 +306,7 @@ export class WebAuthnService {
 					counter: key.counter,
 					transports: key.transports ? key.transports as AuthenticatorTransportFuture[] : undefined,
 				},
-				requireUserVerification: true,
+				requireUserVerification: false, // don't require the user to enter a PIN or swipe fingerprint
 			});
 		} catch (error) {
 			this.logger.error(error as Error, 'Error authenticating webauthn');

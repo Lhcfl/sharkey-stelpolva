@@ -60,15 +60,34 @@ export class MockApResolverService extends ApResolverService {
 		@Inject(DI.followRequestsRepository)
 		followRequestsRepository: FollowRequestsRepository,
 
+		@Inject(UtilityService)
 		utilityService: UtilityService,
+
+		@Inject(SystemAccountService)
 		systemAccountService: SystemAccountService,
+
+		@Inject(ApRequestService)
 		apRequestService: ApRequestService,
+
+		@Inject(HttpRequestService)
 		httpRequestService: HttpRequestService,
+
+		@Inject(ApRendererService)
 		apRendererService: ApRendererService,
+
+		@Inject(ApDbResolverService)
 		apDbResolverService: ApDbResolverService,
+
+		@Inject(LoggerService)
 		loggerService: LoggerService,
+
+		@Inject(ApLogService)
 		apLogService: ApLogService,
+
+		@Inject(ApUtilityService)
 		apUtilityService: ApUtilityService,
+
+		@Inject(CacheService)
 		cacheService: CacheService,
 	) {
 		super(

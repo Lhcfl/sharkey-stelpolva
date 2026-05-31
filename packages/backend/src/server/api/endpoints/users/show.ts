@@ -8,12 +8,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { UsersRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
+import { UtilityService } from '@/core/UtilityService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
 import { DI } from '@/di-symbols.js';
 import PerUserPvChart from '@/core/chart/charts/per-user-pv.js';
 import { RoleService } from '@/core/RoleService.js';
 import { CacheService } from '@/core/CacheService.js';
+import { UserService } from '@/core/UserService.js';
 import { ApiError } from '../../error.js';
 import { ApiLoggerService } from '../../ApiLoggerService.js';
 import type { FindOptionsWhere } from 'typeorm';
@@ -104,12 +106,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private perUserPvChart: PerUserPvChart,
 		private apiLoggerService: ApiLoggerService,
 		private readonly cacheService: CacheService,
+		private readonly utilityService: UtilityService,
+		private readonly userService: UserService,
 	) {
 		super(meta, paramDef, async (ps, me, _1, _2, _3, ip) => {
 			let user;
 
 			const isModerator = await this.roleService.isModerator(me);
 			ps.username = ps.username?.trim();
+
+			if (me != null) {
+				this.userService.markUserActive(me);
+			}
 
 			if (ps.userIds) {
 				if (ps.userIds.length === 0) {
@@ -124,7 +132,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				for (const id of ps.userIds) {
 					const user = users.get(id);
 					if (user != null) {
-						if (isModerator || !user.isSuspended) {
+						if (isModerator || this.utilityService.isActiveUser(user)) {
 							_users.push(user);
 						}
 					}
@@ -145,7 +153,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					throw new ApiError(meta.errors.failedToResolveRemoteUser);
 				}
 
-				if (user == null || (!isModerator && user.isSuspended)) {
+				if (user == null || (!isModerator && !this.utilityService.isActiveUser(user))) {
 					throw new ApiError(meta.errors.noSuchUser);
 				}
 

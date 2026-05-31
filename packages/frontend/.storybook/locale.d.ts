@@ -1,3 +1,3 @@
-import locales from '../../../locales/index.js';
+import { locales } from 'locales';
 
-export default locales['ja-JP'] as const;
+export default locales['en-US'] as const;

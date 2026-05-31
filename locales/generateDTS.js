@@ -1,10 +1,10 @@
 import * as fs from 'node:fs';
+import ts from 'typescript';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
-import * as yaml from 'js-yaml';
-import ts from 'typescript';
-import { merge } from './index.js';
-import { tryReadFile } from './index.js';
+import { loadOptionalYaml, merge } from './util.js';
+
+/** @typedef {import('./index.d.ts').ILocale} ILocale */
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -27,7 +27,9 @@ function createMemberType(item) {
 				[
 					ts.factory.createUnionTypeNode(
 						parameters.map((parameter) =>
-							ts.factory.createStringLiteral(parameter),
+							ts.factory.createLiteralTypeNode(
+								ts.factory.createStringLiteral(parameter),
+							),
 						),
 					),
 				],
@@ -58,9 +60,13 @@ function createMembers(record) {
 }
 
 export default function generateDTS() {
-	const sharkeyLocale = yaml.load(tryReadFile(`${__dirname}/../sharkey-locales/en-US.yml`, 'utf-8'));
-	const stpvLocale = yaml.load(tryReadFile(`${__dirname}/../stpv-locales/zh-CN.yml`, 'utf-8'));
-	const misskeyLocale = yaml.load(tryReadFile(`${__dirname}/ja-JP.yml`, 'utf-8'));
+	/** @type {ILocale} */
+	const sharkeyLocale = loadOptionalYaml('../sharkey-locales/en-US.yml');
+	/** @type {ILocale} */
+	const misskeyLocale = loadOptionalYaml('ja-JP.yml');
+	/** @type {ILocale} */
+	const stpvLocale = loadOptionalYaml('../stpv-locales/zh-CN.yml');
+	/** @type {ILocale} */
 	const locale = merge(misskeyLocale, sharkeyLocale, stpvLocale);
 
 	const members = createMembers(locale);
@@ -82,7 +88,7 @@ export default function generateDTS() {
 				ts.NodeFlags.Const,
 			),
 		),
-		ts.factory.createInterfaceDeclaration(
+		ts.factory.createTypeAliasDeclaration(
 			[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
 			ts.factory.createIdentifier('ParameterizedString'),
 			[
@@ -93,20 +99,22 @@ export default function generateDTS() {
 					ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
 				),
 			],
-			undefined,
-			[
-				ts.factory.createPropertySignature(
-					undefined,
-					ts.factory.createComputedPropertyName(
-						ts.factory.createIdentifier('kParameters'),
-					),
-					undefined,
-					ts.factory.createTypeReferenceNode(
-						ts.factory.createIdentifier('T'),
+			ts.factory.createIntersectionTypeNode([
+				ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+				ts.factory.createTypeLiteralNode([
+					ts.factory.createPropertySignature(
 						undefined,
+						ts.factory.createComputedPropertyName(
+							ts.factory.createIdentifier('kParameters'),
+						),
+						undefined,
+						ts.factory.createTypeReferenceNode(
+							ts.factory.createIdentifier('T'),
+							undefined,
+						),
 					),
-				),
-			],
+				]),
+			]),
 		),
 		ts.factory.createInterfaceDeclaration(
 			[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
@@ -153,40 +161,34 @@ export default function generateDTS() {
 			],
 			members,
 		),
-		ts.factory.createVariableStatement(
-			[ts.factory.createToken(ts.SyntaxKind.DeclareKeyword)],
-			ts.factory.createVariableDeclarationList(
-				[
-					ts.factory.createVariableDeclaration(
-						ts.factory.createIdentifier('locales'),
-						undefined,
-						ts.factory.createTypeLiteralNode([
-							ts.factory.createIndexSignature(
-								undefined,
-								[
-									ts.factory.createParameterDeclaration(
-										undefined,
-										undefined,
-										ts.factory.createIdentifier('lang'),
-										undefined,
-										ts.factory.createKeywordTypeNode(
-											ts.SyntaxKind.StringKeyword,
-										),
-										undefined,
-									),
-								],
-								ts.factory.createTypeReferenceNode(
-									ts.factory.createIdentifier('Locale'),
-									undefined,
-								),
+		ts.factory.createTypeAliasDeclaration(
+			[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
+			ts.factory.createIdentifier('Locales'),
+			undefined,
+			ts.factory.createTypeLiteralNode([
+				ts.factory.createIndexSignature(
+					undefined,
+					[
+						ts.factory.createParameterDeclaration(
+							undefined,
+							undefined,
+							ts.factory.createIdentifier('lang'),
+							undefined,
+							ts.factory.createKeywordTypeNode(
+								ts.SyntaxKind.StringKeyword,
 							),
-						]),
+							undefined,
+						),
+					],
+					ts.factory.createTypeReferenceNode(
+						ts.factory.createIdentifier('Locale'),
 						undefined,
 					),
-				],
-				ts.NodeFlags.Const,
-			),
+				),
+			]),
 		),
+
+		ts.factory.createJSDocComment('Read all YAML translation files and generate a locales table.'),
 		ts.factory.createFunctionDeclaration(
 			[ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
 			undefined,
@@ -194,12 +196,48 @@ export default function generateDTS() {
 			undefined,
 			[],
 			ts.factory.createTypeReferenceNode(
-				ts.factory.createIdentifier('Locale'),
+				ts.factory.createIdentifier('Locales'),
 				undefined,
 			),
 			undefined,
 		),
+
+		ts.factory.createJSDocComment('Locales table generated from all YAML translation files.'),
+		ts.factory.createVariableStatement(
+			[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
+			ts.factory.createVariableDeclarationList(
+				[
+					ts.factory.createVariableDeclaration(
+						ts.factory.createIdentifier('locales'),
+						undefined,
+						ts.factory.createTypeReferenceNode(
+							ts.factory.createIdentifier('Locales'),
+						),
+						undefined,
+					),
+				],
+				ts.NodeFlags.Const,
+			),
+		),
+
+		ts.factory.createJSDocComment('Locales table generated from all YAML translation files.'),
 		ts.factory.createExportDefault(ts.factory.createIdentifier('locales')),
+
+		ts.factory.createJSDocComment('Hash-derived version identifier for the current locales table.\nGenerated automatically with each build.'),
+		ts.factory.createVariableStatement(
+			[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
+			ts.factory.createVariableDeclarationList(
+				[
+					ts.factory.createVariableDeclaration(
+						ts.factory.createIdentifier('localesVersion'),
+						undefined,
+						ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+						undefined,
+					),
+				],
+				ts.NodeFlags.Const,
+			),
+		),
 	];
 	ts.addSyntheticLeadingComment(
 		elements[0],

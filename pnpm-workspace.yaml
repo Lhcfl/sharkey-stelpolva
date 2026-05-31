@@ -1,14 +1,17 @@
 packages:
+  - locales
   - packages/backend
-  - packages/frontend-shared
   - packages/frontend
   - packages/frontend-embed
-  - packages/sw
+  - packages/frontend-shared
   - packages/megalodon
+  - packages/misskey-bubble-game
   - packages/misskey-js
   - packages/misskey-js/generator
   - packages/misskey-reversi
-  - packages/misskey-bubble-game
+  - packages/shared
+  - packages/stub
+  - packages/sw
 
 ignorePatchFailures: false
 
@@ -34,3 +37,40 @@ onlyBuiltDependencies:
   - utf-8-validate
   - v-code-diff
   - vue-demi
+
+# https://pnpm.io/settings#packageextensions
+packageExtensions:
+  "@misskey-dev/eslint-plugin":
+    "peerDependencies":
+      "@eslint/eslintrc": "3.3.5"
+
+# https://pnpm.io/settings#overrides
+overrides:
+  # Overrides for vulnerable / buggy nested deps.
+  # The versions here apply recursively through ALL dependencies.
+  "chokidar": "5.0.0"
+  "lodash": "4.17.23"
+  "axios": "1.13.6"
+  "js-yaml": "4.1.1"
+  "systeminformation": "5.31.4"
+  "glob": "npm:fast-glob@3.3.3"
+  "jws": "4.0.1"
+  "body-parser": "2.2.2"
+  "mdast-util-to-hast": "13.2.1"
+  "multer": "2.1.1"
+  "file-type": "21.3.3"
+  "undici": "7.24.5"
+  "qs": "6.15.0"
+  "minimatch": "8.0.7" # Note - this is still outdated, but we can't go further until eslint gets updated.
+  "diff": "5.2.2" # Note - this is still outdated, but we can't go further until v-code-diff gets updated.
+  "bn.js": "5.2.3" # Note - can remove override once web-push package is updated.
+  "fast-xml-parser": "5.5.8" # Note - can remove override once the @aws-sdk packages are updated.
+
+  # Stubs and disabled packages.
+  # If an unused dependency is never loaded, then use version "-".
+  # If an unused dependency *is* loaded, then use version "workspace:stub@*" to avoid import errors.
+  "jsonld>@digitalbazaar/http-client": "workspace:stub@*"
+  "node-domexception": "workspace:stub@*"
+  "parse5": "workspace:stub@*"
+  "parse5-htmlparser2-tree-adapter": "workspace:stub@*"
+  "parse5-parser-stream": "workspace:stub@*"

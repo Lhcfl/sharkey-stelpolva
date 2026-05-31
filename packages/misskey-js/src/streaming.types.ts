@@ -17,8 +17,7 @@ import type {
 	EmojiAdded, EmojiDeleted,
 	EmojiUpdated,
 	PageEvent,
-	QueueStats,
-	QueueStatsLog,
+	QueueLogs,
 	ServerStats,
 	ServerStatsLog,
 	ReversiGameDetailed,
@@ -192,21 +191,19 @@ export type Channels = {
 		};
 		receives: {
 			requestLog: {
-				id: string | number;
-				length: number;
+				length?: number;
 			};
 		};
 	};
 	queueStats: {
 		params: null;
 		events: {
-			stats: (payload: QueueStats) => void;
-			statsLog: (payload: QueueStatsLog) => void;
+			stats: (payload: QueueLogs) => void;
+			statsLog: (payload: QueueLogs[]) => void;
 		};
 		receives: {
 			requestLog: {
-				id: string | number;
-				length: number;
+				length?: number;
 			};
 		};
 	};
@@ -299,7 +296,10 @@ export type NoteUpdatedEvent = { id: Note['id'] } & ({
 	type: 'reacted';
 	body: {
 		reaction: string;
-		emoji: string | null;
+		emoji?: {
+			name: string;
+			url: string;
+		} | null;
 		userId: User['id'];
 	};
 } | {
@@ -309,12 +309,8 @@ export type NoteUpdatedEvent = { id: Note['id'] } & ({
 		userId: User['id'];
 	};
 } | {
-	id: Note['id'];
 	type: 'updated';
-	body: {
-		cw: string | null;
-		text: string;
-	};
+	body: Record<string, never>;
 } | {
 	type: 'deleted';
 	body: {
@@ -324,6 +320,12 @@ export type NoteUpdatedEvent = { id: Note['id'] } & ({
 	type: 'pollVoted';
 	body: {
 		choice: number;
+		userId: User['id'];
+	};
+} | {
+	type: 'replied';
+	body: {
+		id: Note['id'];
 		userId: User['id'];
 	};
 });

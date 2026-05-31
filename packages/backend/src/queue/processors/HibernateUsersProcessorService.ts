@@ -9,10 +9,10 @@ import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
 import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
-import { CacheService } from '@/core/CacheService.js';
 import { TimeService } from '@/global/TimeService.js';
 import type { FollowingsRepository, UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 
 @Injectable()
 export class HibernateUsersProcessorService {
@@ -25,8 +25,8 @@ export class HibernateUsersProcessorService {
 		@Inject(DI.followingsRepository)
 		private readonly followingsRepository: FollowingsRepository,
 
-		private readonly cacheService: CacheService,
 		private readonly timeService: TimeService,
+		private readonly internalEventService: InternalEventService,
 
 		queueLoggerService: QueueLoggerService,
 	) {
@@ -56,7 +56,7 @@ export class HibernateUsersProcessorService {
 
 				await this.usersRepository.update({ id: In(ids) }, { isHibernated: true });
 				await this.followingsRepository.update({ followerId: In(ids) }, { isFollowerHibernated: true });
-				await this.cacheService.hibernatedUserCache.refreshMany(ids);
+				await this.internalEventService.emit('userChangeHibernatedState', { id: ids, isHibernated: true });
 
 				totalHibernated += ids.length;
 			}

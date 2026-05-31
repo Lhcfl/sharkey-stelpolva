@@ -8,7 +8,6 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { ChannelFavoritesRepository } from '@/models/_.js';
 import { ChannelEntityService } from '@/core/entities/ChannelEntityService.js';
 import { DI } from '@/di-symbols.js';
-import { promiseMap } from '@/misc/promise-map.js';
 
 export const meta = {
 	tags: ['channels', 'account'],
@@ -52,12 +51,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.channelFavoritesRepository.createQueryBuilder('favorite')
 				.andWhere('favorite.userId = :meId', { meId: me.id })
-				.leftJoinAndSelect('favorite.channel', 'channel');
+				.innerJoinAndSelect('favorite.channel', 'channel');
 
 			const favorites = await query
 				.getMany();
 
-			return await promiseMap(favorites, async x => await this.channelEntityService.pack(x.channel!, me), { limit: 4 });
+			const channels = favorites.map(f => f.channel ?? f.channelId);
+			return await this.channelEntityService.packMany(channels, me);
 		});
 	}
 }

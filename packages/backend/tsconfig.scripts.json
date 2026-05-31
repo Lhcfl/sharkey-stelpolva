@@ -7,12 +7,13 @@
 		"scripts/**/*"
 	],
 	"exclude": [
-		"node_modules",
-		"built",
-		"built-test",
-		"js-built",
-		"temp",
-		"coverage",
+		"**/node_modules",
+		"**/built",
+		"**/built-test",
+		"**/js-built",
+		"**/temp",
+		"**/coverage",
+		"**/*.min.js",
 		"ormconfig.js",
 		"scripts/check_connect.js",
 		"scripts/generate_api_json.js"

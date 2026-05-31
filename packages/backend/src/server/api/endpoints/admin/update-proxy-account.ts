@@ -11,6 +11,7 @@ import {
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
+import { CacheService } from '@/core/CacheService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -39,24 +40,26 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 		private moderationLogService: ModerationLogService,
 		private systemAccountService: SystemAccountService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			const beforeUser = await this.systemAccountService.getProxyActor();
+			const beforeProfile = await this.cacheService.userProfileCache.fetch(beforeUser.id);
+
 			const proxy = await this.systemAccountService.updateCorrespondingUserProfile('proxy', {
 				description: ps.description,
 			});
 
-			const updated = await this.userEntityService.pack(proxy.id, proxy, {
-				schema: 'MeDetailed',
-			});
-
 			if (ps.description !== undefined) {
-				this.moderationLogService.log(me, 'updateProxyAccountDescription', {
-					before: null, //TODO
+				await this.moderationLogService.log(me, 'updateProxyAccountDescription', {
+					before: beforeProfile.description,
 					after: ps.description,
 				});
 			}
 
-			return updated;
+			return await this.userEntityService.pack(proxy, me, {
+				schema: 'MeDetailed',
+			});
 		});
 	}
 }

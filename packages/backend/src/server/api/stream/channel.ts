@@ -7,14 +7,12 @@ import { bindThis } from '@/decorators.js';
 import type { Packed } from '@/misc/json-schema.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
 import type { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import type Connection from '@/server/api/stream/Connection.js';
+import type { Connection } from '@/server/api/stream/Connection.js';
 
 /**
  * Stream channel
  */
 export abstract class Channel {
-	protected connection: Connection;
-	public id: string;
 	public abstract readonly chName: string;
 	public static readonly shouldShare: boolean;
 	public static readonly requireCredential: boolean;
@@ -24,67 +22,26 @@ export abstract class Channel {
 		return this.connection.user;
 	}
 
+	protected get wsUser() {
+		return this.connection.wsUser;
+	}
+
 	protected get userProfile() {
 		return this.connection.userProfile;
 	}
 
-	protected get cacheService() {
-		return this.connection.cacheService;
-	}
-
-	/**
-	 * @deprecated use cacheService.userFollowingsCache to avoid stale data
-	 */
-	protected get following() {
-		return this.connection.following;
-	}
-
-	/**
-	 * TODO use onChange to keep these in sync?
-	 * @deprecated use cacheService.userMutingsCache to avoid stale data
-	 */
-	protected get userIdsWhoMeMuting() {
-		return this.connection.userIdsWhoMeMuting;
-	}
-
-	/**
-	 * @deprecated use cacheService.renoteMutingsCache to avoid stale data
-	 */
-	protected get userIdsWhoMeMutingRenotes() {
-		return this.connection.userIdsWhoMeMutingRenotes;
-	}
-
-	/**
-	 * @deprecated use cacheService.userBlockedCache to avoid stale data
-	 */
-	protected get userIdsWhoBlockingMe() {
-		return this.connection.userIdsWhoBlockingMe;
-	}
-
-	/**
-	 * @deprecated use cacheService.threadMutingsCache to avoid stale data
-	 */
 	protected get userMutedInstances() {
 		return this.connection.userMutedInstances;
 	}
 
-	/**
-	 * @deprecated use cacheService.threadMutingsCache to avoid stale data
-	 */
 	protected get userMutedThreads() {
 		return this.connection.userMutedThreads;
 	}
 
-	/**
-	 * @deprecated use cacheService.noteMutingsCache to avoid stale data
-	 */
 	protected get userMutedNotes() {
 		return this.connection.userMutedNotes;
 	}
 
-	/**
-	 * @deprecated use cacheService.threadMutingsCache to avoid stale data
-	 */
 	protected get followingChannels() {
 		return this.connection.followingChannels;
 	}
@@ -105,19 +62,19 @@ export abstract class Channel {
 		return this.connection.myRecentFavorites;
 	}
 
-	constructor(id: string, connection: Connection) {
-		this.id = id;
-		this.connection = connection;
-	}
+	constructor(
+		public readonly id: string,
+		public readonly connection: Connection,
+	) {}
 
-	public send(payload: { type: string, body: JsonValue }): void;
-	public send(type: string, payload: JsonValue): void;
+	public async send(payload: { type: string, body: JsonValue }): Promise<void>;
+	public async send(type: string, payload: JsonValue): Promise<void>;
 	@bindThis
-	public send(typeOrPayload: { type: string, body: JsonValue } | string, payload?: JsonValue) {
+	public async send(typeOrPayload: { type: string, body: JsonValue } | string, payload?: JsonValue): Promise<void> {
 		const type = payload === undefined ? (typeOrPayload as { type: string, body: JsonValue }).type : (typeOrPayload as string);
 		const body = payload === undefined ? (typeOrPayload as { type: string, body: JsonValue }).body : payload;
 
-		this.connection.sendMessageToWs('channel', {
+		await this.connection.sendMessageToWs('channel', {
 			id: this.id,
 			type: type,
 			body: body,
@@ -155,7 +112,13 @@ export abstract class NoteChannel extends Channel {
 	 */
 	@bindThis
 	protected async prepareNote(note: Packed<'Note'>): Promise<Packed<'Note'> | null> {
-		const { accessible, silence } = await this.noteVisibilityService.checkNoteVisibilityAsync(note, this.user);
+		const { accessible, silence } = await this.noteVisibilityService.checkNoteVisibilityAsync(note, this.user, {
+			hint: {
+				userMutedInstances: this.userMutedInstances,
+				userMutedThreads: this.userMutedThreads,
+				userMutedNotes: this.userMutedNotes,
+			},
+		});
 
 		// Skip notes that the user can't or shouldn't access
 		if (!accessible || silence) {
@@ -168,11 +131,15 @@ export abstract class NoteChannel extends Channel {
 			return note;
 		}
 
+		// TODO should probably pass list context here
 		// Otherwise, re-pack the anonymous note for the actual target user.
 		return await this.noteEntityService.rePack(note, this.user, {
-			myReactions: this.myRecentReactions,
-			myRenotes: this.myRecentRenotes,
-			myFavorites: this.myRecentFavorites,
+			myRecentReactions: this.myRecentReactions,
+			myRecentRenotes: this.myRecentRenotes,
+			myRecentFavorites: this.myRecentFavorites,
+			myInstanceMutings: this.userMutedInstances,
+			myNoteMutings: this.userMutedNotes,
+			myThreadMutings: this.userMutedThreads,
 		});
 	}
 }

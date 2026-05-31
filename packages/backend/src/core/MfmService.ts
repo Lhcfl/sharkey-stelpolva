@@ -9,13 +9,15 @@ import { isText, isTag, Text } from 'domhandler';
 import * as htmlparser2 from 'htmlparser2';
 import { Node, Document, ChildNode, Element, ParentNode } from 'domhandler';
 import * as domserializer from 'dom-serializer';
+import * as mfm from 'mfm-js';
+import * as Acct from '@/misc/acct.js';
 import { DI } from '@/di-symbols.js';
+import { UtilityService } from '@/core/UtilityService.js';
 import type { Config } from '@/config.js';
 import { intersperse } from '@/misc/prelude/array.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import type { IMentionedRemoteUsers } from '@/models/Note.js';
 import { bindThis } from '@/decorators.js';
-import type * as mfm from 'mfm-js';
 
 const urlRegex = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+/;
 const urlRegexFull = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+$/;
@@ -27,6 +29,7 @@ export class MfmService {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
+		private readonly utilityService: UtilityService,
 	) {
 	}
 
@@ -928,4 +931,32 @@ export class MfmService {
 
 		return result;
 	}
+
+	/**
+	 * Extracts unique, deduplicated, and host-normalized mentions from a chunk of MFM.
+	 * Keep in sync with frontend extractMentions() helper.
+	 * @param nodes MFM nodes to search.
+	 * @param selfHost How to interpret "local" mentions (without a host).
+	 */
+	@bindThis
+	public extractMentions(nodes: mfm.MfmNode[], selfHost: string | null = null): MfmMention[] {
+		if (nodes.length < 1) return [];
+
+		const mentionNodes = mfm.extract(nodes, (node) => node.type === 'mention') as mfm.MfmMention[];
+		const mentions = mentionNodes.map(({ props: mfmMention }) => {
+			// Re-parse to normalize host
+			const mention = this.utilityService.parseAcct(mfmMention, false, selfHost);
+			const acct = '@' + Acct.toString(mention);
+			mfmMention = { ...mention, acct };
+
+			// Generate a further-normalized key
+			const key = acct.toLowerCase();
+			return [key, mfmMention] as const;
+		});
+
+		// Deduplicate the list using normalized key, but preserve the as-entered mentions.
+		return Array.from(new Map(mentions).values());
+	}
 }
+
+export type MfmMention = mfm.MfmMention['props'];

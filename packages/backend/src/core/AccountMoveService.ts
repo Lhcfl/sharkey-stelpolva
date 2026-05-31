@@ -11,7 +11,7 @@ import { DI } from '@/di-symbols.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
 import { isLocalUser } from '@/models/User.js';
 import type { BlockingsRepository, FollowingsRepository, InstancesRepository, MiMeta, MutingsRepository, UserListMembershipsRepository, UsersRepository, NoteScheduleRepository, MiNoteSchedule } from '@/models/_.js';
-import type { RelationshipJobData, ThinUser } from '@/queue/types.js';
+import type { Queues, RelationshipJobData, ThinUser } from '@/queue/types.js';
 
 import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -31,7 +31,9 @@ import { CacheService } from '@/core/CacheService.js';
 import { UserListService } from '@/core/UserListService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
+import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { EnvService } from '@/global/EnvService.js';
 import type Logger from '@/logger.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
@@ -70,6 +72,9 @@ export class AccountMoveService {
 		@Inject(DI.noteScheduleRepository)
 		private noteScheduleRepository: NoteScheduleRepository,
 
+		@Inject('queue:scheduleNotePost')
+		private readonly scheduleNotePostQueue: Queues['scheduleNotePost'],
+
 		private userEntityService: UserEntityService,
 		private idService: IdService,
 		private apPersonService: ApPersonService,
@@ -89,6 +94,8 @@ export class AccountMoveService {
 		private readonly timeService: TimeService,
 		private readonly internalEventService: InternalEventService,
 		private readonly loggerService: LoggerService,
+		private readonly envService: EnvService,
+		private readonly collapsedQueueService: CollapsedQueueService,
 	) {
 		this.logger = this.loggerService.getLogger('account-move');
 	}
@@ -143,14 +150,16 @@ export class AccountMoveService {
 
 		// Publish meUpdated event
 		const iObj = await this.userEntityService.pack(src.id, src, { schema: 'MeDetailed', includeSecrets: true });
-		this.globalEventService.publishMainStream(src.id, 'meUpdated', iObj);
+		await this.globalEventService.publishMainStream(src.id, 'meUpdated', iObj);
 
 		// Unfollow after 24 hours
-		const followings = await this.cacheService.userFollowingsCache.fetch(src.id);
-		await this.queueService.createDelayedUnfollowJob(Array.from(followings.keys()).map(followeeId => ({
+		const followings = await this.followingsRepository.findBy({
+			followerId: src.id,
+		});
+		await this.queueService.createDelayedUnfollowJob(followings.map(following => ({
 			from: { id: src.id },
-			to: { id: followeeId },
-		})), process.env.NODE_ENV === 'test' ? 10000 : 1000 * 60 * 60 * 24);
+			to: { id: following.followeeId },
+		})), this.envService.env.NODE_ENV === 'test' ? 10000 : 1000 * 60 * 60 * 24);
 
 		await this.queueService.createMoveJob(src, dst);
 
@@ -175,12 +184,15 @@ export class AccountMoveService {
 
 		// follow the new account
 		const proxy = await this.systemAccountService.fetch('proxy');
-		const followings = await this.cacheService.userFollowersCache.fetch(src.id)
-			.then(fs => Array.from(fs.values())
-				.filter(f => f.followerHost == null && f.followerId !== proxy.id));
+		const followings = await this.followingsRepository.findBy({
+			followeeId: src.id,
+			followerHost: IsNull(), // follower is local
+			followerId: Not(proxy.id),
+		});
 		const followJobs = followings.map(following => ({
 			from: { id: following.followerId },
 			to: { id: dst.id },
+			withReplies: following.withReplies,
 		})) as RelationshipJobData[];
 
 		// Decrease following count instead of unfollowing.
@@ -200,12 +212,12 @@ export class AccountMoveService {
 		// Followers shouldn't overlap with blockers, but the destination account, different from the blockee (i.e., old account), may have followed the local user before moving.
 		// So block the destination account here.
 		const [srcBlockers, dstBlockers, dstFollowers] = await Promise.all([
-			this.cacheService.userBlockedCache.fetch(src.id),
-			this.cacheService.userBlockedCache.fetch(dst.id),
-			this.cacheService.userFollowersCache.fetch(dst.id),
+			this.blockingsRepository.find({ where: { blockeeId: src.id }, select: { blockerId: true } }).then(bs => new Set(bs.map(f => f.blockerId))),
+			this.blockingsRepository.find({ where: { blockeeId: dst.id }, select: { blockerId: true } }).then(bs => new Set(bs.map(f => f.blockerId))),
+			this.followingsRepository.find({ where: { followeeId: dst.id }, select: { followerId: true } }).then(fs => new Set(fs.map(f => f.followerId))),
 		]);
 		// reblock the destination account
-		const blockJobs: RelationshipJobData[] = [];
+		const blockJobs: Omit<RelationshipJobData, 'type'>[] = [];
 		for (const blockerId of srcBlockers) {
 			if (dstBlockers.has(blockerId)) continue; // skip if already blocked
 			if (dstFollowers.has(blockerId)) continue; // skip if already following
@@ -229,7 +241,8 @@ export class AccountMoveService {
 			this.mutingsRepository.findBy(
 				{ muteeId: dst.id, expiresAt: IsNull() },
 			).then(mutings => mutings.map(muting => muting.muterId)),
-			this.cacheService.userFollowersCache.fetch(dst.id),
+			this.followingsRepository.find({ where: { followeeId: dst.id }, select: { followerId: true } })
+				.then(fs => new Set(fs.map(f => f.followerId))),
 		]);
 
 		const newMutings: Map<string, { muterId: string; muteeId: string; expiresAt: Date | null; }> = new Map();
@@ -262,7 +275,9 @@ export class AccountMoveService {
 		}) as MiNoteSchedule[];
 
 		for (const note of scheduledNotes) {
-			await this.queueService.ScheduleNotePostQueue.remove(`schedNote:${note.id}`);
+			await this.scheduleNotePostQueue.remove(`schedNote_${note.id}`);
+			// this is for notes scheduled with 2025.4 or earlier
+			await this.scheduleNotePostQueue.remove(`schedNote:${note.id}`).catch(() => null);
 		}
 
 		await this.noteScheduleRepository.delete({
@@ -345,34 +360,31 @@ export class AccountMoveService {
 		if (localFollowerIds.length === 0) return;
 
 		// Set the old account's following and followers counts to 0.
-		// TODO use CollapsedQueueService when merged
+		await this.collapsedQueueService.updateUserQueue.performNow(oldAccount.id);
 		await this.usersRepository.update({ id: oldAccount.id }, { followersCount: 0, followingCount: 0 });
-		await this.internalEventService.emit(oldAccount.host == null ? 'localUserUpdated' : 'remoteUserUpdated', { id: oldAccount.id });
+		await this.internalEventService.emit('userUpdated', { id: oldAccount.id });
 
 		// Decrease following counts of local followers by 1.
-		// TODO use CollapsedQueueService when merged
-		await this.usersRepository.decrement({ id: In(localFollowerIds) }, 'followingCount', 1);
-		await this.internalEventService.emit('usersUpdated', { ids: localFollowerIds });
+		for (const followerId of localFollowerIds) {
+			this.collapsedQueueService.updateUserQueue.enqueue(followerId, { followingCountDelta: -1 });
+		}
 
 		// Decrease follower counts of local followees by 1.
-		const oldFollowings = await this.cacheService.userFollowingsCache.fetch(oldAccount.id);
-		const oldFolloweeIds = Array.from(oldFollowings.keys());
-		if (oldFolloweeIds.length > 0) {
-			// TODO use CollapsedQueueService when merged
-			await this.usersRepository.decrement({ id: In(oldFolloweeIds) }, 'followersCount', 1);
-			await this.internalEventService.emit('usersUpdated', { ids: oldFolloweeIds });
+		const oldFollowings = await this.followingsRepository.find({ where: { followerId: oldAccount.id }, select: { followeeId: true } });
+		const oldFolloweeIds = oldFollowings.map(f => f.followeeId);
+		for (const followeeId of oldFolloweeIds) {
+			this.collapsedQueueService.updateUserQueue.enqueue(followeeId, { followersCountDelta: -1 });
 		}
 
 		// Update instance stats by decreasing remote followers count by the number of local followers who were following the old account.
 		if (this.meta.enableStatsForFederatedInstances) {
 			if (this.userEntityService.isRemoteUser(oldAccount)) {
-				// TODO use CollapsedQueueService when merged
-				await this.federatedInstanceService.fetchOrRegister(oldAccount.host).then(async i => {
-					await this.instancesRepository.decrement({ id: i.id }, 'followersCount', localFollowerIds.length);
+				{
+					this.collapsedQueueService.updateInstanceQueue.enqueue(oldAccount.host, { followersCountDelta: 0 - localFollowerIds.length });
 					if (this.meta.enableChartsForFederatedInstances) {
-						this.instanceChart.updateFollowers(i.host, false);
+						this.instanceChart.updateFollowers(oldAccount.host, false);
 					}
-				});
+				}
 			}
 		}
 
@@ -392,7 +404,7 @@ export class AccountMoveService {
 	 */
 	@bindThis
 	public async validateAlsoKnownAs(
-		dst: MiLocalUser | MiRemoteUser,
+		dst: MiLocalUser | MiRemoteUser | MiUser,
 		check: (oldUser: MiLocalUser | MiRemoteUser | null, newUser: MiLocalUser | MiRemoteUser) => boolean | Promise<boolean> = () => true,
 		instant = false,
 	): Promise<MiLocalUser | MiRemoteUser | null> {

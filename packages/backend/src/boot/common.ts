@@ -4,46 +4,41 @@
  */
 
 import { NestFactory } from '@nestjs/core';
-import { ChartManagementService } from '@/core/chart/ChartManagementService.js';
 import { QueueProcessorService } from '@/queue/QueueProcessorService.js';
 import { NestLogger } from '@/NestLogger.js';
 import { QueueProcessorModule } from '@/queue/QueueProcessorModule.js';
-import { QueueStatsService } from '@/daemons/QueueStatsService.js';
-import { ServerStatsService } from '@/daemons/ServerStatsService.js';
 import { ServerService } from '@/server/ServerService.js';
 import { MainModule } from '@/MainModule.js';
-import { EnvService } from '@/global/EnvService.js';
+import type { IEntryNestModule, INestApplicationContext } from '@nestjs/common';
 
 export async function server() {
-	const app = await NestFactory.createApplicationContext(MainModule, {
-		logger: new NestLogger(),
-	});
-	app.enableShutdownHooks();
+	const app = await createContext(MainModule);
 
 	const serverService = app.get(ServerService);
 	await serverService.launch();
-
-	if (process.env.NODE_ENV !== 'test') {
-		app.get(ChartManagementService).start();
-	}
-
-	const envService = app.get(EnvService);
-	if (!envService.options.noDaemons) {
-		app.get(QueueStatsService).start();
-		app.get(ServerStatsService).start();
-	}
 
 	return app;
 }
 
 export async function jobQueue() {
-	const jobQueue = await NestFactory.createApplicationContext(QueueProcessorModule, {
-		logger: new NestLogger(),
-	});
-	jobQueue.enableShutdownHooks();
+	const app = await createContext(QueueProcessorModule);
 
-	jobQueue.get(QueueProcessorService).start();
-	jobQueue.get(ChartManagementService).start();
+	const queueProcessorService = app.get(QueueProcessorService);
+	queueProcessorService.start();
 
-	return jobQueue;
+	return app;
+}
+
+async function createContext(rootModule: IEntryNestModule): Promise<INestApplicationContext> {
+	// Load all modules and providers
+	const logger = new NestLogger();
+	const app = await NestFactory.createApplicationContext(rootModule, { logger });
+
+	// Call startup hooks
+	await app.init();
+
+	// Register shutdown hooks, but only after successful init.
+	app.enableShutdownHooks();
+
+	return app;
 }

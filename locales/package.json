@@ -1,5 +1,15 @@
 {
+	"name": "locales",
 	"type": "module",
+	"private": true,
 	"main": "index.js",
-	"types": "index.d.ts"
+	"types": "index.d.ts",
+	"scripts": {
+		"build": "node build.js"
+	},
+	"devDependencies": {
+		"@types/js-yaml": "4.0.9",
+		"js-yaml": "4.1.1",
+		"typescript": "5.9.3"
+	}
 }

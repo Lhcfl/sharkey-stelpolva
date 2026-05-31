@@ -11,12 +11,12 @@ export type KVPArray<T, K = string> = KVPs<T, K> & {
 	/**
 	 * Lazy-loaded array of all keys in the array, matching the order of the pairs.
 	 */
-	readonly keys: readonly K[],
+	readonly keys: K[],
 
 	/**
 	 * Lazy-loaded array of all values in the array, matching the order of the pairs.
 	 */
-	readonly values: readonly T[],
+	readonly values: T[],
 };
 
 type KVPs<V, K = string> = Omit<readonly KVP<V, K>[], 'keys' | 'values' | 'entries'>;

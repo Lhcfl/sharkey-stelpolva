@@ -53,10 +53,10 @@ const chartDelayed = useTemplateRef('chartDelayed');
 const chartWaiting = useTemplateRef('chartWaiting');
 
 const props = defineProps<{
-	domain: 'inbox' | 'deliver' | 'background';
+	domain: 'inbox' | 'deliver' | 'backgroundTask';
 }>();
 
-function onStats(stats: Misskey.entities.QueueStats) {
+function onStats(stats: Misskey.entities.QueueLogs) {
 	activeSincePrevTick.value = stats[props.domain].activeSincePrevTick;
 	active.value = stats[props.domain].active;
 	delayed.value = stats[props.domain].delayed;
@@ -68,7 +68,7 @@ function onStats(stats: Misskey.entities.QueueStats) {
 	chartWaiting.value?.pushData(stats[props.domain].waiting);
 }
 
-function onStatsLog(statsLog: Misskey.entities.QueueStatsLog) {
+function onStatsLog(statsLog: Misskey.entities.QueueLogs[]) {
 	const dataProcess: number[] = [];
 	const dataActive: number[] = [];
 	const dataDelayed: number[] = [];
@@ -91,7 +91,6 @@ onMounted(() => {
 	connection.on('stats', onStats);
 	connection.on('statsLog', onStatsLog);
 	connection.send('requestLog', {
-		id: Math.random().toString().substring(2, 10),
 		length: 100,
 	});
 });

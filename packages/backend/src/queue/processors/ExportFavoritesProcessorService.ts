@@ -20,7 +20,7 @@ import { NotificationService } from '@/core/NotificationService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
-import type { DbJobDataWithUser } from '../types.js';
+import type { DbExportFavoritesJobData } from '../types.js';
 
 @Injectable()
 export class ExportFavoritesProcessorService {
@@ -46,7 +46,7 @@ export class ExportFavoritesProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbJobDataWithUser>): Promise<void> {
+	public async process(job: Bull.Job<DbExportFavoritesJobData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);

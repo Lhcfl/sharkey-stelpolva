@@ -3,18 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import * as Redis from 'ioredis';
-import { MiUser, type WebhooksRepository } from '@/models/_.js';
-import { MiWebhook, WebhookEventTypes } from '@/models/Webhook.js';
+import { Inject, Injectable, type OnApplicationShutdown } from '@nestjs/common';
+import type { MiUser, WebhooksRepository } from '@/models/_.js';
+import type { MiWebhook, WebhookEventTypes } from '@/models/Webhook.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
-import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { QueueService } from '@/core/QueueService.js';
 import { CacheManagementService, type ManagedMemorySingleCache } from '@/global/CacheManagementService.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { InternalEventService, type InternalEventTypes } from '@/global/InternalEventService.js';
 
 export type UserWebhookPayload<T extends WebhookEventTypes> =
 	T extends 'note' | 'reply' | 'renote' | 'mention' | 'edited' ? {
@@ -32,10 +29,9 @@ export class UserWebhookService implements OnApplicationShutdown {
 	private readonly activeWebhooks: ManagedMemorySingleCache<MiWebhook[]>;
 
 	constructor(
-		@Inject(DI.redisForSub)
-		private redisForSub: Redis.Redis,
 		@Inject(DI.webhooksRepository)
 		private webhooksRepository: WebhooksRepository,
+
 		private queueService: QueueService,
 		private readonly internalEventService: InternalEventService,
 

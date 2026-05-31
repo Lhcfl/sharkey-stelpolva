@@ -7,22 +7,18 @@ import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import * as os from 'node:os';
-import cluster from 'node:cluster';
 import * as net from 'node:net';
+import cluster from 'node:cluster';
 import chalk from 'chalk';
-import chalkTemplate from 'chalk-template';
+import si from 'systeminformation';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
-import type Logger from '@/logger.js';
 import { loadConfig } from '@/config.js';
-import type { Config } from '@/config.js';
-import type { LoggerService } from '@/core/LoggerService.js';
-import type { EnvService } from '@/global/EnvService.js';
-import type { EnvOption } from '@/env.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
-import { showMachineInfo } from '@/misc/show-machine-info.js';
-import { coreLogger } from '@/boot/coreLogger.js';
-import { jobQueue, server } from './common.js';
+import { jobQueue, server } from '@/boot/common.js';
+import { coreEnvService, coreLogger } from '@/boot/coreLogger.js';
+import type { Logger } from '@/logger.js';
+import type { Config } from '@/config.js';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
@@ -31,24 +27,24 @@ const meta = JSON.parse(fs.readFileSync(`${_dirname}/../../../../built/meta.json
 
 const themeColor = chalk.hex('#86b300');
 
-function greet(logger: Logger, bootLogger: Logger, envOption: EnvOption) {
-	if (!envOption.quiet) {
+function greet(bootLogger: Logger) {
+	if (!coreEnvService.options.quiet) {
 		//#region Misskey logo
-		logger.info(themeColor(' _____ _                _              '));
-		logger.info(themeColor('/  ___| |              | |             '));
-		logger.info(themeColor('\\ `--.| |__   __ _ _ __| | _____ _   _ '));
-		logger.info(themeColor(' `--. \\ \'_ \\ / _` | \'__| |/ / _ \\ | | |'));
-		logger.info(themeColor('/\\__/ / | | | (_| | |  |   <  __/ |_| |'));
-		logger.info(themeColor('\\____/|_| |_|\\__,_|_|  |_|\\_\\___|\\__, |'));
-		logger.info(themeColor('                                  __/ |'));
-		logger.info(themeColor('                                 |___/ '));
+		bootLogger.info(themeColor(' _____ _                _              '));
+		bootLogger.info(themeColor('/  ___| |              | |             '));
+		bootLogger.info(themeColor('\\ `--.| |__   __ _ _ __| | _____ _   _ '));
+		bootLogger.info(themeColor(' `--. \\ \'_ \\ / _` | \'__| |/ / _ \\ | | |'));
+		bootLogger.info(themeColor('/\\__/ / | | | (_| | |  |   <  __/ |_| |'));
+		bootLogger.info(themeColor('\\____/|_| |_|\\__,_|_|  |_|\\_\\___|\\__, |'));
+		bootLogger.info(themeColor('                                  __/ |'));
+		bootLogger.info(themeColor('                                 |___/ '));
 		//#endregion
 
-		logger.info(' Sharkey is an open-source decentralized microblogging platform.');
-		logger.info(chalk.rgb(255, 136, 0)(' If you like Sharkey, please donate to support development. https://opencollective.com/sharkey'));
+		bootLogger.info(' Sharkey is an open-source decentralized microblogging platform.');
+		bootLogger.info(chalk.rgb(255, 136, 0)(' If you like Sharkey, please donate to support development. https://opencollective.com/sharkey'));
 
-		logger.info('');
-		logger.info(chalkTemplate`--- ${os.hostname()} {gray (PID: ${process.pid.toString()})} ---`);
+		bootLogger.info('');
+		bootLogger.info(`--- ${os.hostname()} ${chalk.grey(`(PID: ${process.pid.toString()})`)} ---`);
 	}
 
 	bootLogger.info('Welcome to Sharkey!');
@@ -58,19 +54,19 @@ function greet(logger: Logger, bootLogger: Logger, envOption: EnvOption) {
 /**
  * Init master process
  */
-export async function masterMain(loggerService: LoggerService, envService: EnvService) {
+export async function masterMain(bootLogger?: Logger) {
 	let config!: Config;
 
-	const bootLogger = coreLogger.createSubLogger('boot', 'magenta');
-	const envOption = envService.options;
+	bootLogger ??= coreLogger.createSubLogger('boot', 'magenta');
+	const envOption = coreEnvService.options;
 
 	// initialize app
 	try {
-		greet(coreLogger, bootLogger, envOption);
+		greet(bootLogger);
 		showEnvironment(bootLogger);
 		await showMachineInfo(bootLogger);
 		showNodejsVersion(bootLogger);
-		config = loadConfig(loggerService);
+		config = loadConfig(bootLogger);
 		//await connectDb();
 		if (config.pidFile) fs.writeFileSync(config.pidFile, process.pid.toString());
 	} catch (e) {
@@ -152,7 +148,7 @@ export async function masterMain(loggerService: LoggerService, envService: EnvSe
 }
 
 function showEnvironment(bootLogger: Logger): void {
-	const env = process.env.NODE_ENV;
+	const env = coreEnvService.env.NODE_ENV;
 	const logger = bootLogger.createSubLogger('env');
 	logger.info(typeof env === 'undefined' ? 'NODE_ENV is not set' : `NODE_ENV: ${env}`);
 
@@ -160,6 +156,17 @@ function showEnvironment(bootLogger: Logger): void {
 		logger.warn('The environment is not in production mode.');
 		logger.warn('DO NOT USE FOR PRODUCTION PURPOSE!', null, true);
 	}
+}
+
+// moved from show-machine-info.ts
+async function showMachineInfo(parentLogger: Logger) {
+	const logger = parentLogger.createSubLogger('machine');
+	logger.debug(`Hostname: ${os.hostname()}`);
+	logger.debug(`Platform: ${process.platform} Arch: ${process.arch}`);
+	const mem = await si.mem();
+	const totalmem = (mem.total / 1024 / 1024 / 1024).toFixed(1);
+	const availmem = (mem.available / 1024 / 1024 / 1024).toFixed(1);
+	logger.debug(`CPU: ${os.cpus().length} core MEM: ${totalmem}GB (available: ${availmem}GB)`);
 }
 
 function showNodejsVersion(bootLogger: Logger): void {

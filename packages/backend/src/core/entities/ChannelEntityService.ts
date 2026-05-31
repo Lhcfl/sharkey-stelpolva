@@ -3,18 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { In } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
-import type { ChannelFavoritesRepository, ChannelFollowingsRepository, ChannelsRepository, DriveFilesRepository, NotesRepository } from '@/models/_.js';
+import type { ChannelFavoritesRepository, ChannelFollowingsRepository, ChannelsRepository, DriveFilesRepository, NotesRepository, MiDriveFile } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
-import type { } from '@/models/Blocking.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiChannel } from '@/models/Channel.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 import { DriveFileEntityService } from './DriveFileEntityService.js';
 import { NoteEntityService } from './NoteEntityService.js';
-import { In } from 'typeorm';
 
 @Injectable()
 export class ChannelEntityService {
@@ -38,6 +37,88 @@ export class ChannelEntityService {
 		private driveFileEntityService: DriveFileEntityService,
 		private idService: IdService,
 	) {
+	}
+
+	@bindThis
+	public async packMany(
+		sources: (string | MiChannel)[],
+		me?: { id: MiUser['id'] } | null | undefined,
+		detailed?: boolean,
+	): Promise<Packed<'Channel'>[]> {
+		const channels: MiChannel[] = [];
+		const toFetch: string[] = [];
+
+		for (const src of sources) {
+			if (typeof(src) === 'string') {
+				toFetch.push(src);
+			} else {
+				channels.push(src);
+			}
+		}
+
+		if (toFetch.length > 0) {
+			const fetched = await this.channelsRepository.findBy({ id: In(toFetch) });
+			for (const channel of fetched) {
+				channels.push(channel);
+			}
+		}
+
+		if (channels.length < 1) {
+			return [];
+		}
+
+		const meId = me?.id;
+		const channelIds = channels.map(c => c.id);
+		const followingIds = new Set<string>();
+		const favoritedIds = new Set<string>();
+		const packedPinnedNotes = new Map<string, Packed<'Note'>>();
+		const bannerFiles = new Map<string, MiDriveFile>();
+
+		if (meId) {
+			const followings = await this.channelFollowingsRepository.find({
+				where: { followerId: meId, followeeId: In(channelIds) },
+				select: { followeeId: true },
+			});
+			for (const { followeeId } of followings) {
+				followingIds.add(followeeId);
+			}
+
+			const favorites = await this.channelFavoritesRepository.find({
+				where: { userId: meId, channelId: In(channelIds) },
+				select: { channelId: true },
+			});
+			for (const { channelId } of favorites) {
+				favoritedIds.add(channelId);
+			}
+
+			const allPinnedNotes = new Set(channels.flatMap(c => c.pinnedNoteIds)).values().toArray();
+			if (allPinnedNotes.length > 0) {
+				const notes = await this.notesRepository.findBy({ id: In(allPinnedNotes ) });
+				const packedNotes = await this.noteEntityService.packMany(notes, me);
+				for (const note of packedNotes) {
+					packedPinnedNotes.set(note.id, note);
+				}
+			}
+
+			const allBanners = new Set(channels.map(c => c.bannerId).filter(id => id != null)).values().toArray();
+			if (allBanners.length > 0) {
+				const banners = await this.driveFilesRepository.findBy({ id: In(allBanners) });
+				for (const banner of banners) {
+					bannerFiles.set(banner.id, banner);
+				}
+			}
+		}
+
+		return channels.map(channel => {
+			const banner = channel.bannerId ? bannerFiles.get(channel.bannerId) : undefined;
+			const isFollowing = followingIds.has(channel.id);
+			const isFavorited = favoritedIds.has(channel.id);
+			const hasUnreadNote = false; // Not implemented
+			const pinnedNotes = channel.pinnedNoteIds
+				.map(noteId => packedPinnedNotes.get(noteId))
+				.filter(note => note != null);
+			return this.packInternal(channel, me, detailed ?? false, banner, isFollowing, isFavorited, hasUnreadNote, pinnedNotes);
+		});
 	}
 
 	@bindThis
@@ -65,12 +146,29 @@ export class ChannelEntityService {
 			},
 		}) : false;
 
-		const pinnedNotes = channel.pinnedNoteIds.length > 0 ? await this.notesRepository.find({
-			where: {
-				id: In(channel.pinnedNoteIds),
-			},
-		}) : [];
+		const pinnedNotes = detailed && channel.pinnedNoteIds.length > 0
+			? (
+				await this.noteEntityService.packMany(await this.notesRepository.find({
+					where: {
+						id: In(channel.pinnedNoteIds),
+					},
+				}), me)
+			)
+			: undefined;
 
+		return this.packInternal(channel, me, detailed, banner, isFollowing, isFavorited, false, pinnedNotes);
+	}
+
+	private packInternal(
+		channel: MiChannel,
+		me: { id: string } | null | undefined,
+		detailed: boolean | undefined,
+		banner: MiDriveFile | null | undefined,
+		isFollowing: boolean | undefined,
+		isFavorited: boolean | undefined,
+		hasUnreadNote: boolean | undefined,
+		pinnedNotes: Packed<'Note'>[] | undefined,
+	): Packed<'Channel'> {
 		return {
 			id: channel.id,
 			createdAt: this.idService.parse(channel.id).date.toISOString(),
@@ -90,11 +188,11 @@ export class ChannelEntityService {
 			...(me ? {
 				isFollowing,
 				isFavorited,
-				hasUnreadNote: false, // 後方互換性のため
+				hasUnreadNote,
 			} : {}),
 
 			...(detailed ? {
-				pinnedNotes: (await this.noteEntityService.packMany(pinnedNotes, me)).sort((a, b) => channel.pinnedNoteIds.indexOf(a.id) - channel.pinnedNoteIds.indexOf(b.id)),
+				pinnedNotes: pinnedNotes?.sort((a, b) => channel.pinnedNoteIds.indexOf(a.id) - channel.pinnedNoteIds.indexOf(b.id)),
 			} : {}),
 		};
 	}

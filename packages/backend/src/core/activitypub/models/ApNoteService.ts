@@ -35,7 +35,8 @@ import { promiseMap } from '@/misc/promise-map.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { CustomEmojiService, encodeEmojiKey, isValidEmojiName } from '@/core/CustomEmojiService.js';
 import { TimeService } from '@/global/TimeService.js';
-import { getOneApId, getApId, validPost, isEmoji, getApType, isApObject, isDocument, IApDocument, isLink } from '../type.js';
+import { CacheService } from '@/core/CacheService.js';
+import { getOneApId, getApId, isPost, isEmoji, getApType, isApObject, isDocument, isLink, getNullableApId } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { ApMfmService } from '../ApMfmService.js';
 import { ApDbResolverService } from '../ApDbResolverService.js';
@@ -48,7 +49,7 @@ import { ApQuestionService } from './ApQuestionService.js';
 import { ApImageService } from './ApImageService.js';
 import type { ApPersonService } from './ApPersonService.js';
 import type { Resolver } from '../ApResolverService.js';
-import type { IObject, IPost, IApEmoji } from '../type.js';
+import type { IObject, IPost, IApEmoji, IApDocument } from '../type.js';
 
 @Injectable()
 export class ApNoteService implements OnModuleInit {
@@ -97,6 +98,7 @@ export class ApNoteService implements OnModuleInit {
 		private readonly apUtilityService: ApUtilityService,
 		private readonly customEmojiService: CustomEmojiService,
 		private readonly timeService: TimeService,
+		private readonly cacheService: CacheService,
 	) {
 		this.logger = this.apLoggerService.logger;
 	}
@@ -111,37 +113,47 @@ export class ApNoteService implements OnModuleInit {
 		object: IObject,
 		uri: string,
 		actor?: MiRemoteUser,
-		user?: MiRemoteUser,
 	): Error | null {
-		this.utilityService.assertUrl(uri);
-		const expectHost = this.utilityService.extractDbHost(uri);
-		const apType = getApType(object);
+		const parsedUri = this.utilityService.assertUrl(uri);
+		const expectHost = this.utilityService.punyHostPSLDomain(parsedUri);
 
-		if (apType == null || !validPost.includes(apType)) {
-			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: invalid object type ${apType ?? 'undefined'}`);
+		// Validate type
+		if (!isPost(object)) {
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: invalid object type ${getApType(object) ?? 'undefined'}`);
 		}
 
-		if (object.id && this.utilityService.extractDbHost(object.id) !== expectHost) {
-			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: id has different host. expected: ${expectHost}, actual: ${this.utilityService.extractDbHost(object.id)}`);
+		// Validate id (URI)
+		if (!object.id) {
+			throw new UnrecoverableError(`invalid Note from ${uri}: missing id`);
+		}
+		if (typeof(object.id) !== 'string') {
+			throw new UnrecoverableError(`invalid Note from ${uri}: wrong id type ${typeof(object.id)}`);
+		}
+		const parsedId = this.utilityService.assertUrl(object.id, { allowFragment: false });
+		const idHost = this.utilityService.punyHostPSLDomain(parsedId);
+		if (idHost !== expectHost) {
+			throw new UnrecoverableError(`invalid Note from ${uri}: wrong host in id ${object.id} (got ${parsedId}, expected ${expectHost})`);
 		}
 
-		const actualHost = object.attributedTo && this.utilityService.extractDbHost(getOneApId(object.attributedTo));
-		if (object.attributedTo && actualHost !== expectHost) {
-			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: attributedTo has different host. expected: ${expectHost}, actual: ${actualHost}`);
+		// Validate attributedTo (author)
+		if (!object.attributedTo) {
+			throw new UnrecoverableError(`invalid Note from ${uri}: missing attributedTo`);
+		}
+		if (typeof(object.attributedTo) !== 'string') {
+			throw new UnrecoverableError(`invalid Note from ${uri}: wrong attributedTo type ${typeof(object.attributedTo)}`);
+		}
+		const parsedAttributedTo = this.utilityService.assertUrl(object.attributedTo);
+		const attributedToHost = this.utilityService.punyHostPSLDomain(parsedAttributedTo);
+		if (attributedToHost !== expectHost) {
+			throw new UnrecoverableError(`invalid Note from ${uri}: wrong host in attributedTo ${object.attributedTo} (got ${parsedAttributedTo}, expected ${expectHost})`);
+		}
+		if (actor && object.attributedTo !== actor.uri) {
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: attribution does not match the actor that send it. (got ${object.attributedTo}, expected ${actor.uri})`);
 		}
 
+		// Validate published (created date)
 		if (object.published && !this.idService.isSafeT(new Date(object.published).valueOf())) {
-			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', 'invalid Note from ${uri}: published timestamp is malformed');
-		}
-
-		if (actor) {
-			const attribution = (object.attributedTo) ? getOneApId(object.attributedTo) : actor.uri;
-			if (attribution !== actor.uri) {
-				return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: attribution does not match the actor that send it. attribution: ${attribution}, actor: ${actor.uri}`);
-			}
-			if (user && attribution !== user.uri) {
-				return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: updated attribution does not match original attribution. updated attribution: ${user.uri}, original attribution: ${attribution}`);
-			}
+			return new IdentifiableError('d450b8a9-48e4-4dab-ae36-f4db763fda7c', `invalid Note from ${uri}: published timestamp is malformed`);
 		}
 
 		return null;
@@ -213,8 +225,8 @@ export class ApNoteService implements OnModuleInit {
 		// ローカルで投稿者を検索し、もし凍結されていたらスキップ
 
 		actor ??= await this.apPersonService.fetchPerson(uri) as MiRemoteUser | undefined;
-		if (actor && actor.isSuspended) {
-			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', `failed to create note ${entryUri}: actor ${uri} has been suspended`);
+		if (actor) {
+			this.utilityService.assertActiveRemoteUser(actor);
 		}
 
 		const apMentions = await this.apMentionService.extractApMentions(note.tag, resolver);
@@ -246,9 +258,7 @@ export class ApNoteService implements OnModuleInit {
 		actor ??= await this.apPersonService.resolvePerson(uri, resolver) as MiRemoteUser;
 
 		// 解決した投稿者が凍結されていたらスキップ
-		if (actor.isSuspended) {
-			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', `failed to create note ${entryUri}: actor ${actor.id} has been suspended`);
-		}
+		this.utilityService.assertActiveRemoteUser(actor);
 
 		const noteAudience = await this.apAudienceService.parseAudience(actor, note.to, note.cc, resolver);
 		const visibility = noteAudience.visibility;
@@ -409,22 +419,25 @@ export class ApNoteService implements OnModuleInit {
 		const updatedNote = await this.notesRepository.findOneBy({ uri: noteUri });
 		if (updatedNote == null) throw new UnrecoverableError(`failed to update note ${noteUri}: note does not exist`);
 
-		const user = await this.usersRepository.findOneBy({ id: updatedNote.userId }) as MiRemoteUser | null;
-		if (user == null) throw new UnrecoverableError(`failed to update note ${noteUri}: user does not exist`);
+		if (actor) {
+			// If an actor is specified, then they must be the author.
+			if (actor.id !== updatedNote.userId) {
+				throw new UnrecoverableError(`Failed to update note ${updatedNote.id} (${noteUri}) - actor ${actor.id} is not the author`);
+			}
+		} else {
+			actor = await this.cacheService.findRemoteUserById(updatedNote.userId);
+		}
 
 		resolver ??= this.apResolverService.createResolver();
 
 		const object = await resolver.resolve(value);
 
 		const entryUri = getApId(value);
-		const err = this.validateNote(object, entryUri, actor, user);
+		const err = this.validateNote(object, entryUri, actor);
 		if (err) {
 			this.logger.error(`Failed to update note ${noteUri}: ${renderInlineError(err)}`);
 			throw err;
 		}
-
-		// `validateNote` checks that the actor and user are one and the same
-		actor ??= user;
 
 		const note = object as IPost;
 
@@ -440,9 +453,7 @@ export class ApNoteService implements OnModuleInit {
 
 		this.logger.info(`Creating the Note: ${note.id}`);
 
-		if (actor.isSuspended) {
-			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', `failed to update note ${entryUri}: actor ${actor.id} has been suspended`);
-		}
+		this.utilityService.assertActiveRemoteUser(actor);
 
 		const apMentions = await this.apMentionService.extractApMentions(note.tag, resolver);
 		const apHashtags = extractApHashtags(note.tag);
@@ -614,7 +625,7 @@ export class ApNoteService implements OnModuleInit {
 		// eslint-disable-next-line no-param-reassign
 		host = this.utilityService.toPuny(host);
 
-		const eomjiTags: (IApEmoji & { name: string })[] = toArray(tags)
+		const eomjiTags: IApEmoji[] = toArray(tags)
 			.filter(tag => isEmoji(tag))
 			.map(tag => ({
 				...tag,
@@ -627,28 +638,37 @@ export class ApNoteService implements OnModuleInit {
 
 		return await promiseMap(eomjiTags, async tag => {
 			const name = tag.name.replaceAll(':', '');
-			tag.icon = toSingle(tag.icon);
+
+			const icon = tag.icon;
+			const newUrl = icon.url;
+
+			const now = this.timeService.date;
+			const newUpdatedAt = typeof(tag.updated) === 'string' ? new Date(tag.updated) : null;
+			const updatedAt = newUpdatedAt != null && !Number.isNaN(newUpdatedAt.getTime()) && newUpdatedAt.getTime() > now.getTime()
+				? newUpdatedAt
+				: now;
+
+			const newUri = getNullableApId(tag);
+			const newIsSensitive = tag.sensitive === true;
+			const newLicense = tag._misskey_license?.freeText ?? null;
 
 			const exists = existingEmojis.values.find(x => x.name === name);
-
 			if (exists) {
-				if ((exists.updatedAt == null)
-					|| (tag.id != null && exists.uri == null) // TODO should we check for ID changes?
-					|| (new Date(tag.updated) > exists.updatedAt) // TODO make sure tag.updated actually exists
-					|| (tag.icon.url !== exists.originalUrl)
-					// TODO check for license changes
-					// TODO check for sensitive changes
-				) {
+				const uriChanged = newUri !== exists.uri;
+				const urlChanged = newUrl !== exists.originalUrl || newUrl !== exists.publicUrl;
+				const licenseChanged = newLicense !== exists.license;
+				const isSensitiveChanged = newIsSensitive !== exists.isSensitive;
+				if (uriChanged || urlChanged || licenseChanged || isSensitiveChanged) {
 					return await this.customEmojiService.updateEmoji({
 						host,
 						name,
 					}, {
-						uri: tag.id,
-						originalUrl: tag.icon.url,
-						publicUrl: tag.icon.url,
-						updatedAt: this.timeService.date,
-						// _misskey_license が存在しなければ `null`
-						license: (tag._misskey_license?.freeText ?? null),
+						uri: uriChanged ? newUri : undefined,
+						originalUrl: urlChanged ? newUrl : undefined,
+						publicUrl: urlChanged ? newUrl : undefined,
+						updatedAt: updatedAt,
+						isSensitive: isSensitiveChanged ? newIsSensitive : undefined,
+						license: licenseChanged ? newLicense : undefined,
 					});
 				}
 
@@ -659,18 +679,17 @@ export class ApNoteService implements OnModuleInit {
 				id: this.idService.gen(),
 				host,
 				name,
-				uri: tag.id,
-				originalUrl: tag.icon.url,
-				publicUrl: tag.icon.url,
-				updatedAt: this.timeService.date,
+				uri: newUri,
+				originalUrl: newUrl,
+				publicUrl: newUrl,
+				updatedAt,
 				aliases: [],
 				localOnly: false,
-				isSensitive: tag.sensitive === true,
-				// _misskey_license が存在しなければ `null`
-				license: (tag._misskey_license?.freeText ?? null),
+				isSensitive: newIsSensitive,
+				license: newLicense,
 			});
 		}, {
-			limit: 4,
+			limiter: 4,
 		});
 	}
 
@@ -735,7 +754,7 @@ export class ApNoteService implements OnModuleInit {
 			}
 		};
 
-		const results = await promiseMap(quoteUris, async u => resolveQuote(u), { limit: 2 });
+		const results = await promiseMap(quoteUris, async u => resolveQuote(u), { limiter: 2 });
 
 		// Success - return the quote
 		const quote = results.find(r => typeof(r) === 'object');
@@ -800,7 +819,7 @@ export class ApNoteService implements OnModuleInit {
 		const results = await promiseMap(attachments.values(), async attach => {
 			attach.sensitive ??= note.sensitive;
 			return await this.resolveImage(actor, attach);
-		}, { limit: 2 });
+		}, { limiter: 2 });
 
 		// Process results
 		let hasFileError = false;

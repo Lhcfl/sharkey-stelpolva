@@ -16,9 +16,10 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { bindThis } from '@/decorators.js';
 import { TimeService } from '@/global/TimeService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
-import type { DbJobDataWithUser } from '../types.js';
+import type { DbExportMutingJobData } from '../types.js';
 
 @Injectable()
 export class ExportMutingProcessorService {
@@ -36,12 +37,13 @@ export class ExportMutingProcessorService {
 		private queueLoggerService: QueueLoggerService,
 		private notificationService: NotificationService,
 		private readonly timeService: TimeService,
+		private readonly cacheService: CacheService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-muting');
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbJobDataWithUser>): Promise<void> {
+	public async process(job: Bull.Job<DbExportMutingJobData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);
@@ -75,18 +77,16 @@ export class ExportMutingProcessorService {
 				});
 
 				if (mutes.length === 0) {
-					job.updateProgress(100);
+					await job.updateProgress(100);
 					break;
 				}
 
 				cursor = mutes.at(-1)?.id ?? null;
 
-				for (const mute of mutes) {
-					const u = await this.usersRepository.findOneBy({ id: mute.muteeId });
-					if (u == null) {
-						exportedCount++; continue;
-					}
+				const muteeIds = mutes.map(f => f.muteeId);
+				const mutees = await this.cacheService.findUsersById(muteeIds);
 
+				for (const u of mutees.values()) {
 					const content = this.utilityService.getFullApAccount(u.username, u.host);
 					await new Promise<void>((res, rej) => {
 						stream.write(content + '\n', err => {
@@ -98,14 +98,14 @@ export class ExportMutingProcessorService {
 							}
 						});
 					});
-					exportedCount++;
 				}
 
 				const total = await this.mutingsRepository.countBy({
 					muterId: user.id,
 				});
 
-				job.updateProgress(exportedCount / total);
+				exportedCount += mutes.length;
+				await job.updateProgress(exportedCount / total);
 			}
 
 			stream.end();

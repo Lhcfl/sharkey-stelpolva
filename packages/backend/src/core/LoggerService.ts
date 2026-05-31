@@ -4,12 +4,11 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import Logger from '@/logger.js';
+import Logger, { type Console, type KEYWORD } from '@/logger.js';
 import { TimeService } from '@/global/TimeService.js';
 import { EnvService } from '@/global/EnvService.js';
 import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
-import type { KEYWORD } from 'color-convert/conversions.js';
 
 @Injectable()
 export class LoggerService {

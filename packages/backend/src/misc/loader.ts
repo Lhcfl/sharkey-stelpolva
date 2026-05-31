@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { bindThis } from '@/decorators.js';
+
 export type FetchFunction<K, V> = (key: K) => Promise<V>;
 
 type ResolveReject<V> = Parameters<ConstructorParameters<typeof Promise<V>>[0]>;
@@ -18,6 +20,7 @@ export class DebounceLoader<K, V> {
 	private resolvedPromise = Promise.resolve();
 	constructor(private loadFn: FetchFunction<K, V>) {}
 
+	@bindThis
 	public load(key: K): Promise<V> {
 		const promise = this.promiseMap.get(key);
 		if (typeof promise !== 'undefined') {

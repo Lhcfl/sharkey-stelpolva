@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { coreEnvService } from '@/boot/coreLogger.js';
+
 import { entity as FederationChart } from './charts/entities/federation.js';
 import { entity as NotesChart } from './charts/entities/notes.js';
 import { entity as UsersChart } from './charts/entities/users.js';
@@ -35,7 +37,7 @@ export const entities = [
 	PerUserDriveChart.hour, PerUserDriveChart.day,
 	ApRequestChart.hour, ApRequestChart.day,
 
-	...(process.env.NODE_ENV === 'test' ? [
+	...(coreEnvService.env.NODE_ENV === 'test' ? [
 		TestChart.hour, TestChart.day,
 		TestGroupedChart.hour, TestGroupedChart.day,
 		TestUniqueChart.hour, TestUniqueChart.day,

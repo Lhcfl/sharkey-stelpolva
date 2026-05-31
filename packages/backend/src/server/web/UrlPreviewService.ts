@@ -27,6 +27,7 @@ import { SystemAccountService } from '@/core/SystemAccountService.js';
 import { ApNoteService } from '@/core/activitypub/models/ApNoteService.js';
 import { AuthenticateService, AuthenticationError } from '@/server/api/AuthenticateService.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
+import { ServerUtilityService } from '@/server/ServerUtilityService.js';
 import { CacheManagementService, type ManagedRedisKVCache } from '@/global/CacheManagementService.js';
 import { BucketRateLimit, Keyed, sendRateLimitHeaders } from '@/misc/rate-limit-utils.js';
 import type { MiLocalUser } from '@/models/User.js';
@@ -100,6 +101,7 @@ export class UrlPreviewService {
 		private readonly apNoteService: ApNoteService,
 		private readonly authenticateService: AuthenticateService,
 		private readonly rateLimiterService: SkRateLimiterService,
+		private readonly serverUtilityService: ServerUtilityService,
 
 		cacheManagementService: CacheManagementService,
 	) {
@@ -674,16 +676,9 @@ export class UrlPreviewService {
 		}
 
 		// Authorization
-		if (user.isSuspended || user.isDeleted) {
-			reply.code(403).send({
-				error: {
-					message: 'Your account has been suspended.',
-					code: 'YOUR_ACCOUNT_SUSPENDED',
-					kind: 'permission',
-
-					id: 'a8c724b3-6e9c-4b46-b1a8-bc3ed6258370',
-				},
-			});
+		const userError = this.serverUtilityService.assertClientUser(user);
+		if (userError) {
+			reply.code(userError.httpStatusCode).send({ error: userError });
 			return false;
 		}
 		if (app && !app.permission.includes('read:account')) {

@@ -10,7 +10,7 @@ import { bindThis } from '@/decorators.js';
 import { MetaService } from '@/core/MetaService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { EmailService } from '@/core/EmailService.js';
-import { MiUser, type UserProfilesRepository } from '@/models/_.js';
+import { MiMeta, MiUser, type UserProfilesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
@@ -87,6 +87,10 @@ export class CheckModeratorsActivityProcessorService {
 	constructor(
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
+
+		@Inject(DI.meta)
+		private readonly meta: MiMeta,
+
 		private metaService: MetaService,
 		private roleService: RoleService,
 		private emailService: EmailService,
@@ -102,8 +106,7 @@ export class CheckModeratorsActivityProcessorService {
 	public async process(): Promise<void> {
 		this.logger.debug('start.');
 
-		const meta = await this.metaService.fetch(false);
-		if (!meta.disableRegistration) {
+		if (!this.meta.disableRegistration) {
 			await this.processImpl();
 		} else {
 			this.logger.debug('is already invitation only.');
@@ -211,7 +214,7 @@ export class CheckModeratorsActivityProcessorService {
 		for (const moderator of moderators) {
 			const profile = moderatorProfiles.get(moderator.id);
 			if (profile && profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text);
+				await this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text);
 			}
 		}
 
@@ -234,7 +237,7 @@ export class CheckModeratorsActivityProcessorService {
 
 		const mail = generateInvitationOnlyChangedMail();
 		for (const moderator of moderators) {
-			this.announcementService.create({
+			await this.announcementService.create({
 				title: mail.subject,
 				text: mail.text,
 				forExistingUsers: true,
@@ -244,7 +247,7 @@ export class CheckModeratorsActivityProcessorService {
 
 			const profile = moderatorProfiles.get(moderator.id);
 			if (profile && profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text);
+				await this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text);
 			}
 		}
 

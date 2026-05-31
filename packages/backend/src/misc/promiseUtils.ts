@@ -5,6 +5,7 @@
 
 import { throwIfAborted } from '@/misc/throw-if-aborted.js';
 import { AbortedError } from '@/misc/errors/AbortedError.js';
+import type { Result } from '@/types.js';
 
 /**
  * Executes a task or promise, then runs a provided cleanup task.
@@ -16,43 +17,37 @@ import { AbortedError } from '@/misc/errors/AbortedError.js';
  * @param cleanup Cleanup callback to execute after execution completes or fails
  */
 export async function withCleanup<T>(promiseOrCallback: MaybeCallback<Promise<T>>, cleanup: () => MaybePromise<void>): Promise<T> {
-	// Execute the task first
-	let executionResult: Result<T>;
-	try {
-		const result = typeof(promiseOrCallback) === 'function'
-			? await promiseOrCallback()
-			: await promiseOrCallback;
-		executionResult = { success: true, result };
-	} catch (error) {
-		executionResult = { success: false, error };
-	}
+	// Execute task and defer errors
+	const executionResult = await toResult(promiseOrCallback);
 
-	// Run cleanup next, even if execution failed
-	let cleanupResult: Result<void>;
-	try {
-		const result = await cleanup();
-		cleanupResult = { success: true, result };
-	} catch (error) {
-		cleanupResult = { success: false, error };
-	}
+	// Execute cleanup and defer errors
+	const cleanupResult = await toResult(cleanup);
 
-	if (!executionResult.success) {
-		if (!cleanupResult.success) {
-			// Execution and cleanup failed
-			throw new AggregateError([executionResult.error, cleanupResult.error]);
-		} else {
-			// Execution failed, but cleanup succeeded
-			throw executionResult.error;
-		}
-	}
-
-	// Execution succeeded, but cleanup failed
-	if (!cleanupResult.success) {
+	if ('error' in executionResult && 'error' in cleanupResult) {
+		// Execution and cleanup both failed
+		throw new AggregateError([executionResult.error, cleanupResult.error]);
+	} else if ('error' in executionResult) {
+		// Execution failed, but cleanup succeeded
+		throw executionResult.error;
+	} else if ('error' in cleanupResult) {
+		// Execution succeeded, but cleanup failed
 		throw cleanupResult.error;
+	} else {
+		// Execution and cleanup both succeeded
+		return executionResult.result;
 	}
+}
 
-	// Execution and cleanup succeeded
-	return executionResult.result;
+async function toResult<T>(promiseOrCallback: Promise<T> | (() => MaybePromise<T>)): Promise<Result<T>> {
+	try {
+		if (typeof(promiseOrCallback) === 'function') {
+			return { result: await promiseOrCallback() };
+		} else {
+			return { result: await promiseOrCallback };
+		}
+	} catch (error) {
+		return { error };
+	}
 }
 
 /**
@@ -87,10 +82,6 @@ export async function withSignal<T>(factory: () => Promise<T>, abortSignal: Abor
 
 	return promise;
 }
-
-type Result<T> =
-	{ success: true, result: T } |
-	{ success: false, error: unknown };
 
 type MaybeCallback<T> = T | (() => T);
 type MaybePromise<T> = T | Promise<T>;

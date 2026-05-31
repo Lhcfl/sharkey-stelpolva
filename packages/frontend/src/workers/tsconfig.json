@@ -1,4 +1,6 @@
 {
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "../../tsconfig.vue.json",
 	"compilerOptions": {
 		"lib": ["ES2022", "WebWorker", "Webworker.Iterable"],
 		"incremental": true

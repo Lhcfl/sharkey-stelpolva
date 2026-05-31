@@ -6,7 +6,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueueService } from '@/core/QueueService.js';
-import type { AntennasRepository, DriveFilesRepository, UsersRepository, MiAntenna as _Antenna } from '@/models/_.js';
+import type { AntennasRepository, DriveFilesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { DownloadService } from '@/core/DownloadService.js';
@@ -65,27 +65,27 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		@Inject(DI.antennasRepository)
 		private antennasRepository: AntennasRepository,
 
-		@Inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
 		private roleService: RoleService,
 		private queueService: QueueService,
 		private downloadService: DownloadService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const userExist = await this.usersRepository.exists({ where: { id: me.id } });
-			if (!userExist) throw new ApiError(meta.errors.noSuchUser);
 			const file = await this.driveFilesRepository.findOneBy({ id: ps.fileId });
 			if (file === null) throw new ApiError(meta.errors.noSuchFile);
 			if (file.size === 0) throw new ApiError(meta.errors.emptyFile);
-			const antennas: (_Antenna & { userListAccts: string[] | null })[] = JSON.parse(await this.downloadService.downloadTextFile(file.url));
-			const currentAntennasCount = await this.antennasRepository.countBy({ userId: me.id });
-			if (currentAntennasCount + antennas.length >= (await this.roleService.getUserPolicies(me.id)).antennaLimit) {
+
+			const [antennaJson, currentAntennasCount, policies] = await Promise.all([
+				this.downloadService.downloadTextFile(file.url),
+				this.antennasRepository.countBy({ userId: me.id }),
+				this.roleService.getUserPolicies(me),
+			]);
+
+			const antennas = JSON.parse(antennaJson);
+			if (currentAntennasCount + antennas.length >= policies.antennaLimit) {
 				throw new ApiError(meta.errors.tooManyAntennas);
 			}
+
 			await this.queueService.createImportAntennasJob(me, antennas, file.id);
 		});
 	}
 }
-
-export type Antenna = (_Antenna & { userListAccts: string[] | null })[];

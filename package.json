@@ -1,25 +1,32 @@
 {
 	"name": "sharkey",
-	"version": "2025.5.2-dev-stelpolva-4",
+	"version": "2025.5.2-dev-stelpolva",
+	"type": "module",
 	"codename": "shonk",
 	"repository": {
 		"type": "git",
 		"url": "https://activitypub.software/TransFem-org/Sharkey.git"
 	},
-	"packageManager": "pnpm@10.16.0",
+	"packageManager": "pnpm@10.26.2",
 	"workspaces": [
-		"packages/frontend-shared",
+		"locales",
+		"packages/backend",
 		"packages/frontend",
 		"packages/frontend-embed",
-		"packages/backend",
-		"packages/sw",
+		"packages/frontend-shared",
+		"packages/megalodon",
+		"packages/misskey-bubble-game",
 		"packages/misskey-js",
 		"packages/misskey-reversi",
-		"packages/misskey-bubble-game"
+		"packages/shared",
+		"packages/stub",
+		"packages/sw"
 	],
 	"private": true,
 	"scripts": {
-		"build-pre": "node ./scripts/build-pre.js",
+		"rebuild": "pnpm run clean-all && pnpm i && git submodule update --init && pnpm run build-misskey-js-with-types && pnpm run build",
+		"build-pre": "node ./scripts/build-pre.js && pnpm run build-locales",
+		"build-locales": "pnpm --filter locales build",
 		"build-assets": "node ./scripts/build-assets.mjs",
 		"build": "pnpm build-pre && pnpm -r build && pnpm build-assets",
 		"build-storybook": "pnpm --filter frontend build-storybook",
@@ -35,8 +42,8 @@
 		"dev": "node scripts/dev.mjs",
 		"lint": "pnpm -r lint",
 		"lint-all": "pnpm -r --no-bail lint",
-		"eslint": "pnpm -r eslint",
-		"eslint-all": "pnpm -r --no-bail eslint-all && pnpm -r --no-bail eslint",
+		"eslint": "pnpm -r packages/shared/eslint",
+		"eslint-all": "pnpm -r --no-bail eslint-all && pnpm -r --no-bail packages/shared/eslint",
 		"cy:open": "pnpm cypress open --browser --e2e --config-file=cypress.config.ts",
 		"cy:run": "pnpm cypress run",
 		"e2e": "pnpm start-server-and-test start:test http://localhost:61812 cy:run",
@@ -45,42 +52,38 @@
 		"jest-and-coverage": "cd packages/backend && pnpm jest-and-coverage",
 		"test": "pnpm -r test",
 		"test-and-coverage": "pnpm -r test-and-coverage",
-		"clean": "node ./scripts/clean.js",
-		"clean-all": "node ./scripts/clean-all.js",
+		"clean": "node ./scripts/clean.mjs built temp",
+		"clean-all": "node ./scripts/clean.mjs built deps temp reports",
+		"clean-deep": "node ./scripts/clean.mjs built deps temp reports gen submodules",
 		"cleanall": "pnpm clean-all",
-		"sync-dependency-versions": "node scripts/sync-deps.mjs"
-	},
-	"resolutions": {
-		"chokidar": "4.0.3",
-		"lodash": "4.17.21",
-		"axios": "1.12.2"
+		"sync-dependency-versions": "node scripts/sync-deps.ts"
 	},
 	"dependencies": {
-		"js-yaml": "4.1.0"
+		"js-yaml": "4.1.1"
 	},
 	"optionalDependencies": {
 		"cypress": "15.3.0"
 	},
 	"devDependencies": {
-		"@misskey-dev/eslint-plugin": "2.1.0",
+		"@misskey-dev/eslint-plugin": "2.2.0",
+		"@types/ignore-walk": "4.0.3",
+		"@types/js-yaml": "4.0.9",
 		"@types/node": "22.18.1",
-		"@typescript-eslint/eslint-plugin": "8.44.1",
-		"@typescript-eslint/parser": "8.44.1",
+		"@typescript-eslint/eslint-plugin": "8.57.1",
+		"@typescript-eslint/parser": "8.57.1",
 		"cross-env": "10.0.0",
 		"cssnano": "7.1.1",
-		"esbuild": "0.25.10",
-		"eslint": "9.36.0",
+		"esbuild": "0.27.4",
+		"eslint": "9.39.4",
 		"execa": "9.6.0",
 		"fast-glob": "3.3.3",
-		"glob": "11.0.3",
 		"globals": "16.4.0",
 		"ignore-walk": "8.0.0",
 		"ncp": "2.0.0",
-		"pnpm": "10.17.1",
 		"postcss": "8.5.6",
-		"start-server-and-test": "2.1.2",
-		"tar": "7.5.1",
+		"start-server-and-test": "2.1.3",
+		"tar": "7.5.11",
 		"terser": "5.44.0",
-		"typescript": "5.9.2"
+		"typescript": "5.9.3"
 	}
 }

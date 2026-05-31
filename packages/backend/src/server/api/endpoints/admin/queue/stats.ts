@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { DbQueue, DeliverQueue, EndedPollNotificationQueue, InboxQueue, ObjectStorageQueue, SystemQueue, UserWebhookDeliverQueue, SystemWebhookDeliverQueue, ScheduleNotePostQueue } from '@/core/QueueModule.js';
+import { QueueService } from '@/core/QueueService.js';
+import type { IEndpointMeta } from '@/server/api/endpoints.js';
+import type { Schema } from '@/misc/json-schema.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -17,58 +19,23 @@ export const meta = {
 	res: {
 		type: 'object',
 		optional: false, nullable: false,
-		properties: {
-			deliver: {
-				optional: false, nullable: false,
-				ref: 'QueueCount',
-			},
-			inbox: {
-				optional: false, nullable: false,
-				ref: 'QueueCount',
-			},
-			db: {
-				optional: false, nullable: false,
-				ref: 'QueueCount',
-			},
-			objectStorage: {
-				optional: false, nullable: false,
-				ref: 'QueueCount',
-			},
-		},
+		ref: 'QueueCounts',
 	},
-} as const;
+} as const satisfies IEndpointMeta;
 
 export const paramDef = {
 	type: 'object',
 	properties: {},
 	required: [],
-} as const;
+} as const satisfies Schema;
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject('queue:system') public systemQueue: SystemQueue,
-		@Inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
-		@Inject('queue:deliver') public deliverQueue: DeliverQueue,
-		@Inject('queue:inbox') public inboxQueue: InboxQueue,
-		@Inject('queue:db') public dbQueue: DbQueue,
-		@Inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
-		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
-		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
-		@Inject('queue:scheduleNotePost') public scheduleNotePostQueue: ScheduleNotePostQueue,
+		private readonly queueService: QueueService,
 	) {
-		super(meta, paramDef, async (ps, me) => {
-			const deliverJobCounts = await this.deliverQueue.getJobCounts();
-			const inboxJobCounts = await this.inboxQueue.getJobCounts();
-			const dbJobCounts = await this.dbQueue.getJobCounts();
-			const objectStorageJobCounts = await this.objectStorageQueue.getJobCounts();
-
-			return {
-				deliver: deliverJobCounts,
-				inbox: inboxJobCounts,
-				db: dbJobCounts,
-				objectStorage: objectStorageJobCounts,
-			};
+		super(meta, paramDef, async () => {
+			return await this.queueService.queueGetCounts();
 		});
 	}
 }

@@ -10,7 +10,6 @@ import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import { UtilityService } from '@/core/UtilityService.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import { isPackedPureRenote } from '@/misc/is-renote.js';
 import { type Channel, MiChannelService, NoteChannel } from '../channel.js';
 
@@ -36,8 +35,6 @@ class BubbleTimelineChannel extends NoteChannel {
 
 	@bindThis
 	public async init(params: JsonObject): Promise<boolean> {
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
-
 		const policies = await this.roleService.getUserPolicies(this.user);
 		if (!policies.btlAvailable) return false;
 
@@ -67,7 +64,7 @@ class BubbleTimelineChannel extends NoteChannel {
 
 	@bindThis
 	public dispose() {
-		this.subscriber?.off('notesStream', this.onNote);
+		this.subscriber.off('notesStream', this.onNote);
 	}
 }
 

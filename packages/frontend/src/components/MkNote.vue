@@ -97,7 +97,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkMediaList ref="galleryEl" :mediaList="appearNote.files" @click.stop/>
 					</div>
 					<MkPoll v-if="appearNote.poll" :noteId="appearNote.id" :poll="appearNote.poll" :local="!appearNote.user.host" :author="appearNote.user" :emojiUrls="appearNote.emojis" :class="$style.poll" @click.stop/>
-					<div v-if="isEnabledUrlPreview" :class="[$style.urlPreview, '_gaps_s']" @click.stop>
+					<div v-if="instance.enableUrlPreview" :class="[$style.urlPreview, '_gaps_s']" @click.stop>
 						<SkUrlPreviewGroup :sourceUrls="urls" :sourceNote="appearNote" :compact="true" :detail="false" :showAsQuote="!appearNote.user.rejectQuotes" :skipNoteIds="selfNoteIds" @expandMute="n => emit('expandMute', n)"/>
 					</div>
 					<div v-if="appearNote.renote" :class="$style.quote"><MkNoteSimple :note="appearNote.renote" :class="$style.quoteNote" @expandMute="n => emit('expandMute', n)"/></div>
@@ -218,7 +218,7 @@ import { getNoteSummary } from '@/utility/get-note-summary.js';
 import MkRippleEffect from '@/components/MkRippleEffect.vue';
 import { showMovedDialog } from '@/utility/show-moved-dialog.js';
 import { boostMenuItems, computeRenoteTooltip } from '@/utility/boost-quote.js';
-import { instance, isEnabledUrlPreview, policies } from '@/instance.js';
+import { instance, policies } from '@/instance.js';
 import { focusPrev, focusNext } from '@/utility/focus.js';
 import { getAppearNote } from '@/utility/get-appear-note.js';
 import { prefer } from '@/preferences.js';

@@ -29,7 +29,7 @@ import { bindThis } from '@/decorators.js';
 
 // Sentinel value used for caching the default role template.
 // Required because MemoryKVCache doesn't support null keys.
-const defaultUserKey = '';
+const defaultUserKey = '$default';
 
 interface ParsedLimit {
 	key: string;

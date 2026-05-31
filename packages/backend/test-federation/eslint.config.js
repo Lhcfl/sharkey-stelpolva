@@ -1,23 +1,24 @@
-import globals from 'globals';
 import tsParser from '@typescript-eslint/parser';
-import pluginMisskey from '@misskey-dev/eslint-plugin';
+import globals from 'globals';
+import sharedConfig from '../../shared/eslint.config.js';
 
 export default [
+	...sharedConfig,
 	{
 		ignores: [
-			"**/built/",
-			'*.js',
+			'**/built/',
+			'**/node_modules/',
 		],
 	},
 	{
 		languageOptions: {
 			globals: {
 				...globals.node,
+				...globals.jest,
 			},
 		},
 	},
 	{
-		...pluginMisskey.configs['typescript'],
 		files: ['daemon.ts', 'test/**/*.ts'],
 		languageOptions: {
 			parserOptions: {
@@ -31,12 +32,12 @@ export default [
 			'no-restricted-syntax': [
 				'error',
 				{
-					"selector": "CallExpression[callee.property.name='delete'][arguments.length=1] > ObjectExpression[properties.length=0]",
-					"message": "repository.delete({}) will produce a runtime error. Use repository.deleteAll() instead."
+					selector: "CallExpression[callee.property.name='delete'][arguments.length=1] > ObjectExpression[properties.length=0]",
+					message: "repository.delete({}) will produce a runtime error. Use repository.deleteAll() instead."
 				},
 				{
-					"selector": "CallExpression[callee.property.name='update'][arguments.length>=1] > ObjectExpression[properties.length=0]",
-					"message": "repository.update({}, {...}) will produce a runtime error. Use repository.updateAll({...}) instead."
+					selector: "CallExpression[callee.property.name='update'][arguments.length>=1] > ObjectExpression[properties.length=0]",
+					message: "repository.update({}, {...}) will produce a runtime error. Use repository.updateAll({...}) instead."
 				},
 			],
 		}

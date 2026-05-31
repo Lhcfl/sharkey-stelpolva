@@ -31,7 +31,14 @@ import { packedChannelSchema } from '@/models/json-schema/channel.js';
 import { packedAntennaSchema } from '@/models/json-schema/antenna.js';
 import { packedClipSchema } from '@/models/json-schema/clip.js';
 import { packedFederationInstanceSchema } from '@/models/json-schema/federation-instance.js';
-import { packedQueueCountSchema } from '@/models/json-schema/queue.js';
+import {
+	packedQueueCountSchema,
+	packedQueueCountsSchema,
+	packedQueueLogSchema,
+	packedQueueLogsSchema,
+	packedQueueStatSchema,
+	packedQueueStatsSchema,
+} from '@/models/json-schema/queue.js';
 import { packedGalleryPostSchema } from '@/models/json-schema/gallery-post.js';
 import {
 	packedEmojiDetailedAdminSchema,
@@ -99,7 +106,12 @@ export const refs = {
 	Page: packedPageSchema,
 	PageBlock: packedPageBlockSchema,
 	Channel: packedChannelSchema,
+	QueueStat: packedQueueStatSchema,
+	QueueStats: packedQueueStatsSchema,
+	QueueLog: packedQueueLogSchema,
+	QueueLogs: packedQueueLogsSchema,
 	QueueCount: packedQueueCountSchema,
+	QueueCounts: packedQueueCountsSchema,
 	Antenna: packedAntennaSchema,
 	Clip: packedClipSchema,
 	FederationInstance: packedFederationInstanceSchema,

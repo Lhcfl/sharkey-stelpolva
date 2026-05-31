@@ -116,24 +116,18 @@ export class ReactionService implements OnModuleInit {
 	}
 
 	@bindThis
-	onModuleInit() {
+	public onModuleInit() {
 		this.roleService = this.moduleRef.get('RoleService');
 	}
 
 	@bindThis
 	public async create(user: MiUser, note: MiNote, _reaction?: string | null) {
-		// Check blocking
+		// Check blocking / visibility
 		if (note.userId !== user.id) {
-			const blocked = await this.userBlockingService.checkBlocked(note.userId, user.id);
-			if (blocked) {
-				throw new IdentifiableError('e70412a4-7197-4726-8e74-f3e0deb92aa7', 'Note not accessible for you.');
+			const { accessible } = await this.noteVisibilityService.checkNoteVisibilityAsync(note, user);
+			if (!accessible) {
+				throw new IdentifiableError('68e9d2d1-48bf-42c2-b90a-b20e09fd3d48', 'Note not accessible for you.');
 			}
-		}
-
-		// check visibility
-		const { accessible } = await this.noteVisibilityService.checkNoteVisibilityAsync(note, user);
-		if (!accessible) {
-			throw new IdentifiableError('68e9d2d1-48bf-42c2-b90a-b20e09fd3d48', 'Note not accessible for you.');
 		}
 
 		// Check if note is Renote
@@ -226,7 +220,7 @@ export class ReactionService implements OnModuleInit {
 				.execute();
 		}
 
-		await this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: this.timeService.date });
+		this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: this.timeService.date });
 
 		// 30%の確率、セルフではない、3日以内に投稿されたノートの場合ハイライト用ランキング更新
 		if (
@@ -259,18 +253,23 @@ export class ReactionService implements OnModuleInit {
 		// カスタム絵文字リアクションだったら絵文字情報も送る
 		const decodedReaction = this.decodeReaction(reaction);
 
+		// TODO this shouldn't be necessary - we can just reuse the same values as above
 		const customEmojiKey = decodedReaction.name == null ? null : encodeEmojiKey({ name: decodedReaction.name, host: decodedReaction.host ?? null });
 		const customEmoji = customEmojiKey == null ? null :
 			await this.customEmojiService.emojisByKeyCache.fetchMaybe(customEmojiKey);
 
 		this.globalEventService.publishNoteStream(note.id, 'reacted', {
-			reaction: decodedReaction.reaction,
-			emoji: customEmoji != null ? {
-				name: customEmoji.host ? `${customEmoji.name}@${customEmoji.host}` : `${customEmoji.name}@.`,
-				// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
-				url: customEmoji.publicUrl || customEmoji.originalUrl,
-			} : null,
-			userId: user.id,
+			id: note.id,
+			userId: note.userId,
+			body: {
+				reaction: decodedReaction.reaction,
+				emoji: customEmoji != null ? {
+					name: customEmoji.host ? `${customEmoji.name}@${customEmoji.host}` : `${customEmoji.name}@.`,
+					// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
+					url: customEmoji.publicUrl || customEmoji.originalUrl,
+				} : null,
+				userId: user.id,
+			},
 		});
 
 		// リアクションされたユーザーがローカルユーザーなら通知を作成
@@ -344,11 +343,15 @@ export class ReactionService implements OnModuleInit {
 				.execute();
 		}
 
-		await this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: this.timeService.date });
+		this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: this.timeService.date });
 
 		this.globalEventService.publishNoteStream(note.id, 'unreacted', {
-			reaction: this.decodeReaction(exist.reaction).reaction,
-			userId: user.id,
+			id: note.id,
+			userId: note.userId,
+			body: {
+				reaction: this.decodeReaction(exist.reaction).reaction,
+				userId: user.id,
+			},
 		});
 
 		//#region 配信

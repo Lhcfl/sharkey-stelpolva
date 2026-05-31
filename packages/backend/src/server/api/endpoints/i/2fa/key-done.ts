@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as argon2 from 'argon2';
 import { Inject, Injectable } from '@nestjs/common';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -31,6 +30,12 @@ export const meta = {
 			message: 'Incorrect password.',
 			code: 'INCORRECT_PASSWORD',
 			id: '0d7ec6d2-e652-443e-a7bf-9ee9a0cd77b0',
+		},
+
+		incorrectTotp: {
+			message: 'Incorrect 2FA code.',
+			code: 'INCORRECT_TOTP',
+			id: 'cdf1235b-ac71-46d4-a3a6-84ccce48df6f',
 		},
 
 		twoFactorNotEnabled: {
@@ -78,28 +83,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private globalEventService: GlobalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const token = ps.token;
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });
-
-			if (profile.twoFactorEnabled) {
-				if (token == null) {
-					throw new Error('authentication failed');
-				}
-
-				try {
-					await this.userAuthService.twoFactorAuthenticate(profile, token);
-				} catch (e) {
-					throw new Error('authentication failed');
-				}
-			}
-
-			const passwordMatched = await argon2.verify(profile.password ?? '', ps.password);
-			if (!passwordMatched) {
-				throw new ApiError(meta.errors.incorrectPassword);
-			}
 
 			if (!profile.twoFactorEnabled) {
 				throw new ApiError(meta.errors.twoFactorNotEnabled);
+			}
+
+			if (!await this.userAuthService.checkPassword(profile, ps.password)) {
+				throw new ApiError(meta.errors.incorrectPassword);
+			}
+
+			if (!await this.userAuthService.check2FA(profile, ps.token)) {
+				throw new ApiError(meta.errors.incorrectTotp);
 			}
 
 			const keyInfo = await this.webAuthnService.verifyRegistration(me.id, ps.credential);

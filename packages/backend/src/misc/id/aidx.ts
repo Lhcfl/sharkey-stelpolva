@@ -14,6 +14,15 @@ import { IdentifiableError } from '../identifiable-error.js';
 
 export const aidxRegExp = /^[0-9a-z]{16}$/;
 
+// TODO potential issues with aid(x) ID system:
+//   1. Predictable. Random element (NOISE) is only ~20 bits, and can be significantly reduced (down to ~6 bits) with knowledge of *any* recently-regenerated ID.
+//      Because Misskey's threat model assumes that object IDs are "private" and non-predictable, this introduces a minor **security issue** for upstream.
+//			Sharkey is safe because our threat model treats IDs as public, but this remains an additional risk when adopting code from Misskey.
+//   2. Inefficient. Source element (NODE) provides little advantage over the random element, while also "stealing" ~20 bits which could otherwise be allocated to the random element to reduce the impact of issue #1.
+//      Even in Sharkey, when predictability is not a concern, this wastes 4 **bytes** of space *for every single ID*.
+//   3. Non-deterministic. Non-time elements (NOISE, NODE) can vary between identical calls to gen(), meaning that IDs cannot be reliably sorted by an ID generated at a later time.
+//      The source element makes this worse, because IDs generated at the same time *but from different nodes* cannot be strictly compared with each other.
+
 const TIME2000 = 946684800000;
 const TIME_LENGTH = 8;
 const NODE_LENGTH = 4;

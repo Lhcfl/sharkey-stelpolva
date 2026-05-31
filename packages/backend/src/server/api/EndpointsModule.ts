@@ -3,21 +3,22 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Module } from '@nestjs/common';
-
+import { Module, type Provider, type Import } from '@nestjs/common';
 import { CoreModule } from '@/core/CoreModule.js';
 import * as endpointsObject from './endpoint-list.js';
 import { GetterService } from './GetterService.js';
 import { ApiLoggerService } from './ApiLoggerService.js';
-import type { Provider } from '@nestjs/common';
 
 const endpoints = Object.entries(endpointsObject);
 const endpointProviders = endpoints.map(([path, endpoint]): Provider => ({ provide: `ep:${path}`, useClass: endpoint.default }));
 
+/** External module dependencies */
+const $Imports = [
+	CoreModule,
+] as const satisfies Import[];
+
 @Module({
-	imports: [
-		CoreModule,
-	],
+	imports: $Imports,
 	providers: [
 		GetterService,
 		ApiLoggerService,
@@ -25,6 +26,7 @@ const endpointProviders = endpoints.map(([path, endpoint]): Provider => ({ provi
 	],
 	exports: [
 		...endpointProviders,
-	],
+		$Imports,
+	].flat(),
 })
 export class EndpointsModule {}

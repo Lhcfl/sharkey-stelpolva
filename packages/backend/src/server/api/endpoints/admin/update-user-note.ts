@@ -50,7 +50,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.userProfilesRepository.update({ userId: user.id }, {
 				moderationNote: ps.text,
 			});
-			await this.internalEventService.emit('updateUserProfile', { userId: user.id });
+			await this.internalEventService.emit('updateUserProfile', { userId: user.id, keys: ['moderationNote'] });
 
 			await this.moderationLogService.log(me, 'updateUserNote', {
 				userId: user.id,

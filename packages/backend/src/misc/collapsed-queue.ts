@@ -4,61 +4,60 @@
  */
 
 import promiseLimit from 'promise-limit';
+import type Logger from '@/logger.js';
 import type { TimeService, TimerHandle } from '@/global/TimeService.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
 import { bindThis } from '@/decorators.js';
-import { Serialized } from '@/types.js';
+import { promiseMap, type Limiter } from '@/misc/promise-map.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 
 type Job<V> = {
 	value: V;
 	timer: TimerHandle;
 };
 
-// TODO document IPC sync process
+export interface CollapsedQueueServices {
+	timeService: TimeService,
+	parentLogger: Logger, // TODO use ParentLogger type when merged
+}
 
-// sync cross-process:
-//  1. Emit internal events when scheduling timer, performing queue, and enqueuing data
-//  2. On enqueue, mark ID as deferred.
-//  3. On perform, clear mark.
-//  4. On performAll, skip deferred IDs.
-//  5. On enqueue when ID is deferred, send data as event instead.
-//  6. On delete, clear mark.
-//  7. On delete when ID is deferred, do nothing.
+export interface CollapsedQueueOpts<V> {
+	timeout: number,
+	collapse: (oldValue: V, newValue: V) => V,
+	perform: (key: string, value: V) => void | Promise<void>,
+	check?: (key: string, value: V) => boolean,
+	limiter?: number | Limiter,
+}
 
 export class CollapsedQueue<V> {
-	private readonly limiter?: ReturnType<typeof promiseLimit<void>>;
-	private readonly jobs: Map<string, Job<V>> = new Map();
-	private readonly deferredKeys = new Set<string>();
+	private readonly limiter: Limiter;
+	private readonly jobs = new Map<string, Job<V>>();
+
+	private readonly timeService: TimeService;
+	private readonly logger: Logger;
+	private readonly timeout: number;
+	private readonly collapse: (oldValue: V, newValue: V) => V;
+	private readonly perform: (key: string, value: V) => void | Promise<void>;
+	private readonly check: undefined | ((key: string, value: V) => boolean);
 
 	constructor(
-		private readonly internalEventService: InternalEventService,
-		private readonly timeService: TimeService,
 		public readonly name: string,
-		private readonly timeout: number,
-		private readonly collapse: (oldValue: V, newValue: V) => V,
-		private readonly perform: (key: string, value: V) => Promise<void | unknown>,
-		private readonly opts?: {
-			onError?: (queue: CollapsedQueue<V>, error: unknown) => void | Promise<void>,
-			concurrency?: number,
-			redisParser?: (data: Serialized<V>) => V,
-		},
+		services: CollapsedQueueServices,
+		opts: CollapsedQueueOpts<V>,
 	) {
-		if (opts?.concurrency) {
-			this.limiter = promiseLimit<void>(opts.concurrency);
-		}
+		this.timeService = services.timeService;
+		this.logger = services.parentLogger.createSubLogger(name);
 
-		this.internalEventService.on('collapsedQueueDefer', this.onDefer, { ignoreLocal: true });
-		this.internalEventService.on('collapsedQueueEnqueue', this.onEnqueue, { ignoreLocal: true });
+		this.timeout = opts.timeout;
+		this.collapse = opts.collapse;
+		this.perform = opts.perform;
+		this.check = opts.check;
+		this.limiter = typeof(opts.limiter) === 'number'
+			? promiseLimit(opts.limiter)
+			: (opts.limiter ?? (cb => cb()));
 	}
 
 	@bindThis
-	async enqueue(key: string, value: V) {
-		// If deferred, then send it out to the owning process
-		if (this.deferredKeys.has(key)) {
-			await this.internalEventService.emit('collapsedQueueEnqueue', { name: this.name, key, value });
-			return;
-		}
-
+	public enqueue(key: string, value: V): void {
 		// If already queued, then merge
 		const job = this.jobs.get(key);
 		if (job) {
@@ -72,100 +71,81 @@ export class CollapsedQueue<V> {
 			if (!job) return;
 
 			this.jobs.delete(key);
-			await this._perform(key, job.value);
+			await this.performSafe(key, job.value);
 		}, this.timeout);
 		this.jobs.set(key, { value, timer });
-
-		// Mark as deferred so other processes will forward their state to us
-		await this.internalEventService.emit('collapsedQueueDefer', { name: this.name, key, deferred: true });
 	}
 
 	@bindThis
-	async delete(key: string) {
+	public delete(key: string): void {
 		const job = this.jobs.get(key);
 		if (!job) return;
 
 		this.timeService.stopTimer(job.timer);
 		this.jobs.delete(key);
-		await this.internalEventService.emit('collapsedQueueDefer', { name: this.name, key, deferred: false });
 	}
 
 	@bindThis
-	async performAllNow() {
-		for (const job of this.jobs.values()) {
-			this.timeService.stopTimer(job.timer);
+	public async performNow(key: string): Promise<void> {
+		const job = this.jobs.get(key);
+		if (!job) {
+			return;
 		}
 
-		const entries = Array.from(this.jobs.entries());
-		this.jobs.clear();
+		this.timeService.stopTimer(job.timer);
+		this.jobs.delete(key);
 
-		return await Promise.all(entries.map(([key, job]) => this._perform(key, job.value)));
+		await this.limiter(async () => {
+			await this.performSafe(key, job.value);
+		});
 	}
 
-	private async _perform(key: string, value: V) {
-		try {
-			await this.internalEventService.emit('collapsedQueueDefer', { name: this.name, key, deferred: false });
+	@bindThis
+	public async performAllNow(): Promise<void> {
+		// Swap the entries to make sure duplicate calls don't conflict
+		const entries = this.jobs.entries().toArray();
+		this.jobs.clear();
 
-			if (this.limiter) {
-				await this.limiter(async () => {
-					await this.perform(key, value);
-				});
+		// TODO use the no-bail logic when merged
+		const results = await promiseMap(entries, async ([key, job]) => {
+			this.timeService.stopTimer(job.timer);
+			return await this.performSafe(key, job.value);
+		}, {
+			limiter: this.limiter,
+		});
+
+		const total = entries.length;
+		const successes = results.reduce((sum, result) => sum + (result === true ? 1 : 0), 0);
+		const failures = results.reduce((sum, result) => sum + (result === false ? 0 : 1), 0);
+
+		if (successes > 0 || failures > 0) {
+			if (failures > 0) {
+				this.logger.debug(`Persistence completed: ${successes}/${total} jobs succeeded and ${failures}/${total} failed`);
 			} else {
-				await this.perform(key, value);
+				this.logger.debug(`Persistence completed: ${successes} jobs completed successfully`);
+			}
+		} else {
+			this.logger.debug('Persistence skipped: nothing to do');
+		}
+	}
+
+	private async performSafe(key: string, value: V): Promise<boolean | 'skip'> {
+		try {
+			if (this.check != null && !this.check(key, value)) {
+				return 'skip';
 			}
 
+			await this.perform(key, value);
 			return true;
 		} catch (err) {
-			await this.opts?.onError?.(this, err);
+			this.logger.error(`Error persisting ${this.name} queue: ${renderInlineError(err)}`);
 			return false;
 		}
 	}
 
-	//#region Events from other processes
 	@bindThis
-	private async onDefer(data: { name: string, key: string, deferred: boolean }) {
-		if (data.name !== this.name) return;
-
-		// Check for and recover from de-sync conditions where multiple processes try to "own" the same job.
-		const job = this.jobs.get(data.key);
-		if (job) {
-			if (data.deferred) {
-				// If another process tries to claim our job, then give it to them and queue our latest state.
-				this.timeService.stopTimer(job.timer);
-				this.jobs.delete(data.key);
-				await this.internalEventService.emit('collapsedQueueEnqueue', { name: this.name, key: data.key, value: job.value });
-			} else {
-				// If another process tries to release our job, then just continue.
-				return;
-			}
-		}
-
-		if (data.deferred) {
-			this.deferredKeys.add(data.key);
-		} else {
-			this.deferredKeys.delete(data.key);
-		}
-	}
-
-	@bindThis
-	private async onEnqueue(data: { name: string, key: string, value: unknown }) {
-		if (data.name !== this.name) return;
-
-		// Only enqueue if not deferred
-		if (!this.deferredKeys.has(data.key)) {
-			const value = this.opts?.redisParser
-				? this.opts.redisParser(data.value as Serialized<V>)
-				: data.value as V;
-
-			await this.enqueue(data.key, value);
-		}
-	}
-	//#endregion
-
-	async dispose() {
-		this.internalEventService.off('collapsedQueueDefer', this.onDefer);
-		this.internalEventService.off('collapsedQueueEnqueue', this.onEnqueue);
-
-		return await this.performAllNow();
+	public async dispose(): Promise<void> {
+		await this.performAllNow();
 	}
 }
+

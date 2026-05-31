@@ -10,7 +10,6 @@ import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import { isPackedPureRenote } from '@/misc/is-renote.js';
 import { isReply } from '@/misc/is-reply.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import { type Channel, NoteChannel, type MiChannelService } from '../channel.js';
 
@@ -35,7 +34,6 @@ class LocalTimelineChannel extends NoteChannel {
 
 	@bindThis
 	public async init(params: JsonObject) {
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
 		const policies = await this.roleService.getUserPolicies(this.user);
 		if (!policies.ltlAvailable) return;
 
@@ -66,7 +64,7 @@ class LocalTimelineChannel extends NoteChannel {
 	@bindThis
 	public dispose() {
 		// Unsubscribe events
-		this.subscriber?.off('notesStream', this.onNote);
+		this.subscriber.off('notesStream', this.onNote);
 	}
 }
 

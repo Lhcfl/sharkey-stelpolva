@@ -468,16 +468,6 @@ export class SearchService {
 			return [];
 		}
 
-		const [
-			userIdsWhoMeMuting,
-			userIdsWhoBlockingMe,
-		] = me
-			? await Promise.all([
-				this.cacheService.userMutingsCache.fetch(me.id),
-				this.cacheService.userBlockedCache.fetch(me.id),
-			])
-			: [new Set<string>(), new Set<string>()];
-
 		const query = this.notesRepository.createQueryBuilder('note')
 			.innerJoinAndSelect('note.user', 'user')
 			.leftJoinAndSelect('note.reply', 'reply')
@@ -491,11 +481,12 @@ export class SearchService {
 		this.queryService.generateSuspendedUserQueryForNote(query);
 		this.queryService.generateSilencedUserQueryForNotes(query, me);
 
-		const notes = (await query.getMany()).filter(note => {
-			if (me && isUserRelated(note, userIdsWhoBlockingMe)) return false;
-			if (me && isUserRelated(note, userIdsWhoMeMuting)) return false;
-			return true;
-		});
+		if (me) {
+			this.queryService.generateBlockedUserQueryForNotes(query, me);
+			this.queryService.generateMutedUserQueryForNotes(query, me);
+		}
+
+		const notes = await query.getMany();
 
 		return notes.sort((a, b) => a.id > b.id ? -1 : 1);
 	}

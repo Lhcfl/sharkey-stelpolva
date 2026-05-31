@@ -9,6 +9,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { FollowingsRepository } from '@/models/_.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { CacheService } from '@/core/CacheService.js';
@@ -73,6 +74,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private getterService: GetterService,
 		private userFollowingService: UserFollowingService,
 		private readonly cacheService: CacheService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const follower = me;
@@ -89,20 +91,21 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			// Check not following
-			const exist = await this.cacheService.userFollowingsCache.fetch(follower.id).then(f => f.get(followee.id));
+			const relations = await this.cacheService.getUserRelation(follower, followee);
 
-			if (exist == null) {
+			if (!relations.isFollowing) {
 				throw new ApiError(meta.errors.notFollowing);
 			}
 
 			await this.followingsRepository.update({
-				id: exist.id,
+				followerId: follower.id,
+				followeeId: followee.id,
 			}, {
 				notify: ps.notify != null ? (ps.notify === 'none' ? null : ps.notify) : undefined,
 				withReplies: ps.withReplies != null ? ps.withReplies : undefined,
 			});
 
-			await this.cacheService.refreshFollowRelationsFor(follower.id);
+			await this.internalEventService.emit('followChanged', { followerId: follower.id, followeeId: followee.id, withReplies: ps.withReplies, notify: ps.notify });
 
 			return await this.userEntityService.pack(follower.id, me);
 		});

@@ -6,10 +6,10 @@
 import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import type { NoteScheduleRepository } from '@/models/_.js';
+import type { Queues } from '@/queue/types.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
-import { QueueService } from '@/core/QueueService.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -49,8 +49,10 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.noteScheduleRepository)
-		private noteScheduleRepository: NoteScheduleRepository,
-		private queueService: QueueService,
+		private readonly noteScheduleRepository: NoteScheduleRepository,
+
+		@Inject('queue:scheduleNotePost')
+		private readonly scheduleNotePostQueue: Queues['scheduleNotePost'],
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const note = await this.noteScheduleRepository.findOneBy({ id: ps.noteId });
@@ -61,7 +63,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.permissionDenied);
 			}
 			await this.noteScheduleRepository.delete({ id: ps.noteId });
-			await this.queueService.ScheduleNotePostQueue.remove(`schedNote:${ps.noteId}`);
+			await this.scheduleNotePostQueue.remove(`schedNote_${ps.noteId}`);
+			// this is for notes scheduled with 2025.4 or earlier
+			await this.scheduleNotePostQueue.remove(`schedNote:${note.id}`).catch(() => null);
 		});
 	}
 }

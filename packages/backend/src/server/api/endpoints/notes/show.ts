@@ -9,6 +9,7 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { DI } from '@/di-symbols.js';
 import type { NotesRepository } from '@/models/_.js';
 import { QueryService } from '@/core/QueryService.js';
+import { UserService } from '@/core/UserService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -59,6 +60,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
+		private readonly userService: UserService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = await this.notesRepository.createQueryBuilder('note')
@@ -74,6 +76,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (note === null) {
 				throw new ApiError(meta.errors.noSuchNote);
+			}
+
+			if (me != null) {
+				this.userService.markUserActive(me);
 			}
 
 			if (note.user!.requireSigninToViewContents && me == null) {

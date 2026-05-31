@@ -88,7 +88,7 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
-     * **Credential required**: *Yes* / **Permission**: *write:admin:account*
+     * **Credential required**: *Yes* / **Permission**: *write:admin:delete-account*
      */
     request<E extends 'admin/accounts/delete', P extends Endpoints[E]['req']>(
       endpoint: E,

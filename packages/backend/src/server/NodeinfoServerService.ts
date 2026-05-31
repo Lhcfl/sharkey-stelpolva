@@ -82,11 +82,11 @@ export class NodeinfoServerService {
 				openRegistrations: !meta.disableRegistration,
 				usage: {
 					users: {
-						total: stats.usersTotal,
-						activeHalfyear: stats.usersActiveSixMonths,
-						activeMonth: stats.usersActiveMonth,
+						total: stats.localUsers,
+						activeHalfyear: stats.localUsersSixMonths,
+						activeMonth: stats.localUsersThisMonth,
 					},
-					localPosts: stats.notesTotal,
+					localPosts: stats.localNotes,
 					localComments: 0,
 				},
 				metadata: {

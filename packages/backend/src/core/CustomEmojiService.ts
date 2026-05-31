@@ -14,9 +14,9 @@ import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
 import { MemoryKVCache, RedisSingleCache } from '@/misc/cache.js';
 import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
-import type { DriveFilesRepository, EmojisRepository, MiRole, MiUser, MiDriveFile, NotesRepository } from '@/models/_.js';
+import type { DriveFilesRepository, EmojisRepository, MiUser, MiDriveFile, NotesRepository } from '@/models/_.js';
 import type { MiEmoji } from '@/models/Emoji.js';
-import type { Serialized } from '@/types.js';
+import type { NullableToOptional, SemiPartial } from '@/types.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import type { Config } from '@/config.js';
 import { DriveService } from '@/core/DriveService.js';
@@ -26,18 +26,6 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { promiseMap } from '@/misc/promise-map.js';
 import { isRetryableSymbol } from '@/misc/is-retryable-error.js';
 import type Logger from '@/logger.js';
-import { KeyNotFoundError } from '@/misc/errors/KeyNotFoundError.js';
-
-// TODO move to sk-types.d.ts when merged
-type MinEntity<T> = Omit<T, NullableProps<T>> & {
-	[K in NullableProps<T>]?: T[K] | undefined;
-};
-type SemiPartial<T, P extends keyof T> = Omit<T, P> & {
-	[Key in P]?: T[Key] | undefined;
-};
-type NullableProps<T> = {
-	[K in keyof T]: null extends T[K] ? K : never;
-}[keyof T];
 
 const parseEmojiStrRegexp = /^([-\w]+)(?:@([\w.-]+))?$/;
 
@@ -91,10 +79,13 @@ export class CustomEmojiService {
 	constructor(
 		@Inject(DI.redis)
 		private redisClient: Redis.Redis,
+
 		@Inject(DI.config)
 		private config: Config,
+
 		@Inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
+
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
@@ -145,26 +136,8 @@ export class CustomEmojiService {
 		});
 	}
 
-	/** @deprecated use createEmoji for new code */
-	@bindThis
-	public async add(data: {
-		originalUrl: string;
-		publicUrl: string;
-		fileType: string;
-		name: string;
-		category: string | null;
-		aliases: string[];
-		host: string | null;
-		license: string | null;
-		isSensitive: boolean;
-		localOnly: boolean;
-		roleIdsThatCanBeUsedThisEmojiAsReaction: MiRole['id'][];
-	}, moderator?: MiUser): Promise<MiEmoji> {
-		return await this.createEmoji(data, { moderator });
-	}
-
 	public async createEmoji(
-		data: SemiPartial<MinEntity<MiEmoji>, 'id' | 'updatedAt' | 'aliases' | 'roleIdsThatCanBeUsedThisEmojiAsReaction'>,
+		data: SemiPartial<NullableToOptional<MiEmoji>, 'id' | 'updatedAt' | 'aliases' | 'roleIdsThatCanBeUsedThisEmojiAsReaction'>,
 		opts?: { moderator?: { id: string } },
 	): Promise<MiEmoji> {
 		// Set defaults
@@ -200,49 +173,6 @@ export class CustomEmojiService {
 		}
 
 		return emoji;
-	}
-
-	/** @deprecated Use updateEmoji for new code */
-	@bindThis
-	public async update(data: (
-		{ id: MiEmoji['id'], name?: string; } | { name: string; id?: MiEmoji['id'], }
-	) & {
-		originalUrl?: string;
-		publicUrl?: string;
-		fileType?: string;
-		category?: string | null;
-		aliases?: string[];
-		license?: string | null;
-		isSensitive?: boolean;
-		localOnly?: boolean;
-		roleIdsThatCanBeUsedThisEmojiAsReaction?: MiRole['id'][];
-	}, moderator?: MiUser): Promise<
-		null
-		| 'NO_SUCH_EMOJI'
-		| 'SAME_NAME_EMOJI_EXISTS'
-		> {
-		try {
-			const criteria = data.id
-				? { id: data.id as string }
-				: { name: data.name as string, host: null };
-
-			const updates = {
-				...data,
-				id: undefined,
-				host: undefined,
-			};
-
-			const opts = {
-				moderator,
-			};
-
-			await this.updateEmoji(criteria, updates, opts);
-			return null;
-		} catch (err) {
-			if (err instanceof KeyNotFoundError) return 'NO_SUCH_EMOJI';
-			if (err instanceof DuplicateEmojiError) return 'SAME_NAME_EMOJI_EXISTS';
-			throw err;
-		}
 	}
 
 	@bindThis
@@ -578,7 +508,7 @@ export class CustomEmojiService {
 	 */
 	@bindThis
 	public async populateEmojis(emojiNames: string[], noteUserHost: string | null): Promise<Record<string, string>> {
-		const emojis = await promiseMap(emojiNames, async x => await this.populateEmoji(x, noteUserHost), { limit: 4 });
+		const emojis = await promiseMap(emojiNames, async x => await this.populateEmoji(x, noteUserHost), { limiter: 4 });
 		const res = {} as Record<string, string>;
 		for (let i = 0; i < emojiNames.length; i++) {
 			const resolvedEmoji = emojis[i];

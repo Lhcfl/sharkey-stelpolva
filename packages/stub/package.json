@@ -1,0 +1,12 @@
+{
+	"name": "stub",
+	"type": "commonjs",
+	"private": true,
+	"description": "Stub package used for replacing unused dependencies",
+	"main": "./index.js",
+	"typings": "./index.d.ts",
+	"devDependencies": {
+		"typescript": "5.9.3"
+	},
+	"sideEffects": false
+}

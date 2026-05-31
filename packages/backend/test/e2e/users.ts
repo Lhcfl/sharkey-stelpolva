@@ -679,10 +679,8 @@ describe('ユーザー', () => {
 		// FIXME: 落ちる
 		//{ label: 'サスペンドになっている', user: () => userSuspended, selector: (user: misskey.entities.UserDetailed) => user.isSuspended },
 		{ label: '削除済みになっている', user: () => userDeletedBySelf, me: () => userDeletedBySelf, selector: (user: misskey.entities.MeDetailed) => user.isDeleted },
-		// @ts-expect-error UserDetailedNotMe doesn't include isDeleted
 		{ label: '自分以外から見たときは削除済みか判定できない', user: () => userDeletedBySelf, selector: (user: misskey.entities.UserDetailedNotMe) => user.isDeleted, expected: () => undefined },
 		{ label: '削除済み(byAdmin)になっている', user: () => userDeletedByAdmin, me: () => userDeletedByAdmin, selector: (user: misskey.entities.MeDetailed) => user.isDeleted },
-		// @ts-expect-error UserDetailedNotMe doesn't include isDeleted
 		{ label: '自分以外から見たときは削除済み(byAdmin)か判定できない', user: () => userDeletedByAdmin, selector: (user: misskey.entities.UserDetailedNotMe) => user.isDeleted, expected: () => undefined },
 		{ label: 'フォロー中になっている', user: () => userFollowedByAlice, selector: (user: misskey.entities.UserDetailed) => user.isFollowing },
 		{ label: 'フォローされている', user: () => userFollowingAlice, selector: (user: misskey.entities.UserDetailed) => user.isFollowed },

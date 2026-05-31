@@ -8,9 +8,9 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { IdService } from '@/core/IdService.js';
 import type { WebhooksRepository } from '@/models/_.js';
 import { webhookEventTypes } from '@/models/Webhook.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { ApiError } from '@/server/api/error.js';
 
 // TODO: UserWebhook schemaの適用
@@ -85,8 +85,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private webhooksRepository: WebhooksRepository,
 
 		private idService: IdService,
-		private globalEventService: GlobalEventService,
 		private roleService: RoleService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const currentWebhooksCount = await this.webhooksRepository.countBy({
@@ -105,7 +105,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				on: ps.on,
 			});
 
-			this.globalEventService.publishInternalEvent('webhookCreated', webhook);
+			await this.internalEventService.emit('webhookCreated', webhook);
 
 			return {
 				id: webhook.id,

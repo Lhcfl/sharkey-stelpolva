@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { DriveFilesRepository, UsersRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
+import { CacheService } from '@/core/CacheService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { IdService } from '@/core/IdService.js';
 import { ApiError } from '../../../error.js';
@@ -185,6 +186,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private roleService: RoleService,
 		private idService: IdService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const file = ps.fileId ? await this.driveFilesRepository.findOneBy({ id: ps.fileId }) : await this.driveFilesRepository.findOne({
@@ -201,9 +203,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchFile);
 			}
 
-			const owner = file.userId ? await this.usersRepository.findOneByOrFail({
-				id: file.userId,
-			}) : null;
+			const owner = file.userId ? (file.user ?? await this.cacheService.findUserById(file.userId)) : null;
 
 			const iAmModerator = await this.roleService.isModerator(me);
 			const ownerIsModerator = owner ? await this.roleService.isModerator(owner) : false;

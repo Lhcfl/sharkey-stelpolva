@@ -37,9 +37,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #footer>
 					<div class="_buttons">
 						<MkButton rounded @click="promoteAllJobs"><i class="ti ti-player-track-next"></i> Promote all jobs</MkButton>
-						<MkButton rounded @click="createJob"><i class="ti ti-plus"></i> Add job</MkButton>
-						<MkButton v-if="queueInfo.isPaused" rounded @click="resumeQueue"><i class="ti ti-player-play"></i> Resume queue</MkButton>
-						<MkButton v-else rounded danger @click="pauseQueue"><i class="ti ti-player-pause"></i> Pause queue</MkButton>
+<!--						<MkButton rounded @click="createJob"><i class="ti ti-plus"></i> Add job</MkButton>-->
+<!--						<MkButton v-if="queueInfo.isPaused" rounded @click="resumeQueue"><i class="ti ti-player-play"></i> Resume queue</MkButton>-->
+<!--						<MkButton v-else rounded danger @click="pauseQueue"><i class="ti ti-player-pause"></i> Pause queue</MkButton>-->
 						<MkButton rounded danger @click="clearQueue"><i class="ti ti-trash"></i> Empty queue</MkButton>
 					</div>
 				</template>
@@ -152,8 +152,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkLoading v-if="jobsFetching"/>
 					<MkTl
 						v-else
-						:events="jobs.map((job) => ({
-							id: job.id,
+						:events="jobs.map((job, idx) => ({
+							id: job.id ?? `job-${idx}`,
 							timestamp: job.finishedOn ?? job.processedOn ?? job.timestamp,
 							data: job,
 						}))"
@@ -178,6 +178,7 @@ import { useInterval } from '@@/js/use-interval.js';
 import XChart from './job-queue.chart.vue';
 import XJob from './job-queue.job.vue';
 import type { Ref } from 'vue';
+import * as Misskey from 'misskey-js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
@@ -193,84 +194,92 @@ import MkInput from '@/components/MkInput.vue';
 import bytes from '@/filters/bytes.js';
 import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 
-const QUEUE_TYPES = [
-	'system',
-	'endedPollNotification',
-	'deliver',
-	'inbox',
-	'db',
-	'relationship',
-	'objectStorage',
-	'userWebhookDeliver',
-	'systemWebhookDeliver',
-	'scheduleNotePost',
-	'backgroundTask',
-] as const;
-
-const tab: Ref<typeof QUEUE_TYPES[number] | '-'> = ref('-');
-const jobState = ref('all');
-const jobs = ref([]);
-const jobsFetching = ref(true);
-const queueInfos = ref([]);
-const queueInfo = ref();
+const tab: Ref<Misskey.entities.QueueType | '-'> = ref('-');
+const jobState = ref<'all' | 'latest' | 'completed' | 'failed' | 'active' | 'delayed' | 'wait' | 'paused'>('all');
+const jobs = ref<Misskey.entities.AdminQueueJobsResponse>([]);
+const jobsFetching = ref(false);
+const queuesFetching = ref(false);
+const currentQueueFetching = ref(false);
+const queueInfos = ref<Misskey.entities.QueueStat[]>([]);
+const queueInfo = ref<Misskey.entities.QueueStat | null>(null);
 const searchQuery = ref('');
 
-async function fetchQueues() {
+async function fetchQueues(force = false) {
 	if (tab.value !== '-') return;
-	queueInfos.value = await misskeyApi('admin/queue/queues');
+	if (queuesFetching.value && !force) return;
+
+	queuesFetching.value = true;
+	try {
+		queueInfos.value = await misskeyApi('admin/queue/queues');
+	} finally {
+		queuesFetching.value = false;
+	}
 }
 
-async function fetchCurrentQueue() {
+async function fetchCurrentQueue(force = false) {
 	if (tab.value === '-') return;
-	queueInfo.value = await misskeyApi('admin/queue/queue-stats', { queue: tab.value });
+	if (currentQueueFetching.value && !force) return;
+
+	currentQueueFetching.value = true;
+	try {
+		queueInfo.value = await misskeyApi('admin/queue/queue-stats', { queue: tab.value });
+	} finally {
+		currentQueueFetching.value = false;
+	}
 }
 
-async function fetchJobs() {
+async function fetchJobs(force = false) {
+	if (jobsFetching.value && !force) return;
+
 	jobsFetching.value = true;
-	const state = jobState.value;
-	jobs.value = await misskeyApi('admin/queue/jobs', {
-		queue: tab.value,
-		state: state === 'all' ? ['completed', 'failed', 'active', 'delayed', 'wait'] : state === 'latest' ? ['completed', 'failed'] : [state],
-		search: searchQuery.value.trim() === '' ? undefined : searchQuery.value,
-	}).then(res => {
+	try {
+		const state = jobState.value;
+		const res: Misskey.entities.AdminQueueJobsResponse = await misskeyApi('admin/queue/jobs', {
+			queue: tab.value,
+			state: state === 'all' ? ['completed', 'failed', 'active', 'delayed', 'wait'] : state === 'latest' ? ['completed', 'failed'] : [state],
+			search: searchQuery.value.trim() === '' ? undefined : searchQuery.value,
+		});
 		if (state === 'all') {
 			res.sort((a, b) => (a.processedOn ?? a.timestamp) > (b.processedOn ?? b.timestamp) ? -1 : 1);
 		} else if (state === 'latest') {
-			res.sort((a, b) => a.processedOn > b.processedOn ? -1 : 1);
+			res.sort((a, b) => a.processedOn! > b.processedOn! ? -1 : 1);
 		} else if (state === 'delayed') {
 			res.sort((a, b) => (a.processedOn ?? a.timestamp) > (b.processedOn ?? b.timestamp) ? -1 : 1);
 		}
-		return res;
-	});
-	jobsFetching.value = false;
+		jobs.value = res;
+	} finally {
+		jobsFetching.value = false;
+	}
 }
 
 watch([tab], async () => {
-	if (tab.value === '-') {
-		fetchQueues();
-	} else {
-		fetchCurrentQueue();
-		fetchJobs();
-	}
+	await os.promiseDialog(async () => {
+		if (tab.value === '-') {
+			await fetchQueues();
+		} else {
+			await fetchCurrentQueue(true);
+			await fetchJobs(true);
+		}
+	}, () => {});
 }, { immediate: true });
 
-watch([jobState], () => {
-	fetchJobs();
+watch([jobState], async () => {
+	await fetchJobs(true);
 });
 
-const search = debounce(1000, () => {
-	fetchJobs();
+const search = debounce(1000, async () => {
+	await fetchJobs(true);
 });
 
 watch([searchQuery], () => {
 	search();
 });
 
-useInterval(() => {
+useInterval(async () => {
 	if (tab.value === '-') {
-		fetchQueues();
+		await fetchQueues();
 	} else {
-		fetchCurrentQueue();
+		await fetchCurrentQueue();
 	}
 }, 1000 * 10, {
 	immediate: false,
@@ -284,10 +293,11 @@ async function clearQueue() {
 	});
 	if (canceled) return;
 
-	os.apiWithDialog('admin/queue/clear', { queue: tab.value, state: '*' });
-
-	fetchCurrentQueue();
-	fetchJobs();
+	await os.promiseDialog(async () => {
+		await misskeyApi('admin/queue/clear', { queue: tab.value, state: '*' });
+		await fetchCurrentQueue(true);
+		await fetchJobs(true);
+	});
 }
 
 async function promoteAllJobs() {
@@ -297,10 +307,11 @@ async function promoteAllJobs() {
 	});
 	if (canceled) return;
 
-	os.apiWithDialog('admin/queue/promote-jobs', { queue: tab.value });
-
-	fetchCurrentQueue();
-	fetchJobs();
+	await os.promiseDialog(async () => {
+		await misskeyApi('admin/queue/promote-jobs', { queue: tab.value });
+		await fetchCurrentQueue(true);
+		await fetchJobs(true);
+	});
 }
 
 async function removeJobs() {
@@ -310,10 +321,11 @@ async function removeJobs() {
 	});
 	if (canceled) return;
 
-	os.apiWithDialog('admin/queue/clear', { queue: tab.value, state: jobState.value });
-
-	fetchCurrentQueue();
-	fetchJobs();
+	await os.promiseDialog(async () => {
+		await misskeyApi('admin/queue/clear', { queue: tab.value, state: jobState.value });
+		await fetchCurrentQueue(true);
+		await fetchJobs(true);
+	});
 }
 
 async function refreshJob(jobId: string) {
@@ -326,16 +338,20 @@ async function refreshJob(jobId: string) {
 
 const headerActions = computed(() => []);
 
-const headerTabs = computed(() =>
-	[{
+const headerTabs = computed(() => {
+	const tabs: { key: string, title: string, icon?: string }[] = [{
 		key: '-',
 		title: i18n.ts.overview,
 		icon: 'ti ti-dashboard',
-	}].concat(QUEUE_TYPES.map((t) => ({
-		key: t,
-		title: t,
-	}))),
-);
+	}];
+	for (const t of Misskey.entities.QUEUE_TYPES) {
+		tabs.push({
+			key: t,
+			title: t,
+		});
+	}
+	return tabs;
+});
 
 definePage(() => ({
 	title: i18n.ts.jobQueue,

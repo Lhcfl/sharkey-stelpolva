@@ -151,7 +151,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 		announcementService.create.mockReset();
 		emailService.sendEmail.mockReset();
 		systemWebhookService.enqueueSystemWebhook.mockReset();
-		cacheManagementService.clear();
+		await cacheManagementService.clear();
 	});
 
 	// --------------------------------------------------------------------------------------

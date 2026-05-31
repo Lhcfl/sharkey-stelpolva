@@ -71,7 +71,7 @@ export class UserListService implements OnModuleInit {
 	}
 
 	@bindThis
-	async onModuleInit() {
+	public async onModuleInit() {
 		this.roleService = this.moduleRef.get('RoleService');
 	}
 

@@ -30,7 +30,13 @@
 		"./vue-shims.d.ts"
 	],
 	"exclude": [
-		"node_modules",
+		"**/node_modules",
+		"**/built",
+		"**/built-test",
+		"**/js-built",
+		"**/temp",
+		"**/coverage",
+		"**/*.min.js",
 		".storybook/**/*"
 	]
 }

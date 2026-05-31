@@ -18,7 +18,6 @@ import {
 	ModuleOptions,
 	ResourceOwnerPassword,
 } from 'simple-oauth2';
-import pkceChallenge from 'pkce-challenge';
 import { load as cheerio } from 'cheerio/slim';
 import Fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
 import { api, port, sendEnvUpdateRequest, signup } from '../utils.js';

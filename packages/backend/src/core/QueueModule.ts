@@ -3,182 +3,120 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Module, OnApplicationShutdown } from '@nestjs/common';
+import {
+	Global,
+	Module,
+	Inject,
+	type Import,
+	type Provider,
+	type OnApplicationShutdown,
+	type InjectionToken,
+} from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import * as Bull from 'bullmq';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
-import { baseQueueOptions, QUEUE } from '@/queue/const.js';
-import { allSettled } from '@/misc/promise-tracker.js';
-import Logger from '@/logger.js';
-import { bindThis } from '@/decorators.js';
+import type { Logger } from '@/logger.js';
+import { EnvService } from '@/global/EnvService.js';
+import { GlobalModule } from '@/GlobalModule.js';
+import { LoggerService } from '@/core/LoggerService.js';
+import { getQueueOptions, QUEUE_TYPES } from '@/queue/const.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
-import {
-	DeliverJobData,
-	EndedPollNotificationJobData,
-	InboxJobData,
-	RelationshipJobData,
-	UserWebhookDeliverJobData,
-	SystemWebhookDeliverJobData,
-	ScheduleNotePostJobData,
-	BackgroundTaskJobData,
-} from '../queue/types.js';
-import type { Provider } from '@nestjs/common';
+import { allSettled } from '@/misc/promise-tracker.js';
+import { promiseTry } from '@/misc/promise-try.js';
+import { bindThis } from '@/decorators.js';
 
-export type SystemQueue = Bull.Queue<Record<string, unknown>>;
-export type EndedPollNotificationQueue = Bull.Queue<EndedPollNotificationJobData>;
-export type DeliverQueue = Bull.Queue<DeliverJobData>;
-export type InboxQueue = Bull.Queue<InboxJobData>;
-export type DbQueue = Bull.Queue;
-export type RelationshipQueue = Bull.Queue<RelationshipJobData>;
-export type ObjectStorageQueue = Bull.Queue;
-export type UserWebhookDeliverQueue = Bull.Queue<UserWebhookDeliverJobData>;
-export type SystemWebhookDeliverQueue = Bull.Queue<SystemWebhookDeliverJobData>;
-export type ScheduleNotePostQueue = Bull.Queue<ScheduleNotePostJobData>;
-export type BackgroundTaskQueue = Bull.Queue<BackgroundTaskJobData>;
-
-const $system: Provider = {
-	provide: 'queue:system',
-	useFactory: (config: Config) => new Bull.Queue(QUEUE.SYSTEM, baseQueueOptions(config, QUEUE.SYSTEM)),
-	inject: [DI.config],
+const queueLoggerDI = Symbol('queueLogger');
+const $queueLogger: Provider = {
+	provide: queueLoggerDI,
+	useFactory: (loggerService: LoggerService) => loggerService.getLogger('queue'),
+	inject: [LoggerService],
 };
 
-const $endedPollNotification: Provider = {
-	provide: 'queue:endedPollNotification',
-	useFactory: (config: Config) => new Bull.Queue(QUEUE.ENDED_POLL_NOTIFICATION, baseQueueOptions(config, QUEUE.ENDED_POLL_NOTIFICATION)),
-	inject: [DI.config],
-};
+// TODO factor the "alias with warning" logic into something re-usable
+function makeAliasProvider(from: InjectionToken, to: InjectionToken): Provider {
+	return {
+		provide: from,
+		useFactory: (envService: EnvService, logger: Logger, actual: unknown) => {
+			// Log a warning in non-production environments
+			if (envService.env.NODE_ENV !== 'production') {
+				// noinspection SuspiciousTypeOfGuard <- WebStorm doesn't recognize symbol types
+				const fromLabel = typeof(from) === 'symbol' ? `Symbol(${from.description ?? '?'})` : String(from);
+				// noinspection SuspiciousTypeOfGuard <- WebStorm doesn't recognize symbol types
+				const toLabel = typeof(to) === 'symbol' ? `Symbol(${to.description ?? '?'})` : String(to);
+				logger.warn(`Detected incorrect use of DI alias "${fromLabel}" - please use canonical token "${toLabel}" instead.`);
+			}
 
-const $deliver: Provider = {
-	provide: 'queue:deliver',
-	useFactory: (config: Config) => new Bull.Queue(QUEUE.DELIVER, baseQueueOptions(config, QUEUE.DELIVER)),
-	inject: [DI.config],
-};
+			return actual;
+		},
+		inject: [EnvService, queueLoggerDI, to],
+	};
+}
 
-const $inbox: Provider = {
-	provide: 'queue:inbox',
-	useFactory: (config: Config) => new Bull.Queue(QUEUE.INBOX, baseQueueOptions(config, QUEUE.INBOX)),
-	inject: [DI.config],
-};
+const $queues: Provider[] = QUEUE_TYPES.flatMap(qt => {
+	const queueDI = `queue:${qt}`;
+	const eventsDI = `queue:${qt}:events`;
+	return [
+		// Queue instance
+		{
+			provide: queueDI,
+			useFactory: (config: Config) => new Bull.Queue(qt, getQueueOptions(config, qt)),
+			inject: [DI.config],
+		},
+		// Event connection
+		{
+			provide: `queue:${qt}:events`,
+			useFactory: (config: Config) => new Bull.QueueEvents(qt, getQueueOptions(config, qt)),
+			inject: [DI.config],
+		},
+		makeAliasProvider(`queues:${qt}`, queueDI),
+		makeAliasProvider(`queues:${qt}:events`, eventsDI),
+		makeAliasProvider(`queues:${qt}:event`, eventsDI),
+		makeAliasProvider(`queue:${qt}:event`, eventsDI),
+	];
+});
 
-const $db: Provider = {
-	provide: 'queue:db',
-	useFactory: (config: Config) => new Bull.Queue(QUEUE.DB, baseQueueOptions(config, QUEUE.DB)),
-	inject: [DI.config],
-};
+/** External module dependencies */
+const $Imports = [
+	GlobalModule,
+] as const satisfies Import[];
 
-const $relationship: Provider = {
-	provide: 'queue:relationship',
-	useFactory: (config: Config) => new Bull.Queue(QUEUE.RELATIONSHIP, baseQueueOptions(config, QUEUE.RELATIONSHIP)),
-	inject: [DI.config],
-};
-
-const $objectStorage: Provider = {
-	provide: 'queue:objectStorage',
-	useFactory: (config: Config) => new Bull.Queue(QUEUE.OBJECT_STORAGE, baseQueueOptions(config, QUEUE.OBJECT_STORAGE)),
-	inject: [DI.config],
-};
-
-const $userWebhookDeliver: Provider = {
-	provide: 'queue:userWebhookDeliver',
-	useFactory: (config: Config) => new Bull.Queue(QUEUE.USER_WEBHOOK_DELIVER, baseQueueOptions(config, QUEUE.USER_WEBHOOK_DELIVER)),
-	inject: [DI.config],
-};
-
-const $systemWebhookDeliver: Provider = {
-	provide: 'queue:systemWebhookDeliver',
-	useFactory: (config: Config) => new Bull.Queue(QUEUE.SYSTEM_WEBHOOK_DELIVER, baseQueueOptions(config, QUEUE.SYSTEM_WEBHOOK_DELIVER)),
-	inject: [DI.config],
-};
-
-const $scheduleNotePost: Provider = {
-	provide: 'queue:scheduleNotePost',
-	useFactory: (config: Config) => new Bull.Queue(QUEUE.SCHEDULE_NOTE_POST, baseQueueOptions(config, QUEUE.SCHEDULE_NOTE_POST)),
-	inject: [DI.config],
-};
-
-const $backgroundTask: Provider = {
-	provide: 'queue:backgroundTask',
-	useFactory: (config: Config) => new Bull.Queue(QUEUE.BACKGROUND_TASK, baseQueueOptions(config, QUEUE.BACKGROUND_TASK)),
-	inject: [DI.config],
-};
-
+@Global()
 @Module({
-	imports: [
-	],
+	imports: $Imports,
 	providers: [
-		$system,
-		$endedPollNotification,
-		$deliver,
-		$inbox,
-		$db,
-		$relationship,
-		$objectStorage,
-		$userWebhookDeliver,
-		$systemWebhookDeliver,
-		$scheduleNotePost,
-		$backgroundTask,
-	],
+		$queues,
+		$queueLogger,
+	].flat(),
 	exports: [
-		$system,
-		$endedPollNotification,
-		$deliver,
-		$inbox,
-		$db,
-		$relationship,
-		$objectStorage,
-		$userWebhookDeliver,
-		$systemWebhookDeliver,
-		$scheduleNotePost,
-		$backgroundTask,
-	],
+		$queues,
+		$Imports,
+	].flat(),
 })
 export class QueueModule implements OnApplicationShutdown {
-	private readonly logger = new Logger('queue');
-
 	constructor(
-		@Inject('queue:system') public systemQueue: SystemQueue,
-		@Inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
-		@Inject('queue:deliver') public deliverQueue: DeliverQueue,
-		@Inject('queue:inbox') public inboxQueue: InboxQueue,
-		@Inject('queue:db') public dbQueue: DbQueue,
-		@Inject('queue:relationship') public relationshipQueue: RelationshipQueue,
-		@Inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
-		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
-		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
-		@Inject('queue:scheduleNotePost') public scheduleNotePostQueue: ScheduleNotePostQueue,
-		@Inject('queue:backgroundTask') public readonly backgroundTaskQueue: BackgroundTaskQueue,
+		private readonly moduleRef: ModuleRef,
+
+		@Inject(queueLoggerDI)
+		private readonly logger: Logger,
 	) {}
 
-	public async dispose(): Promise<void> {
+	@bindThis
+	public async onApplicationShutdown(): Promise<void> {
 		// Wait for all potential queue jobs
 		this.logger.info('Finalizing active promises...');
 		await allSettled();
-		// And then close all queues
-		this.logger.info('Closing BullMQ queues...');
-		await Promise.allSettled([
-			this.systemQueue.close(),
-			this.endedPollNotificationQueue.close(),
-			this.deliverQueue.close(),
-			this.inboxQueue.close(),
-			this.dbQueue.close(),
-			this.relationshipQueue.close(),
-			this.objectStorageQueue.close(),
-			this.userWebhookDeliverQueue.close(),
-			this.systemWebhookDeliverQueue.close(),
-			this.scheduleNotePostQueue.close(),
-			this.backgroundTaskQueue.close(),
-		]).then(res => {
-			for (const result of res) {
-				if (result.status === 'rejected') {
-					this.logger.error(`Error closing queue: ${renderInlineError(result.reason)}`);
-				}
-			}
-		});
-		this.logger.info('Queue module disposed.');
-	}
 
-	@bindThis
-	async onApplicationShutdown(signal: string): Promise<void> {
-		await this.dispose();
+		// And then close all queues in parallel
+		this.logger.info('Closing BullMQ queue connections...');
+		// TODO move QUEUE_TYPES to this class
+		const tasks = QUEUE_TYPES.flatMap(qt => [
+			promiseTry(() => this.moduleRef.get<Bull.Queue>(`queue:${qt}`).disconnect())
+				.catch(err => this.logger.error(`Error closing queue ${qt}: ${renderInlineError(err)}`)),
+			promiseTry(() => this.moduleRef.get<Bull.QueueEvents>(`queue:${qt}:events`).disconnect())
+				.catch(err => this.logger.error(`Error closing events for queue ${qt}: ${renderInlineError(err)}`)),
+		]);
+		await Promise.all(tasks);
+		this.logger.info('Queue module disposed.');
 	}
 }

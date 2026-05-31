@@ -11,7 +11,7 @@ import type {
 	User,
 	UserDetailedNotMe,
 } from './autogen/models.js';
-import type { AuthenticationResponseJSON, PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/types';
+import type { AuthenticationResponseJSON, PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server';
 
 export * from './autogen/entities.js';
 export * from './autogen/models.js';
@@ -300,28 +300,22 @@ export type ServerStats = {
 
 export type ServerStatsLog = ServerStats[];
 
-export type QueueStats = {
-	deliver: {
-		activeSincePrevTick: number;
-		active: number;
-		waiting: number;
-		delayed: number;
-	};
-	inbox: {
-		activeSincePrevTick: number;
-		active: number;
-		waiting: number;
-		delayed: number;
-	};
-	background: {
-		activeSincePrevTick: number;
-		active: number;
-		waiting: number;
-		delayed: number;
-	};
-};
+// sync with backend src/queue/const.ts
+export const QUEUE_TYPES = [
+	'system',
+	'endedPollNotification',
+	'deliver',
+	'inbox',
+	'db',
+	'relationship',
+	'objectStorage',
+	'userWebhookDeliver',
+	'systemWebhookDeliver',
+	'scheduleNotePost',
+	'backgroundTask',
+] as const;
 
-export type QueueStatsLog = QueueStats[];
+export type QueueType = typeof QUEUE_TYPES[number];
 
 export type EmojiAdded = {
 	emoji: EmojiDetailed

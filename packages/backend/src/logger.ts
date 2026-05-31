@@ -5,12 +5,13 @@
 
 import cluster from 'node:cluster';
 import chalk from 'chalk';
-import { default as convertColor } from 'color-convert';
+import colors from 'color-name';
 import { format as dateFormat } from 'date-fns';
 import { bindThis } from '@/decorators.js';
 import { TimeService, NativeTimeService } from '@/global/TimeService.js';
 import { EnvService } from '@/global/EnvService.js';
-import type { KEYWORD } from 'color-convert/conversions.js';
+
+export type KEYWORD = keyof typeof colors;
 
 type Context = {
 	name: string;
@@ -38,8 +39,7 @@ const levelFuncs = {
 	debug: 'debug',
 } as const satisfies Record<Level, keyof Console>;
 
-// eslint-disable-next-line import/no-default-export
-export default class Logger {
+export class Logger {
 	private context: Context;
 	private parentLogger: Logger | null = null;
 	private readonly timeService: TimeService;
@@ -91,7 +91,7 @@ export default class Logger {
 			level === 'debug' ? chalk.gray('VERB') :
 			level === 'info' ? chalk.blue('INFO') :
 			null;
-		const contexts = [this.context].concat(subContexts).map(d => d.color ? chalk.rgb(...convertColor.keyword.rgb(d.color))(d.name) : chalk.white(d.name));
+		const contexts = [this.context].concat(subContexts).map(d => d.color ? chalk.rgb(...colors[d.color])(d.name) : chalk.white(d.name));
 		const m =
 			level === 'error' ? chalk.red(message) :
 			level === 'warning' ? chalk.yellow(message) :
@@ -151,3 +151,6 @@ export default class Logger {
 		this.log('info', message, data, important);
 	}
 }
+
+// eslint-disable-next-line import/no-default-export
+export default Logger;

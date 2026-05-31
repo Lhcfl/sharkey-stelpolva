@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import type { MiMeta } from '@/models/Meta.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { MetaService } from '@/core/MetaService.js';
 import { instanceUnsignedFetchOptions } from '@/const.js';
+import { DI } from '@/di-symbols.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -234,6 +235,9 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
+		@Inject(DI.meta)
+		private readonly serverSettings: MiMeta,
+
 		private metaService: MetaService,
 		private moderationLogService: ModerationLogService,
 	) {
@@ -502,7 +506,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.repositoryUrl !== undefined) {
-				set.repositoryUrl = URL.canParse(ps.repositoryUrl!) ? ps.repositoryUrl : null;
+				set.repositoryUrl = ps.repositoryUrl && URL.canParse(ps.repositoryUrl) ? ps.repositoryUrl : null;
 			}
 
 			if (ps.feedbackUrl !== undefined) {
@@ -791,11 +795,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				set.enableProxyAccount = ps.enableProxyAccount;
 			}
 
-			const before = await this.metaService.fetch(true);
-
-			await this.metaService.update(set);
-
-			const after = await this.metaService.fetch(true);
+			const before = Object.assign({}, this.serverSettings);
+			const after = await this.metaService.update(set);
 
 			this.moderationLogService.log(me, 'updateServerSettings', {
 				before: sanitize(before),
@@ -805,8 +806,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	}
 }
 
-function sanitize(meta: Partial<MiMeta>): Partial<MiMeta> {
-	return {
+function sanitize(meta: Partial<MiMeta & OnApplicationShutdown & OnApplicationBootstrap>): Partial<MiMeta> {
+	meta = {
 		...meta,
 		hcaptchaSecretKey: '<redacted>',
 		mcaptchaSecretKey: '<redacted>',
@@ -821,6 +822,9 @@ function sanitize(meta: Partial<MiMeta>): Partial<MiMeta> {
 		libreTranslateKey: '<redacted>',
 		verifymailAuthKey: '<redacted>',
 		truemailAuthKey: '<redacted>',
+		onApplicationBootstrap: undefined,
+		onApplicationShutdown: undefined,
 	};
+	return meta;
 }
 

@@ -9,24 +9,31 @@
 		"sourceMap": true,
 		"inlineSources": true,
 		"removeComments": false,
-		"outDir": "./js-built/",
-		"rootDir": ".",
+		"outDir": "./built/js",
+		"rootDir": "./js",
 		"strictFunctionTypes": true,
 		"paths": {
 			"@/*": ["./*"],
 			"@@/*": ["./*"]
 		},
 		"typeRoots": [
-			"./@types",
+			"./js/@types",
 			"./node_modules/@types"
 		]
 	},
 	"include": [
-		"./@types/**/*.ts",
-		"./js/**/*"
+		"./js/**/*.js",
+		"./js/**/*.ts"
 	],
 	"exclude": [
-		"node_modules",
-		"js-built"
+		"**/node_modules",
+		"**/built",
+		"**/built-test",
+		"**/js-built",
+		"**/temp",
+		"**/coverage",
+		"**/*.min.js",
+		"*.js",
+		"*.ts"
 	]
 }

@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { GetterService } from '@/server/api/GetterService.js';
+import { UserService } from '@/core/UserService.js';
 import { DI } from '@/di-symbols.js';
 import type { NoteFavoritesRepository } from '@/models/_.js';
 import { ApiError } from '../../../error.js';
@@ -54,6 +55,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteFavoritesRepository: NoteFavoritesRepository,
 
 		private getterService: GetterService,
+		private readonly userService: UserService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get favoritee
@@ -71,6 +73,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (exist == null) {
 				throw new ApiError(meta.errors.notFavorited);
 			}
+
+			this.userService.markUserActive(me, true);
 
 			// Delete favorite
 			await this.noteFavoritesRepository.delete(exist.id);

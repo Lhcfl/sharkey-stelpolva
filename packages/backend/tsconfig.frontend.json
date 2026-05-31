@@ -14,12 +14,13 @@
 		"./src/server/web/**/*.d.ts"
 	],
 	"exclude": [
-		"node_modules",
-		"built",
-		"built-test",
-		"js-built",
-		"temp",
-		"coverage",
+		"**/node_modules",
+		"**/built",
+		"**/built-test",
+		"**/js-built",
+		"**/temp",
+		"**/coverage",
+		"**/*.min.js",
 		"test",
 		"test-federation",
 		"test-server"

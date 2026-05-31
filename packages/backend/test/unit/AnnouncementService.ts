@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { MockRedis } from '../misc/MockRedis.js';
+
 process.env.NODE_ENV = 'test';
 
 import { jest } from '@jest/globals';
@@ -10,6 +12,7 @@ import { ModuleMocker } from 'jest-mock';
 import { Test } from '@nestjs/testing';
 import { FakeCacheManagementService } from '../misc/FakeCacheManagementService.js';
 import { MockInternalEventService } from '../misc/MockInternalEventService.js';
+import type { MockMetadata } from 'jest-mock';
 import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
@@ -31,7 +34,7 @@ import { RoleService } from '@/core/RoleService.js';
 import { CoreModule } from '@/core/CoreModule.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import type { TestingModule } from '@nestjs/testing';
-import type { MockMetadata } from 'jest-mock';
+import type { Redis } from 'ioredis';
 
 const moduleMocker = new ModuleMocker(global);
 
@@ -91,8 +94,12 @@ describe('AnnouncementService', () => {
 			.overrideProvider(RoleService).useValue({
 				getUserRoles: jest.fn((_) => []),
 			})
-			// TODO should we remove this now that cache is cleared?
-			.overrideProvider(InternalEventService).useClass(MockInternalEventService)
+			.overrideProvider(DI.redis).useClass(MockRedis)
+			.overrideProvider(DI.redisForPub).useFactory({ inject: [DI.redis], factory: (redisClient: Redis) => redisClient })
+			.overrideProvider(DI.redisForSub).useFactory({ inject: [DI.redis], factory: (redisClient: Redis) => redisClient })
+			.overrideProvider(DI.redisForRateLimit).useFactory({ inject: [DI.redis], factory: (redisClient: Redis) => redisClient })
+			.overrideProvider(DI.redisForReactions).useFactory({ inject: [DI.redis], factory: (redisClient: Redis) => redisClient })
+			.overrideProvider(DI.redisForTimelines).useFactory({ inject: [DI.redis], factory: (redisClient: Redis) => redisClient })
 			.overrideProvider(CacheManagementService).useClass(FakeCacheManagementService)
 			.compile();
 
@@ -122,7 +129,7 @@ describe('AnnouncementService', () => {
 		moderationLogService.log.mockReset();
 		globalEventService.publishMainStream.mockReset();
 		globalEventService.publishBroadcastStream.mockReset();
-		cacheManagementService.clear();
+		await cacheManagementService.clear();
 	});
 
 	describe('getUnreadAnnouncements', () => {

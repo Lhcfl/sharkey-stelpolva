@@ -3,13 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, type OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, type OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { Brackets, In, IsNull, Not } from 'typeorm';
-import * as Redis from 'ioredis';
 import sanitizeHtml from 'sanitize-html';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
-import { GlobalEvents, GlobalEventService } from '@/core/GlobalEventService.js';
+import { GlobalEventService } from '@/core/GlobalEventService.js';
 import type {
 	AbuseReportNotificationRecipientRepository,
 	MiAbuseReportNotificationRecipient,
@@ -23,20 +22,18 @@ import { RecipientMethod } from '@/models/AbuseReportNotificationRecipient.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { IdService } from './IdService.js';
 
 @Injectable()
-export class AbuseReportNotificationService implements OnApplicationShutdown {
+export class AbuseReportNotificationService implements OnModuleInit, OnApplicationShutdown {
 	constructor(
 		@Inject(DI.meta)
 		private meta: MiMeta,
 
 		@Inject(DI.abuseReportNotificationRecipientRepository)
 		private abuseReportNotificationRecipientRepository: AbuseReportNotificationRecipientRepository,
-
-		@Inject(DI.redisForSub)
-		private redisForSub: Redis.Redis,
 
 		private idService: IdService,
 		private roleService: RoleService,
@@ -46,9 +43,8 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 		private globalEventService: GlobalEventService,
 		private userEntityService: UserEntityService,
 		private readonly timeService: TimeService,
-	) {
-		this.redisForSub.on('message', this.onMessage);
-	}
+		private readonly internalEventService: InternalEventService,
+	) {}
 
 	/**
 	 * 管理者用Redisイベントを用いて{@link abuseReports}の内容を管理者各位に通知する.
@@ -410,17 +406,9 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async onMessage(_: string, data: string): Promise<void> {
-		const obj = JSON.parse(data);
-		if (obj.channel !== 'internal') {
-			return;
-		}
-
-		const { type } = obj.message as GlobalEvents['internal']['payload'];
-		switch (type) {
-			case 'roleUpdated':
-			case 'roleDeleted':
-			case 'userRoleUnassigned': {
+	private async onRoleEvent(): Promise<void> {
+		{
+			{
 				// 場合によってはキャッシュ更新よりも先にここが呼ばれてしまう可能性があるのでnextTickで遅延実行
 				process.nextTick(async () => {
 					const recipients = await this.abuseReportNotificationRecipientRepository.findBy({
@@ -428,21 +416,21 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 					});
 					await this.removeUnauthorizedRecipientUsers(recipients);
 				});
-				break;
-			}
-			default: {
-				break;
 			}
 		}
 	}
 
 	@bindThis
-	public dispose(): void {
-		this.redisForSub.off('message', this.onMessage);
+	public onModuleInit(): void {
+		this.internalEventService.on('roleUpdated', this.onRoleEvent);
+		this.internalEventService.on('roleDeleted', this.onRoleEvent);
+		this.internalEventService.on('userRoleUnassigned', this.onRoleEvent);
 	}
 
 	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
+	public onApplicationShutdown(): void {
+		this.internalEventService.off('roleUpdated', this.onRoleEvent);
+		this.internalEventService.off('roleDeleted', this.onRoleEvent);
+		this.internalEventService.off('userRoleUnassigned', this.onRoleEvent);
 	}
 }

@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { UsersRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
+import { isLocalUser } from '@/models/User.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { RelayService } from '@/core/RelayService.js';
 import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
@@ -29,7 +30,7 @@ export class AccountUpdateService {
 	@bindThis
 	public async publishToFollowers(user: MiUser) {
 		// フォロワーがリモートユーザーかつ投稿者がローカルユーザーならUpdateを配信
-		if (this.userEntityService.isLocalUser(user)) {
+		if (isLocalUser(user)) {
 			const content = this.apRendererService.addContext(this.apRendererService.renderUpdate(await this.apRendererService.renderPerson(user), user));
 			await this.apDeliverManagerService.deliverToFollowers(user, content);
 			await this.relayService.deliverToRelays(user, content);

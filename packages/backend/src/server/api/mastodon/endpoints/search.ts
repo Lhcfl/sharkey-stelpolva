@@ -53,8 +53,8 @@ export class ApiSearchMastodon {
 			const { data } = await client.search(request.query.q, { type, ...query });
 			const response = {
 				...data,
-				accounts: await promiseMap(data.accounts, (account: Entity.Account) => this.mastoConverters.convertAccount(account), { limit: 3 }),
-				statuses: await promiseMap(data.statuses, (status: Entity.Status) => this.mastoConverters.convertStatus(status, me), { limit: 3 }),
+				accounts: await promiseMap(data.accounts, (account: Entity.Account) => this.mastoConverters.convertAccount(account), { limiter: 3 }),
+				statuses: await promiseMap(data.statuses, (status: Entity.Status) => this.mastoConverters.convertStatus(status, me), { limiter: 3 }),
 			};
 
 			if (type === 'hashtags') {
@@ -90,8 +90,8 @@ export class ApiSearchMastodon {
 			const stat = !type || type === 'statuses' ? await client.search(request.query.q, { type: 'statuses', ...query }) : null;
 			const tags = !type || type === 'hashtags' ? await client.search(request.query.q, { type: 'hashtags', ...query }) : null;
 			const response = {
-				accounts: acct ? await promiseMap(acct.data.accounts, async (account: Entity.Account) => await this.mastoConverters.convertAccount(account), { limit: 3 }) : [],
-				statuses: acct ? await promiseMap(acct.data.statuses, async (status: Entity.Status) => this.mastoConverters.convertStatus(status, me), { limit: 3 }) : [],
+				accounts: acct ? await promiseMap(acct.data.accounts, async (account: Entity.Account) => await this.mastoConverters.convertAccount(account), { limiter: 3 }) : [],
+				statuses: acct ? await promiseMap(acct.data.statuses, async (status: Entity.Status) => this.mastoConverters.convertStatus(status, me), { limiter: 3 }) : [],
 				hashtags: tags?.data.hashtags ?? [],
 			};
 
@@ -124,7 +124,7 @@ export class ApiSearchMastodon {
 
 			const data = await res.json() as Entity.Status[];
 			const me = await this.clientService.getAuth(request);
-			const response = await promiseMap(data, async status => await this.mastoConverters.convertStatus(status, me), { limit: 4 });
+			const response = await promiseMap(data, async status => await this.mastoConverters.convertStatus(status, me), { limiter: 4 });
 
 			attachMinMaxPagination(request, reply, response);
 			return reply.send(response);
@@ -155,7 +155,7 @@ export class ApiSearchMastodon {
 				source: 'global',
 				account: await this.mastoConverters.convertAccount(entry),
 			}), {
-				limit: 4,
+				limiter: 4,
 			});
 
 			attachOffsetPagination(request, reply, response);

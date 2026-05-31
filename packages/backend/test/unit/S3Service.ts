@@ -15,6 +15,8 @@ import {
 } from '@aws-sdk/client-s3';
 import { mockClient } from 'aws-sdk-client-mock';
 import { MockInternalEventService } from '../misc/MockInternalEventService.js';
+import { MockRedis } from '../misc/MockRedis.js';
+import type { Redis } from 'ioredis';
 import type { TestingModule } from '@nestjs/testing';
 import { GlobalModule } from '@/GlobalModule.js';
 import { CoreModule } from '@/core/CoreModule.js';
@@ -34,6 +36,12 @@ describe('S3Service', () => {
 		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
 		})
+			.overrideProvider(DI.redis).useClass(MockRedis)
+			.overrideProvider(DI.redisForPub).useFactory({ inject: [DI.redis], factory: (redisClient: Redis) => redisClient })
+			.overrideProvider(DI.redisForSub).useFactory({ inject: [DI.redis], factory: (redisClient: Redis) => redisClient })
+			.overrideProvider(DI.redisForRateLimit).useFactory({ inject: [DI.redis], factory: (redisClient: Redis) => redisClient })
+			.overrideProvider(DI.redisForReactions).useFactory({ inject: [DI.redis], factory: (redisClient: Redis) => redisClient })
+			.overrideProvider(DI.redisForTimelines).useFactory({ inject: [DI.redis], factory: (redisClient: Redis) => redisClient })
 			.overrideProvider(InternalEventService).useClass(MockInternalEventService)
 			.compile();
 

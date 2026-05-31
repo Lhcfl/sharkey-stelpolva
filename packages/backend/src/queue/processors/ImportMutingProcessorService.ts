@@ -18,7 +18,7 @@ import { renderInlineError } from '@/misc/render-inline-error.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import type * as Bull from 'bullmq';
-import type { DbUserImportJobData } from '../types.js';
+import type { DbImportMutingJobData } from '../types.js';
 
 @Injectable()
 export class ImportMutingProcessorService {
@@ -42,7 +42,7 @@ export class ImportMutingProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbUserImportJobData>): Promise<void> {
+	public async process(job: Bull.Job<DbImportMutingJobData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);

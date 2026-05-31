@@ -12,6 +12,13 @@
 		"scripts/**/*.cjs"
 	],
 	"exclude": [
+		"**/node_modules",
+		"**/built",
+		"**/built-test",
+		"**/js-built",
+		"**/temp",
+		"**/coverage",
+		"**/*.min.js",
 		"node_modules",
 		".storybook",
 		"vue-shims.d.ts",

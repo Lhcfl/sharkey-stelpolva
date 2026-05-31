@@ -68,7 +68,7 @@ describe('MkUrlPreview', () => {
 
 	test('Should render the description', async () => {
 		const mkUrlPreview = await renderPreviewBy({
-			url: 'https://example.local',
+			url: 'https://example.com',
 			description: 'Mocked description',
 		});
 		mkUrlPreview.getByText('Mocked description');
@@ -76,9 +76,9 @@ describe('MkUrlPreview', () => {
 
 	test('Having a player should render a button', async () => {
 		const mkUrlPreview = await renderPreviewBy({
-			url: 'https://example.local',
+			url: 'https://example.com',
 			player: {
-				url: 'https://example.local/player',
+				url: 'https://example.com/player',
 				width: null,
 				height: null,
 				allow: [],
@@ -90,16 +90,16 @@ describe('MkUrlPreview', () => {
 
 	test('Having a player should setup the iframe', async () => {
 		const iframe = await renderAndOpenPreview({
-			url: 'https://example.local',
+			url: 'https://example.com',
 			player: {
-				url: 'https://example.local/player',
+				url: 'https://example.com/player',
 				width: null,
 				height: null,
 				allow: [],
 			},
 		});
 		assert.exists(iframe, 'iframe should exist');
-		assert.strictEqual(iframe.src, 'https://example.local/player?autoplay=1&auto_play=1');
+		assert.strictEqual(iframe.src, 'https://example.com/player?autoplay=1&auto_play=1');
 		assert.strictEqual(
 			iframe.sandbox.toString(),
 			'allow-popups allow-popups-to-escape-sandbox allow-scripts allow-storage-access-by-user-activation allow-same-origin',
@@ -108,9 +108,9 @@ describe('MkUrlPreview', () => {
 
 	test('Having a player with `allow` field should set permissions', async () => {
 		const iframe = await renderAndOpenPreview({
-			url: 'https://example.local',
+			url: 'https://example.com',
 			player: {
-				url: 'https://example.local/player',
+				url: 'https://example.com/player',
 				width: null,
 				height: null,
 				allow: ['fullscreen', 'web-share'],
@@ -122,9 +122,9 @@ describe('MkUrlPreview', () => {
 
 	test('A Summaly proxy response without allow falls back to the default', async () => {
 		const iframe = await renderAndOpenPreview({
-			url: 'https://example.local',
+			url: 'https://example.com',
 			player: {
-				url: 'https://example.local/player',
+				url: 'https://example.com/player',
 				width: null,
 				height: null,
 				allow: undefined as any,
@@ -136,9 +136,9 @@ describe('MkUrlPreview', () => {
 
 	test('Filtering the allow list from the Summaly proxy', async () => {
 		const iframe = await renderAndOpenPreview({
-			url: 'https://example.local',
+			url: 'https://example.com',
 			player: {
-				url: 'https://example.local/player',
+				url: 'https://example.com/player',
 				width: null,
 				height: null,
 				allow: ['autoplay', 'camera', 'fullscreen'],
@@ -150,9 +150,9 @@ describe('MkUrlPreview', () => {
 
 	test('Having a player width should keep the fixed aspect ratio', async () => {
 		const iframe = await renderAndOpenPreview({
-			url: 'https://example.local',
+			url: 'https://example.com',
 			player: {
-				url: 'https://example.local/player',
+				url: 'https://example.com/player',
 				width: 400,
 				height: 200,
 				allow: [],
@@ -164,9 +164,9 @@ describe('MkUrlPreview', () => {
 
 	test('Having a player width should keep the fixed height', async () => {
 		const iframe = await renderAndOpenPreview({
-			url: 'https://example.local',
+			url: 'https://example.com',
 			player: {
-				url: 'https://example.local/player',
+				url: 'https://example.com/player',
 				width: null,
 				height: 200,
 				allow: [],

@@ -11,7 +11,7 @@ import { UnrecoverableError } from 'bullmq';
 import { Element, Text } from 'domhandler';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
-import type { MiPartialLocalUser, MiLocalUser, MiPartialRemoteUser, MiRemoteUser, MiUser } from '@/models/User.js';
+import type { MiPartialLocalUser, MiLocalUser, MiPartialRemoteUser, MiRemoteUser, MiUser, MiPartialUser } from '@/models/User.js';
 import type { IMentionedRemoteUsers, MiNote } from '@/models/Note.js';
 import type { MiBlocking } from '@/models/Blocking.js';
 import type { MiRelay } from '@/models/Relay.js';
@@ -40,7 +40,7 @@ import { JsonLdService, type Signed } from './JsonLdService.js';
 import { ApMfmService } from './ApMfmService.js';
 import { CONTEXT } from './misc/contexts.js';
 import { getApId, ILink, IOrderedCollection, IOrderedCollectionPage } from './type.js';
-import type { IAccept, IActivity, IAdd, IAnnounce, IApDocument, IApEmoji, IApHashtag, IApImage, IApMention, IBlock, ICreate, IDelete, IFlag, IFollow, IKey, ILike, IMove, IObject, IPost, IQuestion, IReject, IRemove, ITombstone, IUndo, IUpdate } from './type.js';
+import type { IAccept, IActivity, IAdd, IAnnounce, IApDocument, IApEmoji, IApHashtag, IApImage, IApMention, IBlock, ICreate, IDelete, IFlag, IFollow, IKey, ILike, IMove, IObject, IPost, IQuestion, IReject, IRemove, ITombstone, IUndo, IUpdate, IActor, IActorWithId } from './type.js';
 
 @Injectable()
 export class ApRendererService {
@@ -186,8 +186,8 @@ export class ApRendererService {
 			type: 'Document',
 			mediaType: file.webpublicType ?? file.type,
 			url: this.driveFileEntityService.getPublicUrl(file),
-			name: file.comment,
-			summary: file.comment,
+			name: file.comment ?? undefined,
+			summary: file.comment ?? undefined,
 			sensitive: file.isSensitive,
 		};
 	}
@@ -206,7 +206,7 @@ export class ApRendererService {
 				url: emoji.publicUrl || emoji.originalUrl,
 			},
 			_misskey_license: {
-				freeText: emoji.license,
+				freeText: emoji.license ?? undefined,
 			},
 		};
 	}
@@ -235,11 +235,10 @@ export class ApRendererService {
 
 	/**
 	 * Convert (local|remote)(Follower|Followee)ID to URL
-	 * @param id Follower|Followee ID
+	 * @param user User to render
 	 */
 	@bindThis
-	public async renderFollowUser(id: MiUser['id']): Promise<string> {
-		const user = await this.cacheService.findUserById(id) as MiPartialLocalUser | MiPartialRemoteUser;
+	public async renderFollowUser(user: MiPartialUser | MiPartialLocalUser | MiPartialRemoteUser): Promise<string> {
 		return this.userEntityService.getUserUri(user);
 	}
 
@@ -272,7 +271,7 @@ export class ApRendererService {
 			type: 'Image',
 			url: this.driveFileEntityService.getPublicUrl(file),
 			sensitive: file.isSensitive,
-			name: file.comment,
+			name: file.comment ?? undefined,
 		};
 	}
 
@@ -282,7 +281,7 @@ export class ApRendererService {
 			type: 'Image',
 			url: this.userEntityService.getIdenticonUrl(user),
 			sensitive: false,
-			name: null,
+			name: undefined,
 		};
 	}
 
@@ -293,29 +292,29 @@ export class ApRendererService {
 			type: 'Image',
 			url: this.meta.iconUrl,
 			sensitive: false,
-			name: null,
+			name: undefined,
 		};
 	}
 
 	@bindThis
-	public renderSystemBanner(): IApImage | null {
-		if (this.meta.bannerUrl == null) return null;
+	public renderSystemBanner(): IApImage | undefined {
+		if (this.meta.bannerUrl == null) return undefined;
 		return {
 			type: 'Image',
 			url: this.meta.bannerUrl,
 			sensitive: false,
-			name: null,
+			name: undefined,
 		};
 	}
 
 	@bindThis
-	public renderSystemBackground(): IApImage | null {
-		if (this.meta.backgroundImageUrl == null) return null;
+	public renderSystemBackground(): IApImage | undefined {
+		if (this.meta.backgroundImageUrl == null) return undefined;
 		return {
 			type: 'Image',
 			url: this.meta.backgroundImageUrl,
 			sensitive: false,
-			name: null,
+			name: undefined,
 		};
 	}
 
@@ -328,7 +327,7 @@ export class ApRendererService {
 			publicKeyPem: createPublicKey(key.publicKey).export({
 				type: 'spki',
 				format: 'pem',
-			}),
+			}) as string,
 		};
 	}
 
@@ -463,12 +462,9 @@ export class ApRendererService {
 			to = mentions;
 		}
 
-		const mentionedUsers = note.mentions && note.mentions.length > 0 ? await this.usersRepository.findBy({
-			id: In(note.mentions),
-		}) : [];
-
+		const mentionedUsers = await this.cacheService.findUsersById(note.mentions);
 		const hashtagTags = note.tags.map(tag => this.renderHashtag(tag));
-		const mentionTags = mentionedUsers.map(u => this.renderMention(u as MiLocalUser | MiRemoteUser));
+		const mentionTags = mentionedUsers.values().map(u => this.renderMention(u as MiLocalUser | MiRemoteUser)).toArray();
 
 		const files = await getPromisedFiles(note.fileIds);
 
@@ -588,7 +584,7 @@ export class ApRendererService {
 
 	// if you change this, also change `server/api/endpoints/i/update.ts`
 	@bindThis
-	public async renderPerson(user: MiLocalUser) {
+	public async renderPerson(user: MiLocalUser): Promise<IActorWithId> {
 		const id = this.userEntityService.genLocalUserUri(user.id);
 		const isSystem = user.username.includes('.');
 		// if we ever support split-domain setups, this will differ from the ActivityPub host
@@ -598,14 +594,14 @@ export class ApRendererService {
 			user.avatarId ? this.driveFilesRepository.findOneBy({ id: user.avatarId }) : undefined,
 			user.bannerId ? this.driveFilesRepository.findOneBy({ id: user.bannerId }) : undefined,
 			user.backgroundId ? this.driveFilesRepository.findOneBy({ id: user.backgroundId }) : undefined,
-			this.userProfilesRepository.findOneByOrFail({ userId: user.id }),
+			this.cacheService.userProfileCache.fetch(user.id),
 		]);
 
 		const attachment = profile.fields.map(field => ({
 			type: 'PropertyValue',
 			name: field.name,
 			value: this.mfmService.toHtml(mfm.parse(field.value), [], [], true),
-		}));
+		} as const));
 
 		const emojis = await this.getEmojis(user.emojis);
 		const apemojis = emojis.filter(emoji => !emoji.localOnly).map(emoji => this.renderEmoji(emoji));
@@ -619,7 +615,7 @@ export class ApRendererService {
 
 		const keypair = await this.userKeypairService.getUserKeypair(user.id);
 
-		const person: any = {
+		const person: IActorWithId = {
 			type: isSystem ? 'Application' : user.isBot ? 'Service' : 'Person',
 			id,
 			inbox: `${id}/inbox`,
@@ -633,16 +629,16 @@ export class ApRendererService {
 			preferredUsername: user.username,
 			// FEP-2c59 backlink to preferred/canonical handle for WebFinger lookups
 			webfinger: `${user.username}@${webfingerDomain}`,
-			name: user.name,
-			summary: profile.description ? this.mfmService.toHtml(mfm.parse(profile.description)) : null,
-			_misskey_summary: profile.description,
-			_misskey_followedMessage: profile.followedMessage,
+			name: user.name ?? undefined,
+			summary: profile.description ? (this.mfmService.toHtml(mfm.parse(profile.description)) ?? undefined) : undefined,
+			_misskey_summary: profile.description ?? undefined,
+			_misskey_followedMessage: profile.followedMessage ?? undefined,
 			_misskey_requireSigninToViewContents: user.requireSigninToViewContents,
-			_misskey_makeNotesFollowersOnlyBefore: user.makeNotesFollowersOnlyBefore,
-			_misskey_makeNotesHiddenBefore: user.makeNotesHiddenBefore,
+			_misskey_makeNotesFollowersOnlyBefore: user.makeNotesFollowersOnlyBefore ?? undefined,
+			_misskey_makeNotesHiddenBefore: user.makeNotesHiddenBefore ?? undefined,
 			icon: avatar ? this.renderImage(avatar) : isSystem ? this.renderSystemAvatar(user) : this.renderIdenticon(user),
-			image: banner ? this.renderImage(banner) : isSystem ? this.renderSystemBanner() : null,
-			backgroundUrl: background ? this.renderImage(background) : isSystem ? this.renderSystemBackground() : null,
+			image: banner ? this.renderImage(banner) : isSystem ? this.renderSystemBanner() : undefined,
+			backgroundUrl: background ? this.renderImage(background) : isSystem ? this.renderSystemBackground() : undefined,
 			tag,
 			manuallyApprovesFollowers: user.isLocked,
 			discoverable: user.isExplorable,
@@ -681,7 +677,7 @@ export class ApRendererService {
 	}
 
 	@bindThis
-	public async renderPersonRedacted(user: MiLocalUser) {
+	public async renderPersonRedacted(user: MiLocalUser): Promise<IActorWithId> {
 		const id = this.userEntityService.genLocalUserUri(user.id);
 		const isSystem = user.username.includes('.');
 
@@ -701,14 +697,19 @@ export class ApRendererService {
 
 			// Privacy settings
 			_misskey_requireSigninToViewContents: user.requireSigninToViewContents,
-			_misskey_makeNotesFollowersOnlyBefore: user.makeNotesFollowersOnlyBefore,
-			_misskey_makeNotesHiddenBefore: user.makeNotesHiddenBefore,
+			_misskey_makeNotesFollowersOnlyBefore: user.makeNotesFollowersOnlyBefore ?? undefined,
+			_misskey_makeNotesHiddenBefore: user.makeNotesHiddenBefore ?? undefined,
 			manuallyApprovesFollowers: user.isLocked,
 			discoverable: user.isExplorable,
 			hideOnlineStatus: user.hideOnlineStatus,
 			noindex: user.noindex,
 			indexable: !user.noindex,
 			enableRss: user.enableRss,
+
+			// Placeholder images to pass anti-spam measures on some remote software. (brid.gy, for example)
+			icon: this.renderSystemAvatar(user),
+			image: this.renderSystemBanner(),
+			backgroundUrl: this.renderSystemBackground(),
 		};
 	}
 

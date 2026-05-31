@@ -6,17 +6,19 @@
 import { EntityNotFoundError } from 'typeorm';
 import promiseLimit from 'promise-limit';
 import { bindThis } from '@/decorators.js';
-import type { InternalEventService, EventTypes } from '@/global/InternalEventService.js';
-import { MemoryKVCache, type MemoryCacheServices } from '@/misc/cache.js';
 import { makeKVPArray, type KVPArray } from '@/misc/kvp-array.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
+import { withCleanup, withSignal } from '@/misc/promiseUtils.js';
+import { promiseTry } from '@/misc/promise-try.js';
 import { FetchFailedError } from '@/misc/errors/FetchFailedError.js';
 import { KeyNotFoundError } from '@/misc/errors/KeyNotFoundError.js';
 import { QuantumCacheError } from '@/misc/errors/QuantumCacheError.js';
+import { MemoryKVCache, type MemoryCacheServices } from '@/misc/cache.js';
 import { DisposedError, DisposingError } from '@/misc/errors/DisposeError.js';
-import { trackPromise } from '@/misc/promise-tracker.js';
-import { withCleanup, withSignal } from '@/misc/promiseUtils.js';
-import { promiseTry } from '@/misc/promise-try.js';
+import { SkEventSource, type EventListener, type ListenerProps, type SkEventEmitter } from '@/misc/SkEventEmitter.js';
+import type { InternalEventService, InternalEventTypes } from '@/global/InternalEventService.js';
+import type { Limiter } from '@/misc/promise-map.js';
+import type { EmptyObject } from '@/types.js';
 
 export interface QuantumKVOpts<TIn, T extends Value<TIn> = Value<TIn>> {
 	/**
@@ -38,16 +40,6 @@ export interface QuantumKVOpts<TIn, T extends Value<TIn> = Value<TIn>> {
 	 * Callback to fetch multiple optional values by key.
 	 */
 	bulkFetcher?: BulkFetcher<T>;
-
-	/**
-	 * Callback to handle changes to the cross-cluster state (create, update, or delete values).
-	 */
-	onChanged?: OnChanged<T>;
-
-	/**
-	 * Callback to handle a whole-state reset (all values deleted).
-	 */
-	onReset?: OnReset<T>;
 
 	/**
 	 * Optional limit on the number of calls to fetcher to allow at once.
@@ -85,6 +77,27 @@ export interface QuantumKVOpts<TIn, T extends Value<TIn> = Value<TIn>> {
 	maxConcurrency?: number;
 }
 
+export type QuantumKVCacheEvents<T> = {
+	/**
+	 * Called when one or more values are changed (created, updated, or deleted) in the cache, either locally or elsewhere in the cluster.
+	 * This is called *after* the cache state is updated.
+	 * May be synchronous or async.
+	 */
+	changed: CallbackMeta<T> & {
+		/**
+		 * Key(s) that have changed.
+		 */
+		keys: string[];
+	}
+
+	/**
+	 * when all values are removed from the cache, either locally or elsewhere in the cluster.
+	 * This is called *after* the cache state is updated.
+	 * May be synchronous or async.
+	 */
+	reset: CallbackMeta<T>;
+};
+
 export interface CallbackMeta<T> {
 	/**
 	 * The cache instance that triggered this callback.
@@ -96,6 +109,13 @@ export interface CallbackMeta<T> {
 	 * Should be propagated to ensure smooth cleanup and shutdown.
 	 */
 	readonly disposeSignal: AbortSignal;
+
+	/**
+	 * Aborts the callback operation with a given error message and optional cause.
+	 * @param message Error message to include.
+	 * @param opts Options to attach to the resulting Error instance.
+	 */
+	fail(message: string, opts?: ErrorOptions): never;
 }
 
 /**
@@ -124,20 +144,6 @@ export type OptionalFetcher<T> = (key: string, meta: CallbackMeta<T>) => MaybePr
  */
 export type BulkFetcher<T> = (keys: string[], meta: CallbackMeta<T>) => MaybePromise<Iterable<[key: string, value: Value<T> | null | undefined]>>;
 
-/**
- * Optional callback when one or more values are changed (created, updated, or deleted) in the cache, either locally or elsewhere in the cluster.
- * This is called *after* the cache state is updated.
- * May be synchronous or async.
- */
-export type OnChanged<T> = (keys: string[], meta: CallbackMeta<T>) => MaybePromise<void>;
-
-/**
- * Optional callback when all values are removed from the cache, either locally or elsewhere in the cluster.
- * This is called *after* the cache state is updated.
- * May be synchronous or async.
- */
-export type OnReset<T> = (meta: CallbackMeta<T>) => MaybePromise<void>;
-
 type ActiveFetcher<T> = Promise<T>;
 type ActiveOptionalFetcher<T> = Promise<T | undefined>;
 type ActiveBulkFetcher<T> = Promise<KeyValue<T>[]>;
@@ -146,7 +152,6 @@ type ActiveBulkFetcher<T> = Promise<KeyValue<T>[]>;
 // https://stackoverflow.com/a/63045455
 type Value<T> = NonNullable<T>;
 type KeyValue<T> = [key: string, value: T];
-type Limiter = <T>(callback: () => Promise<T>) => Promise<T>;
 type MaybePromise<T> = T | Promise<T>;
 type AtLeastOne<T> = [T, ...T[]];
 
@@ -163,10 +168,11 @@ export interface QuantumCacheServices extends MemoryCacheServices {
  * All nodes in the cluster are guaranteed to have a *subset* view of the current accurate state, though individual processes may have different items in their local cache.
  * This ensures that a call to get() will never return stale data.
  */
-export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements Iterable<readonly [key: string, value: T]> {
+export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements Iterable<readonly [key: string, value: T]>, SkEventEmitter<QuantumKVCacheEvents<T>> {
 	private readonly internalEventService: InternalEventService;
 
 	private readonly memoryCache: MemoryKVCache<T>;
+	private readonly eventSource = new SkEventSource<QuantumKVCacheEvents<T>>();
 
 	private readonly activeFetchers = new Map<string, ActiveFetcher<T>>();
 	private readonly activeOptionalFetchers = new Map<string, ActiveOptionalFetcher<T>>();
@@ -180,8 +186,6 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	public readonly fetcher: Fetcher<T>;
 	public readonly optionalFetcher: OptionalFetcher<T> | undefined;
 	public readonly bulkFetcher: BulkFetcher<T> | undefined;
-	public readonly onChanged: OnChanged<T> | undefined;
-	public readonly onReset: OnReset<T> | undefined;
 
 	private readonly disposeController = new AbortController();
 	private isDisposing = false;
@@ -204,17 +208,17 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		// Set up rate limiters
 		const fetcherConcurrency = opts.fetcherConcurrency
 			? Math.max(opts.fetcherConcurrency, 1)
-			: 4;
+			: 12;
 		this.fetcherLimiter = promiseLimit(fetcherConcurrency);
 
 		const optionalFetcherConcurrency = opts.optionalFetcherConcurrency
 			? Math.max(opts.optionalFetcherConcurrency, 1)
-			: 4;
+			: 12;
 		this.optionalFetcherLimiter = promiseLimit(optionalFetcherConcurrency);
 
 		const bulkFetcherConcurrency = opts.bulkFetcherConcurrency
 			? Math.max(opts.bulkFetcherConcurrency, 1)
-			: 2;
+			: 6;
 		this.bulkFetcherLimiter = promiseLimit(bulkFetcherConcurrency);
 
 		const globalConcurrency = opts.maxConcurrency
@@ -225,8 +229,6 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		this.fetcher = opts.fetcher;
 		this.optionalFetcher = opts.optionalFetcher;
 		this.bulkFetcher = opts.bulkFetcher;
-		this.onChanged = opts.onChanged;
-		this.onReset = opts.onReset;
 
 		this.internalEventService = services.internalEventService;
 		this.internalEventService.on('quantumCacheUpdated', this.onQuantumCacheUpdated, {
@@ -243,6 +245,19 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		return {
 			cache: this,
 			disposeSignal: this.disposeController.signal,
+			fail: (message, opts) => {
+				throw new QuantumCacheError(this.nameForError, message, opts);
+			},
+		};
+	}
+
+	@bindThis
+	private getCallbackMetaForFetch(keys: string | readonly string[]): CallbackMeta<T> {
+		return {
+			...this.callbackMeta,
+			fail: (message, opts) => {
+				throw new FetchFailedError(this.nameForError, keys, message, opts);
+			},
 		};
 	}
 
@@ -301,7 +316,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 	/**
 	 * Creates or updates a value in the cache, and erases any stale caches across the cluster.
-	 * Fires an onChanged event after the cache has been updated in all processes.
+	 * Emits a changed event after the cache has been updated in all processes.
 	 * Skips if the value is unchanged.
 	 */
 	@bindThis
@@ -315,15 +330,12 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		this.memoryCache.set(key, value);
 
 		await this.internalEventService.emit('quantumCacheUpdated', { name: this.name, keys: [key] });
-
-		if (this.onChanged) {
-			await this.onChanged([key], this.callbackMeta);
-		}
+		await this.eventSource.emit('changed', { ...this.callbackMeta, keys: [key] });
 	}
 
 	/**
 	 * Creates or updates multiple value in the cache, and erases any stale caches across the cluster.
-	 * Fires an onChanged for each changed item event after the cache has been updated in all processes.
+	 * Emits a changed for each changed item event after the cache has been updated in all processes.
 	 * Skips if all values are unchanged.
 	 */
 	@bindThis
@@ -341,16 +353,13 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 		if (changedKeys.length > 0) {
 			await this.internalEventService.emit('quantumCacheUpdated', { name: this.name, keys: changedKeys });
-
-			if (this.onChanged) {
-				await this.onChanged(changedKeys, this.callbackMeta);
-			}
+			await this.eventSource.emit('changed', { ...this.callbackMeta, keys: changedKeys });
 		}
 	}
 
 	/**
 	 * Adds a value to the local memory cache without notifying other process.
-	 * Neither a Redis event nor onChanged callback will be fired, as the value has not actually changed.
+	 * Neither a Redis event nor changed callback will be fired, as the value has not actually changed.
 	 * This should only be used when the value is known to be current, like after fetching from the database.
 	 */
 	@bindThis
@@ -362,7 +371,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 	/**
 	 * Adds multiple values to the local memory cache without notifying other process.
-	 * Neither a Redis event nor onChanged callback will be fired, as the value has not actually changed.
+	 * Neither a Redis event nor changed callback will be fired, as the value has not actually changed.
 	 * This should only be used when the value is known to be current, like after fetching from the database.
 	 */
 	@bindThis
@@ -372,6 +381,15 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		for (const [key, value] of items) {
 			this.memoryCache.set(key, value);
 		}
+	}
+
+	/**
+	 * Returns true is a key exists in memory.
+	 * This applies to the local subset view, not the cross-cluster cache state.
+	 */
+	@bindThis
+	public has(key: string): boolean {
+		return this.memoryCache.has(key);
 	}
 
 	/**
@@ -414,7 +432,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 	/**
 	 * Gets or fetches a value from the cache.
-	 * Fires an onChanged event, but does not emit an update event to other processes.
+	 * Does not emit any events.
 	 */
 	@bindThis
 	public async fetch(key: string): Promise<T> {
@@ -425,17 +443,13 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 			value = await this.doFetch(key);
 
 			this.memoryCache.set(key, value);
-
-			if (this.onChanged) {
-				await this.onChanged([key], this.callbackMeta);
-			}
 		}
 		return value;
 	}
 
 	/**
 	 * Gets or fetches a value from the cache, returning undefined if not found.
-	 * Fires an onChanged event on success, but does not emit an update event to other processes.
+	 * Does not emit any events.
 	 */
 	@bindThis
 	public async fetchMaybe(key: string): Promise<T | undefined> {
@@ -453,17 +467,13 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 		this.memoryCache.set(key, value);
 
-		if (this.onChanged) {
-			await this.onChanged([key], this.callbackMeta);
-		}
-
 		return value;
 	}
 
 	/**
 	 * Gets or fetches multiple values from the cache.
 	 * Missing / unmapped values are excluded from the response.
-	 * Fires onChanged event, but does not emit any update events to other processes.
+	 * Does not emit any events.
 	 */
 	@bindThis
 	public async fetchMany(keys: Iterable<string>): Promise<KVPArray<T>> {
@@ -489,28 +499,14 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 			// Add to cache and return set
 			this.addMany(fetched);
 			results.push(...fetched);
-
-			// Emit event
-			if (this.onChanged) {
-				await this.onChanged(toFetch, this.callbackMeta);
-			}
 		}
 
 		return makeKVPArray(results);
 	}
 
 	/**
-	 * Returns true is a key exists in memory.
-	 * This applies to the local subset view, not the cross-cluster cache state.
-	 */
-	@bindThis
-	public has(key: string): boolean {
-		return this.memoryCache.has(key);
-	}
-
-	/**
 	 * Deletes a value from the cache, and erases any stale caches across the cluster.
-	 * Fires an onChanged event after the cache has been updated in all processes.
+	 * Emits a changed event after the cache has been updated in all processes.
 	 */
 	@bindThis
 	public async delete(key: string): Promise<void> {
@@ -519,41 +515,35 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		this.memoryCache.delete(key);
 
 		await this.internalEventService.emit('quantumCacheUpdated', { name: this.name, keys: [key] });
-
-		if (this.onChanged) {
-			await this.onChanged([key], this.callbackMeta);
-		}
+		await this.eventSource.emit('changed', { ...this.callbackMeta, keys: [key] });
 	}
 	/**
 	 * Deletes multiple values from the cache, and erases any stale caches across the cluster.
-	 * Fires an onChanged event for each key after the cache has been updated in all processes.
+	 * Emits a changed event for each key after the cache has been updated in all processes.
 	 * Skips if the input is empty.
 	 */
 	@bindThis
 	public async deleteMany(keys: Iterable<string>): Promise<void> {
 		this.throwIfDisposed();
 
-		const deleted: string[] = [];
+		const deletedKeys: string[] = [];
 
 		for (const key of keys) {
 			this.memoryCache.delete(key);
-			deleted.push(key);
+			deletedKeys.push(key);
 		}
 
-		if (deleted.length === 0) {
+		if (deletedKeys.length === 0) {
 			return;
 		}
 
-		await this.internalEventService.emit('quantumCacheUpdated', { name: this.name, keys: deleted });
-
-		if (this.onChanged) {
-			await this.onChanged(deleted, this.callbackMeta);
-		}
+		await this.internalEventService.emit('quantumCacheUpdated', { name: this.name, keys: deletedKeys });
+		await this.eventSource.emit('changed', { ...this.callbackMeta, keys: deletedKeys });
 	}
 
 	/**
 	 * Refreshes the value of a key from the fetcher, and erases any stale caches across the cluster.
-	 * Fires an onChanged event after the cache has been updated in all processes.
+	 * Emits a changed event after the cache has been updated in all processes.
 	 */
 	@bindThis
 	public async refresh(key: string): Promise<T> {
@@ -567,7 +557,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	/**
 	 * Refreshes the value of a key from the fetcher, returning undefined if not found.
 	 * Whether a result is found or not, it then erases any stale caches across the cluster.
-	 * Fires an onChanged event after the cache has been updated in all processes.
+	 * Emits a changed event after the cache has been updated in all processes.
 	 */
 	@bindThis
 	public async refreshMaybe(key: string): Promise<T | undefined> {
@@ -586,7 +576,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 	/**
 	 * Refreshes multiple values from the cache, and erases any stale caches across the cluster.
-	 * Fires an onChanged event after the cache has been updated in all processes.
+	 * Emits a changed event after the cache has been updated in all processes.
 	 * Missing / unmapped values are excluded from the response.
 	 */
 	@bindThis
@@ -597,6 +587,38 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		const fetched = await this.doFetchMany(toFetch);
 		await this.setMany(fetched);
 		return makeKVPArray(fetched);
+	}
+
+	/**
+	 * Marks a local cache entry as stale and removes it from memory.
+	 * Does not send any events or update other processes.
+	 */
+	@bindThis
+	public drop(key: string): void {
+		this.throwIfDisposed();
+
+		this.memoryCache.delete(key);
+	}
+
+	/**
+	 * Marks multiple local cache entries as stale and removes then from memory.
+	 * Does not send any events or update other processes.
+	 */
+	@bindThis
+	public dropMany(keys: Iterable<string>): void {
+		this.throwIfDisposed();
+
+		for (const key of keys) {
+			this.memoryCache.delete(key);
+		}
+	}
+
+	/**
+	 * Alias to clear()
+	 */
+	@bindThis
+	public dropAll(): void {
+		this.clear();
 	}
 
 	/**
@@ -612,7 +634,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 	/**
 	 * Erases all entries from the cache.
-	 * Fires an onReset event and updates other processes.
+	 * Emits a reset event and updates other processes.
 	 */
 	public async reset(): Promise<void> {
 		this.throwIfDisposed();
@@ -620,10 +642,45 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		this.clear();
 
 		await this.internalEventService.emit('quantumCacheReset', { name: this.name });
+		await this.eventSource.emit('reset', this.callbackMeta);
+	}
 
-		if (this.onReset) {
-			await this.onReset(this.callbackMeta);
-		}
+	/**
+	 * Registers a listener callback for a given event.
+	 * Duplicate calls (same event+listener values) will be ignored.
+	 *
+	 * @param type Event type string.
+	 * @param listener Listener callback. If using a method, then make sure it has @bindThis!
+	 * @param props Optional properties to configure the binding.
+	 */
+	@bindThis
+	public on<K extends keyof QuantumKVCacheEvents<T>>(type: K, listener: EventListener<QuantumKVCacheEvents<T>, K, EmptyObject>, props?: ListenerProps): void {
+		this.eventSource.on(type, listener, props);
+	}
+
+	/**
+	 * Deregisters (removes) a listener callback for a given event.
+	 * Duplicate calls (same event+listener values, or given listener has not been registered) will be ignored.
+	 *
+	 * @param type Event type string.
+	 * @param listener Listener callback. If using an arrow function, then make sure it points to the same exact instance as before!
+	 */
+	@bindThis
+	public off<K extends keyof QuantumKVCacheEvents<T>>(type: K, listener: EventListener<QuantumKVCacheEvents<T>, K, EmptyObject>): void {
+		this.eventSource.off(type, listener);
+	}
+
+	/**
+	 * Shortcut to register a one-off listener for a given event.
+	 * See the "on" method for more details.
+	 *
+	 * @param type Event type string.
+	 * @param listener Listener callback. If using a method, then make sure it has @bindThis!
+	 * @param props Optional properties to configure the binding, excluding "oneShot".
+	 */
+	@bindThis
+	public once<K extends keyof QuantumKVCacheEvents<T>>(type: K, listener: EventListener<QuantumKVCacheEvents<T>, K, EmptyObject>, props?: ListenerProps & { oneShot: true | undefined | never }): void {
+		this.eventSource.once(type, listener, props);
 	}
 
 	/**
@@ -657,9 +714,9 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 			// Wait for cleanup
 			await Promise.allSettled([
-				...this.activeFetchers.values().map(p => trackPromise(p)),
-				...this.activeOptionalFetchers.values().map(p => trackPromise(p)),
-				...this.activeBulkFetchers.values().map(p => trackPromise(p)),
+				...this.activeFetchers.values(),
+				...this.activeOptionalFetchers.values(),
+				...this.activeBulkFetchers.values(),
 			]);
 
 			// Purge memory for faster GC
@@ -674,7 +731,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	}
 
 	@bindThis
-	private async onQuantumCacheUpdated(data: EventTypes['quantumCacheUpdated']): Promise<void> {
+	private async onQuantumCacheUpdated(data: InternalEventTypes['quantumCacheUpdated']): Promise<void> {
 		this.throwIfDisposed();
 
 		if (data.name === this.name) {
@@ -682,22 +739,18 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 				this.memoryCache.delete(key);
 			}
 
-			if (this.onChanged) {
-				await this.onChanged(data.keys, this.callbackMeta);
-			}
+			await this.eventSource.emit('changed', { ...this.callbackMeta, keys: data.keys });
 		}
 	}
 
 	@bindThis
-	private async onQuantumCacheReset(data: EventTypes['quantumCacheReset']): Promise<void> {
+	private async onQuantumCacheReset(data: InternalEventTypes['quantumCacheReset']): Promise<void> {
 		this.throwIfDisposed();
 
 		if (data.name === this.name) {
 			this.clear();
 
-			if (this.onReset) {
-				await this.onReset(this.callbackMeta);
-			}
+			await this.eventSource.emit('reset', this.callbackMeta);
 		}
 	}
 
@@ -912,6 +965,8 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 			throw new QuantumCacheError(this.nameForError, `Internal error: attempted to call fetcher multiple times for key "${key}"`);
 		}
 
+		const meta = this.getCallbackMetaForFetch(key);
+
 		// Start limiter cascade
 		return this.globalLimiter(async () => {
 			this.throwIfDisposed();
@@ -921,7 +976,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 				return await withSignal(
 					// Execute callback and adapt results
-					async () => await this.fetcher(key, this.callbackMeta),
+					async () => await this.fetcher(key, meta),
 
 					// Bind abort signal in case fetcher stalls out
 					this.disposeController.signal,
@@ -946,6 +1001,8 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 			throw new QuantumCacheError(this.nameForError, `Internal error: attempted to call optionalFetcher multiple times for key "${key}"`);
 		}
 
+		const meta = this.getCallbackMetaForFetch(key);
+
 		// Start limiter cascade
 		return this.globalLimiter(async () => {
 			this.throwIfDisposed();
@@ -955,7 +1012,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 				return await withSignal(
 					// Execute callback and adapt results
-					async () => await optionalFetcher(key, this.callbackMeta),
+					async () => await optionalFetcher(key, meta),
 
 					// Bind abort signal in case fetcher stalls out
 					this.disposeController.signal,
@@ -1021,6 +1078,8 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 			throw new QuantumCacheError(this.nameForError, `Internal error: attempted to call bulkFetcher multiple times for key(s) ${allKeys}`);
 		}
 
+		const meta = this.getCallbackMetaForFetch(keys);
+
 		// Start limiter cascade
 		return this.globalLimiter(async () => {
 			this.throwIfDisposed();
@@ -1030,7 +1089,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 				return await withSignal(
 					// Execute callback and adapt results
-					async () => await bulkFetcher(keys, this.callbackMeta),
+					async () => await bulkFetcher(keys, meta),
 
 					// Bind abort signal in case fetcher stalls out
 					this.disposeController.signal,

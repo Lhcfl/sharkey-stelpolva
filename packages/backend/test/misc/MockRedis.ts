@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { FakeRedis, ok, type RedisString } from './FakeRedis.js';
 import type { RedisKey, RedisNumber, RedisValue, RedisCallback, Ok } from './FakeRedis.js';
 import type { ChainableCommander } from 'ioredis';
@@ -106,7 +106,10 @@ function createMockRedis(): MockRedisConstructor {
 		private readonly mockEvents = new EventManager(); // on/of/once listeners
 		private readonly mockChannels = new Set<string>(); // subscribed pub/sub channels
 
-		constructor(timeService?: TimeService) {
+		constructor(
+			@Inject(TimeService)
+			timeService?: TimeService,
+		) {
 			super();
 			this.timeService = timeService ?? new NativeTimeService();
 		}

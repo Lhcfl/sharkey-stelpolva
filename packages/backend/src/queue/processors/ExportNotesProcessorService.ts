@@ -24,7 +24,7 @@ import { FileWriterStream } from '@/misc/FileWriterStream.js';
 import { TimeService } from '@/global/TimeService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
-import type { DbJobDataWithUser } from '../types.js';
+import type { DbExportNotesJobData } from '../types.js';
 
 class NoteStream extends ReadableStream<Record<string, unknown>> {
 	constructor(
@@ -121,7 +121,7 @@ export class ExportNotesProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbJobDataWithUser>): Promise<void> {
+	public async process(job: Bull.Job<DbExportNotesJobData>): Promise<void> {
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} does not exist`);

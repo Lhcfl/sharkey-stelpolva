@@ -92,7 +92,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			return await promiseMap(tokens, async token => await this.appEntityService.pack(token.appId!, me, {
 				detail: true,
 			}), {
-				limit: 4,
+				limiter: 4,
 			});
 		});
 	}

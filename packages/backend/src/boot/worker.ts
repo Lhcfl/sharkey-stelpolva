@@ -10,9 +10,9 @@ import * as fs from 'node:fs';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { loadConfig } from '@/config.js';
-import type { LoggerService } from '@/core/LoggerService.js';
-import type { EnvService } from '@/global/EnvService.js';
-import { jobQueue, server } from './common.js';
+import { jobQueue, server } from '@/boot/common.js';
+import { coreEnvService, coreLogger } from '@/boot/coreLogger.js';
+import type { Logger } from '@/logger.js';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
@@ -21,9 +21,11 @@ const meta = JSON.parse(fs.readFileSync(`${_dirname}/../../../../built/meta.json
 /**
  * Init worker process
  */
-export async function workerMain(loggerService: LoggerService, envService: EnvService) {
-	const config = loadConfig(loggerService);
-	const envOption = envService.options;
+export async function workerMain(bootLogger?: Logger) {
+	bootLogger ??= coreLogger.createSubLogger('boot', 'magenta');
+
+	const config = loadConfig(bootLogger);
+	const envOption = coreEnvService.options;
 
 	if (config.sentryForBackend) {
 		Sentry.init({

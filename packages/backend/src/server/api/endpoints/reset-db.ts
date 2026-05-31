@@ -4,14 +4,16 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { type DataSource, IsNull, Not } from 'typeorm';
 import * as Redis from 'ioredis';
+import type { MetasRepository } from '@/models/_.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import { resetDb } from '@/misc/reset-db.js';
 import { MetaService } from '@/core/MetaService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
+import { EnvService } from '@/global/EnvService.js';
 
 export const meta = {
 	tags: ['non-productive'],
@@ -46,12 +48,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.redis)
 		private redisClient: Redis.Redis,
 
+		@Inject(DI.metasRepository)
+		private readonly metasRepository: MetasRepository,
+
 		private loggerService: LoggerService,
 		private metaService: MetaService,
 		private globalEventService: GlobalEventService,
+
+		envService: EnvService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			if (process.env.NODE_ENV !== 'test') throw new Error('NODE_ENV is not a test');
+			if (envService.env.NODE_ENV !== 'test') throw new Error('NODE_ENV is not a test');
 
 			const logger = this.loggerService.getLogger('reset-db');
 			logger.info('---- Resetting database...');
@@ -61,8 +68,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			// DIコンテナで管理しているmetaのインスタンスには上記のリセット処理が届かないため、
 			// 初期値を流して明示的にリフレッシュする
-			const meta = await this.metaService.fetch(true);
-			this.globalEventService.publishInternalEvent('metaUpdated', { after: meta });
+			const after = await this.metasRepository.findOneOrFail({ where: { id: Not(IsNull()) }, order: { id: 'DESC' } });
+			await this.metaService.update(after);
 
 			logger.info('---- Database reset complete.');
 

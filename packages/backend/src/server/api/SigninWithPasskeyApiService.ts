@@ -20,11 +20,15 @@ import { bindThis } from '@/decorators.js';
 import { WebAuthnService } from '@/core/WebAuthnService.js';
 import Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
-import type { IdentifiableError } from '@/misc/identifiable-error.js';
+import { IdentifiableError, isIdentifiableError } from '@/misc/identifiable-error.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
+import { CacheService } from '@/core/CacheService.js';
+import { ServerUtilityService } from '@/server/ServerUtilityService.js';
 import { sendRateLimitHeaders } from '@/misc/rate-limit-utils.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
+import type { E as ApiErrorDefinition } from '@/server/api/error.js';
 import { SigninService } from './SigninService.js';
-import type { AuthenticationResponseJSON } from '@simplewebauthn/types';
+import type { AuthenticationResponseJSON } from '@simplewebauthn/server';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
 @Injectable()
@@ -48,6 +52,8 @@ export class SigninWithPasskeyApiService {
 		private signinService: SigninService,
 		private webAuthnService: WebAuthnService,
 		private loggerService: LoggerService,
+		private readonly cacheService: CacheService,
+		private readonly serverUtilityService: ServerUtilityService,
 	) {
 		this.logger = this.loggerService.getLogger('PasskeyAuth');
 	}
@@ -68,9 +74,9 @@ export class SigninWithPasskeyApiService {
 		const body = request.body;
 		const credential = body['credential'];
 
-		function error(status: number, error: { id: string }) {
+		function error(status: number, error: ApiErrorDefinition) {
 			reply.code(status);
-			return { error };
+			return { error, httpStatusCode: undefined };
 		}
 
 		const fail = async (userId: MiUser['id'], status?: number, failure?: { id: string }) => {
@@ -105,7 +111,7 @@ export class SigninWithPasskeyApiService {
 		// Initiate Passkey Auth challenge with context
 		if (!credential) {
 			const context = randomUUID();
-			this.logger.info(`Initiate Passkey challenge: context: ${context}`);
+			this.logger.debug(`Initiate Passkey challenge: context: ${context}`);
 			const authChallengeOptions = {
 				option: await this.webAuthnService.initiateSignInWithPasskeyAuthentication(context),
 				context: context,
@@ -128,10 +134,19 @@ export class SigninWithPasskeyApiService {
 		try {
 			authorizedUserId = await this.webAuthnService.verifySignInWithPasskeyAuthentication(context, credential);
 		} catch (err) {
-			this.logger.warn('Passkey challenge verify error:', err as Error);
-			const errorId = (err as IdentifiableError).id;
-			return error(403, {
-				id: errorId,
+			if (isIdentifiableError(err)) {
+				this.logger.debug(`Passkey challenge verify error: ${renderInlineError(err)}`);
+				return error(403, {
+					id: err.id,
+				});
+			}
+
+			this.logger.error(`Passkey challenge verify error: ${renderInlineError(err)}`);
+			return error(500, {
+				message: 'Internal error occurred. Please contact us if the error persists.',
+				code: 'INTERNAL_ERROR',
+				id: '5d37dbcb-891e-41ca-a3d6-e690c97775ac',
+				kind: 'server',
 			});
 		}
 
@@ -142,24 +157,16 @@ export class SigninWithPasskeyApiService {
 		}
 
 		// Fetch user
-		const user = await this.usersRepository.findOneBy({
-			id: authorizedUserId,
-			host: IsNull(),
-		}) as MiLocalUser | null;
+		const [user, profile] = await Promise.all([
+			this.cacheService.findLocalUserById(authorizedUserId),
+			this.cacheService.userProfileCache.fetch(authorizedUserId),
+		]);
 
-		if (user == null) {
-			return error(403, {
-				id: '652f899f-66d4-490e-993e-6606c8ec04c3',
-			});
+		// Verify user
+		const userError = this.serverUtilityService.assertClientUser(user);
+		if (userError) {
+			return error(userError.httpStatusCode, userError);
 		}
-
-		if (user.isSuspended) {
-			return error(403, {
-				id: 'e03a5f46-d309-4865-9b69-56282d94e1eb',
-			});
-		}
-
-		const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 
 		// Authentication was successful, but passwordless login is not enabled
 		if (!profile.usePasswordLessLogin) {

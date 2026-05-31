@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { Locale } from '../../../locales/index.js';
+import { markRaw } from 'vue';
+import { I18n } from '@@/js/i18n.js';
+import type { Locale } from 'locales';
 
 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 const address = new URL(document.querySelector<HTMLMetaElement>('meta[property="instance_url"]')?.content || location.href);
@@ -19,7 +21,8 @@ export const lang = localStorage.getItem('lang') ?? 'en-US';
 export const langs = _LANGS_;
 export const langsVersion = _LANGS_VERSION_;
 const preParseLocale = localStorage.getItem('locale');
-export let locale: Locale = preParseLocale ? JSON.parse(preParseLocale) : null;
+export let locale: Locale = preParseLocale ? JSON.parse(preParseLocale) : {};
+export const i18n = markRaw(new I18n<Locale>(locale, _DEV_));
 export const version = _VERSION_;
 export const instanceName = (siteName === 'Sharkey' || siteName == null) ? host : siteName;
 export const ui = localStorage.getItem('ui');
@@ -27,4 +30,5 @@ export const debug = localStorage.getItem('debug') === 'true';
 
 export function updateLocale(newLocale: Locale): void {
 	locale = newLocale;
+	i18n.locale = newLocale;
 }

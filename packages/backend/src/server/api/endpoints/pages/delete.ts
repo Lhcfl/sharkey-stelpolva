@@ -9,6 +9,7 @@ import type { PagesRepository, UsersRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { UserService } from '@/core/UserService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { ApiError } from '../../error.js';
 
@@ -59,6 +60,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private moderationLogService: ModerationLogService,
 		private roleService: RoleService,
+		private readonly userService: UserService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const page = await this.pagesRepository.findOneBy({ id: ps.pageId });
@@ -80,6 +82,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					pageUserId: page.userId,
 					pageUserUsername: user.username,
 				});
+			} else {
+				this.userService.markUserActive(me, true);
 			}
 		});
 	}

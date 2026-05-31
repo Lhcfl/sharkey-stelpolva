@@ -25,7 +25,7 @@ export function extractMediaFromHtml(html: string): IApDocument[] {
 		.forEach(img => attachments.set(img.attribs.src, {
 			type: 'Image',
 			url: img.attribs.src,
-			name: img.attribs.alt || img.attribs.title || null,
+			name: img.attribs.alt || img.attribs.title || undefined,
 		}));
 
 	// <object> tags
@@ -35,7 +35,7 @@ export function extractMediaFromHtml(html: string): IApDocument[] {
 		.forEach(object => attachments.set(object.attribs.data, {
 			type: 'Document',
 			url: object.attribs.data,
-			name: object.attribs.alt || object.attribs.title || null,
+			name: object.attribs.alt || object.attribs.title || undefined,
 		}));
 
 	// <embed> tags
@@ -45,7 +45,7 @@ export function extractMediaFromHtml(html: string): IApDocument[] {
 		.forEach(embed => attachments.set(embed.attribs.src, {
 			type: 'Document',
 			url: embed.attribs.src,
-			name: embed.attribs.alt || embed.attribs.title || null,
+			name: embed.attribs.alt || embed.attribs.title || undefined,
 		}));
 
 	// <audio> tags
@@ -55,7 +55,7 @@ export function extractMediaFromHtml(html: string): IApDocument[] {
 		.forEach(audio => attachments.set(audio.attribs.src, {
 			type: 'Audio',
 			url: audio.attribs.src,
-			name: audio.attribs.alt || audio.attribs.title || null,
+			name: audio.attribs.alt || audio.attribs.title || undefined,
 		}));
 
 	// <video> tags
@@ -65,7 +65,7 @@ export function extractMediaFromHtml(html: string): IApDocument[] {
 		.forEach(audio => attachments.set(audio.attribs.src, {
 			type: 'Video',
 			url: audio.attribs.src,
-			name: audio.attribs.alt || audio.attribs.title || null,
+			name: audio.attribs.alt || audio.attribs.title || undefined,
 		}));
 
 	// TODO support <svg>? We would need to extract it directly from the HTML and save to a temp file.

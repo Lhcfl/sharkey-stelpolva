@@ -3,16 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { MockRedis } from './MockRedis.js';
-import type { Listener, ListenerProps } from '@/global/InternalEventService.js';
-import type { InternalEventTypes } from '@/core/GlobalEventService.js';
+import { GodOfTimeService } from './GodOfTimeService.js';
+import type { Redis } from 'ioredis';
 import type { Config } from '@/config.js';
+import type { InternalEventContext, InternalEventProps, InternalEventTypes } from '@/global/InternalEventService.js';
+import type { EventListener } from '@/misc/SkEventEmitter.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
 import { bindThis } from '@/decorators.js';
+import { DI } from '@/di-symbols.js';
+import { TimeService } from '@/global/TimeService.js';
+import { IdService } from '@/core/IdService.js';
 
 type FakeCall<K extends keyof InternalEventService> = [K, Parameters<InternalEventService[K]>];
-type FakeListener<K extends keyof InternalEventTypes> = [K, Listener<K>, ListenerProps];
 
 /**
  * Minimal implementation of InternalEventService meant for use in unit tests.
@@ -27,69 +31,104 @@ export class MockInternalEventService extends InternalEventService {
 	public _calls: FakeCall<keyof InternalEventService>[] = [];
 
 	/**
-	 * List of currently registered listeners.
-	 */
-	public _listeners: FakeListener<keyof InternalEventTypes>[] = [];
-
-	/**
 	 * Resets the mock.
 	 * Clears all listeners and tracked calls.
 	 */
 	public mockReset() {
 		this._calls = [];
-		this._listeners = [];
 	}
 
 	/**
 	 * Simulates a remote event sent from another process in the cluster via redis.
 	 */
 	@bindThis
-	public async mockEmit<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K]): Promise<void> {
-		await this.emit(type, value, false);
+	public async mockEmitFromRedis<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K]): Promise<void> {
+		await super.emitLocally(type, value, { isLocal: false });
 	}
 
 	constructor(
-		config?: Pick<Config, 'host'>,
+		@Inject(DI.config)
+		config: Config,
+
+		@Inject(DI.redisForPub)
+		redisForPub: Redis,
+
+		@Inject(DI.redisForSub)
+		redisForSub: Redis,
+
+		@Inject(DI.nodeId)
+		nodeId: string,
 	) {
-		const redis = new MockRedis();
-		super(redis, redis, config ?? { host: 'example.com' });
+		super(redisForPub, redisForSub, config, nodeId);
 	}
 
 	@bindThis
-	public on<K extends keyof InternalEventTypes>(type: K, listener: Listener<K>, props?: ListenerProps): void {
-		if (!this._listeners.some(l => l[0] === type && l[1] === listener)) {
-			this._listeners.push([type, listener as Listener<keyof InternalEventTypes>, props ?? {}]);
-		}
-		this._calls.push(['on', [type, listener as Listener<keyof InternalEventTypes>, props]]);
+	public override on<K extends keyof InternalEventTypes>(type: K, listener: EventListener<InternalEventTypes, K, InternalEventContext>, props?: Partial<InternalEventProps>): void {
+		this._calls.push(['on', [type, listener, props]]);
+		super.on(type, listener, props);
 	}
 
 	@bindThis
-	public off<K extends keyof InternalEventTypes>(type: K, listener: Listener<K>): void {
-		this._listeners = this._listeners.filter(l => l[0] !== type || l[1] !== listener);
-		this._calls.push(['off', [type, listener as Listener<keyof InternalEventTypes>]]);
+	public override off<K extends keyof InternalEventTypes>(type: K, listener: EventListener<InternalEventTypes, K, InternalEventContext>): void {
+		this._calls.push(['off', [type, listener]]);
+		super.off(type, listener);
 	}
 
 	@bindThis
-	public async emit<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K], isLocal = true): Promise<void> {
-		for (const listener of this._listeners) {
-			if (listener[0] === type) {
-				if ((isLocal && !listener[2].ignoreLocal) || (!isLocal && !listener[2].ignoreRemote)) {
-					await listener[1](value, type, isLocal);
-				}
-			}
-		}
-		this._calls.push(['emit', [type, value]]);
+	public override async emit<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K], context?: InternalEventContext): Promise<void> {
+		this._calls.push(['emit', [type, value, context]]);
+		await super.emit(type, value, context);
 	}
 
 	@bindThis
-	public dispose(): void {
-		this._listeners = [];
+	protected override async emitExternally(): Promise<void> {
+		// Disable external emit for testing
+	}
+
+	@bindThis
+	public override connect(): void {
+		this._calls.push(['connect', []]);
+		// Disable external events for testing
+	}
+
+	@bindThis
+	public override disconnect(): void {
+		this._calls.push(['disconnect', []]);
+		// Disable external events for testing
+	}
+
+	@bindThis
+	public override dispose(): void {
 		this._calls.push(['dispose', []]);
+		super.dispose();
 	}
 
 	@bindThis
-	public onApplicationShutdown(): void {
+	public override onApplicationShutdown(): void {
 		this._calls.push(['onApplicationShutdown', []]);
+		super.onApplicationShutdown();
+	}
+
+	static create(opts?: {
+		timeService?: TimeService,
+		redisForPub?: Redis,
+		redisForSub?: Redis,
+		config?: Config,
+		idService?: IdService,
+		nodeId?: string,
+	}): MockInternalEventService {
+		const timeService = opts?.timeService ?? new GodOfTimeService();
+		const redisForPub = opts?.redisForPub ?? opts?.redisForSub ?? new MockRedis(timeService);
+		const redisForSub = opts?.redisForSub ?? redisForPub;
+		const config = opts?.config ?? {
+			url: 'https://example.com',
+			host: 'example.com',
+			id: 'aidx',
+		} as Config;
+		const idService = opts?.idService ?? new IdService(timeService, config);
+		const nodeId = opts?.nodeId ?? idService.genSimple();
+
+		return new MockInternalEventService(config, redisForPub, redisForSub, nodeId);
 	}
 }
 

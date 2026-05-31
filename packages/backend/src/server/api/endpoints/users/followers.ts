@@ -93,15 +93,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const user = await this.usersRepository.findOneBy(ps.userId != null
-				? { id: ps.userId }
-				: { usernameLower: ps.username!.toLowerCase(), host: this.utilityService.toPunyNullable(ps.host) ?? IsNull() });
+			const userId = ps.userId;
+			const username = ps.username?.toLowerCase();
+			const host = ps.host != null ? this.utilityService.toPunyNullable(ps.host) : null;
+
+			const user =
+				userId ? await this.cacheService.findUserById(userId) :
+				username ? await this.cacheService.findUserByAcct({ username, host }) :
+				null;
 
 			if (user == null) {
 				throw new ApiError(meta.errors.noSuchUser);
 			}
 
-			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
+			const profile = await this.cacheService.userProfileCache.fetch(user.id);
 
 			if (profile.followersVisibility !== 'public' && !await this.roleService.isModerator(me)) {
 				if (profile.followersVisibility === 'private') {
@@ -112,7 +117,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					if (me == null) {
 						throw new ApiError(meta.errors.forbidden);
 					} else if (me.id !== user.id) {
-						const isFollowing = await this.cacheService.userFollowingsCache.fetch(me.id).then(f => f.has(user.id));
+						const isFollowing = await this.cacheService.isFollowing(me, user);
 						if (!isFollowing) {
 							throw new ApiError(meta.errors.forbidden);
 						}

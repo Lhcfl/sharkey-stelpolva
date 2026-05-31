@@ -48,23 +48,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</div>
 	<div class="background">
-		<div class="label">Background queue<i v-if="current.background.waiting > 0" class="ti ti-alert-triangle icon"></i></div>
+		<div class="label">Background queue<i v-if="current.backgroundTask.waiting > 0" class="ti ti-alert-triangle icon"></i></div>
 		<div class="values">
 			<div>
 				<div>Process</div>
-				<div :class="{ inc: current.background.activeSincePrevTick > prev.deliver.activeSincePrevTick, dec: current.background.activeSincePrevTick < prev.deliver.activeSincePrevTick }" :title="`${current.background.activeSincePrevTick}`">{{ kmg(current.background.activeSincePrevTick, 2) }}</div>
+				<div :class="{ inc: current.backgroundTask.activeSincePrevTick > prev.backgroundTask.activeSincePrevTick, dec: current.backgroundTask.activeSincePrevTick < prev.backgroundTask.activeSincePrevTick }" :title="`${current.backgroundTask.activeSincePrevTick}`">{{ kmg(current.backgroundTask.activeSincePrevTick, 2) }}</div>
 			</div>
 			<div>
 				<div>Active</div>
-				<div :class="{ inc: current.background.active > prev.deliver.active, dec: current.background.active < prev.deliver.active }" :title="`${current.background.active}`">{{ kmg(current.background.active, 2) }}</div>
+				<div :class="{ inc: current.backgroundTask.active > prev.backgroundTask.active, dec: current.backgroundTask.active < prev.backgroundTask.active }" :title="`${current.backgroundTask.active}`">{{ kmg(current.backgroundTask.active, 2) }}</div>
 			</div>
 			<div>
 				<div>Delayed</div>
-				<div :class="{ inc: current.background.delayed > prev.deliver.delayed, dec: current.background.delayed < prev.deliver.delayed }" :title="`${current.background.delayed}`">{{ kmg(current.background.delayed, 2) }}</div>
+				<div :class="{ inc: current.backgroundTask.delayed > prev.backgroundTask.delayed, dec: current.backgroundTask.delayed < prev.backgroundTask.delayed }" :title="`${current.backgroundTask.delayed}`">{{ kmg(current.backgroundTask.delayed, 2) }}</div>
 			</div>
 			<div>
 				<div>Waiting</div>
-				<div :class="{ inc: current.background.waiting > prev.deliver.waiting, dec: current.background.waiting < prev.deliver.waiting }" :title="`${current.background.waiting}`">{{ kmg(current.background.waiting, 2) }}</div>
+				<div :class="{ inc: current.backgroundTask.waiting > prev.backgroundTask.waiting, dec: current.backgroundTask.waiting < prev.backgroundTask.waiting }" :title="`${current.backgroundTask.waiting}`">{{ kmg(current.backgroundTask.waiting, 2) }}</div>
 			</div>
 		</div>
 	</div>
@@ -72,10 +72,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted, reactive, ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useWidgetPropsManager } from './widget.js';
 import type { WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
 import type { GetFormResultType } from '@/utility/form.js';
+import type * as Misskey from 'misskey-js';
 import { useStream } from '@/stream.js';
 import kmg from '@/filters/kmg.js';
 import * as sound from '@/utility/sound.js';
@@ -106,28 +107,34 @@ const { widgetProps, configure } = useWidgetPropsManager(name,
 	emit,
 );
 
-const connection = useStream().useChannel('queueStats');
-const current = reactive({
+const connection = ref<Misskey.IChannelConnection<Misskey.Channels['queueStats']> | undefined>();
+const current = reactive<Pick<Misskey.entities.QueueLogs, 'inbox' | 'deliver' | 'backgroundTask'>>({
 	inbox: {
 		activeSincePrevTick: 0,
 		active: 0,
 		waiting: 0,
 		delayed: 0,
+		completed: 0,
+		failed: 0,
 	},
 	deliver: {
 		activeSincePrevTick: 0,
 		active: 0,
 		waiting: 0,
 		delayed: 0,
+		completed: 0,
+		failed: 0,
 	},
-	background: {
+	backgroundTask: {
 		activeSincePrevTick: 0,
 		active: 0,
 		waiting: 0,
 		delayed: 0,
+		completed: 0,
+		failed: 0,
 	},
 });
-const prev = reactive({} as typeof current);
+const prev = reactive(deepClone(current));
 const jammedAudioBuffer = ref<AudioBuffer | null>(null);
 const jammedSoundNodePlaying = ref<boolean>(false);
 
@@ -138,12 +145,8 @@ if (prefer.s['sound.masterVolume']) {
 	});
 }
 
-for (const domain of ['inbox', 'deliver', 'background']) {
-	prev[domain] = deepClone(current[domain]);
-}
-
-const onStats = (stats) => {
-	for (const domain of ['inbox', 'deliver', 'background']) {
+const onStats = (stats: Misskey.entities.QueueLogs) => {
+	for (const domain of ['inbox', 'deliver', 'backgroundTask']) {
 		prev[domain] = deepClone(current[domain]);
 		current[domain].activeSincePrevTick = stats[domain].activeSincePrevTick;
 		current[domain].active = stats[domain].active;
@@ -161,24 +164,25 @@ const onStats = (stats) => {
 	}
 };
 
-const onStatsLog = (statsLog) => {
+const onStatsLog = (statsLog: Misskey.entities.QueueLogs[]) => {
 	for (const stats of [...statsLog].reverse()) {
 		onStats(stats);
 	}
 };
 
-connection.on('stats', onStats);
-connection.on('statsLog', onStatsLog);
-
-connection.send('requestLog', {
-	id: Math.random().toString().substring(2, 10),
-	length: 1,
+onMounted(() => {
+	connection.value = useStream().useChannel('queueStats');
+	connection.value.on('stats', onStats);
+	connection.value.on('statsLog', onStatsLog);
+	connection.value.send('requestLog', {
+		length: 1,
+	});
 });
 
 onUnmounted(() => {
-	connection.off('stats', onStats);
-	connection.off('statsLog', onStatsLog);
-	connection.dispose();
+	connection.value?.off('stats', onStats);
+	connection.value?.off('statsLog', onStatsLog);
+	connection.value?.dispose();
 });
 
 defineExpose<WidgetComponentExpose>({

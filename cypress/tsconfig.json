@@ -4,5 +4,10 @@
 	"compilerOptions": {
 		"types": ["cypress", "node"],
 	},
-	"include": ["./**/*.ts"]
+	"include": [
+		"**/*.js",
+		"**/*.mjs",
+		"**/*.cjs",
+		"**/*.ts"
+	]
 }

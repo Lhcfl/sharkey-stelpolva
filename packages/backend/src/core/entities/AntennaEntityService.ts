@@ -4,6 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
+import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { AntennasRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
@@ -22,11 +23,39 @@ export class AntennaEntityService {
 	}
 
 	@bindThis
+	public async packMany(
+		sources: (string | MiAntenna)[],
+	): Promise<Packed<'Antenna'>[]> {
+		const antennas: MiAntenna[] = [];
+		const toFetch: string[] = [];
+
+		for (const src of sources) {
+			if (typeof(src) === 'string') {
+				toFetch.push(src);
+			} else {
+				antennas.push(src);
+			}
+		}
+
+		if (toFetch.length > 0) {
+			const fetched = await this.antennasRepository.findBy({ id: In(toFetch) });
+			for (const antenna of fetched) {
+				antennas.push(antenna);
+			}
+		}
+
+		return antennas.map(antenna => this.packInternal(antenna));
+	}
+
+	@bindThis
 	public async pack(
 		src: MiAntenna['id'] | MiAntenna,
 	): Promise<Packed<'Antenna'>> {
 		const antenna = typeof src === 'object' ? src : await this.antennasRepository.findOneByOrFail({ id: src });
+		return this.packInternal(antenna);
+	}
 
+	private packInternal(antenna: MiAntenna): Packed<'Antenna'> {
 		return {
 			id: antenna.id,
 			createdAt: this.idService.parse(antenna.id).date.toISOString(),

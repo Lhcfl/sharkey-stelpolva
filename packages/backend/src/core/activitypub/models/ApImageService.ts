@@ -14,11 +14,11 @@ import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 import { checkHttps } from '@/misc/check-https.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
+import { UtilityService } from '@/core/UtilityService.js';
 import type { Config } from '@/config.js';
-import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { ApResolverService } from '../ApResolverService.js';
 import { ApLoggerService } from '../ApLoggerService.js';
-import { getNullableApId, isDocument, type IObject } from '../type.js';
+import { isDocument, type IObject } from '../type.js';
 
 @Injectable()
 export class ApImageService {
@@ -37,6 +37,7 @@ export class ApImageService {
 		private driveService: DriveService,
 		private apLoggerService: ApLoggerService,
 		private federatedInstanceService: FederatedInstanceService,
+		private readonly utilityService: UtilityService,
 	) {
 		this.logger = this.apLoggerService.logger;
 	}
@@ -47,9 +48,7 @@ export class ApImageService {
 	@bindThis
 	public async createImage(actor: MiRemoteUser, value: string | IObject): Promise<MiDriveFile | null> {
 		// 投稿者が凍結されていたらスキップ
-		if (actor.isSuspended) {
-			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', `failed to create image ${getNullableApId(value)}: actor ${actor.id} has been suspended`);
-		}
+		this.utilityService.assertActiveRemoteUser(actor);
 
 		const image = await this.apResolverService.createResolver().resolve(value);
 

@@ -1,7 +1,4 @@
 import { loadConfig } from '../built/config.js';
-import { LoggerService } from '../built/core/LoggerService.js';
-import { NativeTimeService } from '../built/global/TimeService.js';
-import { EnvService } from '../built/global/EnvService.js';
 
 export class AddUnsignedFetch1740162088574 {
 	name = 'AddUnsignedFetch1740162088574'
@@ -19,8 +16,7 @@ export class AddUnsignedFetch1740162088574 {
 		await queryRunner.query(`UPDATE "user" SET "allowUnsignedFetch" = 'always' WHERE "username" LIKE '%.%' AND "host" IS null`);
 
 		// Special one-time migration: convert legacy config "" to meta setting ""
-		const loggerService = new LoggerService(console, new NativeTimeService(), new EnvService());
-		const config = await loadConfig(loggerService);
+		const config = await loadConfig();
 		if (config.checkActivityPubGetSignature) {
 			// noinspection SqlWithoutWhere
 			await queryRunner.query(`UPDATE "meta" SET "allowUnsignedFetch" = 'never'`);

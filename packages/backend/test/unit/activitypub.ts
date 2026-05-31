@@ -11,9 +11,24 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { jest } from '@jest/globals';
 import { MockApResolverService } from '../misc/MockApResolverService.js';
 import { MockConsole } from '../misc/MockConsole.js';
-import { ImmediateApPersonService, ImmediateFetchInstanceMetadataService } from '../misc/immediateBackgroundTasks.js';
+import { FakeQueueService } from '../misc/FakeQueueService.js';
+import { MockResolver } from '../misc/mock-resolver.js';
 import type { Config } from '@/config.js';
-import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
+import type {
+	MiMeta,
+	UserProfilesRepository,
+	UserPublickeysRepository,
+	UserKeypairsRepository,
+	UsersRepository,
+	NotesRepository,
+	UserNotePiningsRepository,
+	MetasRepository,
+} from '@/models/_.js';
+import type { IActor, IApDocument, ICollection, IObject, IPost } from '@/core/activitypub/type.js';
+import { MiUser, type MiLocalUser, type MiRemoteUser } from '@/models/User.js';
+import { MiUserKeypair } from '@/models/UserKeypair.js';
+import { MiNote } from '@/models/Note.js';
+import { QueueService } from '@/core/QueueService.js';
 import { ApImageService } from '@/core/activitypub/models/ApImageService.js';
 import { ApNoteService } from '@/core/activitypub/models/ApNoteService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
@@ -22,19 +37,13 @@ import { JsonLdService } from '@/core/activitypub/JsonLdService.js';
 import { CONTEXT } from '@/core/activitypub/misc/contexts.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { CoreModule } from '@/core/CoreModule.js';
-import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import { LoggerService } from '@/core/LoggerService.js';
 import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { ApResolverService } from '@/core/activitypub/ApResolverService.js';
-import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
-import type { IActor, IApDocument, ICollection, IObject, IPost } from '@/core/activitypub/type.js';
-import { MiMeta, MiNote, MiUser, MiUserKeypair, UserProfilesRepository, UserPublickeysRepository, UserKeypairsRepository, UsersRepository, NotesRepository, UserNotePiningsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { genAidx } from '@/misc/id/aidx.js';
 import { IdService } from '@/core/IdService.js';
-import { MockResolver } from '../misc/mock-resolver.js';
 
 const host = 'https://host1.test';
 
@@ -112,25 +121,15 @@ describe('ActivityPub', () => {
 	let notesRepository: NotesRepository;
 	let userNotePiningsRepository: UserNotePiningsRepository;
 
-	const metaInitial = {
-		id: 'x',
+	// This extends metaInitial, which extends the database-default meta
+	let meta: MiMeta;
+
+	// This extends the database-default meta
+	const metaInitial: Partial<MiMeta> = {
 		name: 'Test Instance',
 		shortName: 'Test Instance',
 		description: 'Test Instance',
-		langs: [] as string[],
-		pinnedUsers: [] as string[],
-		hiddenTags: [] as string[],
-		prohibitedWordsForNameOfUser: [] as string[],
-		silencedHosts: [] as string[],
-		mediaSilencedHosts: [] as string[],
-		policies: {},
-		serverRules: [] as string[],
-		bannedEmailDomains: [] as string[],
-		preservedUsernames: [] as string[],
-		bubbleInstances: [] as string[],
-		trustedLinkUrlPatterns: [] as string[],
 		federation: 'all',
-		federationHosts: [] as string[],
 		allowUnsignedFetch: 'always',
 		cacheRemoteFiles: true,
 		cacheRemoteSensitiveFiles: true,
@@ -139,16 +138,23 @@ describe('ActivityPub', () => {
 		perUserHomeTimelineCacheMax: 800,
 		perLocalUserUserTimelineCacheMax: 800,
 		perRemoteUserUserTimelineCacheMax: 800,
-		blockedHosts: [] as string[],
-		sensitiveWords: [] as string[],
-		prohibitedWords: [] as string[],
-	} as MiMeta;
-	const meta = { ...metaInitial };
+	};
+
+	function resetMeta() {
+		// Delete any new keys
+		for (const key of Reflect.ownKeys(meta)) {
+			if (!Object.hasOwn(metaInitial, key)) {
+				delete meta[key];
+			}
+		}
+
+		// Restore any deleted or modified keys
+		for (const key of Reflect.ownKeys(metaInitial)) {
+			meta[key] = metaInitial[key];
+		}
+	}
 
 	function updateMeta(newMeta: Partial<MiMeta>): void {
-		for (const key in meta) {
-			delete (meta as any)[key];
-		}
 		Object.assign(meta, newMeta);
 	}
 
@@ -163,11 +169,23 @@ describe('ActivityPub', () => {
 					};
 				},
 			})
-			.overrideProvider(DI.meta).useValue(meta)
+			.overrideProvider(DI.meta).useFactory({
+				inject: [DI.metasRepository],
+				factory: async (metasRepository: MetasRepository) => {
+					// Upsert a default meta entity to get all the SQL defaults
+					let defaultMeta = await metasRepository.findOneBy({});
+					if (!defaultMeta) {
+						await metasRepository.insert({ id: 'x' });
+						defaultMeta = await metasRepository.findOneByOrFail({});
+					}
+
+					// Extend the actual entity so we can modify it
+					return Object.create(defaultMeta);
+				},
+			})
 			.overrideProvider(ApResolverService).useClass(MockApResolverService)
 			.overrideProvider(DI.console).useClass(MockConsole)
-			.overrideProvider(FetchInstanceMetadataService).useClass(ImmediateFetchInstanceMetadataService)
-			.overrideProvider(ApPersonService).useClass(ImmediateApPersonService)
+			.overrideProvider(QueueService).useClass(FakeQueueService)
 			.compile();
 
 		await app.init();
@@ -190,6 +208,7 @@ describe('ActivityPub', () => {
 		mockConsole = app.get<MockConsole>(DI.console);
 		notesRepository = app.get<NotesRepository>(DI.notesRepository);
 		userNotePiningsRepository = app.get<UserNotePiningsRepository>(DI.userNotePiningsRepository);
+		meta = app.get<MiMeta>(DI.meta);
 	});
 
 	afterAll(async () => {
@@ -201,11 +220,14 @@ describe('ActivityPub', () => {
 		await usersRepository.deleteAll();
 
 		// Clear all caches app-wide
-		cacheManagementService.clear();
+		await cacheManagementService.clear();
 
 		// Reset mocks
 		mockConsole.mockReset();
 		resolver.clear();
+
+		// Reset meta to revert the effects of updateMeta()
+		resetMeta();
 	});
 
 	describe('Parse minimum object', () => {
@@ -451,7 +473,7 @@ describe('ActivityPub', () => {
 		});
 
 		test('cacheRemoteFiles=false disables caching', async () => {
-			updateMeta({ ...metaInitial, cacheRemoteFiles: false });
+			updateMeta({ cacheRemoteFiles: false });
 
 			const imageObject: IApDocument = {
 				type: 'Document',
@@ -480,7 +502,7 @@ describe('ActivityPub', () => {
 		});
 
 		test('cacheRemoteSensitiveFiles=false only affects sensitive files', async () => {
-			updateMeta({ ...metaInitial, cacheRemoteSensitiveFiles: false });
+			updateMeta({ cacheRemoteSensitiveFiles: false });
 
 			const imageObject: IApDocument = {
 				type: 'Document',
@@ -541,7 +563,7 @@ describe('ActivityPub', () => {
 				unknown: 'test test bar',
 				undefined: 'test test baz',
 			};
-			const compacted = await jsonLdService.compact(object);
+			const compacted = await jsonLdService.use().compact(object);
 
 			assert.deepStrictEqual(compacted, {
 				'@context': CONTEXT,
@@ -727,10 +749,10 @@ describe('ActivityPub', () => {
 				expect(result.id).toBeTruthy();
 				expect(result.inbox).toBeTruthy();
 				expect(result.sharedInbox).toBeTruthy();
-				expect(result.endpoints.sharedInbox).toBeTruthy();
+				expect(result.endpoints?.sharedInbox).toBeTruthy();
 				expect(result.url).toBeTruthy();
 				expect(result.preferredUsername).toBe(author.username);
-				expect(result.publicKey.owner).toBe(result.id);
+				expect(result.publicKey?.owner).toBe(result.id);
 				expect(result._misskey_requireSigninToViewContents).toBe(author.requireSigninToViewContents);
 				expect(result._misskey_makeNotesFollowersOnlyBefore).toBe(author.makeNotesFollowersOnlyBefore);
 				expect(result._misskey_makeNotesHiddenBefore).toBe(author.makeNotesHiddenBefore);
@@ -858,6 +880,7 @@ describe('ActivityPub', () => {
 			it('should trim publicKey', async () => {
 				const actor = createRandomActor();
 				actor.publicKey = {
+					type: 'Key',
 					id: `${actor.id}#main-key`,
 					publicKeyPem: '  key material\t\n\r\n \n',
 				};

@@ -63,7 +63,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<MkFoldableSection class="item">
 			<template #header>{{ i18n.ts.backgroundQueue }}</template>
-			<XQueue domain="background"/>
+			<XQueue domain="backgroundTask"/>
 		</MkFoldableSection>
 	</div>
 </div>

@@ -108,9 +108,10 @@ export class ApUtilityService {
 	 * @param parentUri URI of the object that contains this inline object.
 	 * @param parentHost PSL host of parentUri
 	 * @param keyPath If obj is *itself* a nested object, set this to the property path from root to obj (including the trailing '.'). This does not affect the logic, but improves the clarity of logs.
+	 * @param urlOpts Optional settings to customize URL validation. See UtilityService.assertUrl for details.
 	 */
 	@bindThis
-	public sanitizeInlineObject<Key extends string>(obj: Partial<Record<Key, string | { id?: string } | (string | { id?: string })[]>>, key: Key, parentUri: string | URL, parentHost: string, keyPath = ''): obj is Partial<Record<Key, string | { id: string }>> {
+	public sanitizeInlineObject<Key extends string>(obj: Partial<Record<Key, string | { id?: string } | (string | { id?: string })[]>>, key: Key, parentUri: string | URL, parentHost: string, keyPath = '', urlOpts?: { allowHttp?: boolean, allowFragment?: boolean }): obj is Partial<Record<Key, string | { id: string }>> {
 		let value: unknown = obj[key];
 
 		// Unpack arrays
@@ -146,7 +147,7 @@ export class ApUtilityService {
 		}
 
 		try {
-			const parsed = this.utilityService.assertUrl(valueId);
+			const parsed = this.utilityService.assertUrl(valueId, urlOpts);
 			const parsedHost = this.utilityService.punyHostPSLDomain(parsed);
 			if (parsedHost !== parentHost) {
 				// Exclude wrong host

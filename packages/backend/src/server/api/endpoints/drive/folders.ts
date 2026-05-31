@@ -72,7 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 			const folders = await query.limit(ps.limit).getMany();
 
-			return await promiseMap(folders, async folder => await this.driveFolderEntityService.pack(folder), { limit: 4 });
+			return await promiseMap(folders, async folder => await this.driveFolderEntityService.pack(folder), { limiter: 4 });
 		});
 	}
 }

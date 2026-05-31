@@ -23,6 +23,7 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { EmailService } from '@/core/EmailService.js';
 import { TimeService } from '@/global/TimeService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
@@ -82,6 +83,7 @@ export class ExportAccountDataProcessorService {
 		private emailService: EmailService,
 		private queueLoggerService: QueueLoggerService,
 		private readonly timeService: TimeService,
+		private readonly cacheService: CacheService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-account-data');
 	}
@@ -317,12 +319,10 @@ export class ExportAccountDataProcessorService {
 
 			followingsCursor = followings.at(-1)?.id ?? null;
 
-			for (const following of followings) {
-				const u = await this.usersRepository.findOneBy({ id: following.followeeId });
-				if (u == null) {
-					continue;
-				}
+			const followeeIds = followings.map(f => f.followeeId);
+			const followees = await this.cacheService.findUsersById(followeeIds);
 
+			for (const u of followees.values()) {
 				if (u.updatedAt && (this.timeService.now - u.updatedAt.getTime() > 1000 * 60 * 60 * 24 * 90)) {
 					continue;
 				}
@@ -365,7 +365,7 @@ export class ExportAccountDataProcessorService {
 		let exportedFollowersCount = 0;
 
 		while (true) {
-			const followers = await this.followingsRepository.find({
+			const followings = await this.followingsRepository.find({
 				where: {
 					followeeId: user.id,
 					...(followersCursor ? { id: MoreThan(followersCursor) } : {}),
@@ -376,18 +376,16 @@ export class ExportAccountDataProcessorService {
 				},
 			}) as MiFollowing[];
 
-			if (followers.length === 0) {
+			if (followings.length === 0) {
 				break;
 			}
 
-			followersCursor = followers.at(-1)?.id ?? null;
+			followersCursor = followings.at(-1)?.id ?? null;
 
-			for (const follower of followers) {
-				const u = await this.usersRepository.findOneBy({ id: follower.followerId });
-				if (u == null) {
-					continue;
-				}
+			const followerIds = followings.map(f => f.followerId);
+			const followers = await this.cacheService.findUsersById(followerIds);
 
+			for (const u of followers.values()) {
 				const isFirst = exportedFollowersCount === 0;
 				const content = this.utilityService.getFullApAccount(u.username, u.host);
 				await writeFollowers(isFirst ? `"${content}"` : ',\n' + `"${content}"`);
@@ -480,7 +478,6 @@ export class ExportAccountDataProcessorService {
 
 		await writeMuting(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","mutings":[`);
 
-		let exportedMutingCount = 0;
 		let mutingCursor: MiMuting['id'] | null = null;
 
 		while (true) {
@@ -502,17 +499,14 @@ export class ExportAccountDataProcessorService {
 
 			mutingCursor = mutes.at(-1)?.id ?? null;
 
-			for (const mute of mutes) {
-				const u = await this.usersRepository.findOneBy({ id: mute.muteeId });
+			const muteeIds = mutes.map(f => f.muteeId);
+			const mutees = await this.cacheService.findUsersById(muteeIds);
 
-				if (u == null) {
-					exportedMutingCount++; continue;
-				}
-
+			let isFirst = true;
+			for (const u of mutees.values()) {
 				const content = this.utilityService.getFullApAccount(u.username, u.host);
-				const isFirst = exportedMutingCount === 0;
 				await writeMuting(isFirst ? `"${content}"` : ',\n' + `"${content}"`);
-				exportedMutingCount++;
+				isFirst = false;
 			}
 		}
 
@@ -543,7 +537,6 @@ export class ExportAccountDataProcessorService {
 
 		await writeBlocking(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","blockings":[`);
 
-		let exportedBlockingCount = 0;
 		let blockingCursor: MiBlocking['id'] | null = null;
 
 		while (true) {
@@ -564,17 +557,14 @@ export class ExportAccountDataProcessorService {
 
 			blockingCursor = blockings.at(-1)?.id ?? null;
 
-			for (const block of blockings) {
-				const u = await this.usersRepository.findOneBy({ id: block.blockeeId });
+			const blockeeIds = blockings.map(f => f.blockeeId);
+			const blockees = await this.cacheService.findUsersById(blockeeIds);
 
-				if (u == null) {
-					exportedBlockingCount++; continue;
-				}
-
+			let isFirst = true;
+			for (const u of blockees.values()) {
 				const content = this.utilityService.getFullApAccount(u.username, u.host);
-				const isFirst = exportedBlockingCount === 0;
 				await writeBlocking(isFirst ? `"${content}"` : ',\n' + `"${content}"`);
-				exportedBlockingCount++;
+				isFirst = false;
 			}
 		}
 
@@ -672,9 +662,7 @@ export class ExportAccountDataProcessorService {
 			let users: MiUser[] | undefined;
 			if (antenna.userListId !== null) {
 				const memberships = await this.userListMembershipsRepository.findBy({ userListId: antenna.userListId });
-				users = await this.usersRepository.findBy({
-					id: In(memberships.map(j => j.userId)),
-				});
+				users = (await this.cacheService.findUsersById(memberships.map(j => j.userId))).values().toArray();
 			}
 
 			await writeAntenna(JSON.stringify({
@@ -728,9 +716,7 @@ export class ExportAccountDataProcessorService {
 
 		for (const list of lists) {
 			const memberships = await this.userListMembershipsRepository.findBy({ userListId: list.id });
-			const users = await this.usersRepository.findBy({
-				id: In(memberships.map(j => j.userId)),
-			});
+			const users = (await this.cacheService.findUsersById(memberships.map(j => j.userId))).values().toArray();
 
 			for (const u of users) {
 				const acct = this.utilityService.getFullApAccount(u.username, u.host);
@@ -758,7 +744,7 @@ export class ExportAccountDataProcessorService {
 				cleanup();
 				archiveCleanup();
 				if (profile.email) {
-					this.emailService.sendEmail(profile.email,
+					await this.emailService.sendEmail(profile.email,
 						'Your data archive is ready',
 						`Click the following link to download the archive: ${driveFile.url}<br/>It is also available in your drive.`,
 						`Click the following link to download the archive: ${driveFile.url}\r\n\r\nIt is also available in your drive.`,
@@ -768,7 +754,7 @@ export class ExportAccountDataProcessorService {
 			});
 			archive.pipe(archiveStream);
 			archive.directory(path, false);
-			archive.finalize();
+			await archive.finalize();
 		});
 	}
 

@@ -24,8 +24,8 @@
 		"./src/**/*.ts"
 	],
 	"exclude": [
-		"node_modules",
-		"**/built/",
+		"**/node_modules",
+		"**/built",
 		"**/*.test.ts",
 		"./src/server/web/**/*.js",
 		"./src/server/web/**/*.mjs",

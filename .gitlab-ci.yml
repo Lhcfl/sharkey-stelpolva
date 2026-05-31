@@ -48,8 +48,6 @@ include:
     rules: *common-rules
   - local: '.gitlab/ci_templates/secret_detection.yml'
     rules: *common-rules
-  - local: '.gitlab/ci_templates/lib_behave.yml'
-    rules: *common-rules
 
 # Cache node_modules and share build artifacts for the pipeline.
 # This shares the same cache definition, but it's the only place that actually *pushes* to the cache.
@@ -64,7 +62,6 @@ build: &build
     pull_policy: if-not-present
   variables:
     POSTGRES_PASSWORD: 'ci'
-    COREPACK_DEFAULT_TO_LATEST: '0'
   # Arm64 is recommended for CI
   tags:
     - arm64
@@ -98,7 +95,6 @@ build: &build
       paths:
         - 'built/'
         - 'packages/*/built/'
-        - 'packages/megalodon/lib/'
       policy: pull-push
       when: on_success
 

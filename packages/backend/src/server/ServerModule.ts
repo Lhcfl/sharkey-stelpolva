@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Module } from '@nestjs/common';
+import { Module, type Import } from '@nestjs/common';
 import { EndpointsModule } from '@/server/api/EndpointsModule.js';
 import { CoreModule } from '@/core/CoreModule.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
@@ -65,11 +65,14 @@ import { ReversiChannelService } from './api/stream/channels/reversi.js';
 import { ReversiGameChannelService } from './api/stream/channels/reversi-game.js';
 import { SigninWithPasskeyApiService } from './api/SigninWithPasskeyApiService.js';
 
+/** External module dependencies */
+const $Imports = [
+	EndpointsModule,
+	CoreModule,
+] as const satisfies Import[];
+
 @Module({
-	imports: [
-		EndpointsModule,
-		CoreModule,
-	],
+	imports: $Imports,
 	providers: [
 		ClientServerService,
 		ClientLoggerService,
@@ -131,6 +134,7 @@ import { SigninWithPasskeyApiService } from './api/SigninWithPasskeyApiService.j
 	],
 	exports: [
 		ServerService,
-	],
+		$Imports,
+	].flat(),
 })
 export class ServerModule {}
