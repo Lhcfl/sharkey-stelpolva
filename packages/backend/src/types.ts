@@ -102,6 +102,7 @@ export const moderationLogTypes = [
 	'promoteQueue',
 	'deleteDriveFile',
 	'deleteNote',
+	'makePrivateNote',
 	'createGlobalAnnouncement',
 	'createUserAnnouncement',
 	'updateGlobalAnnouncement',
@@ -254,6 +255,12 @@ export type ModerationLogPayloads = {
 		noteUserUsername: string;
 		noteUserHost: string | null;
 	};
+	makePrivateNote: {
+		noteId: string;
+		noteUserId: string;
+		noteUserUsername: string;
+		noteUserHost: string | null;
+	}
 	createGlobalAnnouncement: {
 		announcementId: string;
 		announcement: any;
