@@ -50,7 +50,7 @@ export function build() {
 		/** @type {Record<string, ILocale>} */
 	const misskeyLocales = languages.reduce((a, c) => (a[c] = loadOptionalYaml(`${c}.yml`), a), {});
 		/** @type {Record<string, ILocale>} */
-	const stpvLocales = languages.reduce((a, c) => (a[c] = loadOptionalYaml(`../stelpolva-locales/${c}.yml`), a), {});
+	const stpvLocales = languages.reduce((a, c) => (a[c] = loadOptionalYaml(`../stpv-locales/${c}.yml`), a), {});
 
 	// merge sharkey and misskey's locales. the second argument (sharkey) overwrites the first argument (misskey).
   const locales = merge(misskeyLocales, sharkeyLocales, stpvLocales);
