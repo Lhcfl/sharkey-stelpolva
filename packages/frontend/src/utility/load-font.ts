@@ -12,7 +12,8 @@ const defaultFontsList = [
 export async function loadFontStyle(fontId: string) {
 	if (defaultFontsList.includes(fontId)) return;
 	if (fontId === 'custom') {
-		window.document.documentElement.attributeStyleMap.set('--STPV_custom-fontface', miLocalStorage.getItem('customFontFaceName') ?? 'Arial');
+		const font = miLocalStorage.getItem('customFontFaceName') ?? 'Arial';
+		window.document.documentElement.style.setProperty('--STPV_custom-fontface', font);
 		return;
 	}
 	try {
