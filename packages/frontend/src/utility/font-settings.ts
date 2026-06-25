@@ -7,6 +7,7 @@ import { i18n } from '@/i18n.js';
 const fontList = [
 	{ id: 'sharkey-default', name: 'Sharkey Default' },
 	{ id: 'maokentangyuan', name: '猫啃糖圆' },
+	{ id: 'wen-yuan-rounded', name: '文渊圆体' },
 	{ id: 'chillroundgothic', name: '寒蝉圆黑' },
 	{ id: 'lxgw-wenkai', name: '霞鹜文楷' },
 	{ id: 'lxgw-marker-gothic', name: '霞鹜漫黑' },

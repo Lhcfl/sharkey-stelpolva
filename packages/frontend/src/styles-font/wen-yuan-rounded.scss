@@ -1,0 +1,9 @@
+html.default-font-wen-yuan-rounded {
+  @import url("https://ventus-uta-wenyuan-rounded-sc-vf-font-delivery.ventusuta.workers.dev/WenYuanRoundedSCVF.css");
+
+	font-family: 'sharkey-theme-font-face', 'Lexend', 'WenYuan Rounded SC VF', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+	&[lang="zh-WY"],
+	&[lang="zh-TW"] {
+		font-family: 'sharkey-theme-font-face', 'Lexend', 'WenYuan Rounded SC VF', 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+	}
+}
