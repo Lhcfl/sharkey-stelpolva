@@ -7,8 +7,6 @@ import cluster from 'node:cluster';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import * as fs from 'node:fs';
-import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { loadConfig } from '@/config.js';
 import { jobQueue, server } from '@/boot/common.js';
 import { coreEnvService, coreLogger } from '@/boot/coreLogger.js';
@@ -28,6 +26,9 @@ export async function workerMain(bootLogger?: Logger) {
 	const envOption = coreEnvService.options;
 
 	if (config.sentryForBackend) {
+		const Sentry = await import('@sentry/node');
+		const { nodeProfilingIntegration } = await import('@sentry/profiling-node');
+
 		Sentry.init({
 			integrations: [
 				...(config.sentryForBackend.enableNodeProfiling ? [nodeProfilingIntegration()] : []),

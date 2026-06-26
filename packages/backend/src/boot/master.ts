@@ -11,8 +11,6 @@ import * as net from 'node:net';
 import cluster from 'node:cluster';
 import chalk from 'chalk';
 import si from 'systeminformation';
-import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { loadConfig } from '@/config.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { jobQueue, server } from '@/boot/common.js';
@@ -77,6 +75,9 @@ export async function masterMain(bootLogger?: Logger) {
 	bootLogger.info('Sharkey initialized');
 
 	if (config.sentryForBackend) {
+		const Sentry = await import('@sentry/node');
+		const { nodeProfilingIntegration } = await import('@sentry/profiling-node');
+
 		Sentry.init({
 			integrations: [
 				...(config.sentryForBackend.enableNodeProfiling ? [nodeProfilingIntegration()] : []),

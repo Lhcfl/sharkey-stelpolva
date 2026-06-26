@@ -145,6 +145,30 @@ Sharkey 的最近版本 Docker Compose 文件补全了 Sharkey Stelpolva 需要�
 
 不需要做任何额外处理，直接更换分支即可
 
+## 开发 Sharkey Stelpolva
+
+### 常规方式
+
+和 Sharkey 的开发方式一样，但是多一个安装 pgroonga 的步骤。
+
+### Dev Container
+
+TODO：我也不知道但你可以试试
+
+### NixOS
+
+推荐使用 [devenv](https://devenv.sh)，项目已有 `devenv.nix` 配置。
+
+```sh
+devenv shell # 进入开发环境
+devenv up # 拉起 postgres, redis 等服务
+
+# 执行完上述命令后，开发环境已经配置好。可以执行 sharkey 的常规 scripts：
+pnpm migrate
+pnpm build
+pnpm start
+```
+
 <div>
 
 <a href="https://joinsharkey.org/"><img src="assets/sharkey.webp" align="right" height="520px"/></a>
